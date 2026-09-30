@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TACTUS · Somatisches Beziehungs-Betriebssystem</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('kompass_theme') || 'dark';
+      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+      var savedZoom = localStorage.getItem('kompass_text_zoom') || '100';
+      if (savedZoom === '115') document.documentElement.style.fontSize = '115%';
+      else if (savedZoom === '130') document.documentElement.style.fontSize = '130%';
+      else document.documentElement.style.fontSize = '100%';
+    })();
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3',
+              500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+              800: '#9f1239', 900: '#881337', 950: '#4c0519',
+            },
+            noir: {
+              950: '#000000', 900: '#05070c', 850: '#0a0e17',
+              800: '#101726', 700: '#172238', 600: '#233454',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: var(--sab);
+      padding-left: var(--sal);
+      padding-right: var(--sar);
+    }
+    .font-serif-title {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+    html.dark body { background-color: #000000 !important; color: #f8fafc !important; }
+    html.dark .theme-card { background-color: #060911 !important; border-color: #172033 !important; color: #f8fafc !important; }
+    html.dark .theme-panel { background-color: #0b111e !important; border-color: #1e2b44 !important; color: #e2e8f0 !important; }
+    html:not(.dark) body { background-color: #f8fafc !important; color: #0f172a !important; }
+    html:not(.dark) .theme-card { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
+    html:not(.dark) .theme-panel { background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
+    .touch-btn {
+      min-height: 44px;
+      transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .touch-btn:active { transform: scale(0.98); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-purple-700 selection:text-white transition-colors duration-200">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-slate-900 shadow-sm" style="padding-top: max(8px, var(--sat));">
+    <div class="max-w-4xl mx-auto px-3 sm:px-6 pb-2 space-y-1.5">
+      <div class="flex items-center justify-between gap-2">
+        <a href="#view=hub" onclick="AppRouter.navigate('hub')" class="flex items-center space-x-2.5 min-w-0 text-left group touch-btn cursor-pointer flex-1">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-950 via-indigo-900 to-rose-950 border border-purple-500/40 text-purple-200 flex items-center justify-center shadow-lg p-1.5 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253"/>
+            </svg>
+          </div>
+          <div class="truncate min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white truncate font-serif-title">TACTUS OS</h1>
+              <span id="hub-connection-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-800 uppercase flex-shrink-0">LOKAL</span>
+            </div>
+            <span class="text-[9.5px] text-slate-400 font-medium block truncate mt-0.5" id="hub-subtitle">Somatic Intimacy Operating System</span>
+          </div>
+        </a>
+
+        <!-- DESKTOP QUICK ACTIONS -->
+        <div class="hidden md:flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="AppModals.openSyncModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs flex items-center gap-1.5 touch-btn" title="E2EE-Synchronisation">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            <span id="btn-sync-label">Koppeln</span>
+          </button>
+          <button type="button" onclick="AppModals.openMedicalPassModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1.5 touch-btn" title="RACK-Gesundheitspass">
+            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            <span>RACK-Pass</span>
+          </button>
+          <button type="button" onclick="AppSettings.openModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs flex items-center gap-1.5 touch-btn" title="Einstellungen & KI-Setup">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.241.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>Setup</span>
+          </button>
+          <a href="session.html" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-800 to-indigo-800 text-white font-bold text-xs touch-btn shadow-md flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+            <span>Live-Regie</span>
+          </a>
+        </div>
+
+        <!-- MOBILE BURGER BUTTON -->
+        <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="AppSettings.openModal()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 touch-btn" title="Setup & Einstellungen">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.241.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </button>
+          <button type="button" onclick="AppModals.openSyncModal()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-purple-300 touch-btn" title="Koppeln">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          </button>
+          <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- DESKTOP NAV -->
+      <nav class="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-xs font-bold -mx-1 px-1">
+        <button type="button" onclick="AppRouter.navigate('hub')" id="nav-btn-hub" class="px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700">Start-Hub</button>
+        <button type="button" onclick="AppRouter.navigate('survey')" id="nav-btn-survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen</button>
+        <a href="analyse.html" class="px-3 py-1.5 rounded-xl text-amber-300 hover:text-white transition whitespace-nowrap touch-btn">Paar-Analyse</a>
+        <a href="chat.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Paar-Stream</a>
+        <a href="protocol.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Das Protokoll</a>
+        <a href="guide.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Guide</a>
+        <a href="session.html" class="px-3 py-1.5 rounded-xl text-rose-300 hover:text-white transition whitespace-nowrap touch-btn">Regie</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MOBILE DRAWER -->
+  <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-purple-950 border border-purple-600 text-purple-300 flex items-center justify-center font-bold text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white font-serif-title">TACTUS OS</h3>
+            <span class="text-[10px] text-slate-400 font-medium block">Somatic Operating System</span>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-1.5 pt-1">
+        <button type="button" onclick="AppRouter.navigate('hub'); document.getElementById('mobile-menu-drawer').style.display='none';" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn">
+          <span class="text-xs font-bold text-white">Start-Hub (Dashboard)</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </button>
+        <button type="button" onclick="AppRouter.navigate('survey'); document.getElementById('mobile-menu-drawer').style.display='none';" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn">
+          <span class="text-xs font-bold text-white">Fragebogen (36 Kapitel)</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </button>
+        <a href="analyse.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-amber-300">Paar-Analyse &amp; Synergie</span>
+          <span class="text-[10px] text-amber-400 font-bold">Doppel-5er</span>
+        </a>
+        <a href="chat.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-slate-300">E2EE Paar-Stream</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="protocol.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-slate-300">Das Protokoll &amp; Vertrag</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="guide.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-slate-300">BDSM- &amp; Vertrauens-Guide</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="session.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-rose-300">Schlafzimmer-Regie</span>
+          <span class="text-[10px] text-rose-400 font-bold">Live ↗</span>
+        </a>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 space-y-1.5">
+        <button type="button" onclick="AppSettings.openModal(); document.getElementById('mobile-menu-drawer').style.display='none';" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-purple-300 text-left flex items-center justify-between touch-btn">
+          <span class="font-bold">Setup, Identität &amp; Multi-KI</span>
+          <span class="text-slate-500">→</span>
+        </button>
+        <button type="button" onclick="AppModals.openMedicalPassModal(); document.getElementById('mobile-menu-drawer').style.display='none';" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 text-left flex items-center justify-between touch-btn">
+          <span class="font-bold">RACK-Gesundheitspass</span>
+          <span class="text-slate-500">→</span>
+        </button>
+        <button type="button" onclick="AppModals.openSyncModal(); document.getElementById('mobile-menu-drawer').style.display='none';" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 text-left flex items-center justify-between touch-btn">
+          <span class="font-bold">E2EE-Kopplung</span>
+          <span class="text-slate-500">→</span>
+        </button>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-slate-900 text-center">
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-2.5 bg-slate-900 text-slate-300 font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full space-y-4">
+
+    <!-- VIEW 1: START-HUB (DASHBOARD & TELEMETRIE) -->
+    <div id="view-hub" class="space-y-4 animate-fade-in">
+      
+      <!-- HERO COCKPIT CARD -->
+      <div class="theme-card rounded-3xl p-5 sm:p-6 border border-purple-900/60 shadow-2xl bg-gradient-to-br from-purple-950/40 via-noir-900 to-indigo-950/20 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-3">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800 inline-block">
+              Somatic Intimacy OS
+            </span>
+            <h2 class="text-base sm:text-xl font-bold text-white mt-1 font-serif-title" id="hub-pair-title">
+              TACTUS Paar-Zentrale
+            </h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="AppRouter.navigate('survey')" class="px-3.5 py-1.5 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs touch-btn shadow-md">
+              Fragebogen öffnen ↗
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 TELEMETRIE KACHELN -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
+            <span class="text-[10px] text-slate-400 block font-medium">Fragebogen-Status:</span>
+            <strong class="text-sm sm:text-base font-bold font-mono text-purple-300" id="hub-stat-progress">0%</strong>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
+            <span class="text-[10px] text-slate-400 block font-medium">Tribut-Saldo:</span>
+            <strong class="text-sm sm:text-base font-bold font-mono text-amber-300" id="hub-stat-balance">0 P</strong>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
+            <span class="text-[10px] text-slate-400 block font-medium">Keuschheit:</span>
+            <strong class="text-xs font-bold text-slate-200 truncate block mt-0.5" id="hub-stat-lock">Frei</strong>
+          </div>
+          <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
+            <span class="text-[10px] text-slate-400 block font-medium">Orgasmus-Ratio:</span>
+            <strong class="text-sm sm:text-base font-bold font-mono text-indigo-300" id="hub-stat-ratio">0:0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROLLEN & PARTNER IDENTITÄT -->
+      <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-3 shadow-md text-xs">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <strong class="text-xs text-white block font-bold">Rollen &amp; Paar-Identität</strong>
+            <span class="text-[10px] text-slate-400">Verwaltung der aktiven Sichtweise</span>
+          </div>
+          <button type="button" onclick="AppSettings.openModal('identity')" class="px-2 py-0.5 rounded bg-purple-950 hover:bg-purple-900 border border-purple-800 text-purple-300 font-mono text-[9.5px] font-bold touch-btn">
+            Namen &amp; Anatomie anpassen ↗
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+            <span class="text-[10px] text-slate-400 block font-mono">Aktive Sicht:</span>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="AppProfile.switchAssignedRole('A')" id="btn-role-a" class="flex-1 py-1.5 rounded-xl font-bold text-xs bg-purple-700 text-white touch-btn">Partner 1</button>
+              <button type="button" onclick="AppProfile.switchAssignedRole('B')" id="btn-role-b" class="flex-1 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn">Partner 2</button>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+            <span class="text-[10px] text-slate-400 block font-mono">Rollen-Mandat:</span>
+            <div class="text-[10.5px] text-slate-300 font-medium truncate pt-1" id="hub-roles-summary">
+              Wird geladen...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIE 6 SÄULEN DES OPERATING SYSTEMS -->
+      <div class="space-y-2 text-xs">
+        <strong class="text-white block font-bold px-1">Die 6 Systemischen Säulen:</strong>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <!-- 1. LIVE REGIE -->
+          <a href="session.html" class="p-4 rounded-3xl theme-card border border-rose-900/60 hover:border-rose-600 transition-all flex items-start gap-3 shadow-md group touch-btn block">
+            <div class="w-10 h-10 rounded-2xl bg-rose-950 border border-rose-800 text-rose-300 flex items-center justify-center font-bold flex-shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5 text-rose-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+            </div>
+            <div class="space-y-0.5 min-w-0">
+              <strong class="text-xs text-white block group-hover:text-rose-200">1. Schlafzimmer-Regie</strong>
+              <p class="text-[10px] text-slate-400 leading-snug">Live-Cockpit, Schwellen &amp; JOI, Vagus-Atmung &amp; Musikregie.</p>
+            </div>
+          </a>
+
+          <!-- 2. DAS PROTOKOLL -->
+          <a href="protocol.html" class="p-4 rounded-3xl theme-card border border-purple-900/60 hover:border-purple-600 transition-all flex items-start gap-3 shadow-md group touch-btn block">
+            <div class="w-10 h-10 rounded-2xl bg-purple-950 border border-purple-800 text-purple-300 flex items-center justify-center font-bold flex-shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+            </div>
+            <div class="space-y-0.5 min-w-0">
+              <strong class="text-xs text-white block group-hover:text-purple-200">2. Das Protokoll &amp; Vertrag</strong>
+              <p class="text-[10px] text-slate-400 leading-snug">Saldo, Pflichten, Orgasmus-Ratio, Beziehungsvertrag &amp; Coach.</p>
+            </div>
+          </a>
+
+          <!-- 3. PAAR-ANALYSE -->
+          <a href="analyse.html" class="p-4 rounded-3xl theme-card border border-amber-900/60 hover:border-amber-600 transition-all flex items-start gap-3 shadow-md group touch-btn block">
+            <div class="w-10 h-10 rounded-2xl bg-amber-950 border border-amber-800 text-amber-300 flex items-center justify-center font-bold flex-shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/></svg>
+            </div>
+            <div class="space-y-0.5 min-w-0">
+              <strong class="text-xs text-white block group-hover:text-amber-200">3. Paar-Analyse &amp; Synergie</strong>
+              <p class="text-[10px] text-slate-400 leading-snug">Doppel-5er, Erkundungs-Brücken, Scham-Schutzanker (🙈) &amp; Tabus.</p>
+            </div>
+          </a>
+
+          <!-- 4. PAAR-STREAM -->
+          <a href="chat.html" class="p-4 rounded-3xl theme-card border border-indigo-900/60 hover:border-indigo-600 transition-all flex items-start gap-3 shadow-md group touch-btn block">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-950 border border-indigo-800 text-indigo-300 flex items-center justify-center font-bold flex-shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+            </div>
+            <div class="space-y-0.5 min-w-0">
+              <strong class="text-xs text-white block group-hover:text-indigo-200">4. E2EE Paar-Stream</strong>
+              <p class="text-[10px] text-slate-400 leading-snug">Verschlüsselte Notizen, Flüsternachrichten, Date-Night &amp; Fototresor.</p>
+            </div>
+          </a>
+
+          <!-- 5. BDSM-GUIDE -->
+          <a href="guide.html" class="p-4 rounded-3xl theme-card border border-teal-900/60 hover:border-teal-600 transition-all flex items-start gap-3 shadow-md group touch-btn block">
+            <div class="w-10 h-10 rounded-2xl bg-teal-950 border border-teal-800 text-teal-300 flex items-center justify-center font-bold flex-shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5 text-teal-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+            </div>
+            <div class="space-y-0.5 min-w-0">
+              <strong class="text-xs text-white block group-hover:text-teal-200">5. BDSM- &amp; Vertrauens-Guide</strong>
+              <p class="text-[10px] text-slate-400 leading-snug">Sicherheit, Subspace, Nerven-Topologie &amp; Evidenzstudien.</p>
+            </div>
+          </a>
+
+          <!-- 6. FRAGEBOGEN QUICKSTART -->
+          <button type="button" onclick="AppRouter.navigate('survey')" class="p-4 rounded-3xl theme-card border border-purple-900/60 hover:border-purple-600 transition-all flex items-start gap-3 shadow-md group touch-btn text-left">
+            <div class="w-10 h-10 rounded-2xl bg-purple-950 border border-purple-800 text-purple-300 flex items-center justify-center font-bold flex-shrink-0 group-hover:scale-105 transition-transform">
+              <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+            </div>
+            <div class="space-y-0.5 min-w-0">
+              <strong class="text-xs text-white block group-hover:text-purple-200">6. Fragebogen (36 Kapitel)</strong>
+              <p class="text-[10px] text-slate-400 leading-snug">180 Items zu Romantik, Macht, Fesselung, Keuschheit &amp; Fetisch.</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: FRAGEBOGEN (36 KAPITEL / 180 ITEMS) -->
+    <div id="view-survey" class="hidden space-y-4 animate-fade-in text-xs">
+      
+      <!-- SURVEY TOP BAR -->
+      <div class="theme-card rounded-3xl p-5 border border-purple-900/60 shadow-xl bg-gradient-to-br from-purple-950/40 via-noir-900 to-indigo-950/20 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-2.5">
+          <div class="space-y-0.5">
+            <span class="text-[9.5px] font-mono text-purple-400 uppercase font-bold tracking-wider">Psychometrischer Fragebogen</span>
+            <h2 class="text-sm sm:text-base font-bold text-white font-serif-title" id="survey-chapter-title-header">
+              Wird geladen...
+            </h2>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="AppRouter.navigate('hub')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs touch-btn">
+              ← Zum Hub
+            </button>
+          </div>
+        </div>
+
+        <!-- KAPITEL DROPDOWN & WECHSLER -->
+        <div class="flex items-center gap-2">
+          <select id="survey-chapter-select" onchange="SurveyRunner.goToChapter(this.value)" class="flex-1 p-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-purple-600 focus:outline-none">
+            <!-- Dynamisch befüllt -->
+          </select>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="SurveyRunner.prevChapter()" class="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs touch-btn">‹</button>
+            <button type="button" onclick="SurveyRunner.nextChapter()" class="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs touch-btn">›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTIONS CONTAINER -->
+      <div id="survey-questions-container" class="space-y-3"></div>
+
+      <!-- SURVEY BOTTOM NAV -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <button type="button" onclick="SurveyRunner.prevChapter()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold rounded-xl text-xs touch-btn">
+          ← Vorheriges Kapitel
+        </button>
+        <button type="button" onclick="SurveyRunner.nextChapter()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
+          Nächstes Kapitel →
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+  <!-- MODAL: MEDIZINISCHER RACK-GESUNDHEITSPASS -->
+  <div id="modal-medical-pass" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-xs">
+    <div class="theme-card rounded-3xl max-w-lg w-full border border-amber-600/50 p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-amber-900/60 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-950 border border-amber-700 text-amber-300 flex items-center justify-center font-bold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white font-serif-title">RACK-Gesundheitspass</h3>
+            <span class="text-[10px] text-amber-300/80">Biologische Sicherheits-Garantien</span>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-medical-pass').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <p class="text-[10.5px] text-slate-300 leading-snug">
+        Chronische Erkrankungen sind unantastbare biologische Realitäten. Deine Angaben fließen automatisch als Schutz-Constraints in die KI-Drehbücher und das Schlafzimmer-Staging ein (100 % lokal verschlüsselt).
+      </p>
+
+      <div class="space-y-2.5 pt-1">
+        <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-2.5 cursor-pointer">
+          <input type="checkbox" id="med-diabetes" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-0" />
+          <div class="space-y-0.5">
+            <strong class="text-white block font-bold text-xs">Diabetes mellitus (Typ 1 / Typ 2)</strong>
+            <span class="text-[10px] text-slate-400 block leading-snug">Erfordert Traubenzucker am Bett; begrenzt Fesselungen auf 20 Min. wegen Nervensensibilität.</span>
+          </div>
+        </label>
+
+        <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-2.5 cursor-pointer">
+          <input type="checkbox" id="med-asthma" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-0" />
+          <div class="space-y-0.5">
+            <strong class="text-white block font-bold text-xs">Asthma bronchiale</strong>
+            <span class="text-[10px] text-slate-400 block leading-snug">Schließt dichte Knebel aus; verlangt Notfall-Inhalator in Griffweite.</span>
+          </div>
+        </label>
+
+        <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-2.5 cursor-pointer">
+          <input type="checkbox" id="med-neuropathy" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-0" />
+          <div class="space-y-0.5">
+            <strong class="text-white block font-bold text-xs">Eingeschränktes Schmerzempfinden / Neuropathie</strong>
+            <span class="text-[10px] text-slate-400 block leading-snug">Verlangt engmaschige Durchblutungskontrollen an Händen und Füßen.</span>
+          </div>
+        </label>
+
+        <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-2.5 cursor-pointer">
+          <input type="checkbox" id="med-blood" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-0" />
+          <div class="space-y-0.5">
+            <strong class="text-white block font-bold text-xs">Blutgerinnung / Blutverdünner</strong>
+            <span class="text-[10px] text-slate-400 block leading-snug">Erhöhte Hämatomgefahr; schließt schwere Schlagwerkzeuge (Paddle, Rohrstock) aus.</span>
+          </div>
+        </label>
+
+        <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-2.5 cursor-pointer">
+          <input type="checkbox" id="med-latex" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-0" />
+          <div class="space-y-0.5">
+            <strong class="text-white block font-bold text-xs">Latex-Allergie</strong>
+            <span class="text-[10px] text-slate-400 block leading-snug">Schließt Naturlatex aus; empfiehlt medizinisches Silikon, Leder oder Textil.</span>
+          </div>
+        </label>
+
+        <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-2.5 cursor-pointer">
+          <input type="checkbox" id="med-hypermobility" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-0" />
+          <div class="space-y-0.5">
+            <strong class="text-white block font-bold text-xs">Hypermobilität / Gelenküberbeweglichkeit</strong>
+            <span class="text-[10px] text-slate-400 block leading-snug">Verhindert Überdehnungen der Schultern und Ellenbogen bei Fesselungen.</span>
+          </div>
+        </label>
+
+        <div>
+          <label class="text-[10px] font-mono text-slate-400 uppercase block mb-1">Wichtige Notfall-Notizen für den Partner:</label>
+          <input type="text" id="med-emergency-notes" placeholder="z. B. Traubenzucker liegt im linken Nachttisch..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-amber-600" />
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
+        <button type="button" onclick="document.getElementById('modal-medical-pass').style.display='none'" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Schließen</button>
+        <button type="button" onclick="AppModals.saveMedicalPass()" class="px-5 py-2 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Pass sichern ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ZERO-KNOWLEDGE E2EE SYNC & KOPPLUNG -->
+  <div id="modal-cloud-sync" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-xs">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 sm:p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-purple-900/60 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-purple-950 border border-purple-700 text-purple-300 flex items-center justify-center font-bold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white font-serif-title">E2EE Paar-Kopplung</h3>
+            <span class="text-[10px] text-slate-400">Zero-Knowledge Peer-Synchronisation</span>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-cloud-sync').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <p class="text-[10.5px] text-slate-300 leading-snug">
+        Verbindet eure beiden Smartphones über eine Ende-zu-Ende verschlüsselte Brücke (AES-GCM-256 via PBKDF2). Weder Betreiber noch Dritte können eure Noten oder Verträge lesen.
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10px] font-mono text-slate-400 uppercase block mb-1">Geheimer Raum-Name:</label>
+          <input type="text" id="sync-input-room" placeholder="z. B. tactus-aura-782" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-purple-600" />
+        </div>
+
+        <div>
+          <label class="text-[10px] font-mono text-slate-400 uppercase block mb-1">Gemeinsames Paar-Passwort (Schlüssel):</label>
+          <input type="password" id="sync-input-pass" placeholder="Ein langes, sicheres Passwort..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-purple-600" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-mono text-slate-400 uppercase block mb-1">Deine Rolle:</label>
+            <select id="sync-select-role" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
+              <option value="A">Partner 1</option>
+              <option value="B">Partner 2</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button type="button" onclick="AppModals.generateRandomCredentials()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-[10.5px] font-bold touch-btn">
+              Zufalls-Code
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex justify-between gap-2">
+        <button type="button" onclick="AppModals.disconnectSync()" class="px-3.5 py-2 bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold rounded-xl text-xs touch-btn">
+          Trennen
+        </button>
+        <button type="button" onclick="AppModals.saveSyncCredentials()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
+          Koppeln &amp; Verbinden ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GLOBALE EINSTELLUNGEN, SETUP & MULTI-KI GATEWAY -->
+  <div id="modal-settings" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-xs">
+    <div class="theme-card rounded-3xl max-w-xl w-full border border-purple-500/40 p-5 sm:p-6 space-y-4 shadow-2xl max-h-[92vh] flex flex-col justify-between overflow-hidden">
+      <!-- HEADER -->
+      <div class="flex items-center justify-between border-b border-purple-900/60 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-purple-950 border border-purple-700 text-purple-300 flex items-center justify-center font-bold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.241.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white font-serif-title">TACTUS System-Einstellungen</h3>
+            <span class="text-[10px] text-slate-400">Setup, Identität, BYOK Multi-KI &amp; Backup</span>
+          </div>
+        </div>
+        <button type="button" onclick="AppSettings.closeModal()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <!-- TABS -->
+      <div class="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 border-b border-slate-800 text-xs flex-shrink-0">
+        <button type="button" onclick="AppSettings.switchTab('identity')" id="tab-cfg-identity" class="px-3 py-1.5 rounded-xl font-bold bg-purple-700 text-white touch-btn whitespace-nowrap">1. Paar &amp; Anatomie</button>
+        <button type="button" onclick="AppSettings.switchTab('ai')" id="tab-cfg-ai" class="px-3 py-1.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn whitespace-nowrap">2. Multi-KI (BYOK)</button>
+        <button type="button" onclick="AppSettings.switchTab('display')" id="tab-cfg-display" class="px-3 py-1.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn whitespace-nowrap">3. Anzeige &amp; Zoom</button>
+        <button type="button" onclick="AppSettings.switchTab('backup')" id="tab-cfg-backup" class="px-3 py-1.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn whitespace-nowrap">4. Daten-Backup</button>
+      </div>
+
+      <!-- SCROLL CONTENT -->
+      <div class="overflow-y-auto pr-1 flex-1 space-y-4 py-1 text-[11px]">
+        
+        <!-- SECTION 1: PAAR-IDENTITÄT & ANATOMIE -->
+        <div id="cfg-panel-identity" class="space-y-3">
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Die Namen und anatomischen Merkmale steuern die physiologische Schnittmengenprüfung der DoF-Engine und die persönliche Ansprache in den KI-Drehbüchern.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <!-- PARTNER 1 -->
+            <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+              <span class="text-[9.5px] font-mono text-purple-400 font-bold uppercase block">Partner 1</span>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Name / Vorname:</label>
+                <input type="text" id="cfg-name-a" placeholder="z. B. Nils" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:border-purple-600 focus:outline-none" />
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Biologische Anatomie:</label>
+                <select id="cfg-anatomy-a" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+                  <option value="penis">Penis &amp; Hoden (Schaft/Skrotum)</option>
+                  <option value="vulva">Vulva &amp; Klitoris</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- PARTNER 2 -->
+            <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+              <span class="text-[9.5px] font-mono text-indigo-400 font-bold uppercase block">Partner 2</span>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Name / Vorname:</label>
+                <input type="text" id="cfg-name-b" placeholder="z. B. Lisa" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:border-purple-600 focus:outline-none" />
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Biologische Anatomie:</label>
+                <select id="cfg-anatomy-b" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+                  <option value="vulva">Vulva &amp; Klitoris</option>
+                  <option value="penis">Penis &amp; Hoden (Schaft/Skrotum)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- STANDARD-FÜHRUNGSROLLE -->
+          <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <strong class="text-white text-xs block font-bold">Standard-Führungsrolle (Top / Keyholder):</strong>
+              <span class="text-[9.5px] font-mono text-purple-400 font-bold">D/s-Mandat</span>
+            </div>
+            <select id="cfg-default-top" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+              <option value="A">Partner 1 führt standardmäßig als Top (Keyholder)</option>
+              <option value="B">Partner 2 führt standardmäßig als Top (Keyholder)</option>
+            </select>
+            <span class="text-[9.5px] text-slate-500 block leading-snug">Hinweis: In Sessions kann die Rolle bei Bedarf vorübergehend gewechselt werden (Switch).</span>
+          </div>
+        </div>
+
+        <!-- SECTION 2: MULTI-KI GATEWAY (BYOK) -->
+        <div id="cfg-panel-ai" class="hidden space-y-3">
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Nutze die KI deiner Wahl (Bring Your Own Key). Deine API-Schlüssel werden ausschließlich lokal im Browser verschlüsselt hinterlegt und niemals an fremde Server übertragen.
+          </p>
+
+          <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+            <label class="text-[10px] font-mono text-purple-400 uppercase font-bold block">Aktiver KI-Provider:</label>
+            <select id="cfg-ai-provider" onchange="AppSettings.handleProviderChange(this.value)" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+              <option value="gemini">Google Gemini (Gemini 2.5 Flash / 3.0 Flash – Schnell &amp; Multimodal)</option>
+              <option value="anthropic">Anthropic Claude (Claude 3.5 Sonnet – Höchste psychologische Tiefe)</option>
+              <option value="openai">OpenAI (ChatGPT / GPT-4o – Schnell &amp; Analytisch)</option>
+              <option value="webgpu_local">Lokale Offline-KI (WebGPU – 100 % Privat ohne Internet)</option>
+            </select>
+          </div>
+
+          <!-- KEY FIELDS JE NACH PROVIDER -->
+          <div id="cfg-ai-key-container" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+            <div id="field-key-gemini" class="space-y-1">
+              <label class="text-[10px] font-mono text-slate-400 uppercase block">Google Gemini API-Key:</label>
+              <input type="password" id="input-key-gemini" placeholder="AIzaSy..." class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono focus:border-purple-600 focus:outline-none" />
+              <span class="text-[9.5px] text-slate-500 block">Kostenlos erstellbar im Google AI Studio.</span>
+            </div>
+
+            <div id="field-key-anthropic" class="hidden space-y-1">
+              <label class="text-[10px] font-mono text-slate-400 uppercase block">Anthropic Claude API-Key:</label>
+              <input type="password" id="input-key-anthropic" placeholder="sk-ant-..." class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono focus:border-purple-600 focus:outline-none" />
+              <span class="text-[9.5px] text-slate-500 block">Aus deinem Anthropic Console Account.</span>
+            </div>
+
+            <div id="field-key-openai" class="hidden space-y-1">
+              <label class="text-[10px] font-mono text-slate-400 uppercase block">OpenAI (ChatGPT) API-Key:</label>
+              <input type="password" id="input-key-openai" placeholder="sk-proj-..." class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono focus:border-purple-600 focus:outline-none" />
+              <span class="text-[9.5px] text-slate-500 block">Aus deinem OpenAI Platform Dashboard.</span>
+            </div>
+
+            <div id="field-key-local" class="hidden p-2.5 rounded-xl bg-slate-900 text-slate-400 text-[10px] leading-snug">
+              Lokale Offline-KI via WebGPU: Benötigt keinen API-Schlüssel. Läuft direkt auf der Grafikkarte deines Smartphones/Laptops (erfordert WebGPU-fähigen Browser).
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: ANZEIGE & TEXT-ZOOM -->
+        <div id="cfg-panel-display" class="hidden space-y-3">
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Passe die Lesbarkeit und das Farbschema für das Halbdunkel des Schlafzimmers an.
+          </p>
+
+          <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+            <strong class="text-white text-xs block font-bold">Schriftgröße &amp; Skalierung:</strong>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button type="button" onclick="AppSettings.setTextZoom('100')" id="btn-zoom-100" class="py-2 rounded-xl font-mono font-bold text-xs bg-purple-700 text-white touch-btn">100 % (Standard)</button>
+              <button type="button" onclick="AppSettings.setTextZoom('115')" id="btn-zoom-115" class="py-2 rounded-xl font-mono font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn">115 % (Groß)</button>
+              <button type="button" onclick="AppSettings.setTextZoom('130')" id="btn-zoom-130" class="py-2 rounded-xl font-mono font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn">130 % (Maximal)</button>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+            <strong class="text-white text-xs block font-bold">Design-Farbschema:</strong>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="AppSettings.setTheme('dark')" id="btn-theme-dark" class="py-2.5 rounded-xl font-bold text-xs bg-purple-950 border border-purple-600 text-purple-200 touch-btn">
+                OLED-Tiefschwarz (Noir)
+              </button>
+              <button type="button" onclick="AppSettings.setTheme('light')" id="btn-theme-light" class="py-2.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn">
+                Helles Schema
+              </button>
+            </div>
+            <span class="text-[9.5px] text-slate-500 block leading-snug">Empfehlung: OLED-Tiefschwarz schützt vor Blendung im abgedunkelten Raum.</span>
+          </div>
+        </div>
+
+        <!-- SECTION 4: DATEN-BACKUP & WIEDERHERSTELLUNG -->
+        <div id="cfg-panel-backup" class="hidden space-y-3">
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Deine Daten gehören zu 100 % dir. Exportiere ein lückenloses, verschlüsseltes JSON-Backup oder übertrage deine Daten auf ein neues Gerät.
+          </p>
+
+          <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <strong class="text-white block font-bold text-xs">Vollständiges Backup exportieren</strong>
+                <span class="text-[9.5px] text-slate-400">Lädt alle Fragebogen-Antworten, Verträge und Notizen als Datei herunter.</span>
+              </div>
+              <button type="button" onclick="AppSettings.exportJsonBackup()" class="px-3 py-1.5 rounded-xl bg-purple-900/90 hover:bg-purple-800 text-white font-bold text-xs touch-btn shadow-md whitespace-nowrap flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-purple-200" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <span>Exportieren</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+            <div>
+              <strong class="text-white block font-bold text-xs">Backup wiederherstellen (Import)</strong>
+              <span class="text-[9.5px] text-slate-400">Stellt einen früheren Stand aus einer gesicherten JSON-Datei wieder her.</span>
+            </div>
+            <input type="file" id="cfg-backup-file-input" accept=".json" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer" />
+            <button type="button" onclick="AppSettings.importJsonBackup()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs touch-btn">
+              Ausgewähltes Backup einspielen
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER BUTTONS -->
+      <div class="pt-3 border-t border-slate-800 flex justify-between items-center flex-shrink-0">
+        <span class="text-[9.5px] font-mono text-slate-500">100 % lokal gesichert</span>
+        <button type="button" onclick="AppSettings.saveAndClose()" class="px-5 py-2.5 bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
+          Einstellungen speichern ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
+  <!-- CONTROLLER LOGIK FÜR INDEX.HTML -->
+  <script>
+    (function(window) {
+      'use strict';
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function showToast(message) {
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification(message);
+          return;
+        }
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const el = document.createElement('div');
+        el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
+        el.innerHTML = `
+          <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253"/>
+          </svg>
+          <span>${escapeHtml(message)}</span>
+        `;
+        container.appendChild(el);
+
+        setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
+        setTimeout(() => {
+          el.classList.add('opacity-0');
+          setTimeout(() => el.remove(), 300);
+        }, 2800);
+      }
+      window.showToastNotification = showToast;
+
+      // --- ROUTER FÜR INDEX.HTML ---
+      const AppRouter = {
+        currentView: 'hub',
+
+        navigate: function(viewName) {
+          this.currentView = viewName;
+          const hubEl = document.getElementById('view-hub');
+          const surveyEl = document.getElementById('view-survey');
+          const navHub = document.getElementById('nav-btn-hub');
+          const navSurvey = document.getElementById('nav-btn-survey');
+
+          if (viewName === 'survey') {
+            if (hubEl) hubEl.classList.add('hidden');
+            if (surveyEl) surveyEl.classList.remove('hidden');
+            if (navHub) navHub.className = "px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn";
+            if (navSurvey) navSurvey.className = "px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700";
+            SurveyRunner.init();
+            window.location.hash = "view=survey";
+          } else {
+            if (surveyEl) surveyEl.classList.add('hidden');
+            if (hubEl) hubEl.classList.remove('hidden');
+            if (navSurvey) navSurvey.className = "px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn";
+            if (navHub) navHub.className = "px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700";
+            HubDashboard.render();
+            window.location.hash = "view=hub";
+          }
+        }
+      };
+      window.AppRouter = AppRouter;
+
+      // --- PROFIL & ROLLENLOGIK ---
+      const AppProfile = {
+        getAssignedRole: function() {
+          return localStorage.getItem('kompass_assigned_role') || 'A';
+        },
+        switchAssignedRole: function(roleKey) {
+          localStorage.setItem('kompass_assigned_role', roleKey);
+          HubDashboard.render();
+          showToast(`Sichtweise gewechselt auf: Partner ${roleKey === 'A' ? '1' : '2'}`);
+        }
+      };
+      window.AppProfile = AppProfile;
+
+      // --- START-HUB DASHBOARD ---
+      const HubDashboard = {
+        render: function() {
+          let names = { A: 'Partner 1', B: 'Partner 2' };
+          try {
+            const raw = localStorage.getItem('kompass_names');
+            if (raw) names = Object.assign(names, JSON.parse(raw));
+          } catch (e) {}
+
+          const currentRole = AppProfile.getAssignedRole();
+          const topRole = localStorage.getItem('kompass_keyholder_role') || 'A';
+          const subRole = (topRole === 'A') ? 'B' : 'A';
+
+          const pairTitle = document.getElementById('hub-pair-title');
+          if (pairTitle) {
+            pairTitle.innerText = `${names.A} & ${names.B}`;
+          }
+
+          const btnRoleA = document.getElementById('btn-role-a');
+          const btnRoleB = document.getElementById('btn-role-b');
+          if (btnRoleA && btnRoleB) {
+            btnRoleA.innerText = names.A;
+            btnRoleB.innerText = names.B;
+            if (currentRole === 'A') {
+              btnRoleA.className = "flex-1 py-1.5 rounded-xl font-bold text-xs bg-purple-700 text-white touch-btn";
+              btnRoleB.className = "flex-1 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn";
+            } else {
+              btnRoleA.className = "flex-1 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn";
+              btnRoleB.className = "flex-1 py-1.5 rounded-xl font-bold text-xs bg-purple-700 text-white touch-btn";
+            }
+          }
+
+          const rolesSummary = document.getElementById('hub-roles-summary');
+          if (rolesSummary) {
+            rolesSummary.innerText = `Top: ${names[topRole]} · Bottom: ${names[subRole]}`;
+          }
+
+          // Telemetrie: Fragebogen-Fortschritt berechnen
+          let answers = {};
+          try {
+            const rawAns = localStorage.getItem('kompass_answers');
+            if (rawAns) answers = JSON.parse(rawAns) || {};
+          } catch (e) {}
+          const ansForCurrentRole = answers[currentRole] || {};
+          let answeredCount = 0;
+          for (const k in ansForCurrentRole) {
+            if (ansForCurrentRole[k] !== undefined && ansForCurrentRole[k] !== null) answeredCount++;
+          }
+          const totalItems = 180;
+          const pct = Math.min(100, Math.round((answeredCount / (totalItems * 2)) * 100));
+          const progEl = document.getElementById('hub-stat-progress');
+          if (progEl) progEl.innerText = `${pct} %`;
+
+          // Telemetrie: Protokoll & Saldo
+          let balance = 0;
+          let isLocked = false;
+          let daysLocked = 0;
+          if (window.ProtocolCore && typeof window.ProtocolCore.getBalance === 'function') {
+            balance = window.ProtocolCore.getBalance();
+            const pState = window.ProtocolCore.getState();
+            isLocked = !!pState.isLocked;
+            if (isLocked && pState.lockedSince) {
+              const diffMs = Math.max(0, Date.now() - pState.lockedSince);
+              daysLocked = Math.max(1, Math.floor(diffMs / (24 * 3600 * 1000)) + 1);
+            }
+          }
+          const balEl = document.getElementById('hub-stat-balance');
+          if (balEl) balEl.innerText = `${balance >= 0 ? '+' : ''}${balance} P`;
+
+          const lockEl = document.getElementById('hub-stat-lock');
+          if (lockEl) {
+            lockEl.innerText = isLocked ? `Tag ${daysLocked} 🔒` : 'Frei';
+            lockEl.className = isLocked ? "text-xs font-bold text-purple-300 truncate block mt-0.5" : "text-xs font-bold text-slate-400 truncate block mt-0.5";
+          }
+
+          // Telemetrie: Orgasmus-Ratio
+          let ratioStr = "0:0";
+          if (window.ProtocolRatio && typeof window.ProtocolRatio.getProgress === 'function') {
+            const r = window.ProtocolRatio.getProgress();
+            ratioStr = `${r.topCount}:${r.subCount}`;
+          }
+          const ratEl = document.getElementById('hub-stat-ratio');
+          if (ratEl) ratEl.innerText = ratioStr;
+
+          // Kopplungs-Badge
+          const isPaired = localStorage.getItem('kompass_is_paired') === 'true';
+          const badge = document.getElementById('hub-connection-badge');
+          const syncLabel = document.getElementById('btn-sync-label');
+          if (badge) {
+            if (isPaired) {
+              badge.innerText = "GEKOPPELT ✓";
+              badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800 uppercase flex-shrink-0";
+            } else {
+              badge.innerText = "SOLO (LOKAL)";
+              badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-800 uppercase flex-shrink-0";
+            }
+          }
+          if (syncLabel) syncLabel.innerText = isPaired ? "E2EE Aktiv" : "Koppeln";
+        }
+      };
+      window.HubDashboard = HubDashboard;
+
+      // --- FRAGEBOGEN-RUNNER (SURVEYRUNNER) ---
+      const SurveyRunner = {
+        currentChapterIndex: 0,
+        chapters: [],
+
+        init: function() {
+          const part1 = window.surveyChaptersPart1 || [];
+          const part2 = window.surveyChaptersPart2 || [];
+          this.chapters = part1.concat(part2);
+
+          if (this.chapters.length === 0) {
+            console.warn("[TACTUS Survey] Keine Kapitel-Dateien geladen!");
+            return;
+          }
+
+          this.populateChapterDropdown();
+          this.renderActiveChapter();
+        },
+
+        populateChapterDropdown: function() {
+          const select = document.getElementById('survey-chapter-select');
+          if (!select) return;
+
+          select.innerHTML = this.chapters.map((ch, idx) => `
+            <option value="${idx}" ${idx === this.currentChapterIndex ? 'selected' : ''}>
+              ${escapeHtml(ch.title)}
+            </option>
+          `).join('');
+        },
+
+        goToChapter: function(idx) {
+          const parsed = parseInt(idx, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed < this.chapters.length) {
+            this.currentChapterIndex = parsed;
+            this.renderActiveChapter();
+            const select = document.getElementById('survey-chapter-select');
+            if (select) select.value = parsed.toString();
+          }
+        },
+
+        nextChapter: function() {
+          if (this.currentChapterIndex < this.chapters.length - 1) {
+            this.goToChapter(this.currentChapterIndex + 1);
+          } else {
+            showToast("Letztes Kapitel erreicht. Auswertung in der Paar-Analyse verfügbar.");
+          }
+        },
+
+        prevChapter: function() {
+          if (this.currentChapterIndex > 0) {
+            this.goToChapter(this.currentChapterIndex - 1);
+          }
+        },
+
+        renderActiveChapter: function() {
+          const ch = this.chapters[this.currentChapterIndex];
+          if (!ch) return;
+
+          const titleHeader = document.getElementById('survey-chapter-title-header');
+          if (titleHeader) titleHeader.innerText = ch.title;
+
+          const container = document.getElementById('survey-questions-container');
+          if (!container) return;
+
+          let answers = {};
+          try {
+            const rawAns = localStorage.getItem('kompass_answers');
+            if (rawAns) answers = JSON.parse(rawAns) || {};
+          } catch (e) {}
+
+          const currentRole = AppProfile.getAssignedRole();
+          const roleAns = answers[currentRole] || {};
+
+          let names = { A: 'Partner 1', B: 'Partner 2' };
+          try {
+            const nRaw = localStorage.getItem('kompass_names');
+            if (nRaw) names = Object.assign(names, JSON.parse(nRaw));
+          } catch (e) {}
+
+          const items = ch.items || [];
+          container.innerHTML = items.map(it => {
+            const scoreLead = roleAns[`it_${it.id}_r1`];
+            const scoreRec = roleAns[`it_${it.id}_r2`];
+            const isShame = roleAns[`shame_${it.id}`] === true;
+
+            return `
+              <div class="p-4 sm:p-5 rounded-3xl theme-card border border-slate-800 space-y-3 shadow-md">
+                <div class="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2">
+                  <div class="space-y-0.5 flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-[9.5px] font-mono text-purple-400 font-bold">#${it.id}</span>
+                      <strong class="text-xs text-white block truncate font-bold">${escapeHtml(it.title)}</strong>
+                    </div>
+                    <p class="text-[10px] text-slate-400 leading-snug">${escapeHtml(it.desc)}</p>
+                  </div>
+
+                  <!-- Scham-Schutzanker Toggle (🙈) -->
+                  <button type="button" onclick="SurveyRunner.toggleShame(${it.id})" title="Scham-Schutzanker (Steht unter partiellem Spottverbot)" class="px-2 py-1 rounded-xl text-xs font-mono font-bold touch-btn flex items-center gap-1 transition-all ${isShame ? 'bg-pink-950 border border-pink-600 text-pink-300 shadow-sm' : 'bg-slate-900 border border-slate-800 text-slate-500 hover:text-white'}">
+                    <span>🙈</span>
+                    <span class="text-[9.5px]">${isShame ? 'Geschützt' : 'Scham'}</span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <!-- DIMENSION 1: AUSFÜHREN / BESTIMMEN (R1) -->
+                  <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
+                    <span class="text-[10px] text-purple-300 font-bold block">Ich führe aus / bestimme:</span>
+                    <div class="grid grid-cols-6 gap-1">
+                      ${[0, 1, 2, 3, 4, 5].map(val => `
+                        <button type="button" onclick="SurveyRunner.setScore(${it.id}, 'r1', ${val})" class="py-1.5 rounded-lg font-mono text-[10px] font-bold touch-btn transition-all ${scoreLead === val ? 'bg-purple-700 text-white shadow-xs' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
+                          ${val}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+
+                  <!-- DIMENSION 2: EMPFANGEN / HINGEBEN (R2) -->
+                  <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
+                    <span class="text-[10px] text-indigo-300 font-bold block">Ich empfange / gebe mich hin:</span>
+                    <div class="grid grid-cols-6 gap-1">
+                      ${[0, 1, 2, 3, 4, 5].map(val => `
+                        <button type="button" onclick="SurveyRunner.setScore(${it.id}, 'r2', ${val})" class="py-1.5 rounded-lg font-mono text-[10px] font-bold touch-btn transition-all ${scoreRec === val ? 'bg-indigo-700 text-white shadow-xs' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
+                          ${val}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        },
+
+        setScore: function(itemId, roleDim, scoreVal) {
+          const currentRole = AppProfile.getAssignedRole();
+          let answers = {};
+          try {
+            const rawAns = localStorage.getItem('kompass_answers');
+            if (rawAns) answers = JSON.parse(rawAns) || {};
+          } catch (e) {}
+
+          if (!answers[currentRole]) answers[currentRole] = {};
+          answers[currentRole][`it_${itemId}_${roleDim}`] = scoreVal;
+
+          localStorage.setItem('kompass_answers', JSON.stringify(answers));
+          this.renderActiveChapter();
+
+          if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+            window.CloudSync.trigger();
+          }
+        },
+
+        toggleShame: function(itemId) {
+          const currentRole = AppProfile.getAssignedRole();
+          let answers = {};
+          try {
+            const rawAns = localStorage.getItem('kompass_answers');
+            if (rawAns) answers = JSON.parse(rawAns) || {};
+          } catch (e) {}
+
+          if (!answers[currentRole]) answers[currentRole] = {};
+          const currentShame = answers[currentRole][`shame_${itemId}`] === true;
+          answers[currentRole][`shame_${itemId}`] = !currentShame;
+
+          localStorage.setItem('kompass_answers', JSON.stringify(answers));
+          this.renderActiveChapter();
+
+          showToast(!currentShame ? "Scham-Schutzanker aktiviert (Spottverbot) 🙈" : "Schutzanker entfernt");
+
+          if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+            window.CloudSync.trigger();
+          }
+        }
+      };
+      window.SurveyRunner = SurveyRunner;
+
+      // --- GLOBALE SYSTEM-EINSTELLUNGEN & SETUP (APPSETTINGS) ---
+      const AppSettings = {
+        activeTab: 'identity',
+
+        openModal: function(targetTab = 'identity') {
+          const modal = document.getElementById('modal-settings');
+          if (!modal) return;
+
+          // Daten laden
+          this.loadFormValues();
+          this.switchTab(targetTab);
+          modal.style.display = 'flex';
+        },
+
+        closeModal: function() {
+          const modal = document.getElementById('modal-settings');
+          if (modal) modal.style.display = 'none';
+        },
+
+        switchTab: function(tabKey) {
+          this.activeTab = tabKey;
+          ['identity', 'ai', 'display', 'backup'].forEach(k => {
+            const panel = document.getElementById(`cfg-panel-${k}`);
+            const btn = document.getElementById(`tab-cfg-${k}`);
+            if (panel) {
+              if (k === tabKey) panel.classList.remove('hidden');
+              else panel.classList.add('hidden');
+            }
+            if (btn) {
+              if (k === tabKey) {
+                btn.className = "px-3 py-1.5 rounded-xl font-bold bg-purple-700 text-white touch-btn whitespace-nowrap";
+              } else {
+                btn.className = "px-3 py-1.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn whitespace-nowrap";
+              }
+            }
+          });
+        },
+
+        loadFormValues: function() {
+          // 1. Namen & Anatomie
+          let names = { A: 'Partner 1', B: 'Partner 2' };
+          let anatomy = { A: 'penis', B: 'vulva' };
+          try {
+            const nRaw = localStorage.getItem('kompass_names');
+            if (nRaw) names = Object.assign(names, JSON.parse(nRaw));
+            const aRaw = localStorage.getItem('kompass_anatomy');
+            if (aRaw) anatomy = Object.assign(anatomy, JSON.parse(aRaw));
+          } catch (e) {}
+
+          const nameA = document.getElementById('cfg-name-a');
+          const nameB = document.getElementById('cfg-name-b');
+          const anatA = document.getElementById('cfg-anatomy-a');
+          const anatB = document.getElementById('cfg-anatomy-b');
+          const defTop = document.getElementById('cfg-default-top');
+
+          if (nameA) nameA.value = names.A || '';
+          if (nameB) nameB.value = names.B || '';
+          if (anatA) anatA.value = anatomy.A || 'penis';
+          if (anatB) anatB.value = anatomy.B || 'vulva';
+          if (defTop) defTop.value = localStorage.getItem('kompass_keyholder_role') || 'A';
+
+          // 2. Multi-KI (BYOK)
+          const provSelect = document.getElementById('cfg-ai-provider');
+          const currentProv = window.AIAdapter ? window.AIAdapter.getProvider() : (localStorage.getItem('tactus_ai_provider') || 'gemini');
+          if (provSelect) provSelect.value = currentProv;
+          this.handleProviderChange(currentProv);
+
+          const keyGemini = document.getElementById('input-key-gemini');
+          const keyAnthropic = document.getElementById('input-key-anthropic');
+          const keyOpenAI = document.getElementById('input-key-openai');
+
+          if (keyGemini && window.AIAdapter) keyGemini.value = window.AIAdapter.getApiKey('gemini') || '';
+          if (keyAnthropic && window.AIAdapter) keyAnthropic.value = window.AIAdapter.getApiKey('anthropic') || '';
+          if (keyOpenAI && window.AIAdapter) keyOpenAI.value = window.AIAdapter.getApiKey('openai') || '';
+
+          // 3. Zoom & Theme
+          const zoom = localStorage.getItem('kompass_text_zoom') || '100';
+          this.highlightZoomButton(zoom);
+
+          const theme = localStorage.getItem('kompass_theme') || 'dark';
+          this.highlightThemeButton(theme);
+        },
+
+        handleProviderChange: function(provId) {
+          ['gemini', 'anthropic', 'openai', 'local'].forEach(p => {
+            const el = document.getElementById(`field-key-${p}`);
+            if (el) {
+              if (p === provId || (provId === 'webgpu_local' && p === 'local')) {
+                el.classList.remove('hidden');
+              } else {
+                el.classList.add('hidden');
+              }
+            }
+          });
+        },
+
+        setTextZoom: function(zoomPercent) {
+          localStorage.setItem('kompass_text_zoom', zoomPercent);
+          if (zoomPercent === '115') document.documentElement.style.fontSize = '115%';
+          else if (zoomPercent === '130') document.documentElement.style.fontSize = '130%';
+          else document.documentElement.style.fontSize = '100%';
+
+          this.highlightZoomButton(zoomPercent);
+          showToast(`Schriftgröße auf ${zoomPercent} % skaliert`);
+        },
+
+        highlightZoomButton: function(zoom) {
+          ['100', '115', '130'].forEach(z => {
+            const btn = document.getElementById(`btn-zoom-${z}`);
+            if (btn) {
+              if (z === zoom) {
+                btn.className = "py-2 rounded-xl font-mono font-bold text-xs bg-purple-700 text-white touch-btn";
+              } else {
+                btn.className = "py-2 rounded-xl font-mono font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn";
+              }
+            }
+          });
+        },
+
+        setTheme: function(themeMode) {
+          localStorage.setItem('kompass_theme', themeMode);
+          if (themeMode === 'dark') document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
+
+          this.highlightThemeButton(themeMode);
+          showToast(`Farbschema: ${themeMode === 'dark' ? 'OLED-Tiefschwarz' : 'Hell'}`);
+        },
+
+        highlightThemeButton: function(theme) {
+          const btnDark = document.getElementById('btn-theme-dark');
+          const btnLight = document.getElementById('btn-theme-light');
+          if (btnDark && btnLight) {
+            if (theme === 'dark') {
+              btnDark.className = "py-2.5 rounded-xl font-bold text-xs bg-purple-950 border border-purple-600 text-purple-200 touch-btn";
+              btnLight.className = "py-2.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn";
+            } else {
+              btnDark.className = "py-2.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn";
+              btnLight.className = "py-2.5 rounded-xl font-bold text-xs bg-purple-950 border border-purple-600 text-purple-200 touch-btn";
+            }
+          }
+        },
+
+        saveAndClose: function() {
+          // 1. Namen & Anatomie speichern
+          const nameA = document.getElementById('cfg-name-a');
+          const nameB = document.getElementById('cfg-name-b');
+          const anatA = document.getElementById('cfg-anatomy-a');
+          const anatB = document.getElementById('cfg-anatomy-b');
+          const defTop = document.getElementById('cfg-default-top');
+
+          const names = {
+            A: nameA && nameA.value.trim() ? nameA.value.trim() : 'Partner 1',
+            B: nameB && nameB.value.trim() ? nameB.value.trim() : 'Partner 2'
+          };
+          const anatomy = {
+            A: anatA ? anatA.value : 'penis',
+            B: anatB ? anatB.value : 'vulva'
+          };
+
+          localStorage.setItem('kompass_names', JSON.stringify(names));
+          localStorage.setItem('kompass_anatomy', JSON.stringify(anatomy));
+
+          if (defTop) {
+            const topRole = defTop.value;
+            const subRole = topRole === 'A' ? 'B' : 'A';
+            localStorage.setItem('kompass_keyholder_role', topRole);
+            localStorage.setItem('kompass_caged_role', subRole);
+          }
+
+          // 2. Multi-KI (BYOK) speichern
+          const provSelect = document.getElementById('cfg-ai-provider');
+          const provider = provSelect ? provSelect.value : 'gemini';
+
+          if (window.AIAdapter) {
+            window.AIAdapter.setProvider(provider);
+            const keyGemini = document.getElementById('input-key-gemini');
+            const keyAnthropic = document.getElementById('input-key-anthropic');
+            const keyOpenAI = document.getElementById('input-key-openai');
+
+            if (keyGemini) window.AIAdapter.setApiKeyForProvider('gemini', keyGemini.value);
+            if (keyAnthropic) window.AIAdapter.setApiKeyForProvider('anthropic', keyAnthropic.value);
+            if (keyOpenAI) window.AIAdapter.setApiKeyForProvider('openai', keyOpenAI.value);
+          }
+
+          localStorage.setItem('tactus_onboarding_done', 'true');
+          this.closeModal();
+          HubDashboard.render();
+          showToast("Einstellungen & Setup erfolgreich gesichert ✓");
+
+          if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+            window.CloudSync.trigger();
+          }
+        },
+
+        exportJsonBackup: function() {
+          const backupData = {
+            tactus_version: "3.0",
+            exportTimestamp: Date.now(),
+            storage: {}
+          };
+
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('kompass_') || key.startsWith('tactus_') || key.startsWith('pactum_'))) {
+              backupData.storage[key] = localStorage.getItem(key);
+            }
+          }
+
+          const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `tactus_backup_${new Date().toISOString().slice(0, 10)}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast("Vollständiges Backup heruntergeladen ✓");
+        },
+
+        importJsonBackup: function() {
+          const fileInput = document.getElementById('cfg-backup-file-input');
+          const file = fileInput && fileInput.files && fileInput.files[0];
+          if (!file) {
+            showToast("Bitte zuerst eine JSON-Backup-Datei auswählen.");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = JSON.parse(e.target.result);
+              if (!data || !data.storage || typeof data.storage !== 'object') {
+                showToast("Ungültiges Backup-Format.");
+                return;
+              }
+
+              for (const [k, v] of Object.entries(data.storage)) {
+                if (typeof v === 'string') {
+                  localStorage.setItem(k, v);
+                }
+              }
+
+              showToast("✓ Backup erfolgreich eingespielt!");
+              setTimeout(() => {
+                window.location.reload();
+              }, 600);
+            } catch (err) {
+              showToast("Fehler beim Einlesen der Backup-Datei.");
+            }
+          };
+          reader.readAsText(file);
+        }
+      };
+      window.AppSettings = AppSettings;
+
+      // --- MODALS HELPER (MEDIZINISCHER PASS & SYNC) ---
+      const AppModals = {
+        openMedicalPassModal: function() {
+          const modal = document.getElementById('modal-medical-pass');
+          if (!modal) return;
+
+          let pass = {};
+          try {
+            const raw = localStorage.getItem('tactus_medical_pass');
+            if (raw) pass = JSON.parse(raw);
+          } catch (e) {}
+
+          const d = document.getElementById('med-diabetes');
+          const a = document.getElementById('med-asthma');
+          const n = document.getElementById('med-neuropathy');
+          const b = document.getElementById('med-blood');
+          const l = document.getElementById('med-latex');
+          const h = document.getElementById('med-hypermobility');
+          const notes = document.getElementById('med-emergency-notes');
+
+          if (d) d.checked = !!pass.hasDiabetes;
+          if (a) a.checked = !!pass.hasAsthma;
+          if (n) n.checked = !!pass.hasNeuropathy;
+          if (b) b.checked = !!pass.hasBloodThinners;
+          if (l) l.checked = !!pass.hasLatexAllergy;
+          if (h) h.checked = !!pass.hasHypermobility;
+          if (notes) notes.value = pass.emergencyNotes || '';
+
+          modal.style.display = 'flex';
+        },
+
+        saveMedicalPass: function() {
+          const d = document.getElementById('med-diabetes');
+          const a = document.getElementById('med-asthma');
+          const n = document.getElementById('med-neuropathy');
+          const b = document.getElementById('med-blood');
+          const l = document.getElementById('med-latex');
+          const h = document.getElementById('med-hypermobility');
+          const notes = document.getElementById('med-emergency-notes');
+
+          const pass = {
+            hasDiabetes: d ? d.checked : false,
+            hasAsthma: a ? a.checked : false,
+            hasNeuropathy: n ? n.checked : false,
+            hasBloodThinners: b ? b.checked : false,
+            hasLatexAllergy: l ? l.checked : false,
+            hasHypermobility: h ? h.checked : false,
+            emergencyNotes: notes ? notes.value.trim() : '',
+            updatedAt: Date.now()
+          };
+
+          localStorage.setItem('tactus_medical_pass', JSON.stringify(pass));
+          const modal = document.getElementById('modal-medical-pass');
+          if (modal) modal.style.display = 'none';
+
+          showToast("RACK-Gesundheitspass gesichert ✓");
+
+          if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+            window.CloudSync.trigger();
+          }
+        },
+
+        openSyncModal: function() {
+          const modal = document.getElementById('modal-cloud-sync');
+          if (!modal) return;
+
+          const rInput = document.getElementById('sync-input-room');
+          const pInput = document.getElementById('sync-input-pass');
+          const roleSelect = document.getElementById('sync-select-role');
+
+          if (rInput) rInput.value = localStorage.getItem('kompass_sync_room') || '';
+          if (pInput) pInput.value = localStorage.getItem('kompass_sync_password') || '';
+          if (roleSelect) roleSelect.value = localStorage.getItem('kompass_assigned_role') || 'A';
+
+          modal.style.display = 'flex';
+        },
+
+        saveSyncCredentials: function() {
+          const rInput = document.getElementById('sync-input-room');
+          const pInput = document.getElementById('sync-input-pass');
+          const roleSelect = document.getElementById('sync-select-role');
+
+          const room = rInput ? rInput.value.trim() : '';
+          const pass = pInput ? pInput.value.trim() : '';
+          const role = roleSelect ? roleSelect.value : 'A';
+
+          if (!room || !pass) {
+            showToast("Raum und Passwort sind erforderlich.");
+            return;
+          }
+
+          if (window.CloudSync && typeof window.CloudSync.configure === 'function') {
+            window.CloudSync.configure({ room, password: pass, role });
+          }
+
+          const modal = document.getElementById('modal-cloud-sync');
+          if (modal) modal.style.display = 'none';
+          HubDashboard.render();
+        },
+
+        disconnectSync: function() {
+          if (window.CloudSync && typeof window.CloudSync.disconnect === 'function') {
+            window.CloudSync.disconnect();
+          }
+          const modal = document.getElementById('modal-cloud-sync');
+          if (modal) modal.style.display = 'none';
+          HubDashboard.render();
+        },
+
+        generateRandomCredentials: function() {
+          const rInput = document.getElementById('sync-input-room');
+          const pInput = document.getElementById('sync-input-pass');
+          if (rInput) rInput.value = `tactus-${Math.random().toString(36).substring(2, 7)}`;
+          if (pInput) pInput.value = `${Math.random().toString(36).substring(2, 9)}-${Math.random().toString(36).substring(2, 9)}`;
+        }
+      };
+      window.AppModals = AppModals;
+
+      // Event-Listener & Start-Initialisierung
+      document.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash || '';
+        if (hash.includes('view=survey')) {
+          AppRouter.navigate('survey');
+        } else {
+          AppRouter.navigate('hub');
+        }
+        HubDashboard.render();
+
+        // Erststart-Prüfung: Falls noch kein Setup erfolgt ist, Setup anbieten
+        const onboardingDone = localStorage.getItem('tactus_onboarding_done');
+        if (!onboardingDone && !localStorage.getItem('kompass_names')) {
+          setTimeout(() => {
+            AppSettings.openModal('identity');
+          }, 450);
+        }
+      });
+
+    })(window);
+  </script>
+
+  <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
+  <script src="data/scientific_studies.js"></script>
+  <script src="data/questions_part1.js"></script>
+  <script src="data/questions_part2.js"></script>
+  <script src="data/equipment_catalog.js"></script>
+  <script src="data/toy_combinatorics.js"></script>
+  <script src="data/chastity_database.js"></script>
+  <script src="js/ai_adapter.js"></script>
+  <script src="js/hub_photos.js"></script>
+  <script src="js/hub_toys.js"></script>
+  <script src="js/hub_context.js"></script>
+  <script src="js/cloud_sync.js"></script>
+  <script src="js/protocol_core.js"></script>
+  <script src="js/protocol_ratio.js"></script>
+  <script src="js/protocol_tasks.js"></script>
+  <script src="js/protocol_contract.js"></script>
+  <script src="js/protocol_coach.js"></script>
+
+</body>
+</html>
