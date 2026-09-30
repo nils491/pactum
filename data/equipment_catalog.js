@@ -1,635 +1,782 @@
 /**
  * data/equipment_catalog.js
  * TACTUS Somatischer Hardware-, Affordanz- & Reizvektoren-Katalog (V3.0 Hyper-Dynamisch)
- * Offizielle Web-Präsenz: tactus.digital
+ * Offizielle Web-Praesenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Physikalische Reiz-Vektoren (Kompression, Fülle, Schwingung, Tiefenschlag, Kälte/Hitze)
- * - Restraint-Stacking-Layer:
- *   • Layer 0: Permanente Identitäts- & Eigentums-Anker (z. B. Dauermanschetten)
- *   • Layer 1: Positional Restraint (Lagefesselung, Spreizung)
- *   • Layer 2: Rigid / Environmental (Pranger, Bettpfosten-Fixierung)
- * - Zonen-Affordanzen & DoF-Blockaden (Sprache, Zungenfreiheit, Hände, Penisschaft)
- * - Diskrete Desinfektions- & Rüst-Protokolle für das Reverse Aftercare
+ * - Semantisches Tag- & Zonen-Matching (tags <-> equipmentTags aus questions_part1/part2)
+ * - Partner-Zuweisung & Passform-Profile (assignedToPartner: 'A'|'B'|'mutual' & fitProfile)
+ * - Somatische DoF- und Affordanz-Profile (blocksFaculties, enablesFaculties, restraintLayer)
+ * - RACK-Materialerkennung & Desinfektions-Protokolle fuer die Reverse Aftercare
+ * - Dynamische Custom-Toy Registrierung & Persistenz (tactus_custom_equipment)
  * - 100 % frei von infantilen System-Emojis in Datenstrukturen
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
+ * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umstaenden
  */
 
 (function(window) {
   'use strict';
 
-  const DYNAMIC_EQUIPMENT_CATALOG = [
-    // -------------------------------------------------------------------------
-    // KATEGORIE 1: BONDAGE & ARRETIERUNG
-    // -------------------------------------------------------------------------
+  const STORAGE_CUSTOM_EQUIPMENT = 'tactus_custom_equipment';
+  const STORAGE_CUSTOM_EQUIPMENT_LEGACY = 'kompass_custom_equipment';
+
+  const DYNAMIC_BASE_CATALOG = [
+    // --- BONDAGE & SEILE (LAYER 0 - 2) ---
     {
-      id: "toy_jute_rope_6mm",
-      name: "Shibari Juteseil (6mm geölt)",
-      category: "bondage",
+      id: 'toy_jute_rope_6mm',
+      name: 'Shibari Juteseil (6mm weich geoelt)',
+      category: 'bondage',
+      somaticZone: 'full_body',
       restraintLayer: 1,
-      materials: ["jute_natural", "mineral_oil"],
-      stimulusVector: {
-        type: "cutaneous_traction_and_suspension",
-        intensityRange: [1, 5],
-        surfaceContact: "linear_friction"
+      materials: ['jute', 'natural_oil'],
+      tags: ['rope', 'shibari', 'bondage'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: true,
+        lengthMeters: 8,
+        diameterMm: 6
       },
-      somaticProfile: {
-        wornByZone: "limbs_wrists_hands",
-        targetActor: "bottom",
+      affordanceProfile: {
+        restraintLayer: 1,
         blocksFaculties: {
           manual_manipulation: true,
-          locomotion_standing: 0.5
+          locomotion_standing: false
         },
-        enabledFaculties: {
-          impact_receptive: true
+        enablesFaculties: {
+          suspension_partial: true
         },
-        compatibleTargetZones: [
-          { zone: "limbs_wrists_hands", somaticEffect: "joint_arretation", safeDurationMinutes: 45 },
-          { zone: "chest_nipples", somaticEffect: "chest_harness_expansion", safeDurationMinutes: 60 },
-          { zone: "limbs_ankles_feet", somaticEffect: "pedal_suspension", safeDurationMinutes: 30 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: true,
-        disinfectionMethod: "air_drying_and_dry_brushing",
-        maxContinuousMinutes: 60
+        safetyProtocol: {
+          requiresShears: true,
+          disinfectionMethod: 'dry_brushing_and_airing',
+          maxContinuousMinutes: 45
+        },
+        somaticEffect: 'Gleichmaessiger Dehnungsdruck ueber Faszienketten; wohlige Waerme.'
       }
     },
     {
-      id: "toy_leather_cuffs_wrists",
-      name: "Schwere Leder-Handgelenksmanschetten mit D-Ring",
-      category: "bondage",
-      restraintLayer: 0, // Layer 0: Kann dauerhaft getragen werden ohne Bewegung zu sperren
-      materials: ["leather_cowhide", "steel_stainless"],
-      stimulusVector: {
-        type: "somatosensory_anchor_weight",
-        intensityRange: [1, 3],
-        surfaceContact: "circumferential_gentle"
+      id: 'toy_leather_cuffs_wrists',
+      name: 'Gepolsterte Leder-Handgelenksmanschetten',
+      category: 'bondage',
+      somaticZone: 'limbs_wrists_hands',
+      restraintLayer: 0,
+      materials: ['leather', 'shearling', 'steel'],
+      tags: ['cuffs', 'leather_gear', 'bondage'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: true,
+        minCm: 14,
+        maxCm: 23
       },
-      somaticProfile: {
-        wornByZone: "limbs_wrists_hands",
-        targetActor: "bottom",
+      affordanceProfile: {
+        restraintLayer: 0,
         blocksFaculties: {
-          manual_manipulation: false // Frei, solange nicht verkoppelt
+          manual_manipulation: true
         },
-        enabledFaculties: {
-          coupling_anchor_ready: true
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 120
         },
-        compatibleTargetZones: [
-          { zone: "limbs_wrists_hands", somaticEffect: "psychological_anchoring", safeDurationMinutes: 480 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "antiseptic_leather_care_spray",
-        maxContinuousMinutes: 720
+        somaticEffect: 'Breite Druckverteilung zur Schonung des Nervus radialis.'
       }
     },
     {
-      id: "toy_spreader_bar_rigid",
-      name: "Teleskop-Spreizstange aus Edelstahl",
-      category: "bondage",
-      restraintLayer: 1,
-      materials: ["steel_stainless", "leather"],
-      stimulusVector: {
-        type: "skeletal_abduction_rigid",
-        intensityRange: [3, 5],
-        surfaceContact: "bilateral_anchor"
+      id: 'toy_leather_cuffs_ankles',
+      name: 'Gepolsterte Leder-Fussgelenksmanschetten',
+      category: 'bondage',
+      somaticZone: 'limbs_ankles_feet',
+      restraintLayer: 0,
+      materials: ['leather', 'shearling', 'steel'],
+      tags: ['cuffs', 'leather_gear', 'bondage'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: true,
+        minCm: 18,
+        maxCm: 30
       },
-      somaticProfile: {
-        wornByZone: "limbs_ankles_feet",
-        targetActor: "bottom",
+      affordanceProfile: {
+        restraintLayer: 0,
+        blocksFaculties: {
+          locomotion_standing: true
+        },
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 120
+        },
+        somaticEffect: 'Sichere Arretierung der Beine ohne Abschnuerungen.'
+      }
+    },
+    {
+      id: 'toy_leather_collar_narrow',
+      name: 'Enges Glattleder-Halsband mit O-Ring',
+      category: 'bondage',
+      somaticZone: 'neck_cervical',
+      restraintLayer: 0,
+      materials: ['leather', 'steel'],
+      tags: ['collar', 'leather_gear'],
+      assignedToPartner: 'B',
+      fitProfile: {
+        sizeGrade: 'S',
+        circumferenceCm: 34,
+        isAdjustable: true,
+        minCm: 31,
+        maxCm: 36
+      },
+      affordanceProfile: {
+        restraintLayer: 0,
+        blocksFaculties: {},
+        enablesFaculties: {
+          leash_attachment: true
+        },
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 180
+        },
+        somaticEffect: 'Physischer Fuehrungsanker an der Halswirbelsaeule; Demutsfokus.'
+      }
+    },
+    {
+      id: 'toy_spreader_bar_rigid',
+      name: 'Teleskop-Spreizstange mit Schnellverschluessen',
+      category: 'bondage',
+      somaticZone: 'limbs_ankles_feet',
+      restraintLayer: 1,
+      materials: ['steel', 'aluminium'],
+      tags: ['spreader_bar', 'bondage'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: true,
+        minCm: 50,
+        maxCm: 85
+      },
+      affordanceProfile: {
+        restraintLayer: 1,
         blocksFaculties: {
           locomotion_standing: true,
-          pelvic_thrust_active: 0.7
+          pelvic_thrust_active: true
         },
-        enabledFaculties: {
-          pelvic_exposure_maximal: true,
-          impact_receptive: true
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'isopropanol_wipe',
+          maxContinuousMinutes: 30
         },
-        compatibleTargetZones: [
-          { zone: "limbs_ankles_feet", somaticEffect: "enforced_genital_exposure", safeDurationMinutes: 60 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "isopropanol_wipe_down",
-        maxContinuousMinutes: 60
-      }
-    },
-    {
-      id: "toy_wooden_pillory",
-      name: "Hals-Hand-Pranger aus Hartholz",
-      category: "bondage",
-      restraintLayer: 2, // Layer 2: Starre mechanische Umweltkopplung
-      materials: ["wood_oak", "steel_brass"],
-      stimulusVector: {
-        type: "cervical_and_brachial_lock",
-        intensityRange: [4, 5],
-        surfaceContact: "rigid_compression"
-      },
-      somaticProfile: {
-        wornByZone: "neck_cervical",
-        targetActor: "bottom",
-        blocksFaculties: {
-          manual_manipulation: true,
-          locomotion_standing: 0.3
-        },
-        enabledFaculties: {
-          impact_receptive: true,
-          oral_service_receptive: true
-        },
-        compatibleTargetZones: [
-          { zone: "neck_cervical", somaticEffect: "absolute_head_and_wrist_lock", safeDurationMinutes: 45 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "wood_antiseptic_cleaner",
-        maxContinuousMinutes: 45
+        somaticEffect: 'Erzwungene Beizung und Weitung des Beckens; absolute Exposition.'
       }
     },
 
-    // -------------------------------------------------------------------------
-    // KATEGORIE 2: IMPACT & ZUCHTWERKZEUGE
-    // -------------------------------------------------------------------------
+    // --- IMPACT & ZUCHT ---
     {
-      id: "toy_leather_flogger",
-      name: "Schwerer Rindleder-Flogger (40 Fransen)",
-      category: "impact",
-      restraintLayer: 0,
-      materials: ["leather_cowhide"],
-      stimulusVector: {
-        type: "diffuse_kinetic_thud",
-        intensityRange: [2, 5],
-        surfaceContact: "broad_surface_impact"
+      id: 'toy_leather_flogger',
+      name: 'Schwerer Rindleder-Flogger (40 Fransen)',
+      category: 'impact',
+      somaticZone: 'gluteal_pelvis',
+      restraintLayer: null,
+      materials: ['leather'],
+      tags: ['flogger', 'leather_paddle', 'impact'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: false,
+        weightGrams: 420
       },
-      somaticProfile: {
-        wornByZone: "gluteal_pelvis",
-        targetActor: "top",
+      affordanceProfile: {
         blocksFaculties: {},
-        enabledFaculties: {
-          endorphin_release_activation: true
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 40
         },
-        compatibleTargetZones: [
-          { zone: "gluteal_pelvis", somaticEffect: "deep_muscular_hyperemia", safeDurationMinutes: 30 },
-          { zone: "back_flanks", somaticEffect: "diffuse_cutaneous_heat", safeDurationMinutes: 20 },
-          { zone: "thighs_inner", somaticEffect: "stinging_sensitisation", safeDurationMinutes: 10 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "antiseptic_leather_wipe_and_air_dry",
-        maxContinuousMinutes: 30
+        somaticEffect: 'Flaechige, dumpfe Hitzewellen; tiefe kutane Durchblutung (Hyperaemie).'
       }
     },
     {
-      id: "toy_leather_paddle_wide",
-      name: "Breites Sattelleder-Paddle",
-      category: "impact",
-      restraintLayer: 0,
-      materials: ["leather_saddle", "wood_core"],
-      stimulusVector: {
-        type: "flat_resonant_thud",
-        intensityRange: [3, 5],
-        surfaceContact: "planar_solid"
+      id: 'toy_leather_paddle_wide',
+      name: 'Breites Sattelleder-Paddle (doppelt gelegt)',
+      category: 'impact',
+      somaticZone: 'gluteal_pelvis',
+      restraintLayer: null,
+      materials: ['leather'],
+      tags: ['paddle', 'leather_paddle', 'impact'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: false,
+        weightGrams: 280
       },
-      somaticProfile: {
-        wornByZone: "gluteal_pelvis",
-        targetActor: "top",
+      affordanceProfile: {
         blocksFaculties: {},
-        enabledFaculties: {
-          deep_tissue_stimulation: true
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 20
         },
-        compatibleTargetZones: [
-          { zone: "gluteal_pelvis", somaticEffect: "intense_erythema_and_pacing", safeDurationMinutes: 20 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "leather_balsam_and_disinfection",
-        maxContinuousMinutes: 20
+        somaticEffect: 'Tiefer, trockener Schmerzreiz mit hoher akustischer Resonanz.'
       }
     },
     {
-      id: "toy_riding_crop_slender",
-      name: "Schlanke Dressur-Reitgerte mit Lederklatsche",
-      category: "impact",
-      restraintLayer: 0,
-      materials: ["fiberglass", "leather"],
-      stimulusVector: {
-        type: "focal_sharp_sting",
-        intensityRange: [2, 5],
-        surfaceContact: "linear_focal"
+      id: 'toy_riding_crop_slender',
+      name: 'Schlanke Dressur-Reitgerte (Crop mit Lederklatsche)',
+      category: 'impact',
+      somaticZone: 'thighs_inner',
+      restraintLayer: null,
+      materials: ['fibreglass', 'leather'],
+      tags: ['crop', 'impact'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: false,
+        lengthCm: 65
       },
-      somaticProfile: {
-        wornByZone: "thighs_inner",
-        targetActor: "top",
+      affordanceProfile: {
         blocksFaculties: {},
-        enabledFaculties: {
-          acute_neurological_firing: true
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 15
         },
-        compatibleTargetZones: [
-          { zone: "thighs_inner", somaticEffect: "high_density_nociception", safeDurationMinutes: 15 },
-          { zone: "gluteal_pelvis", somaticEffect: "sharp_surface_marking", safeDurationMinutes: 15 }
-        ]
+        somaticEffect: 'Praeziser, stechender Reiz auf Schenkelinnenseiten und Waden.'
+      }
+    },
+    {
+      id: 'toy_heavy_leather_belt',
+      name: 'Schwerer Sattelleder-Guertel',
+      category: 'impact',
+      somaticZone: 'gluteal_pelvis',
+      restraintLayer: null,
+      materials: ['leather', 'brass'],
+      tags: ['leather_belt', 'impact'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: true,
+        widthMm: 40
       },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "isopropanol_wipe_down",
-        maxContinuousMinutes: 15
+      affordanceProfile: {
+        blocksFaculties: {},
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 20
+        },
+        somaticEffect: 'Klassischer rhythmischer Hitzereiz bei Vorbeuge.'
       }
     },
 
-    // -------------------------------------------------------------------------
-    // KATEGORIE 3: SENSORIK, KNEBEL & ATEMWEGE
-    // -------------------------------------------------------------------------
+    // --- SENSORIK & KNEBEL ---
     {
-      id: "toy_blindfold_silk",
-      name: "Lichtdichte Seiden-Augenbinde",
-      category: "sensory",
+      id: 'toy_blindfold_silk',
+      name: 'Lichtdichte Seiden-Augenbinde mit Gummizug',
+      category: 'sensory',
+      somaticZone: 'head_eyes',
       restraintLayer: 0,
-      materials: ["silk_padded"],
-      stimulusVector: {
-        type: "complete_visual_deprivation",
-        intensityRange: [1, 3],
-        surfaceContact: "orbital_gentle"
+      materials: ['silk', 'foam'],
+      tags: ['blindfold', 'sensory'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: true
       },
-      somaticProfile: {
-        wornByZone: "head_eyes",
-        targetActor: "bottom",
+      affordanceProfile: {
+        restraintLayer: 0,
         blocksFaculties: {
           visual_perception: true
         },
-        enabledFaculties: {
-          tactile_hyperesthesia: true
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'mild_soap_handwash',
+          maxContinuousMinutes: 90
         },
-        compatibleTargetZones: [
-          { zone: "head_eyes", somaticEffect: "auditory_and_tactile_amplification", safeDurationMinutes: 180 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "delicate_textile_handwash",
-        maxContinuousMinutes: 180
+        somaticEffect: 'Vollstaendiger Sichtentzug; verstaerkt taktile Wahrnehmung und Gehoer.'
       }
     },
     {
-      id: "toy_ring_gag_metal",
-      name: "Offener Edelstahl-Ringknebel (45mm Öffnung)",
-      category: "sensory",
+      id: 'toy_leather_hood_padded',
+      name: 'Gepolsterte Glattleder-Kopfhaube mit Schnuerung',
+      category: 'sensory',
+      somaticZone: 'head_face',
       restraintLayer: 1,
-      materials: ["steel_stainless", "leather"],
-      stimulusVector: {
-        type: "jaw_dilation_open",
-        intensityRange: [2, 4],
-        surfaceContact: "labial_perimeter"
+      materials: ['leather', 'steel'],
+      tags: ['mask', 'hood', 'leather_gear'],
+      assignedToPartner: 'B',
+      fitProfile: {
+        sizeGrade: 'M',
+        circumferenceCm: 56,
+        isAdjustable: true,
+        minCm: 54,
+        maxCm: 58
       },
-      somaticProfile: {
-        wornByZone: "head_mouth",
-        targetActor: "bottom",
+      affordanceProfile: {
+        restraintLayer: 1,
         blocksFaculties: {
-          speech_articulation: true,
-          tongue_mobility_external: false // Zunge bleibt frei für Oralservice!
+          visual_perception: true
         },
-        enabledFaculties: {
-          tongue_service: true,
-          oral_inspection_open: true
+        safetyProtocol: {
+          requiresShears: true,
+          disinfectionMethod: 'antiseptic_leather_spray',
+          maxContinuousMinutes: 45
         },
-        compatibleTargetZones: [
-          { zone: "head_mouth", somaticEffect: "articulation_block_with_tongue_freedom", safeDurationMinutes: 45 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "boiling_water_or_isopropanol_for_metal",
-        maxContinuousMinutes: 45
+        somaticEffect: 'Akustische und visuelle Isolation; tiefe Selbstaufgabe im Raum.'
       }
     },
     {
-      id: "toy_gag_dildo_external",
-      name: "Leder-Knebel mit montiertem Außenphallus (15cm)",
-      category: "sensory",
-      restraintLayer: 1,
-      materials: ["leather", "silicone_medical"],
-      stimulusVector: {
-        type: "oral_anchored_active_phallus",
-        intensityRange: [3, 5],
-        surfaceContact: "dual_pharyngeal_and_external"
+      id: 'toy_ring_gag_steel',
+      name: 'Offener Metall-Ringknebel (45mm Innendurchmesser)',
+      category: 'sensory',
+      somaticZone: 'head_mouth',
+      restraintLayer: 0,
+      materials: ['steel', 'leather'],
+      tags: ['gag', 'ring_gag'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'M',
+        circumferenceCm: 4.5,
+        isAdjustable: true
       },
-      somaticProfile: {
-        wornByZone: "head_mouth",
-        targetActor: "bottom",
+      affordanceProfile: {
+        restraintLayer: 0,
+        blocksFaculties: {
+          speech_articulation: true
+        },
+        enablesFaculties: {
+          oral_access_passive: true,
+          tongue_mobility_external: true
+        },
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'boiling_or_isopropanol',
+          maxContinuousMinutes: 35
+        },
+        somaticEffect: 'Erzwingt geoeffnete Mundhaltung bei erhaltener Zungenbeweglichkeit.'
+      }
+    },
+    {
+      id: 'toy_silicone_ball_gag',
+      name: 'Silikon-Ballknebel (42mm Kugel mit Atemloechern)',
+      category: 'sensory',
+      somaticZone: 'head_mouth',
+      restraintLayer: 0,
+      materials: ['silicone', 'leather'],
+      tags: ['gag', 'ball_gag'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'M',
+        circumferenceCm: 4.2,
+        isAdjustable: true
+      },
+      affordanceProfile: {
+        restraintLayer: 0,
         blocksFaculties: {
           speech_articulation: true,
           tongue_mobility_external: true
         },
-        enabledFaculties: {
-          penetration_active: {
-            capable: true,
-            targetZones: ["genital_vulva_clitoris", "rectum_prostate", "head_mouth"]
-          }
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'boiling_or_isopropanol',
+          maxContinuousMinutes: 30
         },
-        compatibleTargetZones: [
-          { zone: "head_mouth", somaticEffect: "submissive_phallic_mounting", safeDurationMinutes: 30 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "ph_neutral_soap_for_silicone_leather_spray_for_straps",
-        maxContinuousMinutes: 30
-      }
-    },
-    {
-      id: "toy_ball_gag_silicone",
-      name: "Geschlossener Silikon-Ballknebel (45mm)",
-      category: "sensory",
-      restraintLayer: 1,
-      materials: ["silicone_medical", "leather"],
-      stimulusVector: {
-        type: "intraoral_volume_displacement",
-        intensityRange: [2, 4],
-        surfaceContact: "tongue_depression"
-      },
-      somaticProfile: {
-        wornByZone: "head_mouth",
-        targetActor: "bottom",
-        blocksFaculties: {
-          speech_articulation: true,
-          tongue_mobility_external: true
-        },
-        enabledFaculties: {
-          muffled_vocalization_only: true
-        },
-        compatibleTargetZones: [
-          { zone: "head_mouth", somaticEffect: "complete_verbal_silencing", safeDurationMinutes: 40 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "warm_soapy_water_silicone_safe",
-        maxContinuousMinutes: 40
+        somaticEffect: 'Vollstaendige Sprachblockade und Speichelanregung; Hilflosigkeit.'
       }
     },
 
-    // -------------------------------------------------------------------------
-    // KATEGORIE 4: CBT, KLEMMEN & ZONEN-SHIFTING
-    // -------------------------------------------------------------------------
+    // --- KEUSCHHEIT & CBT ---
     {
-      id: "toy_alligator_clamps",
-      name: "Krokodilklemmen mit Rändelschraube & Verbindungskette",
-      category: "cbt",
+      id: 'toy_chastity_cherrykeeper',
+      name: 'Cherrykeeper Micro Stub (<= 35mm)',
+      category: 'chastity',
+      somaticZone: 'genital_penis',
       restraintLayer: 0,
-      materials: ["steel_nickel_free", "rubber_tips"],
-      stimulusVector: {
-        type: "mechanical_ischemic_pinch",
-        intensityRange: [2, 5],
-        surfaceContact: "focal_point_compression"
+      materials: ['nylon_sls', 'brass_lock'],
+      tags: ['chastity_cage', 'penis_cherrykeeper'],
+      anatomyGuard: 'penis',
+      assignedToPartner: 'B',
+      fitProfile: {
+        sizeGrade: 'S',
+        ringDiameterMm: 44,
+        cageLengthMm: 35,
+        isAdjustable: false
       },
-      somaticProfile: {
-        wornByZone: "chest_nipples",
-        targetActor: "bottom",
-        blocksFaculties: {},
-        enabledFaculties: {
-          intense_cutaneous_hyperesthesia: true
+      affordanceProfile: {
+        restraintLayer: 0,
+        blocksFaculties: {
+          penile_shaft_access: true,
+          erection_expansion: true
         },
-        // Hyper-Dynamisches Zonen-Shifting:
-        compatibleTargetZones: [
-          { zone: "chest_nipples", somaticEffect: "focal_erogenous_nociception", safeDurationMinutes: 25 },
-          { zone: "genital_scrotum", anatomyGuard: "penis", somaticEffect: "scrotal_traction_sensitisation", safeDurationMinutes: 15 },
-          { zone: "genital_labia", anatomyGuard: "vulva", somaticEffect: "labial_tumescence_compression", safeDurationMinutes: 20 },
-          { zone: "thighs_inner", somaticEffect: "punitive_adductor_sting", safeDurationMinutes: 10 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "isopropanol_immersion",
-        maxContinuousMinutes: 25
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'isopropanol_soak',
+          maxContinuousMinutes: 10080 // bis zu 7 Tage mit Spuelungen
+        },
+        somaticEffect: 'Permanenter mechanischer Eirektionsstopp; anatomische Ruhe.'
       }
     },
     {
-      id: "toy_wartenberg_wheel",
-      name: "Wartenberg-Nadelrad aus Edelstahl",
-      category: "sensory",
+      id: 'toy_chastity_cobra',
+      name: 'Kink3D Cobra (SLS-Nylon Belueftet)',
+      category: 'chastity',
+      somaticZone: 'genital_penis',
       restraintLayer: 0,
-      materials: ["steel_stainless"],
-      stimulusVector: {
-        type: "superficial_punctate_rolling",
-        intensityRange: [1, 3],
-        surfaceContact: "rolling_multi_point"
+      materials: ['nylon_sls'],
+      tags: ['chastity_cage', 'penis_cobra'],
+      anatomyGuard: 'penis',
+      assignedToPartner: 'B',
+      fitProfile: {
+        sizeGrade: 'M',
+        ringDiameterMm: 46,
+        cageLengthMm: 55,
+        isAdjustable: false
       },
-      somaticProfile: {
-        wornByZone: "back_flanks",
-        targetActor: "top",
-        blocksFaculties: {},
-        enabledFaculties: {
-          parasympathetic_hair_follicle_stimulation: true
+      affordanceProfile: {
+        restraintLayer: 0,
+        blocksFaculties: {
+          penile_shaft_access: true,
+          erection_expansion: true
         },
-        compatibleTargetZones: [
-          { zone: "back_flanks", somaticEffect: "shiver_induction_cutaneous", safeDurationMinutes: 20 },
-          { zone: "gluteal_pelvis", somaticEffect: "sensory_contrast_priming", safeDurationMinutes: 15 },
-          { zone: "chest_nipples", somaticEffect: "micro_nerve_excitation", safeDurationMinutes: 10 }
-        ]
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'isopropanol_soak',
+          maxContinuousMinutes: 10080
+        },
+        somaticEffect: 'Leichtes, atmungsaktives Tragegefuehl fuer den Alltag.'
+      }
+    },
+    {
+      id: 'toy_security_seals',
+      name: 'Nummerierte Sicherheits-Einwegplomben (10x)',
+      category: 'chastity',
+      somaticZone: 'genital_penis',
+      restraintLayer: 0,
+      materials: ['polypropylene'],
+      tags: ['security_seals', 'lock'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: false
       },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "isopropanol_wipe_down",
-        maxContinuousMinutes: 20
+      affordanceProfile: {
+        blocksFaculties: {},
+        safetyProtocol: {
+          disinfectionMethod: 'single_use_sterile'
+        },
+        somaticEffect: 'Visuelle und psychologische Unversehrtheitsgarantie fuer den Top.'
+      }
+    },
+    {
+      id: 'toy_cbt_alligator_clamps',
+      name: 'Krokodilklemmen mit Raendelschraube & Silikonhuelle',
+      category: 'cbt',
+      somaticZone: 'chest_nipples',
+      restraintLayer: null,
+      materials: ['steel', 'silicone'],
+      tags: ['clamps', 'cbt'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: true
+      },
+      affordanceProfile: {
+        blocksFaculties: {},
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'isopropanol_wipe',
+          maxContinuousMinutes: 20
+        },
+        somaticEffect: 'Fokussierter Druck- und Zugreiz auf erogene Rezeptorzonen.'
+      }
+    },
+    {
+      id: 'toy_wartenberg_wheel',
+      name: 'Wartenberg-Nadelrad (Sensorisches Prickelrad)',
+      category: 'sensory',
+      somaticZone: 'back_flanks',
+      restraintLayer: null,
+      materials: ['steel'],
+      tags: ['wartenberg_wheel', 'sensory'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: false
+      },
+      affordanceProfile: {
+        blocksFaculties: {},
+        safetyProtocol: {
+          requiresShears: false,
+          disinfectionMethod: 'isopropanol_immersion',
+          maxContinuousMinutes: 30
+        },
+        somaticEffect: 'Intensives metallisches Prickeln ohne Schaedigung der Epidermis.'
       }
     },
 
-    // -------------------------------------------------------------------------
-    // KATEGORIE 5: KEUSCHHEIT, PFLEGE & RACK-SICHERHEIT
-    // -------------------------------------------------------------------------
+    // --- PFLEGE, HYGIENE & RACK-NOTFALL ---
     {
-      id: "toy_chastity_cherrykeeper",
-      name: "Cherrykeeper Micro Stub (<= 35mm)",
-      category: "chastity",
-      restraintLayer: 0,
-      materials: ["polyamide_pa12", "bioresin"],
-      stimulusVector: {
-        type: "penile_axial_compression_rigid",
-        intensityRange: [3, 5],
-        surfaceContact: "total_glandular_enclosure"
+      id: 'toy_irrigation_syringe',
+      name: 'Urologische 50ml-Spuelspritze mit Knopfkanuele',
+      category: 'care',
+      somaticZone: 'genital_penis',
+      restraintLayer: null,
+      materials: ['polypropylene', 'medical_steel'],
+      tags: ['irrigation_syringe', 'care'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: false,
+        volumeMl: 50
       },
-      somaticProfile: {
-        wornByZone: "genital_penis",
-        targetActor: "bottom",
-        compatibility: "penis_only",
-        blocksFaculties: {
-          penile_shaft_access: true
-        },
-        enabledFaculties: {
-          long_term_submissive_anchoring: true
-        },
-        compatibleTargetZones: [
-          { zone: "genital_penis", somaticEffect: "continuous_tumescence_prevention", safeDurationMinutes: 1440 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "daily_saline_irrigation_and_mild_soap",
-        maxContinuousMinutes: 1440
-      }
-    },
-    {
-      id: "toy_irrigation_syringe",
-      name: "Urologische Spülspritze mit Knopfkanüle (50ml)",
-      category: "care",
-      restraintLayer: 0,
-      materials: ["polypropylene_medical", "steel_blunt"],
-      stimulusVector: {
-        type: "hydrodynamic_lavage",
-        intensityRange: [1, 2],
-        surfaceContact: "liquid_flush"
-      },
-      somaticProfile: {
-        wornByZone: "genital_penis",
-        targetActor: "bottom",
+      affordanceProfile: {
         blocksFaculties: {},
-        enabledFaculties: {
-          balanitis_prevention_guaranteed: true
+        safetyProtocol: {
+          disinfectionMethod: 'boiling_water_rinse'
         },
-        compatibleTargetZones: [
-          { zone: "genital_penis", somaticEffect: "subpreputial_smegma_and_urine_wash", safeDurationMinutes: 10 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "thermal_disinfection_or_hot_water_flush",
-        maxContinuousMinutes: 10
+        somaticEffect: 'Vollstaendige Entfernung von Urinresiduenz; Mazerationsschutz.'
       }
     },
     {
-      id: "toy_weighted_blanket_8kg",
-      name: "Therapeutische 8kg-Gewichtsdecke",
-      category: "care",
-      restraintLayer: 0,
-      materials: ["cotton_heavy", "glass_micro_beads"],
-      stimulusVector: {
-        type: "deep_proprioceptive_pressure",
-        intensityRange: [1, 2],
-        surfaceContact: "full_body_planar"
+      id: 'toy_emt_shears',
+      name: 'EMT-Sicherheits-Verbandschere (RACK Notfall)',
+      category: 'care',
+      somaticZone: 'full_body',
+      restraintLayer: null,
+      materials: ['hardened_steel', 'polymer'],
+      tags: ['emt_shears', 'care'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        isAdjustable: false
       },
-      somaticProfile: {
-        wornByZone: "back_flanks",
-        targetActor: "mutual",
-        blocksFaculties: {
-          locomotion_standing: 0.8
-        },
-        enabledFaculties: {
-          vagus_nerve_downregulation: true,
-          hypothermia_prevention: true
-        },
-        compatibleTargetZones: [
-          { zone: "back_flanks", somaticEffect: "post_session_subdrop_containment", safeDurationMinutes: 120 }
-        ]
-      },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "washable_duvet_cover_60deg",
-        maxContinuousMinutes: 180
-      }
-    },
-    {
-      id: "toy_emt_shears",
-      name: "EMT-Sicherheits-Verbandschere mit abgerundeter Spitze",
-      category: "care",
-      restraintLayer: 0,
-      materials: ["steel_surgical", "polymer"],
-      stimulusVector: {
-        type: "rapid_emergency_release_cutting",
-        intensityRange: [1, 1],
-        surfaceContact: "blunt_tip_skin_safe"
-      },
-      somaticProfile: {
-        wornByZone: "limbs_wrists_hands",
-        targetActor: "top",
+      affordanceProfile: {
         blocksFaculties: {},
-        enabledFaculties: {
-          instant_bondage_emergency_severing: true
+        safetyProtocol: {
+          disinfectionMethod: 'isopropanol_wipe'
         },
-        compatibleTargetZones: [
-          { zone: "limbs_wrists_hands", somaticEffect: "immediate_neurovascular_relief", safeDurationMinutes: 1 }
-        ]
+        somaticEffect: 'Garantierte Trennung aller Seilverbindungen in unter 5 Sekunden.'
+      }
+    },
+    {
+      id: 'toy_weighted_blanket_8kg',
+      name: 'Schwere 8kg-Therapie-Gewichtsdecke',
+      category: 'care',
+      somaticZone: 'full_body',
+      restraintLayer: null,
+      materials: ['cotton', 'glass_beads'],
+      tags: ['weighted_blanket', 'care'],
+      assignedToPartner: 'mutual',
+      fitProfile: {
+        sizeGrade: 'universal',
+        weightKg: 8
       },
-      safetyProtocol: {
-        requiresShears: false,
-        disinfectionMethod: "isopropanol_wipe_down",
-        maxContinuousMinutes: 1
+      affordanceProfile: {
+        blocksFaculties: {},
+        safetyProtocol: {
+          disinfectionMethod: 'uv_airing_and_washable_cover'
+        },
+        somaticEffect: 'Propriozeptiver Tiefendruck; stoppt Kaeltezittern und beruhigt das ZNS.'
       }
     }
   ];
 
-  const EquipmentCatalogEngine = {
-    items: DYNAMIC_EQUIPMENT_CATALOG,
-
-    getAll: function() {
-      let custom = [];
-      try {
-        const raw = localStorage.getItem('tactus_custom_equipment') || localStorage.getItem('kompass_custom_equipment');
-        if (raw) custom = JSON.parse(raw) || [];
-      } catch (e) {}
-      return [...this.items, ...custom];
-    },
-
-    findItem: function(id) {
-      if (!id) return null;
-      return this.getAll().find(item => item.id === id) || null;
-    },
-
-    filterByZone: function(bodyZoneId, recipientAnatomy = 'penis') {
-      return this.getAll().filter(item => {
-        const profile = item.somaticProfile;
-        if (!profile) return false;
-        if (item.compatibility === "penis_only" && recipientAnatomy !== "penis") return false;
-        if (item.compatibility === "vulva_only" && recipientAnatomy !== "vulva") return false;
-
-        const zones = profile.compatibleTargetZones || [];
-        return zones.some(z => z.zone === bodyZoneId);
-      });
-    },
-
-    filterByStimulusType: function(stimulusType) {
-      return this.getAll().filter(item => {
-        return item.stimulusVector && item.stimulusVector.type.includes(stimulusType);
-      });
-    },
-
-    getDisinfectionProtocols: function(itemIds = []) {
-      const all = this.getAll();
-      const protocols = [];
-      itemIds.forEach(id => {
-        const found = all.find(it => it.id === id);
-        if (found && found.safetyProtocol) {
-          protocols.push({
-            itemId: found.id,
-            name: found.name,
-            method: found.safetyProtocol.disinfectionMethod,
-            requiresShears: found.safetyProtocol.requiresShears
-          });
-        }
-      });
-      return protocols;
-    },
-
-    registerCustomItem: function(customItem) {
-      if (!customItem || !customItem.id || !customItem.name) return false;
-      let existing = [];
-      try {
-        const raw = localStorage.getItem('tactus_custom_equipment');
-        if (raw) existing = JSON.parse(raw) || [];
-      } catch (e) {}
-
-      existing = existing.filter(c => c.id !== customItem.id);
-      existing.push(customItem);
-      localStorage.setItem('tactus_custom_equipment', JSON.stringify(existing));
-      return true;
+  function loadCustomEquipment() {
+    try {
+      const raw = localStorage.getItem(STORAGE_CUSTOM_EQUIPMENT) || 
+                  localStorage.getItem(STORAGE_CUSTOM_EQUIPMENT_LEGACY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (e) {
+      console.warn('[TACTUS Catalog] Fehler beim Laden von custom_equipment:', e);
     }
+    return [];
+  }
+
+  function saveCustomEquipment(list) {
+    try {
+      const serialized = JSON.stringify(list);
+      localStorage.setItem(STORAGE_CUSTOM_EQUIPMENT, serialized);
+      localStorage.setItem(STORAGE_CUSTOM_EQUIPMENT_LEGACY, serialized);
+    } catch (e) {
+      console.warn('[TACTUS Catalog] Fehler beim Sichern von custom_equipment:', e);
+    }
+
+    if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+      window.CloudSync.trigger();
+    }
+  }
+
+  function getAllCatalogItems() {
+    const customList = loadCustomEquipment();
+    const seen = new Set();
+    const combined = [];
+
+    // 1. Basiskatalog
+    DYNAMIC_BASE_CATALOG.forEach(item => {
+      if (item && item.id && !seen.has(item.id)) {
+        seen.add(item.id);
+        combined.push(Object.assign({}, item));
+      }
+    });
+
+    // 2. Eigene Anschaffungen
+    customList.forEach(item => {
+      if (item && item.id && !seen.has(item.id)) {
+        seen.add(item.id);
+        combined.push(Object.assign({}, item, { isCustom: true }));
+      }
+    });
+
+    return combined;
+  }
+
+  function getItemById(id) {
+    if (!id) return null;
+    const all = getAllCatalogItems();
+    return all.find(item => item.id === id) || null;
+  }
+
+  function registerCustomItem(itemData) {
+    if (!itemData || !itemData.name) {
+      throw new Error('Name fuer das Ausruestungsstueck erforderlich.');
+    }
+
+    const customList = loadCustomEquipment();
+    const cleanId = itemData.id || `custom_toy_${Date.now()}`;
+    const autoTags = Array.isArray(itemData.tags) ? itemData.tags.slice() : [];
+
+    // Automatische semantische Tags ableiten
+    if (itemData.category && !autoTags.includes(itemData.category)) {
+      autoTags.push(itemData.category);
+    }
+    const nameLower = itemData.name.toLowerCase();
+    if (nameLower.includes('knebel') || nameLower.includes('gag')) {
+      if (!autoTags.includes('gag')) autoTags.push('gag');
+    }
+    if (nameLower.includes('halsband') || nameLower.includes('collar')) {
+      if (!autoTags.includes('collar')) autoTags.push('collar');
+    }
+    if (nameLower.includes('kaefig') || nameLower.includes('cage')) {
+      if (!autoTags.includes('chastity_cage')) autoTags.push('chastity_cage');
+    }
+    if (nameLower.includes('seil') || nameLower.includes('rope')) {
+      if (!autoTags.includes('rope')) autoTags.push('rope');
+    }
+    if (nameLower.includes('maske') || nameLower.includes('haube')) {
+      if (!autoTags.includes('mask')) autoTags.push('mask');
+    }
+
+    const newItem = {
+      id: cleanId,
+      name: itemData.name.trim(),
+      category: itemData.category || 'sensory',
+      somaticZone: itemData.somaticZone || 'full_body',
+      restraintLayer: itemData.restraintLayer !== undefined ? itemData.restraintLayer : 0,
+      materials: Array.isArray(itemData.materials) ? itemData.materials : ['synthetic'],
+      tags: autoTags,
+      assignedToPartner: itemData.assignedToPartner || 'mutual',
+      fitProfile: itemData.fitProfile || { sizeGrade: 'universal', isAdjustable: true },
+      affordanceProfile: itemData.affordanceProfile || {
+        blocksFaculties: {},
+        safetyProtocol: {
+          disinfectionMethod: 'isopropanol_wipe'
+        }
+      },
+      isCustom: true,
+      createdAt: Date.now()
+    };
+
+    const existingIdx = customList.findIndex(c => c.id === cleanId);
+    if (existingIdx !== -1) {
+      customList[existingIdx] = newItem;
+    } else {
+      customList.push(newItem);
+    }
+
+    saveCustomEquipment(customList);
+    return newItem;
+  }
+
+  /**
+   * Filtert Ausruestung nach Passform fuer den aktuellen Traeger/Bottom.
+   * Wenn ein Halsband Lisa ('A') gehoert, darf Nils ('B') es nicht tragen muessen.
+   */
+  function filterByPartnerFit(items, recipientPartnerRole) {
+    if (!Array.isArray(items)) return [];
+    if (!recipientPartnerRole) return items.slice();
+
+    return items.filter(item => {
+      const assigned = item.assignedToPartner;
+      if (!assigned || assigned === 'mutual') return true;
+      return assigned === recipientPartnerRole;
+    });
+  }
+
+  /**
+   * Prueft, ob ein Gegenstand zu einer Liste von semantischen Tags aus dem Fragebogen passt.
+   */
+  function matchesEquipmentTags(item, queryTags) {
+    if (!item || !Array.isArray(queryTags) || queryTags.length === 0) return true;
+    const itemTags = Array.isArray(item.tags) ? item.tags : [];
+    const itemCategory = item.category ? [item.category] : [];
+    const pool = new Set([...itemTags, ...itemCategory]);
+
+    for (let i = 0; i < queryTags.length; i++) {
+      if (pool.has(queryTags[i])) return true;
+    }
+    return false;
+  }
+
+  function getDisinfectionProtocols(itemIds) {
+    if (!Array.isArray(itemIds) || itemIds.length === 0) return [];
+    const all = getAllCatalogItems();
+    const protocols = [];
+
+    const METHOD_TRANSLATIONS = {
+      isopropanol_wipe: 'Mit 70% Isopropanol-Tuechern abreiben und trocknen lassen',
+      isopropanol_soak: 'Vollstaendig fuer 10 Minuten in 70% Isopropanol einlegen',
+      isopropanol_immersion: 'Kurz in Isopropanol tauchen und an der Luft trocknen',
+      boiling_or_isopropanol: 'In kochendem Wasser abkochen (5 Min.) oder mit Isopropanol desinfizieren',
+      boiling_water_rinse: 'Mit heissem Wasser durchspuelen und trocken lagern',
+      antiseptic_leather_spray: 'Mit speziellem antiseptischen Leder-Hygienebalsam duenn einreiben',
+      dry_brushing_and_airing: 'Mit fester Buerste trocken ausbuersten und an der Luft auslueften',
+      mild_soap_handwash: 'Handwaesche mit milder, pH-neutraler Seife und flach trocknen',
+      uv_airing_and_washable_cover: 'Bezug waschen; Inlett lueften und aufschuetteln',
+      single_use_sterile: 'Einweg-Gegenstand: Nach Oeffnung fachgerecht entsorgen'
+    };
+
+    itemIds.forEach(id => {
+      const item = all.find(it => it.id === id);
+      if (item && item.affordanceProfile && item.affordanceProfile.safetyProtocol) {
+        const protoKey = item.affordanceProfile.safetyProtocol.disinfectionMethod || 'isopropanol_wipe';
+        protocols.push({
+          itemId: item.id,
+          name: item.name,
+          methodKey: protoKey,
+          method: METHOD_TRANSLATIONS[protoKey] || 'Mit feuchtem Desinfektionstuch gruendlich reinigen',
+          materials: item.materials || []
+        });
+      }
+    });
+
+    return protocols;
+  }
+
+  const api = {
+    getAll: getAllCatalogItems,
+    getById: getItemById,
+    getByCategory: (category) => getAllCatalogItems().filter(it => it.category === category),
+    getByTag: (tag) => getAllCatalogItems().filter(it => (it.tags || []).includes(tag)),
+    matchesTags: matchesEquipmentTags,
+    filterByPartnerFit: filterByPartnerFit,
+    getDisinfectionProtocols: getDisinfectionProtocols,
+    registerCustomItem: registerCustomItem,
+    getBaseCatalog: () => DYNAMIC_BASE_CATALOG.slice()
   };
 
-  window.EquipmentCatalog = EquipmentCatalogEngine;
-  // Abwärtskompatibler Alias
-  window.equipmentCatalog = EquipmentCatalogEngine.getAll();
+  window.EquipmentCatalog = api;
+  // Abwaertskompatibler Alias
+  window.equipmentCatalog = api.getAll();
 
 })(window);
