@@ -1,352 +1,317 @@
 /**
  * data/toy_combinatorics.js
  * TACTUS Somatische Topologie-, DoF- & Kombinatorik-Engine (V3.0 Hyper-Dynamisch)
- * Offizielle Web-Präsenz: tactus.digital
+ * Offizielle Web-Praesenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Mathematisches Freiheitsgrad-Kalkül (Degrees of Freedom / DoF in [0.0, 1.0])
- * - 3-Schichten Restraint-Stacking (Layer 0 Permanent, Layer 1 Positional, Layer 2 Rigid)
- * - Algebraische Schnittmengen-Validierung: Action Feasible <=> RequiredFaculties ∩ BlockedFaculties == Ø
- * - Dynamisches Zonen-Shifting & Affordanz-Matrix (z. B. Klemmen an Brust, Skrotum oder Labien)
- * - Automatische Konflikt-Auflösung & Substitutions-Vorschläge (z. B. Klopfsignale bei Knebelung)
- * - 100 % frei von trivialen Emojis in Logik- und Datenstrukturen
- * - Authentische Szene-Terminologie ohne Schwulst und Kitsch
+ * - 10-Achsen Freiheitsgrad-Matrix (DoF in [0.0, 1.0]) mit multiplikativem Daempfungsmodell
+ * - 3-Schichten Restraint-Stacking (Layer 0: Basismanschetten, Layer 1: Lagefesselung, Layer 2: Umweltkopplung)
+ * - Partner-Passform-Validierung (assignedToPartner & fitProfile Abgleich)
+ * - Semantische Konfliktpruefung voellig unabhaengig von starren Toy-IDs (funktioniert fuer alle KI-Toys)
+ * - Dynamische Substitutions-Direktiven (z. B. Klopfsignale bei Knebelung, P-Spot bei Keuschheit)
+ * - Anatomisches Zonen-Shifting fuer Reizwerkzeuge unter Beachtung des anatomyGuard
+ * - 100 % frei von infantilen System-Emojis in Datenstrukturen
+ * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umstaenden
  */
 
 (function(window) {
   'use strict';
 
-  // Standard-Körperzonen des menschlichen Körpers in der Somatik-Topologie
-  const BODY_ZONES = {
-    head_eyes: { id: "head_eyes", label: "Augen & Sichtfeld", sensoryFaculty: "vision" },
-    head_ears: { id: "head_ears", label: "Ohren & Gehör", sensoryFaculty: "hearing" },
-    head_mouth: { id: "head_mouth", label: "Mundraum & Kiefer", sensoryFaculty: "speech_articulation" },
-    neck_cervical: { id: "neck_cervical", label: "Hals & Nacken", sensoryFaculty: "postural_head" },
-    chest_nipples: { id: "chest_nipples", label: "Brust & Brustwarzen", sensoryFaculty: "erogenous_cutaneous" },
-    back_flanks: { id: "back_flanks", label: "Rücken & Flanken", sensoryFaculty: "cutaneous_impact" },
-    gluteal_pelvis: { id: "gluteal_pelvis", label: "Glutealzone & Gesäß", sensoryFaculty: "deep_muscular_impact" },
-    perineum_pelvic_floor: { id: "perineum_pelvic_floor", label: "Damm & Beckenboden", sensoryFaculty: "visceral_erogenous" },
-    genital_penis: { id: "genital_penis", label: "Penisschaft & Eichel", anatomy: "penis", sensoryFaculty: "primary_genital" },
-    genital_scrotum: { id: "genital_scrotum", label: "Skrotum & Hodenansatz", anatomy: "penis", sensoryFaculty: "primary_genital_tension" },
-    genital_vulva_clitoris: { id: "genital_vulva_clitoris", label: "Vulva & Klitoris", anatomy: "vulva", sensoryFaculty: "primary_genital" },
-    genital_labia: { id: "genital_labia", label: "Schamlippen (Majora/Minora)", anatomy: "vulva", sensoryFaculty: "primary_genital_traction" },
-    rectum_prostate: { id: "rectum_prostate", label: "Rektum & Prostata / Tiefe", sensoryFaculty: "prostate_pelvic_depth" },
-    limbs_wrists_hands: { id: "limbs_wrists_hands", label: "Handgelenke & Finger", motorFaculty: "manual_manipulation" },
-    limbs_ankles_feet: { id: "limbs_ankles_feet", label: "Knöchel & Fußsohlen", motorFaculty: "locomotion_standing" },
-    thighs_inner: { id: "thighs_inner", label: "Oberschenkel-Innenseiten", sensoryFaculty: "high_density_nociception" }
+  // 10 Fundamentale somatische Faehigkeits- und Freiheitsgrad-Achsen
+  const DEFAULT_DEGREES_OF_FREEDOM = {
+    speech_articulation: 1.0,      // Verbale Artikulation & Sprechen
+    tongue_mobility_external: 1.0, // Zungenbeweglichkeit nach aussen (Lecken)
+    nasal_breathing: 1.0,          // Unbehinderte Nasenatmung
+    manual_manipulation: 1.0,      // Finger- & Handeinsatz (Greifen, Abstuetzen)
+    locomotion_standing: 1.0,      // Aufrechtes Stehen & Gehen
+    visual_perception: 1.0,        // Visuelle Wahrnehmung (Sehen)
+    pelvic_thrust_active: 1.0,     // Aktives Gegenstossen des Beckens
+    penile_shaft_access: 1.0,      // Direkter Beruehrungszugang zum Penisschaft
+    clitoral_access: 1.0,          // Direkter Beruehrungszugang zur Klitoris
+    anal_access: 1.0               // Rektaler Zugang (Penetration / Plugs)
   };
 
-  const FACULTIES = {
-    speech_articulation: { id: "speech_articulation", label: "Artikulierte Sprache & Rufen", baseCapacity: 1.0 },
-    tongue_mobility_external: { id: "tongue_mobility_external", label: "Zungenführung außerhalb des Mundes", baseCapacity: 1.0 },
-    nasal_breathing: { id: "nasal_breathing", label: "Nasale Atmung (Vital)", baseCapacity: 1.0, isVital: true },
-    manual_manipulation: { id: "manual_manipulation", label: "Handeinsatz & Greifen", baseCapacity: 1.0 },
-    locomotion_standing: { id: "locomotion_standing", label: "Freies Stehen & Fortbewegung", baseCapacity: 1.0 },
-    visual_perception: { id: "visual_perception", label: "Optische Orientierung & Sicht", baseCapacity: 1.0 },
-    pelvic_thrust_active: { id: "pelvic_thrust_active", label: "Aktive Beckenbewegung & Stoßen", baseCapacity: 1.0 },
-    penile_shaft_access: { id: "penile_shaft_access", label: "Direkter physischer Schaftkontakt", baseCapacity: 1.0 }
+  /**
+   * Anatomische Zonen-Hierarchie fuer kreatives Reiz-Shifting.
+   * Gibt an, auf welche Ausweichzonen ein Reizvektor verlagert werden kann.
+   */
+  const ANATOMICAL_ZONE_TOPOLOGY = {
+    chest_nipples: ['chest_nipples', 'thighs_inner', 'back_flanks', 'cutaneous_skin'],
+    gluteal_pelvis: ['gluteal_pelvis', 'thighs_inner', 'back_flanks', 'cutaneous_skin'],
+    thighs_inner: ['thighs_inner', 'gluteal_pelvis', 'limbs_ankles_feet', 'cutaneous_skin'],
+    back_flanks: ['back_flanks', 'gluteal_pelvis', 'thighs_inner', 'cutaneous_skin'],
+    genital_penis: ['genital_penis', 'perineum_pelvic_floor', 'rectum_prostate'],
+    genital_scrotum: ['genital_scrotum', 'perineum_pelvic_floor', 'thighs_inner'],
+    genital_vulva_clitoris: ['genital_vulva_clitoris', 'perineum_pelvic_floor', 'thighs_inner'],
+    rectum_prostate: ['rectum_prostate', 'perineum_pelvic_floor'],
+    limbs_ankles_feet: ['limbs_ankles_feet', 'thighs_inner', 'cutaneous_skin'],
+    limbs_wrists_hands: ['limbs_wrists_hands', 'cutaneous_skin'],
+    head_face: ['head_face', 'neck_cervical', 'cutaneous_skin'],
+    head_mouth: ['head_mouth', 'neck_cervical'],
+    head_eyes: ['head_eyes', 'head_face'],
+    neck_cervical: ['neck_cervical', 'head_face', 'back_flanks'],
+    full_body: ['full_body', 'cutaneous_skin', 'gluteal_pelvis', 'back_flanks']
   };
 
-  const SomaticTopologyEngine = {
-    bodyZones: BODY_ZONES,
-    faculties: FACULTIES,
+  /**
+   * Berechnet den aktuellen Freiheitsgrad-Zustand (DoF in [0.0, 1.0])
+   * aus einer Liste aktiver Ausruestungsgegenstaende.
+   * Verwendet das multiplikative Daempfungsmodell:
+   * DoF = Produkt(1 - Blockadegrad_i)
+   */
+  function calculateDegreesOfFreedom(activeItems, recipientPartnerRole = null) {
+    const dofState = Object.assign({}, DEFAULT_DEGREES_OF_FREEDOM);
+    const layerStack = { layer0: [], layer1: [], layer2: [] };
+    const blockedDetails = {};
 
-    /**
-     * Berechnet die verbliebenen Freiheitsgrade (Degrees of Freedom) für alle motorischen und sensorischen Fähigkeiten.
-     * Nutzt das multiplikative Dämpfungsmodell: DoF = Produkt(1 - Blockadegrad_i)
-     * @param {Array<Object>} activeEquipmentList - Liste der aktuell angelegten Ausrüstungsgegenstände
-     * @returns {Object} Berechnete DoF-Werte pro Fähigkeit [0.0 bis 1.0] und Restraint-Stack-Analyse
-     */
-    calculateDegreesOfFreedom: function(activeEquipmentList = []) {
-      const dofState = {
-        speech_articulation: 1.0,
-        tongue_mobility_external: 1.0,
-        nasal_breathing: 1.0,
-        manual_manipulation: 1.0,
-        locomotion_standing: 1.0,
-        visual_perception: 1.0,
-        pelvic_thrust_active: 1.0,
-        penile_shaft_access: 1.0
-      };
-
-      const stackSummary = {
-        layer0_anchors: [],
-        layer1_positional: [],
-        layer2_rigid: []
-      };
-
-      if (!Array.isArray(activeEquipmentList) || activeEquipmentList.length === 0) {
-        return { dof: dofState, stack: stackSummary, isFullyUnrestricted: true };
-      }
-
-      for (let i = 0; i < activeEquipmentList.length; i++) {
-        const item = activeEquipmentList[i];
-        if (!item) continue;
-
-        // Schicht-Zuordnung für Restraint-Stacking
-        const layer = item.restraintLayer !== undefined ? item.restraintLayer : 1;
-        if (layer === 0) stackSummary.layer0_anchors.push(item.name || item.id);
-        else if (layer === 1) stackSummary.layer1_positional.push(item.name || item.id);
-        else if (layer >= 2) stackSummary.layer2_rigid.push(item.name || item.id);
-
-        const profile = item.somaticProfile || item.affordanceProfile || null;
-        if (!profile) continue;
-
-        // Blockierte Fähigkeiten dämpfen
-        const blocked = profile.blocksFaculties || profile.blockedFaculties || {};
-        for (const facultyKey in blocked) {
-          if (blocked.hasOwnProperty(facultyKey) && dofState.hasOwnProperty(facultyKey)) {
-            const isBlocked = blocked[facultyKey];
-            if (isBlocked === true) {
-              dofState[facultyKey] = 0.0;
-            } else if (typeof isBlocked === 'number') {
-              dofState[facultyKey] = Math.max(0.0, dofState[facultyKey] * (1.0 - Math.min(1.0, isBlocked)));
-            }
-          }
-        }
-      }
-
-      // Runden auf 2 Dezimalstellen
-      for (const k in dofState) {
-        if (dofState.hasOwnProperty(k)) {
-          dofState[k] = parseFloat(dofState[k].toFixed(2));
-        }
-      }
-
+    if (!Array.isArray(activeItems) || activeItems.length === 0) {
       return {
         dof: dofState,
-        stack: stackSummary,
-        isFullyUnrestricted: Object.values(dofState).every(v => v === 1.0)
+        stack: layerStack,
+        isFullyUnrestricted: true,
+        blockedDetails: blockedDetails
       };
-    },
+    }
 
-    /**
-     * Führt eine algebraische Schnittmengenprüfung durch:
-     * Gültig(Handlung) <=> (Benötigte Fähigkeiten ∩ Blockierte Fähigkeiten == Ø)
-     *                      UND (Erforderliche Hardware-Ermöglicher vorhanden)
-     *                      UND (Anatomische Kompatibilität gewahrt)
-     * @param {Object} params
-     * @param {Object} params.action - Zu validierende Handlungsanweisung
-     * @param {Array<Object>} params.activeEquipment - Aktuell angelegte Ausrüstung
-     * @param {string} [params.recipientAnatomy] - 'penis' | 'vulva'
-     * @param {boolean} [params.isLocked] - Wahr, wenn Keuschheitsverschluss verriegelt ist
-     * @returns {Object} Validierungs-Ergebnis mit Blöcken, Warnungen und konkreten Alternativen
-     */
-    validateActionFeasibility: function({ action = {}, activeEquipment = [], recipientAnatomy = 'penis', isLocked = false }) {
-      const blocks = [];
-      const warnings = [];
-      const dofResult = this.calculateDegreesOfFreedom(activeEquipment);
-      const dof = dofResult.dof;
+    // 1. Partner-Passform Vorfilterung:
+    // Gegenstaende, die dem aktuellen Traeger nicht passen, ueben keine Restriktion aus
+    let applicableItems = activeItems;
+    if (recipientPartnerRole && window.EquipmentCatalog && typeof window.EquipmentCatalog.filterByPartnerFit === 'function') {
+      applicableItems = window.EquipmentCatalog.filterByPartnerFit(activeItems, recipientPartnerRole);
+    }
 
-      const requiredFaculties = action.requiredFaculties || [];
-      const forbiddenWhenBlocked = action.forbiddenWhenBlocked || [];
-      const targetZone = action.targetZone || "";
-      const executionActor = action.executionActor || "top"; // 'self' | 'top' | 'mutual'
+    applicableItems.forEach(item => {
+      if (!item) return;
 
-      // 1. Prüfung biologischer Freiheitsgrade (DoF)
-      for (let f = 0; f < requiredFaculties.length; f++) {
-        const faculty = requiredFaculties[f];
-        if (dof.hasOwnProperty(faculty) && dof[faculty] <= 0.05) {
-          const conflict = this.resolveFacultyConflict(faculty, action, activeEquipment);
-          blocks.push({
-            type: "faculty_blocked",
-            faculty: faculty,
-            message: conflict.message,
-            suggestedAlternative: conflict.suggestedAlternative
-          });
+      const profile = item.affordanceProfile || item.somaticProfile || {};
+      const layer = item.restraintLayer !== undefined ? item.restraintLayer : (profile.restraintLayer !== undefined ? profile.restraintLayer : null);
+
+      if (layer === 0) layerStack.layer0.push(item);
+      else if (layer === 1) layerStack.layer1.push(item);
+      else if (layer === 2) layerStack.layer2.push(item);
+
+      // Multiplikative DoF-Daempfung
+      const blocks = profile.blocksFaculties || {};
+      for (const facultyKey in blocks) {
+        if (!blocks.hasOwnProperty(facultyKey)) continue;
+        if (dofState[facultyKey] === undefined) continue;
+
+        const isBlocked = blocks[facultyKey];
+        const attenuationFactor = (isBlocked === true) ? 1.0 : (typeof isBlocked === 'number' ? Math.max(0.0, Math.min(1.0, isBlocked)) : 0.0);
+
+        dofState[facultyKey] = Math.max(0.0, dofState[facultyKey] * (1.0 - attenuationFactor));
+
+        if (attenuationFactor > 0.5) {
+          if (!blockedDetails[facultyKey]) blockedDetails[facultyKey] = [];
+          blockedDetails[facultyKey].push(item.name || item.id);
         }
       }
 
-      // 2. Selbstvollzug bei blockierten Händen
-      if (executionActor === "self" && dof.manual_manipulation < 0.5) {
-        blocks.push({
-          type: "self_execution_impossible",
-          message: "Physikalischer Widerspruch: Selbstvollzug der Handlung erfordert freie Hände, die aktuell arretiert sind.",
-          suggestedAlternative: "Übernahme der Ausführung unmittelbar durch den Top oder temporäre Entfesselung der Handgelenke."
+      // Spezielle anatomische Sperren ueber Tags
+      const tags = item.tags || [];
+      if (tags.includes('chastity_cage')) {
+        dofState.penile_shaft_access = 0.0;
+        if (!blockedDetails.penile_shaft_access) blockedDetails.penile_shaft_access = [];
+        blockedDetails.penile_shaft_access.push(item.name || 'Peniskaefig');
+      }
+      if (tags.includes('chastity_belt')) {
+        dofState.clitoral_access = 0.0;
+        if (!blockedDetails.clitoral_access) blockedDetails.clitoral_access = [];
+        blockedDetails.clitoral_access.push(item.name || 'Keuschheitsguertel');
+      }
+      if (tags.includes('spreader_bar')) {
+        dofState.pelvic_thrust_active = 0.0;
+        dofState.locomotion_standing = 0.0;
+        dofState.anal_access = 1.0; // Spreizstange exponiert das Perineum und das Rektum
+      }
+      if (tags.includes('ball_gag') || tags.includes('muzzle_gag')) {
+        dofState.speech_articulation = 0.0;
+        dofState.tongue_mobility_external = 0.0;
+      }
+      if (tags.includes('ring_gag')) {
+        dofState.speech_articulation = 0.0;
+        dofState.tongue_mobility_external = 1.0; // Ringknebel erhaelt Zungenbedienung
+      }
+      if (tags.includes('blindfold') || tags.includes('hood')) {
+        dofState.visual_perception = 0.0;
+      }
+    });
+
+    const isFullyUnrestricted = Object.values(dofState).every(v => v >= 0.95);
+
+    return {
+      dof: dofState,
+      stack: layerStack,
+      isFullyUnrestricted: isFullyUnrestricted,
+      blockedDetails: blockedDetails
+    };
+  }
+
+  /**
+   * Prueft, ob eine geplante somatische Aktion oder ein Motiv
+   * physikalisch und anatomisch machbar ist oder ob ein Konflikt vorliegt.
+   * Gibt bei Konflikten konkrete Substitutions-Direktiven zurueck.
+   */
+  function validateActionFeasibility(actionDescriptor, activeItems, recipientPartnerRole = null) {
+    if (!actionDescriptor) {
+      return { feasible: true, conflicts: [], substitutions: [] };
+    }
+
+    const dofResult = calculateDegreesOfFreedom(activeItems, recipientPartnerRole);
+    const dof = dofResult.dof;
+    const conflicts = [];
+    const substitutions = [];
+
+    const reqFaculties = actionDescriptor.requiresFaculties || [];
+    const forbiddenFaculties = actionDescriptor.forbiddenFaculties || [];
+    const actionTags = actionDescriptor.tags || [];
+
+    // 1. Pruefung der benoetigten Faehigkeiten
+    reqFaculties.forEach(fac => {
+      if (dof[fac] !== undefined && dof[fac] <= 0.05) {
+        conflicts.push({
+          type: 'faculty_blocked',
+          faculty: fac,
+          message: `Faehigkeit '${fac.replace(/_/g, ' ')}' ist durch angelegte Ausruestung gesperrt.`
         });
       }
+    });
 
-      // 3. Anatomischer Schutz und Keuschheits-Barriere
-      if (recipientAnatomy === "penis" && isLocked) {
-        if (targetZone === "genital_penis" || action.requiresDirectPenileContact === true) {
-          blocks.push({
-            type: "cage_barrier_conflict",
-            message: "Hardware-Konflikt: Direkte Schaftberührung ist durch den verriegelten Käfig physisch ausgeschlossen.",
-            suggestedAlternative: "Vibration von außen auf das Gitter, Damm-Kältereiz oder anale P-Spot-Stimulation nutzen."
-          });
-        }
-      }
-
-      // 4. Prüfung von Spezial-Hardware-Ermöglichern (Enablers)
-      if (action.requiresActivePenetrationGag === true) {
-        const hasDildoGag = activeEquipment.some(item => {
-          const prof = item.somaticProfile || item.affordanceProfile;
-          return prof && prof.enabledFaculties && prof.enabledFaculties.penetration_active && prof.enabledFaculties.penetration_active.capable === true;
+    // 2. Spezifische somatische Konflikte & Substitutions-Intelligenz
+    // A. Mitzählen / Sprache bei Knebelung
+    if (actionDescriptor.requiresSpeech || actionTags.includes('count_hits_vocal')) {
+      if (dof.speech_articulation <= 0.05) {
+        conflicts.push({
+          type: 'speech_articulation_conflict',
+          message: 'Lautes Mitzählen ist durch Knebelung unmoeglich.'
         });
-
-        if (!hasDildoGag) {
-          blocks.push({
-            type: "missing_hardware_enabler",
-            message: "Hardware-Fehlt: Diese orale Penetration erfordert einen Dildo-Knebel mit montiertem Außenphallus.",
-            suggestedAlternative: "Rüste einen Dildo-Knebel aus oder wechsle zu oralem Zungenservice mit offenem Ringknebel."
-          });
-        }
-      }
-
-      // 5. Oralservice bei geschlossenem Knebel
-      if (action.requiresTongueService === true && dof.tongue_mobility_external <= 0.05) {
-        blocks.push({
-          type: "tongue_blocked_by_gag",
-          message: "Funktions-Konflikt: Oralservice (Cunnilingus/Rimming) erfordert freie Zungenbeweglichkeit, die durch den geschlossenen Knebel blockiert ist.",
-          suggestedAlternative: "Knebel abnehmen oder auf einen offenen Ringknebel wechseln, der Zungenfreiheit gewährt."
+        substitutions.push({
+          type: 'substitute_knocking_directive',
+          instruction: 'Bottom quittiert jeden Treffer durch deutliches rhythmisches Klopfen mit der Handflaeche auf die Bettkante.'
         });
       }
+    }
 
-      // 6. RACK-Sicherheits-Check: Seilfesselung ohne Notfallschere
-      const hasTightBondage = activeEquipment.some(item => (item.category === "bondage" && item.restraintLayer >= 1));
-      const hasEmtShears = activeEquipment.some(item => item.id === "toy_emt_shears" || item.entityId === "toy_emt_shears");
-      if (hasTightBondage && !hasEmtShears) {
-        warnings.push({
-          type: "rack_safety_missing_shears",
-          message: "RACK-Sicherheitshinweis: Bei aktiven Seil- oder Lagefesselungen muss eine Notfallschere griffbereit am Bett liegen.",
-          suggestedAlternative: "Bereitstellen der EMT-Sicherheits-Verbandschere vor Beginn der Phase."
+    // B. Oralservice / Lecken bei geschlossener Mundbarriere
+    if (actionDescriptor.requiresTongue || actionTags.includes('oral_service') || actionTags.includes('cunnilingus')) {
+      if (dof.tongue_mobility_external <= 0.05) {
+        conflicts.push({
+          type: 'tongue_mobility_conflict',
+          message: 'Orale Bedienung ist durch geschlossenen Knebel physisch blockiert.'
+        });
+        substitutions.push({
+          type: 'switch_to_ring_gag',
+          instruction: 'Tausche den geschlossenen Knebel gegen einen offenen Ringknebel (45mm), um freie Zungenfuehrung zu erlauben.'
         });
       }
+    }
 
-      return {
-        isValid: blocks.length === 0,
-        blocks: blocks,
-        warnings: warnings,
-        remainingDoF: dof,
-        activeStack: dofResult.stack
-      };
-    },
-
-    /**
-     * Ermittelt dynamisch alle anatomisch und physikalisch kompatiblen Körperzonen für einen Gegenstand.
-     * Ermöglicht kreatives Zonen-Shifting (z. B. Krokodilklemmen an Brust, Skrotum, Labien oder Schenkeln).
-     * @param {Object|string} itemOrId - Ausrüstungs-Objekt oder ID
-     * @param {string} recipientAnatomy - 'penis' | 'vulva'
-     * @returns {Array<Object>} Liste erreichbarer Zielzonen mit somatischem Wirkprofil
-     */
-    getCompatibleZonesForItem: function(itemOrId, recipientAnatomy = 'penis') {
-      let item = itemOrId;
-      if (typeof itemOrId === 'string' && window.EquipmentCatalog) {
-        item = window.EquipmentCatalog.findItem(itemOrId);
+    // C. Schwellen-Quälerei am Schaft bei verriegeltem Kaefig
+    if (actionDescriptor.requiresShaftContact || actionTags.includes('penile_edging')) {
+      if (dof.penile_shaft_access <= 0.05) {
+        conflicts.push({
+          type: 'chastity_shaft_block',
+          message: 'Penisschaft ist verriegelt – direkte Schwellen-Reizung am Schaft unmoeglich.'
+        });
+        substitutions.push({
+          type: 'prostate_or_vibrator_substitution',
+          instruction: 'Reizverlagerung: Nutze P-Spot/Prostata-Massage von hinten oder halte den Vibrator von aussen auf das Kaefiggitter.'
+        });
       }
-      if (!item) return [];
+    }
 
-      const profile = item.somaticProfile || item.affordanceProfile;
-      if (!profile || !Array.isArray(profile.compatibleTargetZones)) {
-        // Fallback-Zonen basierend auf Kategorie
-        return this.getDefaultZonesForCategory(item.category, recipientAnatomy);
-      }
-
-      const isVulva = recipientAnatomy === "vulva";
-      return profile.compatibleTargetZones.filter(zoneEntry => {
-        if (zoneEntry.anatomyGuard === "vulva" && !isVulva) return false;
-        if (zoneEntry.anatomyGuard === "penis" && isVulva) return false;
-        return true;
+    // D. Fesselung & RACK-Notfall-Schere
+    const hasRope = activeItems.some(it => (it.tags || []).includes('rope'));
+    const hasShears = activeItems.some(it => (it.tags || []).includes('emt_shears'));
+    if (hasRope && !hasShears) {
+      conflicts.push({
+        type: 'rack_safety_missing_shears',
+        message: 'RACK-Sicherheitsregel: Seile im Einsatz, aber EMT-Sicherheits-Verbandschere liegt nicht am Bett bereit!'
       });
-    },
-
-    /**
-     * Liefert Standardzonen für Gegenstände ohne explizites Affordanz-Profil.
-     */
-    getDefaultZonesForCategory: function(category, recipientAnatomy) {
-      const isVulva = recipientAnatomy === "vulva";
-      switch (category) {
-        case "impact":
-          return [
-            { zone: "gluteal_pelvis", somaticEffect: "deep_muscular_impact" },
-            { zone: "thighs_inner", somaticEffect: "cutaneous_hyperemia" },
-            { zone: "back_flanks", somaticEffect: "diffuse_nociception" }
-          ];
-        case "sensory":
-          return [
-            { zone: "chest_nipples", somaticEffect: "focal_tactile_firing" },
-            { zone: "back_flanks", somaticEffect: "broad_parasympathetic_soothing" },
-            { zone: isVulva ? "genital_labia" : "genital_scrotum", somaticEffect: "high_intensity_erogenous" }
-          ];
-        case "cbt":
-          return isVulva 
-            ? [{ zone: "genital_labia", somaticEffect: "vulvar_compression" }]
-            : [{ zone: "genital_scrotum", somaticEffect: "testicular_traction" }];
-        default:
-          return [{ zone: "gluteal_pelvis", somaticEffect: "general_somatic" }];
-      }
-    },
-
-    /**
-     * Löst funktionale Konflikte deterministisch auf und generiert sichere Alternativen.
-     */
-    resolveFacultyConflict: function(blockedFaculty, action, activeEquipment) {
-      if (blockedFaculty === "speech_articulation") {
-        return {
-          message: `Deutliche Sprache und lautes Mitzählen sind durch die aktive Mund-Hardware blockiert.`,
-          suggestedAlternative: "Akustisches Mitzählen durch nonverbale Klopfsignale auf den Oberschenkel oder Mitzählen mit den Fingern ersetzen."
-        };
-      }
-      if (blockedFaculty === "tongue_mobility_external") {
-        return {
-          message: `Zungenservice ist durch den aktuellen geschlossenen Knebel blockiert.`,
-          suggestedAlternative: "Auf einen offenen Ringknebel wechseln oder den Knebel für die Oralservice-Phase temporär lösen."
-        };
-      }
-      if (blockedFaculty === "manual_manipulation") {
-        return {
-          message: `Handeinsatz ist durch aktive Fesselungen oder Pranger arretiert.`,
-          suggestedAlternative: "Handlung direkt durch den Top ausführen lassen oder die Hände vor dem Vollzug freigeben."
-        };
-      }
-      if (blockedFaculty === "locomotion_standing") {
-        return {
-          message: `Freies Stehen ist durch Knöchel-Arretierung oder Spreizstange eingeschränkt.`,
-          suggestedAlternative: "In eine stabile Liegeposition oder aufrechte 90-Grad-Vorbeuge über die Bettkante wechseln."
-        };
-      }
-      if (blockedFaculty === "penile_shaft_access") {
-        return {
-          message: `Der Schaft ist durch den Keuschheitskäfig versiegelt.`,
-          suggestedAlternative: "Wand-Vibration von außen auf das Gitter ansetzen oder Prostata-Stimulation ohne Genitalzugriff wählen."
-        };
-      }
-
-      return {
-        message: `Die geforderte Fähigkeit '${blockedFaculty}' ist durch aktive Ausrüstung blockiert.`,
-        suggestedAlternative: "Blockierende Ausrüstung vor dieser Phase temporär ablegen."
-      };
-    },
-
-    /**
-     * Filtert Ausrüstung nach anatomischer Eignung und Käfig-Verschlussstatus.
-     * @param {Array<Object>} items - Array von Ausrüstungs-Objekten
-     * @param {string} recipientAnatomy - 'penis' | 'vulva'
-     * @param {boolean} isLocked - Käfig aktiv verriegelt
-     * @returns {Array<Object>} Verifizierte, nutzbare Ausrüstung
-     */
-    filterFeasibleEquipment: function(items = [], recipientAnatomy = 'penis', isLocked = false) {
-      if (!Array.isArray(items)) return [];
-      const self = this;
-
-      return items.filter(item => {
-        if (!item) return false;
-        const profile = item.somaticProfile || item.affordanceProfile || {};
-        const compat = item.compatibility || profile.targetAnatomy || "universal";
-
-        // Anatomie-Check
-        if (recipientAnatomy === "penis" && compat === "vulva_only") return false;
-        if (recipientAnatomy === "vulva" && compat === "penis_only") return false;
-
-        // Wenn verriegelt: Hodenbänder und direkte Schafttoys ausschließen
-        if (isLocked && item.id === "toy_ball_stretcher_silicone") return false;
-
-        return true;
+      substitutions.push({
+        type: 'place_emt_shears_ready',
+        instruction: 'Lege die EMT-Sicherheits-Verbandschere vor dem ersten Knoten sichtbar auf den Nachttisch.'
       });
     }
+
+    // E. 4-Punkt Fixierung & Hilflosigkeits-Panik (Kapitel 00 RACK-Schranke)
+    const hasLimbsBound = dof.manual_manipulation <= 0.05 && dof.locomotion_standing <= 0.05;
+    if (hasLimbsBound && actionDescriptor.hasFearRestraint) {
+      conflicts.push({
+        type: 'rack_trauma_restraint_breach',
+        message: 'Psychosomatische Schranke: Vollstaendige Arretierung loest beim Sub Hilflosigkeits-Panik aus.'
+      });
+      substitutions.push({
+        type: 'soften_to_open_cuffs',
+        instruction: 'Fixiere nur die Handgelenke vor dem Koerper oder belasse spuerbare Restbeweglichkeit.'
+      });
+    }
+
+    return {
+      feasible: conflicts.length === 0,
+      conflicts: conflicts,
+      substitutions: substitutions,
+      dofSummary: dof
+    };
+  }
+
+  /**
+   * Ermittelt alternative, anatomisch plausible Zonen fuer ein Werkzeug
+   * (Kreatives Zonen-Shifting unter Beruecksichtigung des anatomyGuard).
+   */
+  function getCompatibleZonesForItem(item, recipientAnatomy = 'penis') {
+    if (!item) return ['full_body'];
+
+    const primaryZone = item.somaticZone || 'full_body';
+    const rawAlternatives = ANATOMICAL_ZONE_TOPOLOGY[primaryZone] || [primaryZone];
+
+    return rawAlternatives.filter(zone => {
+      // Anatomie-Schutz
+      if (zone === 'genital_penis' || zone === 'genital_scrotum' || zone === 'rectum_prostate') {
+        if (recipientAnatomy === 'vulva' && zone !== 'rectum_prostate') return false;
+      }
+      if (zone === 'genital_vulva_clitoris') {
+        if (recipientAnatomy === 'penis') return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+   * Filtert eine Ausruestungsliste nach Verwendbarkeit fuer die gegebene
+   * Anatomie und den Verschluss-Status.
+   */
+  function filterFeasibleEquipment(items, recipientAnatomy = 'penis', isLocked = false) {
+    if (!Array.isArray(items)) return [];
+
+    return items.filter(item => {
+      if (!item) return false;
+
+      // 1. Anatomie-Filter
+      const guard = item.anatomyGuard;
+      if (guard === 'penis' && recipientAnatomy !== 'penis') return false;
+      if (guard === 'vulva' && recipientAnatomy !== 'vulva') return false;
+      if (guard === 'prostate' && recipientAnatomy !== 'penis') return false;
+
+      // 2. Verschluss-Filter
+      const tags = item.tags || [];
+      if (isLocked) {
+        // Bei verriegeltem Kaefig schliessen wir Schaft-Toys aus, lassen aber Plugs und Impact zu
+        if (tags.includes('penis_fleshlight') || tags.includes('penis_masturbator')) return false;
+      }
+
+      return true;
+    });
+  }
+
+  const api = {
+    calculateDegreesOfFreedom: calculateDegreesOfFreedom,
+    validateActionFeasibility: validateActionFeasibility,
+    getCompatibleZonesForItem: getCompatibleZonesForItem,
+    filterFeasibleEquipment: filterFeasibleEquipment,
+    getDefaultDegreesOfFreedom: () => Object.assign({}, DEFAULT_DEGREES_OF_FREEDOM)
   };
 
-  window.ToyCombinatorics = SomaticTopologyEngine;
-  window.SomaticTopologyEngine = SomaticTopologyEngine;
+  window.ToyCombinatorics = api;
 
 })(window);
