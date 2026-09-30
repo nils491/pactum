@@ -155,7 +155,7 @@
           <span class="text-slate-500 text-xs">→</span>
         </a>
         <a href="index.html#view=survey" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-white">Fragebogen (36 Kapitel)</span>
+          <span class="text-xs font-bold text-white">Fragebogen (185 Items)</span>
           <span class="text-slate-500 text-xs">→</span>
         </a>
         <a href="analyse.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
@@ -270,6 +270,7 @@
     </div>
 
   </main>
+
   <!-- MODAL: DATE-NIGHT TRIGGER (SOFA-HEMMSCHWELLE BRECHEN) -->
   <div id="modal-date-night-trigger" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
     <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs">
@@ -352,9 +353,44 @@
     </div>
   </div>
 
+  <!-- NEUES / REPARIERTES MODAL: E2EE STATUS & KOPPLUNG -->
+  <div id="modal-chat-sync-config" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs">
+      <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse"></div>
+          <h3 class="text-sm font-bold text-white">E2EE-Kopplung &amp; Peer-Status</h3>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-chat-sync-config').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <div class="space-y-2.5">
+        <p class="text-[10.5px] text-slate-300 leading-snug">
+          Verschlüsselt mit <strong>AES-GCM-256</strong> via PBKDF2 (100.000 Iterationen). Alle Nachrichten und Medien verlassen dein Gerät ausschließlich verschlüsselt.
+        </p>
+
+        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-[10.5px]">
+          <div>
+            <label class="text-[9.5px] font-mono text-purple-400 uppercase block">Gemeinsamer Geheim-Raum:</label>
+            <input type="text" id="cfg-sync-room" placeholder="z. B. tactus_safe_8472" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs" />
+          </div>
+          <div>
+            <label class="text-[9.5px] font-mono text-purple-400 uppercase block">Gemeinsames Passwort:</label>
+            <input type="password" id="cfg-sync-pass" placeholder="Geheimes Paar-Passwort..." class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+        <button type="button" onclick="ChatApp.disconnectSync()" class="text-rose-400 font-bold hover:underline text-[11px] touch-btn">Trennen</button>
+        <button type="button" onclick="ChatApp.saveSyncConfig()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Speichern &amp; Verbinden ✓</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
 
-  <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
+  <!-- EXTERNE DATENQUELLEN & SCRIPTS (ALLE BENÖTIGTEN CORE-MODULE EINGEBUNDEN) -->
   <script src="data/scientific_studies.js"></script>
   <script src="data/questions_part1.js"></script>
   <script src="data/questions_part2.js"></script>
@@ -366,8 +402,12 @@
   <script src="js/hub_toys.js"></script>
   <script src="js/hub_context.js"></script>
   <script src="js/cloud_sync.js"></script>
+  <script src="js/protocol_core.js"></script>
+  <script src="js/protocol_ratio.js"></script>
+  <script src="js/protocol_tasks.js"></script>
+  <script src="js/session_voice.js"></script>
 
-  <!-- CHAT APP CONTROLLER LOGIC -->
+  <!-- STREAM APP CONTROLLER LOGIC -->
   <script>
     (function(window) {
       'use strict';
@@ -501,6 +541,24 @@
         return localStorage.getItem('kompass_assigned_role') || 'A';
       }
 
+      async function resolvePhotoForMessage(msg) {
+        if (!msg.photoVaultId) return msg.photoDataUrl || null;
+        if (msg.photoDataUrl) return msg.photoDataUrl;
+
+        if (window.HubPhotos && typeof window.HubPhotos.getPhoto === 'function') {
+          try {
+            const fetched = await window.HubPhotos.getPhoto(msg.photoVaultId);
+            if (fetched) {
+              msg.photoDataUrl = fetched;
+              const imgEl = document.getElementById(`chat-photo-${msg.photoVaultId}`);
+              if (imgEl) imgEl.src = fetched;
+              return fetched;
+            }
+          } catch (e) {}
+        }
+        return null;
+      }
+
       function renderMessages() {
         loadMessages();
         updateLiveStatusTicker();
@@ -553,7 +611,6 @@
           const isWhisper = (msg.mode === 'whisper');
           const isDirective = (msg.mode === 'directive');
           const isBrat = (msg.mode === 'brat');
-          const isActionCard = !!msg.actionCard;
           const isPraiseCapsule = !!msg.praiseCapsule;
 
           // 1. SYSTEM-EREIGNISSE & AKTIONEN
@@ -626,6 +683,10 @@
           }
 
           // 3. REGULÄRE NACHRICHTEN, WHISPER, DIRECTIVES & BRAT-PINGS
+          if (msg.photoVaultId && !msg.photoDataUrl) {
+            resolvePhotoForMessage(msg);
+          }
+
           return `
             <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1">
               <span class="text-[9px] font-mono text-slate-500 px-2 flex items-center gap-1.5">
@@ -633,7 +694,7 @@
                 ${isWhisper ? '<span class="text-pink-400 font-bold">Flüstern</span>' : ''}
                 ${isDirective ? '<span class="text-amber-400 font-bold">Regie-Impuls</span>' : ''}
                 ${isBrat ? '<span class="text-rose-400 font-bold px-1 rounded bg-rose-950/80 border border-rose-800">Trotz-Ping</span>' : ''}
-                ${isDirective && window.SessionVoice ? `
+                ${isDirective ? `
                   <button type="button" onclick="ChatApp.speakDirectiveText('${escapeHtml(msg.text.replace(/'/g, "\\'"))}')" title="Befehl vorlesen" class="p-0.5 rounded text-purple-400 hover:text-white">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z"/></svg>
                   </button>
@@ -650,8 +711,8 @@
                       : (isWhisper ? 'bg-slate-900 text-pink-200 border border-pink-900/70 rounded-bl-none' : (isDirective ? 'bg-slate-900 text-amber-200 border border-amber-900/70 rounded-bl-none' : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-none')))
               }">
                 ${msg.photoVaultId ? `
-                  <div class="mb-2 rounded-xl overflow-hidden border border-purple-500/30">
-                    <img id="chat-photo-${escapeHtml(msg.photoVaultId)}" src="${escapeHtml(msg.photoDataUrl || '')}" alt="Tresor-Foto" class="max-h-48 object-cover rounded-xl" />
+                  <div class="mb-2 rounded-xl overflow-hidden border border-purple-500/30 bg-black/60 min-h-[8rem] flex items-center justify-center">
+                    <img id="chat-photo-${escapeHtml(msg.photoVaultId)}" src="${escapeHtml(msg.photoDataUrl || '')}" alt="Tresor-Foto" class="max-h-56 w-auto object-cover rounded-xl" />
                   </div>
                 ` : ''}
 
@@ -698,6 +759,10 @@
 
         input.value = '';
         renderMessages();
+
+        if (navigator.vibrate) {
+          navigator.vibrate([25]);
+        }
       }
 
       function postSystemEvent(eventText, taskId = null) {
@@ -722,6 +787,8 @@
           window.ProtocolTasks.approve(taskId);
           showToast("Pflicht im Chat quittiert ✓");
           renderMessages();
+        } else {
+          showToast("ProtocolTasks nicht geladen.");
         }
       }
 
@@ -731,6 +798,8 @@
           window.ProtocolTasks.reject(taskId, "Zurückgewiesen aus dem Stream");
           showToast("Pflicht abgewiesen.");
           renderMessages();
+        } else {
+          showToast("ProtocolTasks nicht geladen.");
         }
       }
 
@@ -821,6 +890,8 @@
         if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
           window.SessionVoice.speak(text, { tonality: 'sovereign_warm', phase: 2 });
           showToast("Regie-Impuls wird vorgelesen...");
+        } else {
+          showToast("Sprachausgabe nicht verfügbar.");
         }
       }
 
@@ -876,6 +947,15 @@
         const modal = document.getElementById('modal-chat-sync-config');
         if (modal) modal.style.display = 'none';
         showToast("Synchronisation konfiguriert ✓");
+      }
+
+      function disconnectSync() {
+        if (window.CloudSync && typeof window.CloudSync.disconnect === 'function') {
+          window.CloudSync.disconnect();
+        }
+        const modal = document.getElementById('modal-chat-sync-config');
+        if (modal) modal.style.display = 'none';
+        showToast("Synchronisation getrennt.");
       }
 
       function triggerPhotoUpload() {
@@ -947,6 +1027,7 @@
         clearHistory: clearHistory,
         openSyncConfigModal: openSyncConfigModal,
         saveSyncConfig: saveSyncConfig,
+        disconnectSync: disconnectSync,
         triggerPhotoUpload: triggerPhotoUpload
       };
 
