@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>TACTUS · Paar-Analyse &amp; Psychometrische Synergien</title>
+  <title>TACTUS · Paar-Analyse, KI-Tiefenbericht &amp; Psychometrische Synergien</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     (function() {
@@ -82,9 +82,9 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/>
             </svg>
           </div>
-          <div class="truncate min-w-0">
-            <div class="flex items-center gap-1.5">
-              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white truncate font-serif-title">TACTUS · Paar-Analyse</h1>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white font-serif-title">TACTUS · Paar-Analyse</h1>
               <span id="analysis-synergy-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800 uppercase flex-shrink-0">SYNERGIE</span>
             </div>
             <span class="text-[9.5px] text-slate-400 font-medium block truncate mt-0.5" id="analysis-header-names">Partner 1 &amp; Partner 2</span>
@@ -114,7 +114,7 @@
       <!-- DESKTOP NAV -->
       <nav class="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-xs font-bold -mx-1 px-1">
         <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Start-Hub</a>
-        <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen</a>
+        <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen (185)</a>
         <button type="button" class="px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700">Paar-Analyse</button>
         <a href="chat.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Paar-Stream</a>
         <a href="protocol.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Das Protokoll</a>
@@ -123,7 +123,6 @@
       </nav>
     </div>
   </header>
-
   <!-- MOBILE DRAWER -->
   <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs">
     <div class="space-y-4">
@@ -148,7 +147,7 @@
           <span class="text-slate-500 text-xs">→</span>
         </a>
         <a href="index.html#view=survey" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-white">Fragebogen (36 Kapitel)</span>
+          <span class="text-xs font-bold text-white">Fragebogen (185 Items)</span>
           <span class="text-slate-500 text-xs">→</span>
         </a>
         <div class="w-full p-3 rounded-2xl bg-purple-950/60 border border-purple-600 text-left flex items-center justify-between shadow-md">
@@ -200,27 +199,120 @@
       </div>
 
       <p class="text-[10.5px] text-slate-300 leading-relaxed" id="pair-dynamic-desc">
-        Berechnet aus 36 Fragebogen-Kapiteln (180 Items). Unterscheidet echte Doppel-Spitzen (5/5), hohe Synergien (5/4 &amp; 4/5), Erkundungs-Brücken (5/3 &amp; 4/3), sensible Sehnsüchte mit Schutzanker (🙈) und getrennte Veto-Schranken für Top und Bottom.
+        Berechnet aus allen 36 Fragebogen-Kapiteln inklusive Kapitel 00 (185 Items). Unterscheidet echte Doppel-Spitzen (5/5), hohe Synergien (5/4 &amp; 4/5), Erkundungs-Brücken (5/3 &amp; 4/3), sensible Sehnsüchte mit Schutzanker, persönliche Bemerkungen und Tabu-Schranken.
       </p>
 
       <!-- 4 RESONANZ-KENNZAHLEN GRID -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-        <div class="p-3 rounded-2xl bg-slate-900/90 border border-purple-900/50 space-y-0.5">
+        <div class="p-3 rounded-2xl bg-slate-900/90 border border-purple-900/50 space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('peaks')">
           <span class="text-[10px] text-purple-300 block font-medium">Doppel-Spitzen (5/5):</span>
           <strong class="text-sm sm:text-base font-bold font-mono text-white" id="stat-double-fives">0</strong>
         </div>
-        <div class="p-3 rounded-2xl bg-slate-900/90 border border-indigo-900/50 space-y-0.5">
+        <div class="p-3 rounded-2xl bg-slate-900/90 border border-indigo-900/50 space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('synergies')">
           <span class="text-[10px] text-indigo-300 block font-medium">Hohe Synergien (5/4):</span>
           <strong class="text-sm sm:text-base font-bold font-mono text-white" id="stat-high-synergies">0</strong>
         </div>
-        <div class="p-3 rounded-2xl bg-slate-900/90 border border-amber-900/50 space-y-0.5">
+        <div class="p-3 rounded-2xl bg-slate-900/90 border border-amber-900/50 space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('bridges')">
           <span class="text-[10px] text-amber-300 block font-medium">Erkundungs-Brücken:</span>
           <strong class="text-sm sm:text-base font-bold font-mono text-white" id="stat-bridges">0</strong>
         </div>
-        <div class="p-3 rounded-2xl bg-slate-900/90 border border-rose-900/50 space-y-0.5">
+        <div class="p-3 rounded-2xl bg-slate-900/90 border border-rose-900/50 space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('taboos')">
           <span class="text-[10px] text-rose-300 block font-medium">Tabu-Vetos &amp; Scham:</span>
           <strong class="text-sm sm:text-base font-bold font-mono text-white" id="stat-taboos">0</strong>
         </div>
+      </div>
+    </div>
+    <!-- PSYCHOLOGISCHE KI-TIEFENANALYSE & BEZIEHUNGS-GUTACHTEN -->
+    <div class="theme-card rounded-3xl p-5 border border-purple-900/60 space-y-3.5 shadow-xl bg-gradient-to-br from-purple-950/30 via-noir-900 to-indigo-950/20">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-2.5">
+        <div class="space-y-0.5 min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse"></span>
+            <strong class="text-xs sm:text-sm text-purple-200 font-bold block">Psychologische KI-Tiefenanalyse &amp; Beziehungs-Gutachten</strong>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-snug">
+            Synthetisiert alle 185 Items, Notizen beider Partner, Scham-Anker und Traumagrenzen zu einem ganzheitlichen psychologischen Profil.
+          </p>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" id="btn-trigger-ai-analysis" onclick="PairAnalysis.generateAiDeepReport()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs touch-btn shadow-md flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-purple-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+            <span id="btn-ai-analysis-text">KI-Tiefenbericht berechnen</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BERICHTS-CONTAINER -->
+      <div id="ai-deep-report-container" class="space-y-3">
+        <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-slate-400 leading-relaxed text-center py-6">
+          Klicke oben auf <strong class="text-purple-300 font-bold">„KI-Tiefenbericht berechnen“</strong>, um eine fundierte psychologische Auswertung eures gemeinsamen Musters, konkrete Verhaltensratschläge und Interaktions-Leitfäden für Alltag und Schlafzimmer zu generieren.
+        </div>
+      </div>
+    </div>
+
+    <!-- DYNAMISCHER INTERAKTIONS-LEITFADEN: WIE WIR MITEINANDER UMGEHEN -->
+    <div class="theme-card rounded-3xl p-5 border border-indigo-900/60 space-y-3 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div class="space-y-0.5">
+          <strong class="text-xs sm:text-sm text-indigo-200 font-bold block">Interaktions-Cockpit: Wie wir miteinander umgehen</strong>
+          <span class="text-[10px] text-slate-400">Konkrete Verhaltensregeln abgeleitet aus euren psychometrischen Antworten</span>
+        </div>
+        <span class="text-[9.5px] font-mono text-indigo-400 font-bold">Verhaltens-Kodex</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs">
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-purple-900/60 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-purple-300 font-bold text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+            <span>Doppel-Spitzen (Eure sichere Spielwiese):</span>
+          </div>
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Hier herrscht vollkommene Einigkeit. Diese Themen könnt ihr jederzeit ohne langes Aushandeln ansteuern. Sie dienen als <strong>verlässlicher emotionaler Anker</strong>, wenn einer von beiden gestresst oder erschöpft ist.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-amber-900/60 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-amber-300 font-bold text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>Erkundungs-Brücken (Behutsames Herantasten):</span>
+          </div>
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Der Top führt behutsam, der Sub ist neugierig oder neutral. Startet mit vereinbarten <strong>10-Minuten-Probeläufen</strong> unter Nutzung der Safeword-Ampel (Grün/Gelb/Rot) und wertet die Erfahrung am nächsten Tag auf Augenhöhe aus.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-pink-900/60 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-pink-300 font-bold text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+            <span>Scham-Schutzanker (Spottverbot § 1 Abs. 2):</span>
+          </div>
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Verletzliche Sehnsüchte dürfen niemals im Alltagsstreit oder vor Dritten als Witz erwähnt werden. Sie werden ausschließlich im warmen Halbdunkel mit ausdrücklicher verbaler Bestätigung (<em>„Du bist sicher bei mir“</em>) erkundet.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-950 border border-rose-900/60 space-y-1.5">
+          <div class="flex items-center gap-1.5 text-rose-300 font-bold text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+            <span>Tabus &amp; Sanfte Grenzen (RACK-Schutz):</span>
+          </div>
+          <p class="text-[10.5px] text-slate-300 leading-snug">
+            Ein Tabu (Note 1) ist kein Gegenstand von Diskussion oder Überredung. Das bedingungslose Wahren der Grenzen des Partners ist das Fundament, das tiefe Hingabe in allen anderen Bereichen erst ermöglicht.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- KAPITEL 00: PSYCHOSOMATISCHE SICHERHEIT & INTERVENTIONEN BEI ÜBERFORDERUNG -->
+    <div id="safety-interventions-card" class="theme-card rounded-3xl p-5 border border-emerald-900/60 space-y-3 shadow-md bg-gradient-to-br from-emerald-950/20 via-noir-900 to-purple-950/20">
+      <div class="flex items-center justify-between border-b border-emerald-900/40 pb-2">
+        <div class="space-y-0.5">
+          <strong class="text-xs sm:text-sm text-emerald-200 font-bold block">Psychosomatische Sicherheit &amp; Notfall-Interventionen</strong>
+          <span class="text-[10px] text-slate-400">Auswertung aus Kapitel 00 (Trauma, Trigger &amp; Sofort-Hilfe bei Überforderung)</span>
+        </div>
+        <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono text-[9.5px] font-bold">RACK-Schutz</span>
+      </div>
+      <div id="safety-interventions-content" class="space-y-2 text-xs">
+        <div class="py-2 text-slate-500 text-[11px]">Lade Schutzraum-Daten...</div>
       </div>
     </div>
 
@@ -228,15 +320,15 @@
     <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-3 shadow-md text-xs">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2">
         <div class="space-y-0.5">
-          <strong class="text-xs text-white block font-bold">5-Säulen-Balance der Dynamik</strong>
-          <span class="text-[10px] text-slate-400">Verteilung des gemeinsamen Begehrens über die Domänen</span>
+          <strong class="text-xs sm:text-sm text-white block font-bold">5-Säulen-Balance der Dynamik</strong>
+          <span class="text-[10px] text-slate-400">Verteilung des gemeinsamen Begehrens über die Lebens- und Spiel-Domänen</span>
         </div>
         <span class="text-[9.5px] font-mono text-purple-400 font-bold">Psychometrie</span>
       </div>
       <div id="pillars-balance-container" class="space-y-2 pt-1"></div>
     </div>
 
-    <!-- FILTER-TABS FÜR DIE RESONANZ-LISTEN -->
+    <!-- FILTER-TABS FÜR DIE RESONANZ-LISTEN (INKLUSIVE "MIT NOTIZEN") -->
     <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-slate-800/80">
       <button type="button" onclick="PairAnalysis.filterTab('peaks')" id="tab-btn-peaks" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-700 text-white touch-btn shadow-sm whitespace-nowrap">
         Doppel-Spitzen (5/5)
@@ -247,16 +339,19 @@
       <button type="button" onclick="PairAnalysis.filterTab('bridges')" id="tab-btn-bridges" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white touch-btn whitespace-nowrap">
         Erkundungs-Brücken (5/3)
       </button>
-      <button type="button" onclick="PairAnalysis.filterTab('shame')" id="tab-btn-shame" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white touch-btn whitespace-nowrap">
-        Scham-Schutzanker (🙈)
+      <button type="button" onclick="PairAnalysis.filterTab('notes')" id="tab-btn-notes" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-purple-300 hover:text-white touch-btn whitespace-nowrap">
+        Mit Notizen
+      </button>
+      <button type="button" onclick="PairAnalysis.filterTab('shame')" id="tab-btn-shame" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-pink-300 hover:text-white touch-btn whitespace-nowrap">
+        Scham-Schutzanker
       </button>
       <button type="button" onclick="PairAnalysis.filterTab('taboos')" id="tab-btn-taboos" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-rose-300 hover:text-white touch-btn whitespace-nowrap">
         Tabu-Schranken (Note 1)
       </button>
     </div>
 
-    <!-- LISTE DER ITEMS IM AKTIVEN FILTER -->
-    <div id="pair-items-list-container" class="space-y-2"></div>
+    <!-- LISTE DER ITEMS IM AKTIVEN FILTER (MIT AUSFÜHRLICHEN NOTIZEN BEIDER PARTNER) -->
+    <div id="pair-items-list-container" class="space-y-2.5"></div>
 
     <!-- DIREKT-EXPORT IN DEN BEZIEHUNGSVERTRAG -->
     <div class="theme-card rounded-3xl p-5 border border-amber-900/60 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
@@ -273,7 +368,6 @@
     </div>
 
   </main>
-
   <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
 
   <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
@@ -294,6 +388,7 @@
     (function(window) {
       'use strict';
 
+      const STORAGE_KEY_AI_ANALYSIS = 'tactus_ai_pair_analysis';
       let currentActiveFilter = 'peaks';
       let analyzedData = null;
 
@@ -331,7 +426,6 @@
           setTimeout(() => el.remove(), 300);
         }, 2800);
       }
-
       function runFullPairAnalysis() {
         let topRole = 'A';
         let bottomRole = 'B';
@@ -366,6 +460,8 @@
               id: it.id,
               title: it.title,
               desc: it.desc,
+              type: it.type || 'scale',
+              options: it.options || [],
               chapterId: ch.id,
               chapterTitle: ch.title
             });
@@ -376,9 +472,10 @@
         const highSynergies = [];
         const bridges = [];
         const shameProtected = [];
-        const topTaboos = [];
+        const withNotes = [];
         const bottomTaboos = [];
         const softBoundaries = [];
+        const chapter00Results = [];
 
         // 5 Domänen-Akkumulatoren
         const domains = {
@@ -393,7 +490,31 @@
         let weightedResonanceSum = 0;
 
         itemMap.forEach((meta, itemId) => {
-          const sTop = ansTop[`it_${itemId}_r1`];       // Top führt
+          const noteTop = (ansTop[`note_${itemId}`] || '').trim();
+          const noteBottom = (ansBottom[`note_${itemId}`] || '').trim();
+          const hasNote = (noteTop.length > 0 || noteBottom.length > 0);
+
+          // Spezialbehandlung: Kapitel 00 (Items 901..905 - Choice-Fragen)
+          if (meta.type === 'choice') {
+            const chTop = ansTop[`choice_${itemId}`];
+            const chBottom = ansBottom[`choice_${itemId}`];
+
+            if (chTop || chBottom) {
+              const resEntry = {
+                meta,
+                chTop,
+                chBottom,
+                noteTop,
+                noteBottom,
+                isChoice: true
+              };
+              chapter00Results.push(resEntry);
+              if (hasNote) withNotes.push(resEntry);
+            }
+            return;
+          }
+
+          const sTop = ansTop[`it_${itemId}_r1`];       // Top führt aus
           const sBottom = ansBottom[`it_${itemId}_r2`]; // Bottom empfängt
           const isShame = ansBottom[`shame_${itemId}`] === true;
 
@@ -402,30 +523,46 @@
 
           scoredItemsCount++;
 
-          // 1. Tabus & Grenzen
-          if (sBottom === 1) {
-            bottomTaboos.push({ meta, sTop, sBottom, reason: "Veto des Bottoms" });
-          } else if (sBottom === 2) {
-            softBoundaries.push({ meta, sTop, sBottom, reason: "Sanfte Grenze" });
-          }
-          if (sTop === 1) {
-            topTaboos.push({ meta, sTop, sBottom, reason: "Ausführungs-Veto des Tops" });
+          const itemEntry = {
+            meta,
+            sTop,
+            sBottom,
+            noteTop,
+            noteBottom,
+            isShame,
+            topName: names[topRole],
+            bottomName: names[bottomRole]
+          };
+
+          // Mit Notizen-Filter
+          if (hasNote) {
+            withNotes.push(itemEntry);
           }
 
-          // 2. Scham-Schutzanker (🙈)
+          // 1. Tabus & Grenzen
+          if (sBottom === 1) {
+            bottomTaboos.push(Object.assign({}, itemEntry, { reason: `Veto von ${names[bottomRole]}` }));
+          } else if (sBottom === 2) {
+            softBoundaries.push(Object.assign({}, itemEntry, { reason: `Sanfte Grenze von ${names[bottomRole]}` }));
+          }
+
+          // 2. Scham-Schutzanker
           if (isShame && sBottom >= 3) {
-            shameProtected.push({ meta, sTop, sBottom });
+            shameProtected.push(itemEntry);
           }
 
           // 3. Resonanz-Klassifizierung
           if (sTop === 5 && sBottom === 5) {
-            doubleFives.push({ meta, sTop, sBottom, matchType: "5/5 Spitze" });
+            doubleFives.push(Object.assign({}, itemEntry, { matchType: "5/5 Doppel-Spitze" }));
             weightedResonanceSum += 1.0;
           } else if ((sTop === 5 && sBottom === 4) || (sTop === 4 && sBottom === 5)) {
-            highSynergies.push({ meta, sTop, sBottom, matchType: `${sTop}/${sBottom} Synergie` });
+            highSynergies.push(Object.assign({}, itemEntry, { matchType: `${sTop}/${sBottom} Hohe Synergie` }));
             weightedResonanceSum += 0.85;
           } else if ((sTop >= 4 && sBottom === 3) || (sTop === 3 && sBottom >= 4)) {
-            bridges.push({ meta, sTop, sBottom, topLeads: sTop >= 4, matchType: `${sTop}/${sBottom} Brücke` });
+            bridges.push(Object.assign({}, itemEntry, { 
+              topLeads: sTop >= 4, 
+              matchType: `${sTop}/${sBottom} Erkundungs-Brücke` 
+            }));
             weightedResonanceSum += 0.65;
           } else if (sBottom !== 1 && sTop !== 1) {
             weightedResonanceSum += 0.35;
@@ -451,15 +588,21 @@
           highSynergies,
           bridges,
           shameProtected,
-          topTaboos,
+          withNotes,
           bottomTaboos,
           softBoundaries,
-          domains
+          chapter00Results,
+          domains,
+          topName: names[topRole],
+          bottomName: names[bottomRole],
+          topRole,
+          bottomRole
         };
 
         updateAnalysisUI();
+        renderChapter00Safeguards();
+        loadSavedAiReport();
       }
-
       function updateAnalysisUI() {
         if (!analyzedData) return;
 
@@ -506,9 +649,56 @@
         }).join('');
       }
 
+      function renderChapter00Safeguards() {
+        const container = document.getElementById('safety-interventions-content');
+        if (!container || !analyzedData) return;
+
+        const results = analyzedData.chapter00Results;
+        if (results.length === 0) {
+          container.innerHTML = `
+            <div class="p-3 rounded-2xl bg-slate-950/60 text-slate-400 text-[11px]">
+              Noch keine Antworten zu Kapitel 00 (Psychosomatische Sicherheit) hinterlegt.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = results.map(r => {
+          const it = r.meta;
+          const optMap = new Map((it.options || []).map(o => [o.val, o.label]));
+
+          const labelTop = optMap.get(r.chTop) || 'Nicht gewählt';
+          const labelBottom = optMap.get(r.chBottom) || 'Nicht gewählt';
+
+          return `
+            <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-1.5">
+              <strong class="text-xs text-white block font-bold leading-tight break-words">${escapeHtml(it.title)}</strong>
+              <p class="text-[10px] text-slate-400 leading-snug break-words">${escapeHtml(it.desc)}</p>
+
+              <div class="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10.5px]">
+                <div class="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                  <span class="text-[9.5px] font-mono text-purple-300 block font-bold">[${escapeHtml(analyzedData.topName)}]:</span>
+                  <span class="text-slate-200 leading-snug break-words">${escapeHtml(labelTop)}</span>
+                </div>
+                <div class="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                  <span class="text-[9.5px] font-mono text-indigo-300 block font-bold">[${escapeHtml(analyzedData.bottomName)}]:</span>
+                  <span class="text-slate-200 leading-snug break-words">${escapeHtml(labelBottom)}</span>
+                </div>
+              </div>
+
+              ${r.noteTop || r.noteBottom ? `
+                <div class="pt-1 border-t border-slate-800/60 space-y-1 text-[10px]">
+                  ${r.noteTop ? `<p class="text-purple-300 italic break-words"><span class="font-mono font-bold not-italic">[Notiz ${escapeHtml(analyzedData.topName)}]:</span> „${escapeHtml(r.noteTop)}“</p>` : ''}
+                  ${r.noteBottom ? `<p class="text-indigo-300 italic break-words"><span class="font-mono font-bold not-italic">[Notiz ${escapeHtml(analyzedData.bottomName)}]:</span> „${escapeHtml(r.noteBottom)}“</p>` : ''}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
       function filterTab(tabKey) {
         currentActiveFilter = tabKey;
-        ['peaks', 'synergies', 'bridges', 'shame', 'taboos'].forEach(k => {
+        ['peaks', 'synergies', 'bridges', 'notes', 'shame', 'taboos'].forEach(k => {
           const btn = document.getElementById(`tab-btn-${k}`);
           if (btn) {
             if (k === tabKey) {
@@ -537,9 +727,12 @@
         } else if (currentActiveFilter === 'bridges') {
           items = analyzedData.bridges;
           emptyText = "Keine Erkundungs-Brücken vorhanden.";
+        } else if (currentActiveFilter === 'notes') {
+          items = analyzedData.withNotes;
+          emptyText = "Keine persönlichen Notizen hinterlegt.";
         } else if (currentActiveFilter === 'shame') {
           items = analyzedData.shameProtected;
-          emptyText = "Keine verletzlichen Scham-Marker (🙈) hinterlegt.";
+          emptyText = "Keine verletzlichen Scham-Marker hinterlegt.";
         } else if (currentActiveFilter === 'taboos') {
           items = analyzedData.bottomTaboos;
           emptyText = "Keine harten Tabu-Vetos vorhanden (alle Optionen verhandelbar).";
@@ -556,42 +749,212 @@
 
         container.innerHTML = items.map(entry => {
           const meta = entry.meta;
-          const scoreLabel = entry.matchType || (currentActiveFilter === 'shame' ? `Top: ${entry.sTop} / Sub: ${entry.sBottom}` : entry.reason);
+          const scoreLabel = entry.matchType || (currentActiveFilter === 'shame' ? `${entry.sTop || 0}/${entry.sBottom || 0}` : (entry.reason || 'Notiert'));
           const isVeto = currentActiveFilter === 'taboos';
           const isBridge = currentActiveFilter === 'bridges';
           const isShame = currentActiveFilter === 'shame';
 
           return `
-            <div class="p-3 sm:p-4 rounded-2xl theme-card border transition-all space-y-1.5 ${isVeto ? 'border-rose-900/60 bg-rose-950/20' : (isBridge ? 'border-amber-900/50 bg-amber-950/20' : (isShame ? 'border-pink-900/50 bg-pink-950/20' : 'border-purple-900/50 bg-purple-950/20'))}">
-              <div class="flex items-center justify-between gap-2">
-                <div class="min-w-0 flex-1">
-                  <span class="text-[9px] font-mono text-purple-400 block truncate">${escapeHtml(meta.chapterTitle)}</span>
-                  <strong class="text-xs text-white block truncate font-bold">${escapeHtml(meta.title)}</strong>
+            <div class="p-3.5 sm:p-4 rounded-2xl theme-card border transition-all space-y-2.5 ${isVeto ? 'border-rose-900/60 bg-rose-950/20' : (isBridge ? 'border-amber-900/50 bg-amber-950/20' : (isShame ? 'border-pink-900/50 bg-pink-950/20' : 'border-purple-900/50 bg-purple-950/20'))}">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1 space-y-0.5">
+                  <span class="text-[9px] font-mono text-purple-400 block">${escapeHtml(meta.chapterTitle)} · #${meta.id}</span>
+                  <strong class="text-xs sm:text-sm text-white block font-bold leading-tight break-words">${escapeHtml(meta.title)}</strong>
                 </div>
-                <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold flex-shrink-0 ${isVeto ? 'bg-rose-950 text-rose-300 border border-rose-800' : (isBridge ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-purple-950 text-purple-300 border border-purple-800')}">
-                  ${escapeHtml(scoreLabel)}
-                </span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold ${isVeto ? 'bg-rose-950 text-rose-300 border border-rose-800' : (isBridge ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-purple-950 text-purple-300 border border-purple-800')}">
+                    ${escapeHtml(scoreLabel)}
+                  </span>
+                </div>
               </div>
-              <p class="text-[10px] text-slate-400 leading-snug line-clamp-2">${escapeHtml(meta.desc)}</p>
+
+              <p class="text-[10.5px] text-slate-400 leading-snug break-words">${escapeHtml(meta.desc)}</p>
+
+              <!-- BEWERTUNGEN BEIDER PARTNER TRANSPARENT AUSGEWIESEN -->
+              ${!entry.isChoice ? `
+                <div class="flex items-center gap-3 text-[10px] font-mono pt-0.5 text-slate-400 border-t border-slate-800/60">
+                  <span>${escapeHtml(analyzedData.topName)} (Top/führt): <strong class="text-purple-300">${entry.sTop}/5</strong></span>
+                  <span>·</span>
+                  <span>${escapeHtml(analyzedData.bottomName)} (Bottom/empfängt): <strong class="text-indigo-300">${entry.sBottom}/5</strong></span>
+                </div>
+              ` : ''}
+
+              <!-- PERSÖNLICHE NOTIZEN BEIDER PARTNER IM KLARTEXT NEBENEINANDER -->
+              ${entry.noteTop || entry.noteBottom ? `
+                <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 text-[10.5px]">
+                  ${entry.noteTop ? `
+                    <div class="flex items-start gap-1.5 text-purple-300 italic">
+                      <span class="font-bold font-mono not-italic text-[9.5px] text-purple-400 flex-shrink-0">[Notiz von ${escapeHtml(analyzedData.topName)}]:</span>
+                      <span class="break-words">„${escapeHtml(entry.noteTop)}“</span>
+                    </div>
+                  ` : ''}
+                  ${entry.noteBottom ? `
+                    <div class="flex items-start gap-1.5 text-indigo-300 italic pt-1 ${entry.noteTop ? 'border-t border-slate-800/60' : ''}">
+                      <span class="font-bold font-mono not-italic text-[9.5px] text-indigo-400 flex-shrink-0">[Notiz von ${escapeHtml(analyzedData.bottomName)}]:</span>
+                      <span class="break-words">„${escapeHtml(entry.noteBottom)}“</span>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
+
               ${isShame ? `
-                <div class="p-2 rounded-xl bg-pink-950/40 border border-pink-900/60 text-[9.5px] text-pink-200">
-                  Schutzanker: Steht unter partiellem Spottverbot. Behutsam und ohne Druck erkunden.
+                <div class="p-2 rounded-xl bg-pink-950/40 border border-pink-900/60 text-[10px] text-pink-200">
+                  Schutzanker aktiv: Diese Sehnsucht steht unter partiellem Alltags-Spottverbot. Behutsam und ohne Leistungsdruck erkunden.
                 </div>
               ` : ''}
               ${isBridge ? `
-                <div class="p-2 rounded-xl bg-amber-950/40 border border-amber-900/60 text-[9.5px] text-amber-200">
-                  Brücke: ${entry.topLeads ? 'Top führt an, Bottom ist offen für Führung' : 'Bottom wünscht behutsame Begleitung durch den Top'}.
+                <div class="p-2 rounded-xl bg-amber-950/40 border border-amber-900/60 text-[10px] text-amber-200">
+                  Erkundungs-Brücke: ${entry.topLeads ? `${escapeHtml(analyzedData.topName)} führt an, ${escapeHtml(analyzedData.bottomName)} ist offen für Führung` : `${escapeHtml(analyzedData.bottomName)} wünscht behutsame Begleitung durch ${escapeHtml(analyzedData.topName)}`}.
                 </div>
               ` : ''}
             </div>
           `;
         }).join('');
       }
+      async function generateAiDeepReport() {
+        if (!analyzedData) runFullPairAnalysis();
+
+        const container = document.getElementById('ai-deep-report-container');
+        const btnText = document.getElementById('btn-ai-analysis-text');
+        const triggerBtn = document.getElementById('btn-trigger-ai-analysis');
+        if (!container) return;
+
+        if (triggerBtn) triggerBtn.disabled = true;
+        if (btnText) btnText.innerText = "Berechne Tiefenbericht...";
+
+        container.innerHTML = `
+          <div class="p-6 rounded-2xl bg-slate-950 border border-purple-900/60 text-center space-y-3 animate-pulse">
+            <div class="w-8 h-8 border-2 border-purple-500/20 border-t-purple-400 rounded-full animate-spin mx-auto"></div>
+            <strong class="text-xs text-purple-200 block font-bold">TACTUS KI analysiert 185 Datenpunkte, Notizen &amp; Schutzachsen...</strong>
+            <p class="text-[10.5px] text-slate-400">Verbindet Psychometrie, Scham-Entlastung und konkrete Interaktionsratschläge.</p>
+          </div>
+        `;
+
+        let generatedReport = null;
+
+        // 1. Primärpfad: AIAdapter (Multi-KI Gateway mit vollständigem Briefing)
+        if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
+          const topName = analyzedData.topName;
+          const bottomName = analyzedData.bottomName;
+
+          const prompt = `
+Du bist der leitende Beziehungs- und Somatik-Psychologe für das Beziehungs-Betriebssystem TACTUS (tactus.digital).
+Erstelle für ${topName} (Top) und ${bottomName} (Bottom) ein tiefgründiges, anspruchsvolles und erwachsenes Psychologisches Paar-Gutachten.
+
+${window.HubContext && typeof window.HubContext.getLanguageDoctrine === 'function' ? window.HubContext.getLanguageDoctrine() : ''}
+
+DATENBASIS DES PAARES:
+- Gesamt-Resonanz: ${analyzedData.overallMatchPercentage} %
+- Top (führt): ${topName} | Bottom (empfängt): ${bottomName}
+- Doppel-Spitzen (5/5): ${analyzedData.doubleFives.map(d => d.meta.title).slice(0, 8).join(', ') || 'Keine'}
+- Hohe Synergien (5/4): ${analyzedData.highSynergies.map(d => d.meta.title).slice(0, 6).join(', ') || 'Keine'}
+- Erkundungs-Brücken (5/3): ${analyzedData.bridges.map(d => d.meta.title).slice(0, 5).join(', ') || 'Keine'}
+- Scham-Schutzanker (🙈): ${analyzedData.shameProtected.map(d => d.meta.title).join(', ') || 'Keine'}
+- Tabu-Schranken des Bottoms: ${analyzedData.bottomTaboos.map(d => d.meta.title).join(', ') || 'Keine'}
+- Hinterlegte Notizen der Partner:
+${analyzedData.withNotes.slice(0, 6).map(n => `- Thema „${n.meta.title}“: [${topName}]: „${n.noteTop || '-'}“ | [${bottomName}]: „${n.noteBottom || '-'}“`).join('\n')}
+
+GLIEDERUNG DES GUTACHTENS (exakt 5 Abschnitte):
+1. Der psychometrische Fingerabdruck eurer Dynamik
+2. Konkreter Interaktions-Leitfaden (Alltag & Schlafzimmer: Wie beide miteinander umgehen)
+3. Schutzräume, Scham-Entlastung & das Spottverbot (§ 1 Abs. 2)
+4. Erkundungs-Brücken & Pilot-Experimente (Anleitung für behutsame Annäherung)
+5. Psychosomatische Sicherheit & Notfall-Achtsamkeit (RACK)
+
+Formuliere direkt, hochgradig empathisch, wissenschaftlich fundiert und frei von kitschigen Klischees.
+`;
+
+          try {
+            generatedReport = await window.AIAdapter.generateText({
+              systemPrompt: "Du bist der leitende Beziehungs- und Somatik-Psychologe für TACTUS.",
+              userPrompt: prompt,
+              temperature: 0.65
+            });
+          } catch (errAi) {
+            console.warn("[TACTUS Analysis] KI-Bericht fehlgeschlagen, nutze prozedurale Heuristik:", errAi);
+          }
+        }
+
+        // 2. Fallback: Prozedurale Heuristik
+        if (!generatedReport || generatedReport.trim().length < 50) {
+          generatedReport = synthesizeProceduralReport(analyzedData);
+        }
+
+        // Persistieren im localStorage
+        try {
+          localStorage.setItem(STORAGE_KEY_AI_ANALYSIS, JSON.stringify({
+            report: generatedReport,
+            generatedAt: Date.now(),
+            matchPercentage: analyzedData.overallMatchPercentage
+          }));
+        } catch (e) {}
+
+        renderReportHtml(generatedReport);
+        showToast("✓ Psychologischer KI-Tiefenbericht berechnet");
+
+        if (triggerBtn) triggerBtn.disabled = false;
+        if (btnText) btnText.innerText = "Bericht neu berechnen";
+      }
+
+      function synthesizeProceduralReport(data) {
+        return `### 1. Der psychometrische Fingerabdruck eurer Dynamik
+Eure Gesamtresonanz liegt bei beachtlichen ${data.overallMatchPercentage} %. Mit ${data.doubleFives.length} identifizierten Doppel-Spitzen und ${data.highSynergies.length} hohen Synergien teilt ihr ein außergewöhnlich stabiles Fundament. ${data.topName} bringt einen ausgeprägten Führungswillen mit, während ${data.bottomName} eine hohe Bereitschaft zur vertrauensvollen Hingabe signalisiert.
+
+### 2. Konkreter Interaktions-Leitfaden (Alltag & Schlafzimmer)
+• **Für ${data.topName} (Top):** Eure Führung entfaltet ihre stärkste erotische Kraft, wenn sie ruhig, vorhersehbar und unaufgeregt ausgeübt wird. Vermeide Hektik; gib klare Haltungsanweisungen und schenke dem Bottom nach jeder Zuchtphase eine beruhigende Handauflegung.
+• **Für ${data.bottomName} (Bottom):** Wahre Hingabe bedeutet, die motorische und gedankliche Kontrolle vertrauensvoll abzugeben. Entlaste ${data.topName} im Alltag durch unaufgeforderte Dienste, um den Raum für ungestörte Führung freizuhalten.
+
+### 3. Schutzräume, Scham-Entlastung & das Spottverbot
+Mit ${data.shameProtected.length} registrierten Schutzankern (🙈) habt ihr verletzliche Sehnsüchte benannt. Gemäß § 1 Abs. 2 Beziehungsvertrag gilt hierfür ein absolutes Spottverbot: Diese Themen werden niemals im Alltagsstreit erwähnt, sondern ausschließlich im geschützten Halbdunkel mit verbaler Geborgenheit erkundet.
+
+### 4. Erkundungs-Brücken & Pilot-Experimente
+Ihr habt ${data.bridges.length} Erkundungs-Brücken identifiziert. Nutzt für diese Praktiken das Prinzip der 10-Minuten-Probeläufe: Kündigt den Beginn an, wahrt den Kontakt über die Safeword-Ampel und schließt die Erkundung mit einer 5-minütigen Nachbesprechung auf Augenhöhe ab.
+
+### 5. Psychosomatische Sicherheit & Notfall-Achtsamkeit (RACK)
+Mit ${data.bottomTaboos.length} definierten Tabus sind klare Grenzlinien gezogen. Bei emotionalen Überreizungen greift sofort die vereinbarte Intervention: Berührung einstellen, Gewichtsdecke auflegen und synchrone 4-7-8 Vagus-Atmung zur Kreislaufstabilisierung.`;
+      }
+
+      function renderReportHtml(rawReport) {
+        const container = document.getElementById('ai-deep-report-container');
+        if (!container) return;
+
+        // Formatiere Markdown-Überschriften und Absätze
+        const formattedHtml = rawReport
+          .replace(/^### (.*$)/gim, '<h4 class="text-xs sm:text-sm font-bold text-purple-200 mt-3 mb-1 border-b border-purple-900/40 pb-1">$1</h4>')
+          .replace(/^• (.*$)/gim, '<p class="pl-3 border-l border-purple-500/40 text-slate-300 leading-snug my-1">$1</p>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+          .replace(/\n\n/g, '<div class="h-2"></div>');
+
+        container.innerHTML = `
+          <div class="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-purple-900/50 space-y-2 text-[11px] leading-relaxed animate-fade-in">
+            ${formattedHtml}
+            <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[9.5px] font-mono text-slate-500">
+              <span>TACTUS Psychological Resonance Report</span>
+              <span>Zero-Knowledge Persistent</span>
+            </div>
+          </div>
+        `;
+      }
+
+      function loadSavedAiReport() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY_AI_ANALYSIS);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.report) {
+              renderReportHtml(parsed.report);
+              const btnText = document.getElementById('btn-ai-analysis-text');
+              if (btnText) btnText.innerText = "Bericht aktualisieren";
+            }
+          }
+        } catch (e) {}
+      }
 
       window.PairAnalysis = {
         init: runFullPairAnalysis,
         recompute: () => { runFullPairAnalysis(); showToast("Synergien neu berechnet ✓"); },
-        filterTab: filterTab
+        filterTab: filterTab,
+        generateAiDeepReport: generateAiDeepReport
       };
 
       document.addEventListener('DOMContentLoaded', runFullPairAnalysis);
