@@ -6,7 +6,8 @@
  * Standards & Garantien:
  * - Verdichtung des 7-Vektoren Zustandsraums:
  *   Psi = <Psychometrie, Somatik, Historie, Energie/Temperament, Biologie/RACK, Top-Agenda, Hardware/DoF>
- * - Vollständige Integration des Medizinischen RACK-Gesundheitspasses (Diabetes, Neuropathie, Asthma, etc.)
+ * - Vollständige Integration des Medizinischen RACK-Gesundheitspasses & Kapitel 00 (Items 901–905)
+ * - Berücksichtigung spezifischer Ängste (Enge, Dunkelheit, Starre, Degradierung, Überraschung) & Freitext-Notizen
  * - Episodisches Gedächtnis der letzten Sessions (Kältezittern, Überreizung, Subspace-Tags)
  * - Deterministische Constraint-Propagation (Ausschluss physikalischer Widersprüche via ToyCombinatorics)
  * - Strikte Sprach- und Tonfall-Doktrin: Anti-Schwulst, kein Groschenroman-Kitsch, keine System-Emojis
@@ -39,13 +40,19 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     keyholderRole: 'kompass_keyholder_role',
     cagedRole: 'kompass_caged_role',
     medicalPass: 'tactus_medical_pass',
-    sessionLogs: 'kompass_session_logs',
-    workplace: 'kompass_bottom_workplace',
+    sessionLogs: 'tactus_session_logs',
+    sessionLogsLegacy: 'kompass_session_logs',
+    workplace: 'tactus_bottom_workplace',
+    workplaceLegacy: 'kompass_bottom_workplace',
     topMentalLoad: 'tactus_top_mental_load',
-    contractState: 'kompass_contract_state',
+    contractState: 'tactus_contract_state',
+    contractStateLegacy: 'kompass_contract_state',
     ownedEquipment: 'tactus_owned_equipment',
+    ownedEquipmentLegacy: 'kompass_owned_equipment',
     customEquipment: 'tactus_custom_equipment',
-    toyQuantities: 'tactus_toy_quantities'
+    customEquipmentLegacy: 'kompass_custom_equipment',
+    toyQuantities: 'tactus_toy_quantities',
+    toyQuantitiesLegacy: 'kompass_toy_quantities'
   };
 
   function safeJsonParse(key, fallback = null) {
@@ -93,18 +100,20 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     const bottomTaboos = [];
     const topTaboos = [];
     const bottomShameItems = [];
+    const partnerNotes = [];
 
-    const chapters = window.surveyChapters || [];
+    const chapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
     const itemMap = new Map();
 
     for (let c = 0; c < chapters.length; c++) {
       const ch = chapters[c];
       const items = ch.items || [];
       for (let i = 0; i < items.length; i++) {
-        itemMap.set(items[i].id, { title: items[i].title, chapter: ch.title });
+        itemMap.set(items[i].id, { title: items[i].title, desc: items[i].desc, chapter: ch.title, type: items[i].type || 'scale' });
       }
     }
 
+    // 1. Numerische Skalen-Items (1..180) & Partner-Notizen
     for (const key in ansTop) {
       if (!ansTop.hasOwnProperty(key)) continue;
 
@@ -114,6 +123,19 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
         const bottomReceiveScore = ansBottom[`it_${itemId}_r2`];
         const isShame = ansBottom[`shame_${itemId}`] === true;
         const itemInfo = itemMap.get(itemId) || { title: `Item #${itemId}`, chapter: 'Allgemein' };
+
+        const noteTop = (ansTop[`note_${itemId}`] || '').trim();
+        const noteBottom = (ansBottom[`note_${itemId}`] || '').trim();
+
+        if (noteTop || noteBottom) {
+          partnerNotes.push({
+            itemId: itemId,
+            title: itemInfo.title,
+            chapter: itemInfo.chapter,
+            noteTop: noteTop,
+            noteBottom: noteBottom
+          });
+        }
 
         if (topLeadScore === 5 && bottomReceiveScore === 5) {
           doubleFives.push({ id: itemId, title: itemInfo.title, chapter: itemInfo.chapter });
@@ -133,12 +155,33 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
       }
     }
 
+    // 2. Schutzkapitel 00: Psychosomatische Sicherheit & Traumagrenzen (Items 901..905)
+    const chapter00 = {
+      priorTrauma: ansBottom['choice_901'] || ansTop['choice_901'] || 'none',
+      triggers: ansBottom['choice_902'] || ansTop['choice_902'] || 'none',
+      overloadReaction: ansBottom['choice_903'] || ansTop['choice_903'] || 'freeze',
+      desiredEmergencyIntervention: ansBottom['choice_904'] || 'hug',
+      shameEtiquette: ansBottom['choice_905'] || 'strict_ban'
+    };
+
+    const INTERVENTION_TRANSLATIONS = {
+      hug: "Feste, stumme Umarmung & Halten (Gewichtsdecken-Effekt)",
+      distance: "Körperliche Berührung sofort einstellen & dem Sub Raum geben",
+      grounding: "Licht anmachen, zudecken & ruhige 4-7-8 Vagus-Atmung anleiten",
+      water_tea: "Schluck warmes Wasser oder gezuckerten Tee reichen, keine Fragen stellen",
+      voice: "Mit leiser, ruhiger Stimme sprechen: 'Du bist vollkommen sicher bei mir.'"
+    };
+
+    chapter00.interventionDirective = INTERVENTION_TRANSLATIONS[chapter00.desiredEmergencyIntervention] || INTERVENTION_TRANSLATIONS.hug;
+
     return {
       doubleFives: doubleFives,
       highSynergies: highSynergies.slice(0, 10),
       bottomTaboos: bottomTaboos,
       topTaboos: topTaboos,
-      bottomShameTopics: bottomShameItems
+      bottomShameTopics: bottomShameItems,
+      partnerNotes: partnerNotes,
+      chapter00Safeguards: chapter00
     };
   }
 
@@ -150,8 +193,9 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     let lastEdgeHoursAgo = 999;
     let hadRecentRuinedOrgasm = false;
 
-    if (window.LedgerApp && typeof window.LedgerApp.getState === 'function') {
-      const state = window.LedgerApp.getState();
+    const protocolCore = window.ProtocolCore || window.LedgerApp;
+    if (protocolCore && typeof protocolCore.getState === 'function') {
+      const state = protocolCore.getState();
       if (state) {
         isLocked = !!state.isLocked;
         hardwareId = state.hardware || 'penis_cherrykeeper';
@@ -164,8 +208,9 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     }
 
     // Ratio-Historie prüfen bezüglich Ruined Orgasm
-    if (window.HubRatio && typeof window.HubRatio.getHistory === 'function') {
-      const history = window.HubRatio.getHistory();
+    const ratioModule = window.ProtocolRatio || window.HubRatio;
+    if (ratioModule && typeof ratioModule.getHistory === 'function') {
+      const history = ratioModule.getHistory();
       if (Array.isArray(history) && history.length > 0) {
         const lastSubClimax = history.find(h => h.beneficiary === 'sub');
         if (lastSubClimax) {
@@ -210,7 +255,7 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
   }
 
   function extractEpisodicMemoryVector() {
-    const rawLogs = safeJsonParse(STORAGE_KEYS.sessionLogs, []) || [];
+    const rawLogs = safeJsonParse(STORAGE_KEYS.sessionLogs, null) || safeJsonParse(STORAGE_KEYS.sessionLogsLegacy, []);
     const validLogs = Array.isArray(rawLogs) ? rawLogs : [];
 
     // Letzte 3 Sessions analysieren
@@ -256,7 +301,7 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
   }
 
   function extractEnergyAndWorkplaceVector() {
-    const workplaceId = localStorage.getItem(STORAGE_KEYS.workplace) || 'desk_office';
+    const workplaceId = localStorage.getItem(STORAGE_KEYS.workplace) || localStorage.getItem(STORAGE_KEYS.workplaceLegacy) || 'desk_office';
     const topLoad = localStorage.getItem(STORAGE_KEYS.topMentalLoad) || 'balanced';
 
     let workplaceProfile = null;
@@ -267,7 +312,7 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     return {
       workplaceId: workplaceId,
       workplaceProfile: workplaceProfile,
-      topMentalLoad: topLoad, // 'exhausted' | 'balanced' | 'dominant_strict'
+      topMentalLoad: topLoad, // 'exhausted' | 'balanced' | 'strict'
       isTopExhausted: topLoad === 'exhausted'
     };
   }
@@ -280,12 +325,19 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
       hasBloodThinners: false,
       hasHypermobility: false,
       hasLatexAllergy: false,
+      hasPanicAirway: false,
+      hasFearDarkness: false,
+      hasFearRestraint: false,
+      hasFearDegradation: false,
+      hasFearSurprise: false,
+      customTriggers: '',
       emergencyNotes: ''
     };
 
     const pass = Object.assign({}, defaultPass, safeJsonParse(STORAGE_KEYS.medicalPass, {}));
     const activeConstraints = [];
 
+    // 1. Physisch-biologische Constraints
     if (pass.hasDiabetes) {
       activeConstraints.push({
         type: 'diabetes_hypoglycemia_guard',
@@ -323,17 +375,56 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
       });
     }
 
+    // 2. Psychosomatische Traumagrenzen & spezifische Flashback-Schranken
+    if (pass.hasPanicAirway) {
+      activeConstraints.push({
+        type: 'panic_airway_constraint',
+        directive: 'Strikter Ausschluss dichter Knebel, Mund-/Nasenbedeckung oder Thoraxkompression (Atemwegs-Panik).'
+      });
+    }
+    if (pass.hasFearDarkness) {
+      activeConstraints.push({
+        type: 'fear_darkness_constraint',
+        directive: 'Keine unangekündigte Augenbinde; Raumbeleuchtung mindestens gedimmt halten (Orientierungsverlust-Trigger).'
+      });
+    }
+    if (pass.hasFearRestraint) {
+      activeConstraints.push({
+        type: 'fear_restraint_constraint',
+        directive: 'Keine starre 4-Punkt-Fixierung ohne spürbare Restbeweglichkeit (Hilflosigkeits-Panik).'
+      });
+    }
+    if (pass.hasFearDegradation) {
+      activeConstraints.push({
+        type: 'fear_degradation_constraint',
+        directive: 'Kein herabwürdigender Dirty Talk oder Schimpfwörter; ausschließlich ruhige, souveräne Führung.'
+      });
+    }
+    if (pass.hasFearSurprise) {
+      activeConstraints.push({
+        type: 'fear_surprise_constraint',
+        directive: 'Berührungen nur nach vorheriger verbaler oder Blick-Ankündigung (Schreck-Trigger von hinten).'
+      });
+    }
+    if (pass.customTriggers && pass.customTriggers.trim().length > 0) {
+      activeConstraints.push({
+        type: 'custom_trauma_triggers',
+        directive: `Individuelle Traumagrenzen: „${pass.customTriggers.trim()}“`
+      });
+    }
+
     return {
       medicalPass: pass,
       activeHealthGuards: activeConstraints,
-      emergencyInstructions: pass.emergencyNotes || 'Keine speziellen Notfallnotizen hinterlegt.'
+      emergencyInstructions: pass.customTriggers || pass.emergencyNotes || 'Keine speziellen Notfallnotizen hinterlegt.'
     };
   }
 
   function extractTopAgendaVector() {
     let ratioProgress = { topCount: 0, subCount: 0, target: 6, isTargetMet: false, remainingInCycle: 6 };
-    if (window.HubRatio && typeof window.HubRatio.getProgress === 'function') {
-      ratioProgress = window.HubRatio.getProgress();
+    const ratioModule = window.ProtocolRatio || window.HubRatio;
+    if (ratioModule && typeof ratioModule.getProgress === 'function') {
+      ratioProgress = ratioModule.getProgress();
     }
 
     return {
@@ -351,23 +442,22 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
       allCatalog = window.EquipmentCatalog.getAll();
     }
-    const customEquipment = safeJsonParse(STORAGE_KEYS.customEquipment, []) || [];
-    const ownedIds = safeJsonParse(STORAGE_KEYS.ownedEquipment, []) || [];
-    const quantities = safeJsonParse(STORAGE_KEYS.toyQuantities, {}) || {};
+    const customEquipment = safeJsonParse(STORAGE_KEYS.customEquipment, null) || safeJsonParse(STORAGE_KEYS.customEquipmentLegacy, []);
+    const ownedIds = safeJsonParse(STORAGE_KEYS.ownedEquipment, null) || safeJsonParse(STORAGE_KEYS.ownedEquipmentLegacy, []);
+    const quantities = safeJsonParse(STORAGE_KEYS.toyQuantities, null) || safeJsonParse(STORAGE_KEYS.toyQuantitiesLegacy, {});
 
     const availableItems = [];
-    const combined = [...allCatalog, ...customEquipment];
+    const combined = [...allCatalog, ...(Array.isArray(customEquipment) ? customEquipment : [])];
 
     for (let i = 0; i < combined.length; i++) {
       const it = combined[i];
-      if (it && it.id && ownedIds.includes(it.id)) {
+      if (it && it.id && Array.isArray(ownedIds) && ownedIds.includes(it.id)) {
         availableItems.push(Object.assign({}, it, {
           activeQuantity: quantities[it.id] || 1
         }));
       }
     }
 
-    // DoF-Berechnung und anatomische Machbarkeit
     let dofAnalysis = {
       dof: {
         speech_articulation: 1.0,
@@ -440,12 +530,14 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     const topName = ctx.metadata.topName;
     const bottomName = ctx.metadata.bottomName;
 
-    // Constraint-Prüfungen
     const isLocked = ctx.v2_somatic.isLocked;
     const healthGuards = ctx.v5_biology.activeHealthGuards.map(g => `- ${g.directive}`).join('\n');
     const doubleFivesList = ctx.v1_psychometry.doubleFives.map(d => d.title).slice(0, 6).join(', ');
     const bottomTaboosList = ctx.v1_psychometry.bottomTaboos.map(t => t.title).join(', ');
     const equipmentList = ctx.v7_hardware.feasibleItems.map(it => it.name).slice(0, 12).join(', ');
+
+    const c00 = ctx.v1_psychometry.chapter00Safeguards;
+    const relevantNotes = ctx.v1_psychometry.partnerNotes.slice(0, 4).map(n => `- Thema „${n.title}“: [${topName}]: „${n.noteTop || '-'}“ | [${bottomName}]: „${n.noteBottom || '-'}“`).join('\n');
 
     return `
 Du bist der somatische Schlafzimmer-Live-Regisseur des Beziehungs-Betriebssystems TACTUS (tactus.digital).
@@ -455,17 +547,21 @@ ${TACTUS_LANGUAGE_DOKTRIN}
 
 SOMATISCHER KONTEXT DER SESSION:
 - Führende Person (Top): ${topName} | Empfangende Person (Bottom): ${bottomName}
-- Gewählte Haltung/Tonalität: ${tonality} (z.B. sovereign_warm, cool_strict, raw_primal, playful)
+- Gewählte Haltung/Tonalität: ${tonality} (z.B. sovereign_warm, sovereign_cool, raw_primal, playful)
 - Ziel-Intensitätsstufe: ${intensityLevel} von 10
 - Hauptmotiv des Tops: ${focusMotif}
 - Verschluss-Status: ${isLocked ? `AKTIV VERRIEGELT (Tag ${ctx.v2_somatic.daysLocked} im ${ctx.v2_somatic.hardwareId}). Schaftkontakt physisch unmöglich!` : 'Unverschlossen / Frei'}
 - Orgasmus-Ökonomie: ${ctx.v6_agenda.topOrgasmsTotal} Top-Höhepunkte : ${ctx.v6_agenda.subOrgasmsTotal} Bottom-Freigaben (Ziel ${ctx.v6_agenda.targetRatio}:1). ${ctx.v6_agenda.mandatoryTopCentering ? 'Fokus liegt heute ZWINGEND auf der Entladung des Tops!' : 'Bottom-Freigabe rechnerisch möglich.'}
 
-BIOLOGISCHE RACK-SICHERHEITSGRENZEN:
+BIOLOGISCHE & PSYCHOSOMATISCHE SCHUTZSCHRANKEN (RACK & KAPITEL 00):
 ${healthGuards.length > 0 ? healthGuards : '- Keine chronischen Einschränkungen gemeldet.'}
+- Gewünschte Sofort-Intervention bei Überforderung/Trigger (${bottomName}): ${c00.interventionDirective}
 
 TABUS (STRIKT AUSGESCHLOSSEN):
 ${bottomTaboosList.length > 0 ? bottomTaboosList : '- Keine harten Tabus gemeldet.'}
+
+HINTERLEGTE PARTNER-BEDINGUNGEN & NOTIZEN (BEFOLGEN):
+${relevantNotes.length > 0 ? relevantNotes : '- Keine speziellen Notizen vermerkt.'}
 
 PSYCHOMETRISCHE DOPPEL-5ER SYNERGIEN (VORZUZIEHEN):
 ${doubleFivesList.length > 0 ? doubleFivesList : 'Cunnilingus, Kniestand-Appell, Spanking mit Leder'}
@@ -506,6 +602,7 @@ Antworte als wohlgeformtes, valides JSON ohne Markdown-Fences:
     const ctx = buildUnifiedContextState();
     const topName = ctx.metadata.topName;
     const bottomName = ctx.metadata.bottomName;
+    const c00 = ctx.v1_psychometry.chapter00Safeguards;
 
     return `
 Du bist der Führungsassistent und D/s-Coach für ${topName} (Top) im Beziehungs-Betriebssystem TACTUS.
@@ -517,6 +614,7 @@ KONTEXT:
 - Keuschheitsstatus: ${ctx.v2_somatic.isLocked ? `Tag ${ctx.v2_somatic.daysLocked} im Verschluss (${ctx.v2_somatic.tension.archetype.name})` : 'Frei / Unverschlossen'}
 - Alltags- und Berufskontext von ${bottomName}: ${ctx.v4_energy.workplaceProfile ? ctx.v4_energy.workplaceProfile.label : 'Büro / Alltag'}
 - Mental Load von ${topName}: ${ctx.v4_energy.topMentalLoad} (${ctx.v4_energy.isTopExhausted ? 'ERSCHÖPFT ──► Teasing ZWINGEND in Entlastungsdienst für den Top umwandeln!' : 'Ausgeglichen / Führend'})
+- Psychosomatische Notfall-Achtsamkeit: ${c00.interventionDirective}
 - Letzte Session: ${ctx.v3_history.lastSession ? `Vor ${Math.round((Date.now() - ctx.v3_history.lastSession.timestamp)/(3600*1000))}h (Tags: ${ctx.v3_history.lastSession.subSomatosensoryTags.join(', ')})` : 'Keine kürzliche Session'}
 
 Erstelle 3 kurze, prägnante Impulse:
