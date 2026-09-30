@@ -72,7 +72,6 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-purple-700 selection:text-white transition-colors duration-200">
 
-  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-slate-900 shadow-sm" style="padding-top: max(8px, var(--sat));">
     <div class="max-w-4xl mx-auto px-3 sm:px-6 pb-2 space-y-1.5">
       <div class="flex items-center justify-between gap-2">
@@ -91,11 +90,11 @@
           </div>
         </a>
 
-        <!-- DESKTOP QUICK ACTIONS -->
+        <!-- DESKTOP ACTIONS -->
         <div class="hidden md:flex items-center gap-1.5 flex-shrink-0">
           <button type="button" onclick="AppModals.openSyncModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs flex items-center gap-1.5 touch-btn" title="E2EE-Synchronisation">
             <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
-            <span id="btn-sync-label">Koppeln</span>
+            <span id="btn-sync-label">Koppeln / Einladen</span>
           </button>
           <button type="button" onclick="AppModals.openMedicalPassModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-300 font-bold text-xs flex items-center gap-1.5 touch-btn" title="RACK-Gesundheitspass">
             <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
@@ -111,7 +110,7 @@
           </a>
         </div>
 
-        <!-- MOBILE BURGER BUTTON -->
+        <!-- MOBILE ACTIONS -->
         <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
           <button type="button" onclick="AppSettings.openModal()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 touch-btn" title="Setup & Einstellungen">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.241.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -138,7 +137,6 @@
     </div>
   </header>
 
-  <!-- MOBILE DRAWER -->
   <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs">
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -207,19 +205,23 @@
     </div>
   </div>
 
-  <!-- MAIN CONTAINER -->
   <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full space-y-4">
 
     <!-- VIEW 1: START-HUB (DASHBOARD & TELEMETRIE) -->
     <div id="view-hub" class="space-y-4 animate-fade-in">
       
-      <!-- HERO COCKPIT CARD -->
+      <!-- HERO COCKPIT CARD MIT LIVE-STATUS -->
       <div class="theme-card rounded-3xl p-5 sm:p-6 border border-purple-900/60 shadow-2xl bg-gradient-to-br from-purple-950/40 via-noir-900 to-indigo-950/20 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-3">
           <div>
-            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800 inline-block">
-              Somatic Intimacy OS
-            </span>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800 inline-block">
+                Somatic Intimacy OS
+              </span>
+              <span id="hub-mental-load-badge" class="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase bg-slate-900 text-slate-400 border border-slate-800">
+                Top: Bereit
+              </span>
+            </div>
             <h2 class="text-base sm:text-xl font-bold text-white mt-1 font-serif-title" id="hub-pair-title">
               TACTUS Paar-Zentrale
             </h2>
@@ -231,33 +233,50 @@
           </div>
         </div>
 
-        <!-- 4 TELEMETRIE KACHELN -->
+        <!-- 4 TELEMETRIE KACHELN MIT LIVE HORMONALEM TENSION-VEKTOR -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
           <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
-            <span class="text-[10px] text-slate-400 block font-medium">Fragebogen-Status:</span>
-            <strong class="text-sm sm:text-base font-bold font-mono text-purple-300" id="hub-stat-progress">0%</strong>
+            <span class="text-[10px] text-slate-400 block font-medium">Fragebogen:</span>
+            <strong class="text-sm sm:text-base font-bold font-mono text-purple-300" id="hub-stat-progress">0 %</strong>
+            <span class="text-[9px] text-slate-500 block truncate" id="hub-stat-progress-sub">0 / 180 Items</span>
           </div>
           <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
             <span class="text-[10px] text-slate-400 block font-medium">Tribut-Saldo:</span>
             <strong class="text-sm sm:text-base font-bold font-mono text-amber-300" id="hub-stat-balance">0 P</strong>
+            <span class="text-[9px] text-slate-500 block truncate">Konto ausgeglichen</span>
           </div>
           <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
-            <span class="text-[10px] text-slate-400 block font-medium">Keuschheit:</span>
+            <span class="text-[10px] text-slate-400 block font-medium">Keuschheit &amp; Phase:</span>
             <strong class="text-xs font-bold text-slate-200 truncate block mt-0.5" id="hub-stat-lock">Frei</strong>
+            <span class="text-[9px] text-purple-400 block truncate" id="hub-stat-tension-phase">Kein Verschluss</span>
           </div>
           <div class="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-0.5">
             <span class="text-[10px] text-slate-400 block font-medium">Orgasmus-Ratio:</span>
             <strong class="text-sm sm:text-base font-bold font-mono text-indigo-300" id="hub-stat-ratio">0:0</strong>
+            <span class="text-[9px] text-slate-500 block truncate" id="hub-stat-ratio-target">Ziel: 6:1</span>
           </div>
+        </div>
+
+        <!-- POST-SESSION DROP-WÄCHTER ALERT (FALLS AKTIV) -->
+        <div id="hub-drop-guard-card" class="hidden p-3 rounded-2xl bg-pink-950/30 border border-pink-700/60 text-pink-200 text-xs flex items-center justify-between gap-2 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="text-pink-400">🛡️</span>
+            <div>
+              <strong class="text-xs text-white block">24h/48h Drop-Wächter scharfgestellt</strong>
+              <span class="text-[10px] text-pink-300/80">Achte auf Kältezittern, Weinkrämpfe oder Leere beim Partner.</span>
+            </div>
+          </div>
+          <a href="session.html" class="px-2.5 py-1 rounded-lg bg-pink-900 text-white font-mono text-[9.5px] font-bold touch-btn">
+            Vagus-Atmung ↗
+          </a>
         </div>
       </div>
 
-      <!-- ROLLEN & PARTNER IDENTITÄT -->
       <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-3 shadow-md text-xs">
         <div class="flex items-center justify-between border-b border-slate-800 pb-2">
           <div>
             <strong class="text-xs text-white block font-bold">Rollen &amp; Paar-Identität</strong>
-            <span class="text-[10px] text-slate-400">Verwaltung der aktiven Sichtweise</span>
+            <span class="text-[10px] text-slate-400">Aktive Sichtweise &amp; DoF-Zuordnung</span>
           </div>
           <button type="button" onclick="AppSettings.openModal('identity')" class="px-2 py-0.5 rounded bg-purple-950 hover:bg-purple-900 border border-purple-800 text-purple-300 font-mono text-[9.5px] font-bold touch-btn">
             Namen &amp; Anatomie anpassen ↗
@@ -282,7 +301,6 @@
         </div>
       </div>
 
-      <!-- DIE 6 SÄULEN DES OPERATING SYSTEMS -->
       <div class="space-y-2 text-xs">
         <strong class="text-white block font-bold px-1">Die 6 Systemischen Säulen:</strong>
         
@@ -357,14 +375,13 @@
 
     </div>
 
-    <!-- VIEW 2: FRAGEBOGEN (36 KAPITEL / 180 ITEMS) -->
     <div id="view-survey" class="hidden space-y-4 animate-fade-in text-xs">
       
       <!-- SURVEY TOP BAR -->
       <div class="theme-card rounded-3xl p-5 border border-purple-900/60 shadow-xl bg-gradient-to-br from-purple-950/40 via-noir-900 to-indigo-950/20 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-2.5">
           <div class="space-y-0.5">
-            <span class="text-[9.5px] font-mono text-purple-400 uppercase font-bold tracking-wider">Psychometrischer Fragebogen</span>
+            <span class="text-[9.5px] font-mono text-purple-400 uppercase font-bold tracking-wider">Psychometrischer Fragebogen (180 Items)</span>
             <h2 class="text-sm sm:text-base font-bold text-white font-serif-title" id="survey-chapter-title-header">
               Wird geladen...
             </h2>
@@ -376,7 +393,7 @@
           </div>
         </div>
 
-        <!-- KAPITEL DROPDOWN & WECHSLER -->
+        <!-- KAPITEL DROPDOWN, WECHSLER & FILTER -->
         <div class="flex items-center gap-2">
           <select id="survey-chapter-select" onchange="SurveyRunner.goToChapter(this.value)" class="flex-1 p-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-purple-600 focus:outline-none">
             <!-- Dynamisch befüllt -->
@@ -388,7 +405,7 @@
         </div>
       </div>
 
-      <!-- QUESTIONS CONTAINER -->
+      <!-- QUESTIONS CONTAINER (MIT LIVE-PARTNER RESONANZ) -->
       <div id="survey-questions-container" class="space-y-3"></div>
 
       <!-- SURVEY BOTTOM NAV -->
@@ -404,7 +421,7 @@
     </div>
 
   </main>
-  <!-- MODAL: MEDIZINISCHER RACK-GESUNDHEITSPASS -->
+
   <div id="modal-medical-pass" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-xs">
     <div class="theme-card rounded-3xl max-w-lg w-full border border-amber-600/50 p-5 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-amber-900/60 pb-3">
@@ -486,9 +503,8 @@
     </div>
   </div>
 
-  <!-- MODAL: ZERO-KNOWLEDGE E2EE SYNC & KOPPLUNG -->
   <div id="modal-cloud-sync" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-xs">
-    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 sm:p-6 space-y-4 shadow-2xl">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 sm:p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-purple-900/60 pb-3">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-xl bg-purple-950 border border-purple-700 text-purple-300 flex items-center justify-center font-bold">
@@ -506,7 +522,25 @@
         Verbindet eure beiden Smartphones über eine Ende-zu-Ende verschlüsselte Brücke (AES-GCM-256 via PBKDF2). Weder Betreiber noch Dritte können eure Noten oder Verträge lesen.
       </p>
 
-      <div class="space-y-3">
+      <!-- 1-KLICK EINLADUNGS-LINK GENERATOR (SCHNELLSTER WEG) -->
+      <div class="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-800/80 space-y-2">
+        <div class="flex items-center justify-between">
+          <strong class="text-xs text-purple-200 block font-bold">1-Klick Partner-Einladung:</strong>
+          <span class="text-[9px] font-mono text-purple-300 font-bold px-1.5 py-0.5 rounded bg-purple-900">Empfohlen</span>
+        </div>
+        <p class="text-[10px] text-slate-300 leading-snug">
+          Erzeugt einen fertigen Verbindungs-Link. Sobald dein Partner den Link öffnet, koppeln sich beide Smartphones in 1 Sekunde vollautomatisch.
+        </p>
+        <button type="button" onclick="AppModals.shareInviteLink()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs touch-btn shadow-md flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-purple-200" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>
+          <span>Einladungs-Link kopieren / teilen</span>
+        </button>
+      </div>
+
+      <!-- MANUELLE KOPPLUNG & PARAMETER -->
+      <div class="space-y-2.5 pt-1">
+        <span class="text-[9.5px] font-mono uppercase text-slate-400 font-bold block">Oder manuell verbinden:</span>
+
         <div>
           <label class="text-[10px] font-mono text-slate-400 uppercase block mb-1">Geheimer Raum-Name:</label>
           <input type="text" id="sync-input-room" placeholder="z. B. tactus-aura-782" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-purple-600" />
@@ -538,13 +572,12 @@
           Trennen
         </button>
         <button type="button" onclick="AppModals.saveSyncCredentials()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
-          Koppeln &amp; Verbinden ✓
+          Verbinden ✓
         </button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: GLOBALE EINSTELLUNGEN, SETUP & MULTI-KI GATEWAY -->
   <div id="modal-settings" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-xs">
     <div class="theme-card rounded-3xl max-w-xl w-full border border-purple-500/40 p-5 sm:p-6 space-y-4 shadow-2xl max-h-[92vh] flex flex-col justify-between overflow-hidden">
       <!-- HEADER -->
@@ -741,7 +774,7 @@
   </div>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
-  <!-- CONTROLLER LOGIK FÜR INDEX.HTML -->
+
   <script>
     (function(window) {
       'use strict';
@@ -825,7 +858,7 @@
       };
       window.AppProfile = AppProfile;
 
-      // --- START-HUB DASHBOARD ---
+      // --- STREAMING_CHUNK:Rendering Start-Hub dashboard with live hormonal tension integration... ---
       const HubDashboard = {
         render: function() {
           let names = { A: 'Partner 1', B: 'Partner 2' };
@@ -862,7 +895,7 @@
             rolesSummary.innerText = `Top: ${names[topRole]} · Bottom: ${names[subRole]}`;
           }
 
-          // Telemetrie: Fragebogen-Fortschritt berechnen
+          // 1. Telemetrie: Fragebogen-Fortschritt (exakte Zählung)
           let answers = {};
           try {
             const rawAns = localStorage.getItem('kompass_answers');
@@ -871,14 +904,18 @@
           const ansForCurrentRole = answers[currentRole] || {};
           let answeredCount = 0;
           for (const k in ansForCurrentRole) {
-            if (ansForCurrentRole[k] !== undefined && ansForCurrentRole[k] !== null) answeredCount++;
+            if (k.startsWith('it_') && ansForCurrentRole[k] !== undefined && ansForCurrentRole[k] !== null && ansForCurrentRole[k] !== 0) {
+              answeredCount++;
+            }
           }
           const totalItems = 180;
           const pct = Math.min(100, Math.round((answeredCount / (totalItems * 2)) * 100));
           const progEl = document.getElementById('hub-stat-progress');
+          const progSub = document.getElementById('hub-stat-progress-sub');
           if (progEl) progEl.innerText = `${pct} %`;
+          if (progSub) progSub.innerText = `${Math.round(answeredCount / 2)} / ${totalItems} bewertet`;
 
-          // Telemetrie: Protokoll & Saldo
+          // 2. Telemetrie: Protokoll & Saldo
           let balance = 0;
           let isLocked = false;
           let daysLocked = 0;
@@ -894,22 +931,63 @@
           const balEl = document.getElementById('hub-stat-balance');
           if (balEl) balEl.innerText = `${balance >= 0 ? '+' : ''}${balance} P`;
 
+          // 3. Telemetrie: Dynamischer Spannungs-Vektor aus ChastityDatabase
+          let tensionArchetype = { name: "Kein Verschluss", directiveObjective: "" };
+          if (isLocked && window.ChastityDatabase && typeof window.ChastityDatabase.calculateDynamicTension === 'function') {
+            const tData = window.ChastityDatabase.calculateDynamicTension({ daysLocked: daysLocked });
+            tensionArchetype = tData.archetype;
+          }
+
           const lockEl = document.getElementById('hub-stat-lock');
+          const tensionPhaseEl = document.getElementById('hub-stat-tension-phase');
           if (lockEl) {
             lockEl.innerText = isLocked ? `Tag ${daysLocked} 🔒` : 'Frei';
             lockEl.className = isLocked ? "text-xs font-bold text-purple-300 truncate block mt-0.5" : "text-xs font-bold text-slate-400 truncate block mt-0.5";
           }
+          if (tensionPhaseEl) {
+            tensionPhaseEl.innerText = isLocked ? tensionArchetype.name : "Unverschlossen";
+          }
 
-          // Telemetrie: Orgasmus-Ratio
+          // 4. Telemetrie: Orgasmus-Ratio
           let ratioStr = "0:0";
+          let ratioTarget = 6;
           if (window.ProtocolRatio && typeof window.ProtocolRatio.getProgress === 'function') {
             const r = window.ProtocolRatio.getProgress();
             ratioStr = `${r.topCount}:${r.subCount}`;
+            ratioTarget = r.target || 6;
           }
           const ratEl = document.getElementById('hub-stat-ratio');
+          const ratTargetEl = document.getElementById('hub-stat-ratio-target');
           if (ratEl) ratEl.innerText = ratioStr;
+          if (ratTargetEl) ratTargetEl.innerText = `Ziel: ${ratioTarget}:1`;
 
-          // Kopplungs-Badge
+          // 5. Führungs-Zustand des Tops
+          let topMentalLoad = localStorage.getItem('tactus_top_mental_load') || 'balanced';
+          const loadBadge = document.getElementById('hub-mental-load-badge');
+          if (loadBadge) {
+            const loadMap = {
+              exhausted: '<span class="text-amber-400 font-bold">Top: Erschöpft (Entlastung)</span>',
+              balanced: '<span class="text-purple-300 font-bold">Top: Ausgeglichen</span>',
+              strict: '<span class="text-indigo-300 font-bold">Top: Streng</span>'
+            };
+            loadBadge.innerHTML = loadMap[topMentalLoad] || 'Top: Bereit';
+          }
+
+          // 6. 24h/48h Drop-Wächter Alert
+          try {
+            const rawGuard = localStorage.getItem('tactus_active_drop_guard');
+            const dropCard = document.getElementById('hub-drop-guard-card');
+            if (rawGuard && dropCard) {
+              const guard = JSON.parse(rawGuard);
+              if (guard && (Date.now() - guard.armedAt) < (48 * 3600 * 1000)) {
+                dropCard.classList.remove('hidden');
+              } else {
+                dropCard.classList.add('hidden');
+              }
+            }
+          } catch (e) {}
+
+          // 7. Kopplungs-Badge
           const isPaired = localStorage.getItem('kompass_is_paired') === 'true';
           const badge = document.getElementById('hub-connection-badge');
           const syncLabel = document.getElementById('btn-sync-label');
@@ -927,7 +1005,7 @@
       };
       window.HubDashboard = HubDashboard;
 
-      // --- FRAGEBOGEN-RUNNER (SURVEYRUNNER) ---
+      // --- STREAMING_CHUNK:Constructing psychometric survey runner with live partner resonance... ---
       const SurveyRunner = {
         currentChapterIndex: 0,
         chapters: [],
@@ -952,7 +1030,7 @@
 
           select.innerHTML = this.chapters.map((ch, idx) => `
             <option value="${idx}" ${idx === this.currentChapterIndex ? 'selected' : ''}>
-              ${escapeHtml(ch.title)}
+              Kapitel ${ch.id}: ${escapeHtml(ch.title)}
             </option>
           `).join('');
         },
@@ -998,13 +1076,9 @@
           } catch (e) {}
 
           const currentRole = AppProfile.getAssignedRole();
+          const otherRole = (currentRole === 'A') ? 'B' : 'A';
           const roleAns = answers[currentRole] || {};
-
-          let names = { A: 'Partner 1', B: 'Partner 2' };
-          try {
-            const nRaw = localStorage.getItem('kompass_names');
-            if (nRaw) names = Object.assign(names, JSON.parse(nRaw));
-          } catch (e) {}
+          const partnerAns = answers[otherRole] || {};
 
           const items = ch.items || [];
           container.innerHTML = items.map(it => {
@@ -1012,13 +1086,29 @@
             const scoreRec = roleAns[`it_${it.id}_r2`];
             const isShame = roleAns[`shame_${it.id}`] === true;
 
+            // Live-Partner-Resonanz berechnen
+            const pScoreLead = partnerAns[`it_${it.id}_r1`];
+            const pScoreRec = partnerAns[`it_${it.id}_r2`];
+            let resonancePill = '';
+
+            if (typeof pScoreRec === 'number' && typeof scoreLead === 'number') {
+              if (scoreLead === 5 && pScoreRec === 5) {
+                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-900 text-purple-200 border border-purple-600">5/5 Doppel-Spitze ★</span>';
+              } else if ((scoreLead === 5 && pScoreRec === 4) || (scoreLead === 4 && pScoreRec === 5)) {
+                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-indigo-950 text-indigo-300 border border-indigo-700">Hohe Synergie</span>';
+              } else if (pScoreRec === 1) {
+                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">Partner-Veto (Tabu)</span>';
+              }
+            }
+
             return `
               <div class="p-4 sm:p-5 rounded-3xl theme-card border border-slate-800 space-y-3 shadow-md">
                 <div class="flex items-start justify-between gap-2 border-b border-slate-800/80 pb-2">
                   <div class="space-y-0.5 flex-1 min-w-0">
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="text-[9.5px] font-mono text-purple-400 font-bold">#${it.id}</span>
                       <strong class="text-xs text-white block truncate font-bold">${escapeHtml(it.title)}</strong>
+                      ${resonancePill}
                     </div>
                     <p class="text-[10px] text-slate-400 leading-snug">${escapeHtml(it.desc)}</p>
                   </div>
@@ -1103,15 +1193,13 @@
       };
       window.SurveyRunner = SurveyRunner;
 
-      // --- GLOBALE SYSTEM-EINSTELLUNGEN & SETUP (APPSETTINGS) ---
+      // --- STREAMING_CHUNK:Implementing AppSettings for BYOK Multi-AI, Anatomy & Backup... ---
       const AppSettings = {
         activeTab: 'identity',
 
         openModal: function(targetTab = 'identity') {
           const modal = document.getElementById('modal-settings');
           if (!modal) return;
-
-          // Daten laden
           this.loadFormValues();
           this.switchTab(targetTab);
           modal.style.display = 'flex';
@@ -1142,7 +1230,6 @@
         },
 
         loadFormValues: function() {
-          // 1. Namen & Anatomie
           let names = { A: 'Partner 1', B: 'Partner 2' };
           let anatomy = { A: 'penis', B: 'vulva' };
           try {
@@ -1164,7 +1251,6 @@
           if (anatB) anatB.value = anatomy.B || 'vulva';
           if (defTop) defTop.value = localStorage.getItem('kompass_keyholder_role') || 'A';
 
-          // 2. Multi-KI (BYOK)
           const provSelect = document.getElementById('cfg-ai-provider');
           const currentProv = window.AIAdapter ? window.AIAdapter.getProvider() : (localStorage.getItem('tactus_ai_provider') || 'gemini');
           if (provSelect) provSelect.value = currentProv;
@@ -1178,7 +1264,6 @@
           if (keyAnthropic && window.AIAdapter) keyAnthropic.value = window.AIAdapter.getApiKey('anthropic') || '';
           if (keyOpenAI && window.AIAdapter) keyOpenAI.value = window.AIAdapter.getApiKey('openai') || '';
 
-          // 3. Zoom & Theme
           const zoom = localStorage.getItem('kompass_text_zoom') || '100';
           this.highlightZoomButton(zoom);
 
@@ -1246,7 +1331,6 @@
         },
 
         saveAndClose: function() {
-          // 1. Namen & Anatomie speichern
           const nameA = document.getElementById('cfg-name-a');
           const nameB = document.getElementById('cfg-name-b');
           const anatA = document.getElementById('cfg-anatomy-a');
@@ -1272,7 +1356,6 @@
             localStorage.setItem('kompass_caged_role', subRole);
           }
 
-          // 2. Multi-KI (BYOK) speichern
           const provSelect = document.getElementById('cfg-ai-provider');
           const provider = provSelect ? provSelect.value : 'gemini';
 
@@ -1357,7 +1440,7 @@
       };
       window.AppSettings = AppSettings;
 
-      // --- MODALS HELPER (MEDIZINISCHER PASS & SYNC) ---
+      // --- STREAMING_CHUNK:Implementing AppModals helper for RACK pass and invitation handshake... ---
       const AppModals = {
         openMedicalPassModal: function() {
           const modal = document.getElementById('modal-medical-pass');
@@ -1427,11 +1510,58 @@
           const pInput = document.getElementById('sync-input-pass');
           const roleSelect = document.getElementById('sync-select-role');
 
-          if (rInput) rInput.value = localStorage.getItem('kompass_sync_room') || '';
-          if (pInput) pInput.value = localStorage.getItem('kompass_sync_password') || '';
+          let room = localStorage.getItem('kompass_sync_room') || '';
+          let pass = localStorage.getItem('kompass_sync_password') || '';
+
+          if (!room || !pass) {
+            room = `tactus-${Math.random().toString(36).substring(2, 7)}`;
+            pass = `${Math.random().toString(36).substring(2, 9)}-${Math.random().toString(36).substring(2, 9)}`;
+          }
+
+          if (rInput) rInput.value = room;
+          if (pInput) pInput.value = pass;
           if (roleSelect) roleSelect.value = localStorage.getItem('kompass_assigned_role') || 'A';
 
           modal.style.display = 'flex';
+        },
+
+        shareInviteLink: function() {
+          const rInput = document.getElementById('sync-input-room');
+          const pInput = document.getElementById('sync-input-pass');
+          const room = rInput ? rInput.value.trim() : '';
+          const pass = pInput ? pInput.value.trim() : '';
+
+          if (!room || !pass) {
+            showToast("Bitte zuerst Raum und Passwort generieren.");
+            return;
+          }
+
+          this.saveSyncCredentials();
+
+          const connectPayload = btoa(JSON.stringify({ r: room, p: pass, role: 'B' }));
+          const inviteUrl = `${window.location.origin}${window.location.pathname}#connect=${encodeURIComponent(connectPayload)}`;
+
+          const textarea = document.createElement('textarea');
+          textarea.value = inviteUrl;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+            showToast("✓ Einladungs-Link kopiert! Sende ihn an deinen Partner.");
+          } catch (e) {
+            prompt("Kopiere diesen Einladungs-Link für deinen Partner:", inviteUrl);
+          }
+          document.body.removeChild(textarea);
+
+          if (navigator.share) {
+            navigator.share({
+              title: "TACTUS Paar-Einladung",
+              text: "Tritt unserem verschlüsselten TACTUS Beziehungs-Betriebssystem bei:",
+              url: inviteUrl
+            }).catch(() => {});
+          }
         },
 
         saveSyncCredentials: function() {
@@ -1455,6 +1585,7 @@
           const modal = document.getElementById('modal-cloud-sync');
           if (modal) modal.style.display = 'none';
           HubDashboard.render();
+          showToast("✓ E2EE-Kopplung aktiv!");
         },
 
         disconnectSync: function() {
@@ -1471,12 +1602,39 @@
           const pInput = document.getElementById('sync-input-pass');
           if (rInput) rInput.value = `tactus-${Math.random().toString(36).substring(2, 7)}`;
           if (pInput) pInput.value = `${Math.random().toString(36).substring(2, 9)}-${Math.random().toString(36).substring(2, 9)}`;
+        },
+
+        checkUrlConnectionHandshake: function() {
+          const hash = window.location.hash || '';
+          if (hash.includes('#connect=')) {
+            try {
+              const rawPayload = decodeURIComponent(hash.split('#connect=')[1]);
+              const data = JSON.parse(atob(rawPayload));
+              if (data && data.r && data.p) {
+                if (window.CloudSync && typeof window.CloudSync.configure === 'function') {
+                  window.CloudSync.configure({
+                    room: data.r,
+                    password: data.p,
+                    role: data.role || 'B'
+                  });
+                }
+                localStorage.setItem('kompass_assigned_role', data.role || 'B');
+                window.location.hash = '#view=hub';
+                showToast("✓ Erfolgreich mit deinem Partner gekoppelt!");
+                HubDashboard.render();
+              }
+            } catch (err) {
+              console.warn("[TACTUS Connect] Fehler beim URL-Handshake:", err);
+            }
+          }
         }
       };
       window.AppModals = AppModals;
 
-      // Event-Listener & Start-Initialisierung
+      // --- STREAMING_CHUNK:Binding lifecycle events and DOM initialization... ---
       document.addEventListener('DOMContentLoaded', () => {
+        AppModals.checkUrlConnectionHandshake();
+
         const hash = window.location.hash || '';
         if (hash.includes('view=survey')) {
           AppRouter.navigate('survey');
@@ -1485,7 +1643,6 @@
         }
         HubDashboard.render();
 
-        // Erststart-Prüfung: Falls noch kein Setup erfolgt ist, Setup anbieten
         const onboardingDone = localStorage.getItem('tactus_onboarding_done');
         if (!onboardingDone && !localStorage.getItem('kompass_names')) {
           setTimeout(() => {
