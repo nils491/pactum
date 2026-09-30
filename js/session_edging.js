@@ -4,12 +4,13 @@
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Dynamische Schwellen-Erfassung mit Rückkopplung an ChastityDatabase & Tension-Index
+ * - Grafisch animierter kreisförmiger SVG-Countdown (Circular Progress Arc)
+ * - Synchrone Sprach-Zählung (Voice-Paced Countdown) gekoppelt an SessionVoice & Ducking
  * - Konsequent szene-authentische Sprache: 100 % frei von "Kante" / Denglisch-Floskeln
- * - Plateau-Zeit-Tracking im Erregungszenit (Arousal >= 8) mit automatischer Bonifizierung
- * - Taktiler JOI-Countdown mit variabler Frequenz, Haptik-Vibration & Audio-Ducking
+ * - Transparenz über Sub-Noten: Liest Item 36 (Denial) & Item 38 (Ruined) aus kompass_answers
+ * - Plateau-Zeit-Tracking im Erregungszenit (Arousal >= 8) mit optischer Halte-Welle
  * - Tonalitäts-modulierte Sofort-Befehle für Kaltstopp, Atemführung und Plateau-Halten
- * - Blind im Halbdunkel treffbare Touch-Ziele (min. 48px)
+ * - Blind im Halbdunkel treffbare Touch-Ziele (min. 48px) mit Haptik-Impulsen
  * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
@@ -18,6 +19,7 @@
   'use strict';
 
   const STORAGE_KEY_EDGING_LOGS = 'tactus_edging_session_data';
+  const SVG_CIRCUMFERENCE = 2 * Math.PI * 54; // r = 54 -> ~339.29 px
 
   let edgingSession = {
     active: false,
@@ -28,7 +30,7 @@
     plateauTimerInterval: null,
     thresholdTimestamps: [],
     joiDuration: 20,
-    joiSecondsRemaining: 0,
+    joiSecondsRemaining: 20,
     joiInterval: null,
     isCountingDown: false,
     lastDirective: ""
@@ -98,13 +100,47 @@
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (durationMs / 1000));
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + (durationMs / 1000));
     } catch (e) {}
+  }
+
+  function getSubPreferences() {
+    let bottomRole = 'B';
+    if (window.HubContext && typeof window.HubContext.getRoles === 'function') {
+      bottomRole = window.HubContext.getRoles().bottomRole;
+    }
+
+    let answers = {};
+    try {
+      const raw = localStorage.getItem('kompass_answers');
+      if (raw) answers = JSON.parse(raw) || {};
+    } catch (e) {}
+
+    const subAns = answers[bottomRole] || {};
+    const scaleLabels = ["Entfällt", "Tabu", "Eher nicht", "Neutral", "Gern", "Must-Have"];
+
+    const denialScore = subAns['it_36_r2']; // Item 36: Orgasmusverweigerung
+    const ruinedScore = subAns['it_38_r2']; // Item 38: Ruined Orgasm
+    const denialNote = subAns['note_36'] || '';
+    const ruinedNote = subAns['note_38'] || '';
+
+    return {
+      denial: {
+        score: denialScore !== undefined ? denialScore : null,
+        label: denialScore !== undefined ? scaleLabels[denialScore] : 'Offen',
+        note: denialNote
+      },
+      ruined: {
+        score: ruinedScore !== undefined ? ruinedScore : null,
+        label: ruinedScore !== undefined ? scaleLabels[ruinedScore] : 'Offen',
+        note: ruinedNote
+      }
+    };
   }
 
   function setArousalLevel(level) {
@@ -128,7 +164,7 @@
       }
     }
 
-    // Dynamischer Plateau-Timer bei Erregungsplateau >= 8
+    // Plateau-Tracker aktivieren bei Schwellkörperdruck >= 8
     if (val >= 8) {
       startPlateauTracker();
       if (plateauBox) plateauBox.classList.remove('hidden');
@@ -181,14 +217,12 @@
     edgingSession.thresholdTimestamps.push(now);
     edgingSession.currentArousal = 9;
 
-    // Tonalität des Tops aus dem Staging abrufen
     let tonality = 'sovereign_warm';
     if (window.SessionStaging && typeof window.SessionStaging.getConfig === 'function') {
       const cfg = window.SessionStaging.getConfig();
       if (cfg && cfg.tonality) tonality = cfg.tonality;
     }
 
-    // Tonalitäts-modulierte Regie-Anweisung
     let directive = "Halt! Hände weg. Ausatmen und stillhalten.";
     if (tonality === 'sovereign_cool') {
       directive = "Kalter Stopp. Sofort die Hände wegnehmen, Blick nach unten senken. Kein Laut.";
@@ -201,12 +235,17 @@
     }
     edgingSession.lastDirective = directive;
 
-    // Rückkopplung an session_live.js falls im Schlafzimmer aktiv
+    // Gesprochene Kaltstopp-Anweisung über SessionVoice im Raum
+    if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+      window.SessionVoice.speak(directive, { tonality: tonality, phase: 2, arousal: 9 });
+    }
+
+    // Rückkopplung an session_live.js
     if (window.SessionLive && typeof window.SessionLive.adaptPhase === 'function') {
       window.SessionLive.adaptPhase('edge_too_fast');
     }
 
-    // Rückkopplung an ProtocolCore Punkte-Buchung (Disziplin und Ausharren an der Schwelle)
+    // Rückkopplung an ProtocolCore Punkte-Buchung
     if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
       window.ProtocolCore.addTransaction(15, `Schwellen-Führung: Schwelle #${edgingSession.totalThresholds} diszipliniert gehalten`, 'top');
     }
@@ -221,9 +260,48 @@
   function adjustJoiDuration(deltaSeconds) {
     if (edgingSession.isCountingDown) return;
     edgingSession.joiDuration = Math.max(5, Math.min(120, edgingSession.joiDuration + deltaSeconds));
+    edgingSession.joiSecondsRemaining = edgingSession.joiDuration;
     const label = document.getElementById('edging-joi-duration-label');
     if (label) label.innerText = `${edgingSession.joiDuration}s`;
+    updateCountdownSvgArc(edgingSession.joiDuration, edgingSession.joiDuration);
     triggerHapticPulse([20]);
+  }
+
+  function updateCountdownSvgArc(secondsLeft, totalDuration) {
+    const arc = document.getElementById('edging-countdown-arc');
+    const timerText = document.getElementById('edging-joi-timer-text');
+    const core = document.getElementById('edging-countdown-core');
+
+    if (timerText) {
+      timerText.innerText = `${secondsLeft}`;
+    }
+
+    if (arc) {
+      const fraction = Math.max(0, Math.min(1, secondsLeft / totalDuration));
+      const offset = SVG_CIRCUMFERENCE * (1 - fraction);
+      arc.style.strokeDashoffset = offset.toFixed(1);
+
+      if (secondsLeft <= 5) {
+        arc.className = "text-rose-500 transition-all duration-300";
+      } else if (secondsLeft <= 10) {
+        arc.className = "text-amber-400 transition-all duration-300";
+      } else {
+        arc.className = "text-purple-400 transition-all duration-300";
+      }
+    }
+
+    if (core) {
+      if (secondsLeft <= 5) {
+        core.style.borderColor = "#f43f5e";
+        core.style.boxShadow = "0 0 25px rgba(244, 63, 94, 0.4)";
+      } else if (secondsLeft <= 10) {
+        core.style.borderColor = "#f59e0b";
+        core.style.boxShadow = "0 0 20px rgba(245, 158, 11, 0.3)";
+      } else {
+        core.style.borderColor = "#a855f7";
+        core.style.boxShadow = "0 0 15px rgba(168, 85, 247, 0.25)";
+      }
+    }
   }
 
   function startJoiCountdown() {
@@ -236,38 +314,39 @@
     edgingSession.joiSecondsRemaining = edgingSession.joiDuration;
 
     const btn = document.getElementById('btn-joi-toggle');
-    const timerDisplay = document.getElementById('edging-joi-timer-display');
     if (btn) {
       btn.innerText = "Stoppen (Kaltstopp)";
       btn.className = "w-full py-3 rounded-2xl bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 font-bold text-xs touch-btn shadow-lg";
     }
 
-    showToast(`JOI Taktgeber gestartet (${edgingSession.joiDuration}s)`);
+    showToast(`JOI Sprach-Taktung gestartet (${edgingSession.joiDuration}s)`);
     triggerHapticPulse([80, 40, 80]);
 
     if (edgingSession.joiInterval) clearInterval(edgingSession.joiInterval);
 
     function tick() {
-      if (timerDisplay) {
-        timerDisplay.innerText = `${edgingSession.joiSecondsRemaining}s`;
-        if (edgingSession.joiSecondsRemaining <= 5) {
-          timerDisplay.className = "text-3xl font-mono font-black text-rose-400 animate-pulse";
-        } else {
-          timerDisplay.className = "text-3xl font-mono font-black text-purple-300";
-        }
-      }
+      const s = edgingSession.joiSecondsRemaining;
+      updateCountdownSvgArc(s, edgingSession.joiDuration);
 
-      // Progressiver Takt-Klick und Haptik
-      const isUrgent = edgingSession.joiSecondsRemaining <= 5;
+      const isUrgent = s <= 5;
       playAudioClick(isUrgent ? 660 : 330, isUrgent ? 80 : 40);
       triggerHapticPulse(isUrgent ? [60] : [25]);
 
+      // Synchrone Sprach-Zählung der Zahlen im Raum
+      // Spricht bei markanten Schwellen: bei Start, bei 10s, und die letzten 5 Sekunden einzeln
+      if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+        if (s <= 5 && s > 0) {
+          window.SessionVoice.speak(String(s), { tonality: 'sovereign_cool', phase: 2 });
+        } else if (s === 10) {
+          window.SessionVoice.speak("Noch zehn Sekunden", { tonality: 'sovereign_cool', phase: 2 });
+        }
+      }
+
       edgingSession.joiSecondsRemaining--;
 
-      if (edgingSession.joiSecondsRemaining < 0) {
+      if (s <= 0) {
         stopJoiCountdown();
         registerThreshold();
-        showToast("Halt! Hände sofort wegnehmen!");
       }
     }
 
@@ -283,21 +362,18 @@
     edgingSession.isCountingDown = false;
 
     const btn = document.getElementById('btn-joi-toggle');
-    const timerDisplay = document.getElementById('edging-joi-timer-display');
-
     if (btn) {
       btn.innerText = "Taktung starten";
       btn.className = "w-full py-3 rounded-2xl bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs touch-btn shadow-lg";
     }
-    if (timerDisplay) {
-      timerDisplay.innerText = `${edgingSession.joiDuration}s`;
-      timerDisplay.className = "text-3xl font-mono font-black text-purple-300";
-    }
+    updateCountdownSvgArc(edgingSession.joiDuration, edgingSession.joiDuration);
   }
 
   function renderEdgingCockpit(containerId = 'edging-cockpit-container') {
     const container = document.getElementById(containerId);
     if (!container) return;
+
+    const subPrefs = getSubPreferences();
 
     container.innerHTML = `
       <div class="space-y-4 max-w-xl mx-auto text-xs animate-fade-in">
@@ -320,6 +396,25 @@
           <p class="text-[10.5px] text-slate-300 leading-snug">
             Führe den Körper an die Schwelle, halte das Plateau ohne Entlastung und bremse mit kaltem Stopp vor dem Point-of-No-Return.
           </p>
+
+          <!-- SUB-NOTEN TRANSPARENZ AUS DEM FRAGEBOGEN -->
+          <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[10px]">
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-0.5">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Verweigerung (Denial):</span>
+                <span class="font-bold text-purple-300 font-mono">${escapeHtml(subPrefs.denial.label)}</span>
+              </div>
+              ${subPrefs.denial.note ? `<p class="text-[9px] text-slate-500 italic truncate" title="${escapeHtml(subPrefs.denial.note)}">📝 „${escapeHtml(subPrefs.denial.note)}“</p>` : ''}
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-0.5">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Ruined Orgasm:</span>
+                <span class="font-bold text-rose-300 font-mono">${escapeHtml(subPrefs.ruined.label)}</span>
+              </div>
+              ${subPrefs.ruined.note ? `<p class="text-[9px] text-slate-500 italic truncate" title="${escapeHtml(subPrefs.ruined.note)}">📝 „${escapeHtml(subPrefs.ruined.note)}“</p>` : ''}
+            </div>
+          </div>
         </div>
 
         <!-- AROUSAL SLIDER 1 BIS 10 -->
@@ -341,11 +436,14 @@
             </p>
           </div>
 
-          <!-- PLATEAU-DAUER TRACKER (AKTIV BEI AROUSAL >= 8) -->
-          <div id="edging-plateau-box" class="${edgingSession.currentArousal >= 8 ? '' : 'hidden'} p-3 rounded-2xl bg-amber-950/30 border border-amber-800/60 flex items-center justify-between">
+          <!-- PLATEAU-DAUER TRACKER MIT HALTE-WELLE -->
+          <div id="edging-plateau-box" class="${edgingSession.currentArousal >= 8 ? '' : 'hidden'} p-3.5 rounded-2xl bg-amber-950/30 border border-amber-800/60 flex items-center justify-between shadow-inner">
             <div class="space-y-0.5">
-              <strong class="text-xs text-amber-200 block font-bold">Plateau-Haltezeit (Zenit):</strong>
-              <span class="text-[10px] text-slate-400">Zeitdauer unter Schwellkörperdruck</span>
+              <strong class="text-xs text-amber-200 block font-bold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                <span>Plateau-Haltezeit (Zenit):</span>
+              </strong>
+              <span class="text-[10px] text-slate-400">Zeitdauer unter Schwellkörperdruck (+Punkte)</span>
             </div>
             <span id="edging-plateau-seconds" class="font-mono text-base font-black text-amber-300">
               ${edgingSession.plateauDurationSeconds}s
@@ -353,10 +451,13 @@
           </div>
         </div>
 
-        <!-- JOI COUNTDOWN & TAKTGEBER -->
-        <div class="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 shadow-xl text-center">
+        <!-- GRAFISCH ANIMIERTER KREIS-COUNTDOWN (SVG ARC & SPRACH-TAKTUNG) -->
+        <div class="p-5 sm:p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 shadow-xl text-center">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <strong class="text-xs text-white block font-bold text-left">JOI Rhythmus-Taktgeber:</strong>
+            <div>
+              <strong class="text-xs text-white block font-bold text-left">JOI Rhythmus-Taktgeber</strong>
+              <span class="text-[9.5px] text-slate-400 block text-left">Sprachgeführter Countdown bis zum Kaltstopp</span>
+            </div>
             <div class="flex items-center gap-1 font-mono text-[10px]">
               <button type="button" onclick="SessionEdging.adjustJoiDuration(-5)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center touch-btn">-5s</button>
               <span id="edging-joi-duration-label" class="px-2 font-bold text-white">${edgingSession.joiDuration}s</span>
@@ -364,11 +465,22 @@
             </div>
           </div>
 
-          <div class="py-2">
-            <span id="edging-joi-timer-display" class="text-3xl font-mono font-black text-purple-300">
-              ${edgingSession.joiDuration}s
-            </span>
-            <span class="text-[10px] text-slate-500 block mt-1">Getaktete Stimulation bis zum automatischen Kaltstopp</span>
+          <!-- KREISFÖRMIGE SVG BÜHNE -->
+          <div class="py-2 flex flex-col items-center justify-center">
+            <div class="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center">
+              <svg class="w-full h-full transform -rotate-90 pointer-events-none" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="54" stroke="currentColor" stroke-width="5" fill="none" class="text-slate-950" />
+                <circle id="edging-countdown-arc" cx="60" cy="60" r="54" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round" class="text-purple-400 transition-all duration-300" style="stroke-dasharray: 339.29; stroke-dashoffset: 0;" />
+              </svg>
+              
+              <!-- PULSIERENDER INNENKERN -->
+              <div id="edging-countdown-core" class="absolute w-24 h-24 rounded-full border border-purple-500/40 bg-gradient-to-tr from-purple-950/80 via-slate-900 to-indigo-950/70 shadow-xl flex flex-col items-center justify-center transition-all duration-300">
+                <span id="edging-joi-timer-text" class="font-mono text-3xl sm:text-4xl font-black text-white leading-none">
+                  ${edgingSession.joiDuration}
+                </span>
+                <span class="text-[9px] font-mono text-purple-300 mt-1 uppercase font-bold">Sekunden</span>
+              </div>
+            </div>
           </div>
 
           <button type="button" id="btn-joi-toggle" onclick="SessionEdging.toggleJoiCountdown()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs touch-btn shadow-lg">
@@ -376,7 +488,7 @@
           </button>
         </div>
 
-        <!-- GROSSER SCHWELLEN-BUTTON (BLIND TREFFBAR) -->
+        <!-- GROSSER SCHWELLEN-BUTTON (BLIND IM HALBDUNKEL TREFFBAR) -->
         <div class="pt-1">
           <button type="button" onclick="SessionEdging.registerThreshold()" class="w-full py-4 px-4 rounded-3xl bg-gradient-to-r from-amber-600 via-rose-700 to-purple-800 hover:from-amber-500 hover:to-purple-700 text-white font-black text-sm sm:text-base tracking-wider uppercase touch-btn shadow-2xl flex items-center justify-center gap-2 transform active:scale-95 transition-transform">
             <svg class="w-5 h-5 text-amber-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
