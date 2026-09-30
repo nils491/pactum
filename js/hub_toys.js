@@ -4,11 +4,13 @@
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Direkte Anbindung an HubPhotos (IndexedDB 1:1 Foto-Tresor mit Kamera-Upload & Thumbnail-Rendering)
- * - Dynamische Verknüpfung mit ToyCombinatorics und EquipmentCatalog (Affordanzen & DoF-Zonen)
+ * - Dynamische DOM-Autonomie: Funktioniert auf allen Seiten (Start-Hub, Regie, Protokoll)
+ * - 1:1 IndexedDB Fototresor-Kopplung via HubPhotos mit 0-ms Cache und Thumbnail-Rendering
  * - 1-Klick Starter-Bundles (Shibari-Basisset, Keuschheits-Einsteiger, BDSM-Lederstarter)
- * - Mengenschalter ('quantity') für gleichartige Ausrüstung (z. B. 8x Juteseil, 5x Siegel)
- * - Volltextsuche und Kategoriefilterung im Noir-Luxury Design-System (1.5px Vektor-Icons)
+ * - Mengenschalter ('quantity') für gleichartige Hardware (z. B. 8x Juteseil, 5x Siegel)
+ * - RACK-Allergie-Radar: Warnt automatisch bei Latex-Allergie des Subs
+ * - Somatische DoF- und Restraint-Layer-Transparenz (Layer 0–2)
+ * - Volltextsuche und dynamische Kategorie-Filterung
  * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
@@ -30,7 +32,7 @@
       items: [
         { id: 'toy_jute_rope_6mm', name: 'Shibari Juteseil (6mm geölt)', category: 'bondage', quantity: 8 },
         { id: 'toy_cotton_rope_red', name: 'Weiche Baumwollseile (Rot)', category: 'bondage', quantity: 4 },
-        { id: 'toy_emt_shears', name: 'EMT-Sicherheits-Verbandschere', category: 'bondage', quantity: 1 }
+        { id: 'toy_emt_shears', name: 'EMT-Sicherheits-Verbandschere', category: 'care', quantity: 1 }
       ]
     },
     {
@@ -164,6 +166,14 @@
     return result;
   }
 
+  function getSubHealthPass() {
+    try {
+      const raw = localStorage.getItem('tactus_medical_pass');
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return {};
+  }
+
   function getItemQuantity(id) {
     if (itemQuantities[id] !== undefined && itemQuantities[id] !== null) {
       const q = parseInt(itemQuantities[id], 10);
@@ -213,14 +223,17 @@
 
     saveState();
     renderToysModal();
-    showToast(`Starter-Bundle „${bundle.title}“ im Schrank aktiviert`);
+    showToast(`Starter-Bundle „${bundle.title}“ im Schrank aktiviert ✓`);
   }
 
   function filterItems(items) {
     return items.filter(item => {
-      if (activeCategoryTab !== 'all' && item.category !== activeCategoryTab) {
+      if (activeCategoryTab === 'owned_only') {
+        if (!ownedIds.includes(item.id)) return false;
+      } else if (activeCategoryTab !== 'all' && item.category !== activeCategoryTab) {
         return false;
       }
+
       if (searchQuery.trim().length > 0) {
         const query = searchQuery.toLowerCase().trim();
         const nameMatch = (item.name || '').toLowerCase().includes(query);
@@ -316,37 +329,128 @@
     }
   }
 
+  function ensureInventoryModalDom() {
+    let modal = document.getElementById('modal-toys-inventory');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-toys-inventory';
+      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4";
+      modal.style.display = 'none';
+
+      modal.innerHTML = `
+        <div class="theme-card rounded-3xl max-w-2xl w-full border border-purple-500/40 p-5 space-y-3.5 shadow-2xl text-xs max-h-[92vh] flex flex-col justify-between">
+          
+          <!-- MODAL HEADER -->
+          <div class="flex items-center justify-between border-b border-purple-900/60 pb-2.5 flex-shrink-0">
+            <div class="space-y-0.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                <span>Ausrüstungsschrank &amp; Schlafraum-Inventar</span>
+                <span class="px-2 py-0.5 rounded text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-800 font-bold" id="toys-modal-active-count">0</span>
+              </h3>
+              <span class="text-[10px] text-slate-400 block truncate">Verfügbare Hardware bestimmt verbleibende Freiheitsgrade (DoF) &amp; Staging</span>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button type="button" onclick="HubToys.openCustomModal()" class="px-2.5 py-1 rounded-xl bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-200 font-bold text-[10px] flex items-center gap-1 touch-btn">
+                <span>+ Eigenes Toy</span>
+              </button>
+              <button type="button" onclick="HubToys.close()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+            </div>
+          </div>
+
+          <!-- SCROLLABLE BODY -->
+          <div class="space-y-3 overflow-y-auto pr-1 flex-1">
+            <!-- STARTER BUNDLES -->
+            <div id="toys-starter-bundles-container" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+
+            <!-- SEARCH INPUT -->
+            <div class="pt-1">
+              <input 
+                type="text" 
+                placeholder="Ausrüstung durchsuchen (z. B. Flogger, Seil, Manschetten, Knebel)..." 
+                oninput="HubToys.handleSearch(this.value)" 
+                class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:border-purple-600 focus:outline-none" 
+              />
+            </div>
+
+            <!-- DYNAMISCHE KATEGORIE-FILTERLEISTE -->
+            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-xs">
+              <button type="button" onclick="HubToys.switchCategoryTab('all')" data-toy-cat-tab="all" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-purple-700 text-white shadow-sm whitespace-nowrap">
+                Alle
+              </button>
+              <button type="button" onclick="HubToys.switchCategoryTab('owned_only')" data-toy-cat-tab="owned_only" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-purple-300 hover:text-white whitespace-nowrap">
+                Aktiv im Schrank ✓
+              </button>
+              <button type="button" onclick="HubToys.switchCategoryTab('bondage')" data-toy-cat-tab="bondage" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">
+                Bondage &amp; Seile
+              </button>
+              <button type="button" onclick="HubToys.switchCategoryTab('impact')" data-toy-cat-tab="impact" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">
+                Impact &amp; Zucht
+              </button>
+              <button type="button" onclick="HubToys.switchCategoryTab('sensory')" data-toy-cat-tab="sensory" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">
+                Sensorik &amp; Knebel
+              </button>
+              <button type="button" onclick="HubToys.switchCategoryTab('chastity')" data-toy-cat-tab="chastity" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">
+                Keuschheit
+              </button>
+              <button type="button" onclick="HubToys.switchCategoryTab('cbt')" data-toy-cat-tab="cbt" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">
+                CBT &amp; Klemmen
+              </button>
+              <button type="button" onclick="HubToys.switchCategoryTab('care')" data-toy-cat-tab="care" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-slate-900 border border-slate-800 text-slate-400 hover:text-white whitespace-nowrap">
+                Pflege &amp; RACK
+              </button>
+            </div>
+
+            <!-- ITEMS GRID -->
+            <div id="toys-modal-items-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1"></div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="flex justify-between items-center pt-2.5 border-t border-slate-800 flex-shrink-0">
+            <span class="text-[9.5px] font-mono text-slate-500">1:1 IndexedDB Fototresor aktiv</span>
+            <button type="button" onclick="HubToys.close()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
+              Bereitgelegt ✓
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    return modal;
+  }
+
   function renderToysModal() {
     loadOwnedIds();
+    ensureInventoryModalDom();
+
     const container = document.getElementById('toys-modal-items-container');
     const badgeCount = document.getElementById('toys-modal-active-count');
-    const totalCount = document.getElementById('toys-modal-total-count');
 
     const allItems = getAllCatalogItems();
     const filteredItems = filterItems(allItems);
+    const healthPass = getSubHealthPass();
 
-    if (badgeCount) badgeCount.innerText = ownedIds.length.toString();
-    if (totalCount) totalCount.innerText = allItems.length.toString();
+    if (badgeCount) badgeCount.innerText = `${ownedIds.length} aktiv`;
 
+    // 1. STARTER BUNDLES RENDERN
     const bundlesContainer = document.getElementById('toys-starter-bundles-container');
     if (bundlesContainer) {
       bundlesContainer.innerHTML = STARTER_BUNDLES.map(bundle => {
         const isFullyOwned = bundle.items.every(it => ownedIds.includes(it.id));
         return `
-          <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between shadow-sm">
+          <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5 flex flex-col justify-between shadow-sm">
             <div class="space-y-1">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-white flex items-center gap-1.5">
                   <span class="text-purple-400">${bundle.iconSvg}</span>
                   <span>${escapeHtml(bundle.title)}</span>
                 </span>
-                <span class="text-[9px] font-mono px-2 py-0.5 rounded ${isFullyOwned ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold' : 'bg-slate-800 text-slate-400'}">
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded ${isFullyOwned ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold' : 'bg-slate-800 text-slate-400'}">
                   ${isFullyOwned ? 'Aktiviert ✓' : 'Starter-Set'}
                 </span>
               </div>
-              <p class="text-[10px] text-slate-400 leading-snug">${escapeHtml(bundle.desc)}</p>
+              <p class="text-[9.5px] text-slate-400 leading-snug break-words">${escapeHtml(bundle.desc)}</p>
             </div>
-            <button type="button" onclick="HubToys.applyStarterBundle('${bundle.id}')" class="w-full py-1.5 px-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${isFullyOwned ? 'bg-purple-950/60 border-purple-700/60 text-purple-200' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-white'}">
+            <button type="button" onclick="HubToys.applyStarterBundle('${bundle.id}')" class="w-full py-1 px-2.5 rounded-xl border font-bold text-[10px] flex items-center justify-center gap-1.5 transition-all touch-btn ${isFullyOwned ? 'bg-purple-950/60 border-purple-700/60 text-purple-200' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-white'}">
               <span>${bundle.iconSvg}</span>
               <span>${isFullyOwned ? 'Bundle neu einstellen' : '1-Klick Setup'}</span>
             </button>
@@ -359,8 +463,7 @@
 
     if (filteredItems.length === 0) {
       container.innerHTML = `
-        <div class="col-span-full py-12 text-center space-y-2 text-slate-400">
-          <svg class="w-8 h-8 mx-auto text-slate-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+        <div class="col-span-full py-10 text-center space-y-1 text-slate-400">
           <strong class="text-xs text-slate-200 block font-bold">Keine Ausrüstung gefunden</strong>
           <p class="text-[11px] text-slate-500">Passe deine Suchbegriffe an oder wähle eine andere Kategorie.</p>
         </div>
@@ -368,35 +471,60 @@
       return;
     }
 
+    // 2. ITEMS GRID RENDERN (VOLLSTÄNDIG LESBAR OHNE TRUNCATE)
     container.innerHTML = filteredItems.map(item => {
       const isOwned = ownedIds.includes(item.id);
       const qty = getItemQuantity(item.id);
       const profile = item.somaticProfile || item.affordanceProfile || null;
       const layer = item.restraintLayer !== undefined ? item.restraintLayer : (profile ? profile.restraintLayer : null);
 
+      // RACK Allergie-Radar (z. B. Latex-Allergie des Subs)
+      const hasLatexAllergy = !!healthPass.hasLatexAllergy;
+      const containsLatex = (item.materials || []).some(m => String(m).toLowerCase().includes('latex') || String(m).toLowerCase().includes('rubber'));
+      const showAllergyWarning = hasLatexAllergy && containsLatex;
+
+      // Gesperrte / Erlaubte Freiheitsgrade extrahieren
+      let blockedBadges = [];
+      if (profile && profile.blocksFaculties) {
+        for (const f in profile.blocksFaculties) {
+          if (profile.blocksFaculties[f] === true) {
+            blockedBadges.push(`Sperrt: ${f.replace(/_/g, ' ')}`);
+          }
+        }
+      }
+
       return `
-        <div class="p-3 sm:p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 ${isOwned ? 'bg-purple-950/25 border-purple-700/60 shadow-md' : 'bg-slate-900/50 border-slate-800/80 hover:border-slate-700'}">
+        <div class="p-3 rounded-2xl border transition-all flex flex-col justify-between gap-2 ${isOwned ? 'bg-purple-950/25 border-purple-700/60 shadow-md' : 'bg-slate-900/50 border-slate-800/80 hover:border-slate-700'}">
           <div class="flex items-start gap-2.5 min-w-0">
             <!-- 1:1 Foto Thumbnail Container -->
             <div id="toy-thumb-${escapeHtml(item.id)}" class="w-14 h-14 aspect-square rounded-xl bg-black/80 flex-shrink-0 flex items-center justify-center overflow-hidden border border-slate-800/80">
               <span class="text-slate-600 text-[10px] animate-pulse">...</span>
             </div>
 
-            <!-- Beschreibung & Titel -->
+            <!-- Beschreibung & Titel (VOLLSTÄNDIG LESBAR OHNE TRUNCATE) -->
             <div class="min-w-0 flex-1 space-y-0.5">
-              <div class="flex items-center justify-between gap-1">
-                <strong class="text-xs text-white block truncate leading-snug">${escapeHtml(item.name)}</strong>
-                <button type="button" onclick="HubToys.toggleOwned('${item.id}')" title="Aktivierungs-Status" class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold flex-shrink-0 transition-colors ${isOwned ? 'bg-purple-900/90 text-purple-200 border border-purple-600' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+              <div class="flex items-start justify-between gap-2">
+                <strong class="text-xs text-white font-bold leading-tight break-words flex-1">${escapeHtml(item.name)}</strong>
+                <button type="button" onclick="HubToys.toggleOwned('${item.id}')" title="Aktivierungs-Status" class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold flex-shrink-0 transition-colors ${isOwned ? 'bg-purple-900/90 text-purple-200 border border-purple-600 shadow-sm' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
                   ${isOwned ? '✓ Vorhanden' : '+ Aktivieren'}
                 </button>
               </div>
-              <p class="text-[10px] text-slate-400 line-clamp-2 leading-relaxed">${escapeHtml(item.desc || '')}</p>
+
+              <p class="text-[10px] text-slate-400 leading-relaxed break-words">${escapeHtml(item.desc || (profile && profile.somaticEffect) || '')}</p>
               
+              <!-- RACK-ALLERGIE WARNUNG -->
+              ${showAllergyWarning ? `
+                <div class="p-1 rounded bg-rose-950/80 border border-rose-700 text-rose-200 text-[9px] font-bold">
+                  ⚠️ RACK-Warnung: Sub hat Latex-Allergie hinterlegt!
+                </div>
+              ` : ''}
+
               <!-- Somatische Affordanz-Tags -->
-              <div class="flex items-center gap-1.5 pt-1 flex-wrap">
-                <span class="px-1.5 py-0.2 rounded bg-slate-900 text-slate-400 font-mono text-[9px] border border-slate-800 uppercase">${escapeHtml(item.category || 'Ausrüstung')}</span>
-                ${layer !== null ? `<span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 font-mono text-[8.5px] border border-indigo-800">Layer ${layer}</span>` : ''}
-                ${item.materials ? `<span class="text-[9px] text-slate-500 font-mono">${escapeHtml(item.materials.join(', '))}</span>` : ''}
+              <div class="flex items-center gap-1 pt-0.5 flex-wrap text-[9px] font-mono">
+                <span class="px-1.5 py-0.2 rounded bg-slate-900 text-slate-400 border border-slate-800 uppercase">${escapeHtml(item.category || 'Ausrüstung')}</span>
+                ${layer !== null ? `<span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">Layer ${layer}</span>` : ''}
+                ${item.materials ? `<span class="text-slate-500">${escapeHtml(item.materials.join(', '))}</span>` : ''}
+                ${blockedBadges.map(b => `<span class="px-1 rounded bg-rose-950/60 text-rose-300 border border-rose-900/60">${escapeHtml(b)}</span>`).join('')}
               </div>
             </div>
           </div>
@@ -453,8 +581,62 @@
   }
 
   function openCustomItemModal() {
-    const modal = document.getElementById('modal-add-custom-toy');
-    if (modal) modal.style.display = 'flex';
+    let modal = document.getElementById('modal-add-custom-toy');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-add-custom-toy';
+      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4";
+      document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+      <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-3.5 shadow-2xl text-xs">
+        <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
+          <div>
+            <h3 class="text-sm font-bold text-white">Eigenes Toy hinzufügen</h3>
+            <span class="text-[10px] text-slate-400">Ergänze private Ausrüstung für Staging &amp; Schrank</span>
+          </div>
+          <button type="button" onclick="HubToys.closeCustomModal()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="space-y-1">
+            <label class="text-[10px] font-mono text-slate-400 uppercase block">Name des Gegenstands:</label>
+            <input type="text" id="input-custom-toy-name" placeholder="z. B. Leder-Maulkorbknebel mit Riemen" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-purple-600 focus:outline-none" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="space-y-1">
+              <label class="text-[10px] font-mono text-slate-400 uppercase block">Kategorie:</label>
+              <select id="select-custom-toy-cat" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs">
+                <option value="bondage">Bondage &amp; Seile</option>
+                <option value="impact">Impact &amp; Zucht</option>
+                <option value="sensory">Sensorik &amp; Knebel</option>
+                <option value="chastity">Keuschheit</option>
+                <option value="cbt">CBT &amp; Klemmen</option>
+                <option value="care">Pflege &amp; RACK</option>
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-mono text-slate-400 uppercase block">Materialien:</label>
+              <input type="text" id="input-custom-toy-mat" placeholder="z. B. Leder, Edelstahl" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs" />
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[10px] font-mono text-slate-400 uppercase block">Beschreibung &amp; Besonderheiten:</label>
+            <textarea id="input-custom-toy-desc" rows="2" placeholder="Besondere Maße, Härtegrad oder Schließmechanismus..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-purple-600 focus:outline-none"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="HubToys.closeCustomModal()" class="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-400 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+          <button type="button" onclick="HubToys.saveCustomItem()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Toy speichern ✓</button>
+        </div>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
   }
 
   function closeCustomItemModal() {
@@ -465,10 +647,12 @@
   function saveCustomItem() {
     const nameInput = document.getElementById('input-custom-toy-name');
     const catSelect = document.getElementById('select-custom-toy-cat');
+    const matInput = document.getElementById('input-custom-toy-mat');
     const descInput = document.getElementById('input-custom-toy-desc');
 
     const name = nameInput ? nameInput.value.trim() : '';
-    const cat = catSelect ? catSelect.value : 'household';
+    const cat = catSelect ? catSelect.value : 'bondage';
+    const mat = matInput ? matInput.value.trim() : '';
     const desc = descInput ? descInput.value.trim() : '';
 
     if (!name) {
@@ -480,6 +664,7 @@
       id: `custom_toy_${Date.now()}`,
       name: name,
       category: cat,
+      materials: mat ? mat.split(',').map(s => s.trim()) : [],
       desc: desc || 'Eigenanschaffung',
       isCustom: true
     };
@@ -500,19 +685,16 @@
     itemQuantities[newItem.id] = 1;
     saveState();
 
-    if (nameInput) nameInput.value = '';
-    if (descInput) descInput.value = '';
     closeCustomItemModal();
     renderToysModal();
-    showToast(`„${newItem.name}“ zum Schrank hinzugefügt`);
+    showToast(`„${newItem.name}“ zum Schrank hinzugefügt ✓`);
   }
 
   function openToysModal() {
-    const modal = document.getElementById('modal-toys-inventory');
-    if (modal) {
-      modal.style.display = 'flex';
-      renderToysModal();
-    }
+    loadOwnedIds();
+    const modal = ensureInventoryModalDom();
+    modal.style.display = 'flex';
+    renderToysModal();
   }
 
   function closeToysModal() {
@@ -544,7 +726,7 @@
     deleteToyPhoto: deleteToyPhoto,
     getOwnedIds: function() {
       loadOwnedIds();
-      return ownedIds;
+      return ownedIds.slice();
     },
     getItemQuantity: getItemQuantity
   };
