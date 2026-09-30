@@ -663,40 +663,121 @@
     `;
   }
 
+  const VAGUS_BREATHING_PATTERNS = {
+    '4_7_8': {
+      id: '4_7_8',
+      name: '4-7-8 Vagus-Relax',
+      desc: 'Maximale Parasympathikus-Aktivierung, Kältezittern-Stopp & Drop-Schutz',
+      steps: [
+        { label: 'Einatmen', duration: 4, action: 'inhale', text: 'Langsam und tief durch die Nase einströmen lassen' },
+        { label: 'Halten', duration: 7, action: 'hold', text: 'Luft anhalten, Brustkorb entspannt geöffnet lassen' },
+        { label: 'Ausatmen', duration: 8, action: 'exhale', text: 'Gleichmäßig und vollständig durch den Mund entweichen lassen' }
+      ]
+    },
+    'box_4': {
+      id: 'box_4',
+      name: '4-4-4-4 Box Breathing',
+      desc: 'Autonome Zentrierung, Fokussierung & Puls-Stabilisierung',
+      steps: [
+        { label: 'Einatmen', duration: 4, action: 'inhale', text: 'Tief durch die Nase einatmen' },
+        { label: 'Halten', duration: 4, action: 'hold', text: 'Spannung im Körper ruhig halten' },
+        { label: 'Ausatmen', duration: 4, action: 'exhale', text: 'Ruhig und gleichmäßig ausatmen' },
+        { label: 'Leere halten', duration: 4, action: 'empty_hold', text: 'In der Leere verharren und nachspüren' }
+      ]
+    },
+    'coherence_5': {
+      id: 'coherence_5',
+      name: '5-5 Herz-Kohärenz',
+      desc: '0,1 Hz HRV-Resonanz für synchrone Herz-Hirn-Schwingung',
+      steps: [
+        { label: 'Einatmen', duration: 5, action: 'inhale', text: 'Fließend und sanft 5s einatmen' },
+        { label: 'Ausatmen', duration: 5, action: 'exhale', text: 'Sanft und lückenlos 5s ausströmen lassen' }
+      ]
+    }
+  };
+
+  let activeBreathingPatternId = '4_7_8';
+  let breathingIntervalTimer = null;
+  let isBreathingActive = false;
+  let currentCycleNumber = 1;
+  const TARGET_CYCLES_COUNT = 4;
+
   function renderVagusBreathingModal() {
+    stopBreathingEngine();
+
     let modal = document.getElementById('modal-vagus-breathing');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-vagus-breathing';
-      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4";
+      modal.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-3 sm:p-4 select-none";
       document.body.appendChild(modal);
     }
 
+    const currentPattern = VAGUS_BREATHING_PATTERNS[activeBreathingPatternId] || VAGUS_BREATHING_PATTERNS['4_7_8'];
+
     modal.innerHTML = `
-      <div class="w-full max-w-sm bg-slate-900 border border-purple-800/80 rounded-3xl p-6 text-center space-y-5 shadow-2xl text-xs text-white">
-        <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
-          <div class="text-left">
-            <h3 class="text-sm font-bold text-white">4-7-8 Vagus-Erdung</h3>
-            <span class="text-[10px] text-purple-300">Stabilisierung des Nervensystems</span>
+      <div class="w-full max-w-sm bg-slate-900/95 border border-purple-900/80 rounded-3xl p-5 sm:p-6 text-center space-y-4 shadow-2xl text-xs text-white relative overflow-hidden backdrop-blur-md">
+        <!-- AMBIENT GLOW EFFECT -->
+        <div id="vagus-ambient-halo" class="absolute -inset-10 bg-purple-900/10 rounded-full blur-3xl pointer-events-none transition-all duration-1000 opacity-30"></div>
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between border-b border-purple-900/50 pb-2 relative z-10">
+          <div class="text-left space-y-0.5">
+            <span class="text-[9px] font-mono uppercase tracking-wider text-purple-400 font-bold block">Somatische Neuro-Regulation</span>
+            <h3 class="text-sm sm:text-base font-bold text-white font-serif" id="vagus-pattern-title">${escapeHtml(currentPattern.name)}</h3>
           </div>
-          <button type="button" onclick="document.getElementById('modal-vagus-breathing').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">✕</button>
+          <button type="button" onclick="SessionLive.closeVagusBreathingModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center touch-btn">✕</button>
         </div>
 
-        <div class="py-6 flex flex-col items-center justify-center">
-          <div id="vagus-breath-circle" class="w-32 h-32 rounded-full border-4 border-purple-500 bg-purple-950/40 flex items-center justify-center text-center transition-all duration-1000 transform">
-            <span id="vagus-breath-label" class="font-bold text-sm tracking-wider text-purple-200">Bereit</span>
-          </div>
-          <span id="vagus-breath-seconds" class="font-mono text-2xl font-black text-purple-300 mt-4">4</span>
-        </div>
-
-        <p class="text-[10.5px] text-slate-400 leading-snug">
-          4s Einatmen durch die Nase · 7s Halten · 8s Langsam Ausatmen durch den Mund. Beruhigt den Herzrhythmus und verhindert Kältezittern.
-        </p>
-
-        <div class="pt-2 border-t border-slate-800 flex justify-between gap-2">
-          <button type="button" onclick="SessionLive.startBreathingCycle()" class="w-full py-2.5 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs touch-btn shadow-md">
-            Atemzyklus starten
+        <!-- KADENZ-AUSWAHL -->
+        <div class="grid grid-cols-3 gap-1 relative z-10 text-[10px]">
+          <button type="button" onclick="SessionLive.selectBreathingPattern('4_7_8')" class="p-1.5 rounded-xl border font-bold transition-all ${activeBreathingPatternId === '4_7_8' ? 'bg-purple-950 border-purple-500 text-purple-200 shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-400'}">
+            4-7-8 Vagus
           </button>
+          <button type="button" onclick="SessionLive.selectBreathingPattern('box_4')" class="p-1.5 rounded-xl border font-bold transition-all ${activeBreathingPatternId === 'box_4' ? 'bg-purple-950 border-purple-500 text-purple-200 shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-400'}">
+            4-4-4-4 Box
+          </button>
+          <button type="button" onclick="SessionLive.selectBreathingPattern('coherence_5')" class="p-1.5 rounded-xl border font-bold transition-all ${activeBreathingPatternId === 'coherence_5' ? 'bg-purple-950 border-purple-500 text-purple-200 shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-400'}">
+            5-5 HRV
+          </button>
+        </div>
+
+        <!-- CIRCULAR SVG BREATHING STAGE -->
+        <div class="py-4 flex flex-col items-center justify-center relative z-10">
+          <div class="relative w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
+            
+            <!-- SVG CIRCULAR PROGRESS TRACK -->
+            <svg class="w-full h-full transform -rotate-90 pointer-events-none" viewBox="0 0 160 160">
+              <!-- Background Circle -->
+              <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="4" fill="none" class="text-slate-800/80" />
+              <!-- Animated Foreground Progress Arc -->
+              <circle id="vagus-svg-arc" cx="80" cy="80" r="70" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round" class="text-purple-400 transition-all" style="stroke-dasharray: 439.8; stroke-dashoffset: 439.8;" />
+            </svg>
+
+            <!-- PULSING INNER SOMATIC CORE -->
+            <div id="vagus-breath-core" class="absolute w-28 h-28 sm:w-32 sm:h-32 rounded-full border border-purple-400/40 bg-gradient-to-tr from-purple-950/80 via-slate-900 to-indigo-950/70 shadow-2xl flex flex-col items-center justify-center text-center transform scale-75 transition-all">
+              <span id="vagus-breath-label" class="font-bold text-xs sm:text-sm tracking-wider text-purple-200 uppercase font-mono">Bereit</span>
+              <span id="vagus-breath-seconds" class="font-mono text-3xl sm:text-4xl font-black text-white mt-0.5 leading-none">4</span>
+            </div>
+          </div>
+
+          <!-- CYCLE TRACKER & PHASE DIRECTIVE -->
+          <div class="mt-3 space-y-1">
+            <span id="vagus-cycle-badge" class="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-purple-950/80 text-purple-300 border border-purple-800 inline-block">
+              Zyklus 1 von ${TARGET_CYCLES_COUNT}
+            </span>
+            <p id="vagus-instruction-text" class="text-[11px] text-slate-300 font-medium leading-snug px-4 min-h-[2rem] flex items-center justify-center">
+              ${escapeHtml(currentPattern.desc)}
+            </p>
+          </div>
+        </div>
+
+        <!-- CONTROLS & HAPTIC NOTICE -->
+        <div class="pt-2 border-t border-slate-800 relative z-10 flex flex-col gap-2">
+          <button type="button" id="btn-vagus-toggle" onclick="SessionLive.toggleBreathingCycle()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-800 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm touch-btn shadow-xl flex items-center justify-center gap-2">
+            <span>Atemführung starten</span>
+          </button>
+          <span class="text-[9.5px] font-mono text-slate-500">Taktile Haptik aktiv: Schließe die Augen im Halbdunkel</span>
         </div>
       </div>
     `;
@@ -704,47 +785,196 @@
     modal.style.display = 'flex';
   }
 
-  function startBreathingCycle() {
-    const circle = document.getElementById('vagus-breath-circle');
+  function selectBreathingPattern(patternId) {
+    if (!VAGUS_BREATHING_PATTERNS[patternId]) return;
+    activeBreathingPatternId = patternId;
+    renderVagusBreathingModal();
+  }
+
+  function toggleBreathingCycle() {
+    if (isBreathingActive) {
+      stopBreathingEngine();
+      renderVagusBreathingModal();
+    } else {
+      startDynamicBreathingEngine();
+    }
+  }
+
+  function startDynamicBreathingEngine() {
+    stopBreathingEngine();
+    isBreathingActive = true;
+    currentCycleNumber = 1;
+
+    const btn = document.getElementById('btn-vagus-toggle');
+    if (btn) {
+      btn.innerText = "Atemführung anhalten";
+      btn.className = "w-full py-3 rounded-2xl bg-rose-950/90 hover:bg-rose-900 border border-rose-700 text-rose-200 font-bold text-xs sm:text-sm touch-btn shadow-lg";
+    }
+
+    const pattern = VAGUS_BREATHING_PATTERNS[activeBreathingPatternId] || VAGUS_BREATHING_PATTERNS['4_7_8'];
+    const steps = pattern.steps;
+    let currentStepIndex = 0;
+    let stepSecondsLeft = steps[0].duration;
+
+    const core = document.getElementById('vagus-breath-core');
     const label = document.getElementById('vagus-breath-label');
-    const sec = document.getElementById('vagus-breath-seconds');
-    if (!circle || !label || !sec) return;
+    const secEl = document.getElementById('vagus-breath-seconds');
+    const arc = document.getElementById('vagus-svg-arc');
+    const desc = document.getElementById('vagus-instruction-text');
+    const cycleBadge = document.getElementById('vagus-cycle-badge');
+    const halo = document.getElementById('vagus-ambient-halo');
 
-    let step = 0; // 0: Einatmen (4s), 1: Halten (7s), 2: Ausatmen (8s)
-    let count = 4;
+    const CIRCUMFERENCE = 439.8; // 2 * PI * 70
 
-    function tick() {
-      sec.innerText = count;
-      if (step === 0) {
-        label.innerText = "Einatmen";
-        circle.style.transform = "scale(1.45)";
-        circle.style.borderColor = "#c084fc";
-      } else if (step === 1) {
-        label.innerText = "Halten";
-        circle.style.transform = "scale(1.45)";
-        circle.style.borderColor = "#818cf8";
-      } else if (step === 2) {
-        label.innerText = "Ausatmen";
-        circle.style.transform = "scale(0.85)";
-        circle.style.borderColor = "#38bdf8";
+    // Duck Hintergrundmusik subtil für konzentrierte Atmung
+    if (window.SessionAudio && typeof window.SessionAudio.duck === 'function') {
+      window.SessionAudio.duck(0.4);
+    }
+
+    function applyPhaseTransitions(stepObj) {
+      if (!core || !label || !desc || !halo) return;
+
+      label.innerText = stepObj.label;
+      desc.innerText = stepObj.text;
+
+      // Haptische Klicks passend zur somatischen Phase
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+          if (stepObj.action === 'inhale') navigator.vibrate([40, 50, 40]);
+          else if (stepObj.action === 'hold' || stepObj.action === 'empty_hold') navigator.vibrate([30]);
+          else if (stepObj.action === 'exhale') navigator.vibrate([70]);
+        } catch (e) {}
       }
 
-      count--;
-      if (count < 0) {
-        step = (step + 1) % 3;
-        count = (step === 0) ? 4 : ((step === 1) ? 7 : 8);
+      // Weiche, physiologische Hüllkurve über die exakte Dauer der Phase
+      if (stepObj.action === 'inhale') {
+        core.style.transition = `transform ${stepObj.duration}s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s ease`;
+        core.style.transform = "scale(1.38)";
+        core.style.borderColor = "#c084fc";
+        halo.style.opacity = "0.7";
+        halo.style.backgroundColor = "rgba(168, 85, 247, 0.25)";
+        if (arc) arc.className = "text-purple-400 transition-all";
+      } else if (stepObj.action === 'hold') {
+        core.style.transition = `transform 1s ease, border-color 1s ease`;
+        core.style.transform = "scale(1.38)";
+        core.style.borderColor = "#818cf8";
+        halo.style.opacity = "0.5";
+        halo.style.backgroundColor = "rgba(129, 140, 248, 0.25)";
+        if (arc) arc.className = "text-indigo-400 transition-all";
+      } else if (stepObj.action === 'exhale') {
+        core.style.transition = `transform ${stepObj.duration}s cubic-bezier(0.4, 0, 0.2, 1), border-color 1s ease`;
+        core.style.transform = "scale(0.72)";
+        core.style.borderColor = "#38bdf8";
+        halo.style.opacity = "0.2";
+        halo.style.backgroundColor = "rgba(56, 189, 248, 0.15)";
+        if (arc) arc.className = "text-sky-400 transition-all";
+      } else if (stepObj.action === 'empty_hold') {
+        core.style.transition = `transform 1s ease, border-color 1s ease`;
+        core.style.transform = "scale(0.72)";
+        core.style.borderColor = "#64748b";
+        halo.style.opacity = "0.1";
+        if (arc) arc.className = "text-slate-500 transition-all";
       }
     }
 
-    tick();
-    const cycleInterval = setInterval(() => {
+    applyPhaseTransitions(steps[0]);
+
+    breathingIntervalTimer = setInterval(() => {
       const modal = document.getElementById('modal-vagus-breathing');
       if (!modal || modal.style.display === 'none') {
-        clearInterval(cycleInterval);
+        stopBreathingEngine();
         return;
       }
-      tick();
+
+      if (secEl) secEl.innerText = stepSecondsLeft;
+
+      // Berechne Kreisfortschritt auf dem SVG-Arc
+      const activeStep = steps[currentStepIndex];
+      const stepTotalDuration = activeStep.duration;
+      const progressFraction = (stepTotalDuration - stepSecondsLeft) / stepTotalDuration;
+
+      if (arc) {
+        arc.style.transition = "stroke-dashoffset 0.95s linear";
+        const offset = CIRCUMFERENCE * (1 - progressFraction);
+        arc.style.strokeDashoffset = offset.toFixed(1);
+      }
+
+      stepSecondsLeft--;
+
+      if (stepSecondsLeft < 0) {
+        currentStepIndex++;
+
+        // Zyklus-Vollendung prüfen
+        if (currentStepIndex >= steps.length) {
+          currentStepIndex = 0;
+          currentCycleNumber++;
+
+          if (cycleBadge) {
+            cycleBadge.innerText = `Zyklus ${Math.min(currentCycleNumber, TARGET_CYCLES_COUNT)} von ${TARGET_CYCLES_COUNT}`;
+          }
+
+          if (currentCycleNumber > TARGET_CYCLES_COUNT) {
+            // Vollständige Vagus-Erdung erreicht
+            finishBreathingSequence();
+            return;
+          }
+        }
+
+        const nextStep = steps[currentStepIndex];
+        stepSecondsLeft = nextStep.duration;
+        applyPhaseTransitions(nextStep);
+
+        if (arc) {
+          arc.style.transition = "none";
+          arc.style.strokeDashoffset = CIRCUMFERENCE.toString();
+        }
+      }
     }, 1000);
+  }
+
+  function finishBreathingSequence() {
+    stopBreathingEngine();
+    showToast("✓ 4-7-8 Vagus-Erdung abgeschlossen: Parasympathikus stabilisiert.");
+
+    const desc = document.getElementById('vagus-instruction-text');
+    const label = document.getElementById('vagus-breath-label');
+    const core = document.getElementById('vagus-breath-core');
+    const arc = document.getElementById('vagus-svg-arc');
+
+    if (label) label.innerText = "Zentriert";
+    if (desc) desc.innerText = "Das vegetative Nervensystem ist stabilisiert. Herzschlag und Atmung sind synchronisiert.";
+    if (core) {
+      core.style.transform = "scale(1.0)";
+      core.style.borderColor = "#34d399";
+    }
+    if (arc) {
+      arc.className = "text-emerald-400";
+      arc.style.strokeDashoffset = "0";
+    }
+
+    const btn = document.getElementById('btn-vagus-toggle');
+    if (btn) {
+      btn.innerText = "Erneut durchführen";
+      btn.className = "w-full py-3 rounded-2xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs sm:text-sm touch-btn shadow-md";
+    }
+  }
+
+  function stopBreathingEngine() {
+    if (breathingIntervalTimer) {
+      clearInterval(breathingIntervalTimer);
+      breathingIntervalTimer = null;
+    }
+    isBreathingActive = false;
+
+    if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
+      window.SessionAudio.unduck(1.5);
+    }
+  }
+
+  function closeVagusBreathingModal() {
+    stopBreathingEngine();
+    const modal = document.getElementById('modal-vagus-breathing');
+    if (modal) modal.style.display = 'none';
   }
 
   function openReverseAftercareModal() {
@@ -905,7 +1135,10 @@
     recordTopClimax: recordTopClimaxDirectly,
     toggleDimmer: toggleScreenDimmer,
     renderVagusBreathingModal: renderVagusBreathingModal,
-    startBreathingCycle: startBreathingCycle,
+    selectBreathingPattern: selectBreathingPattern,
+    toggleBreathingCycle: toggleBreathingCycle,
+    closeVagusBreathingModal: closeVagusBreathingModal,
+    startBreathingCycle: startDynamicBreathingEngine,
     openReverseAftercareModal: openReverseAftercareModal,
     finalizeAndSaveSession: finalizeAndSaveSession,
     getMetrics: function() { return Object.assign({}, sessionMetrics); }
