@@ -254,6 +254,18 @@
             <span class="text-[9px] text-slate-500 block">Top : Bottom</span>
           </div>
         </div>
+
+        <!-- SCHNELLZUGRIFF AUF DEN AUSRÜSTUNGSSCHRANK -->
+        <div class="pt-1 flex items-center justify-between border-t border-purple-900/40 text-xs">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+            <span class="text-slate-300 font-medium text-[11px]">Hardware &amp; Foto-Tresor:</span>
+          </div>
+          <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-3 py-1.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-700 text-purple-200 font-bold text-xs touch-btn flex items-center gap-1.5 shadow-sm">
+            <span>Ausrüstungsschrank öffnen</span>
+            <span>↗</span>
+          </button>
+        </div>
       </div>
 
       <!-- 24H/48H POST-SESSION DROP-WÄCHTER (WENN AKTIV) -->
@@ -366,12 +378,15 @@
           </div>
         </div>
 
-        <!-- KAPITEL DROPDOWN & SCHNELLWECHSLER -->
+        <!-- KAPITEL DROPDOWN & SCHNELLSCHALTER FÜR GESAMTANSICHT -->
         <div class="flex items-center gap-2">
           <select id="survey-chapter-select" onchange="SurveyRunner.goToChapter(this.value)" class="flex-1 p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-purple-600 focus:outline-none">
-            <!-- Dynamisch befüllt -->
+            <!-- Dynamisch befüllt inkl. "Alle Kapitel" -->
           </select>
           <div class="flex items-center gap-1">
+            <button type="button" onclick="SurveyRunner.toggleAllChaptersView()" id="btn-toggle-all-chapters" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-purple-900 border border-slate-700 text-purple-300 font-bold text-xs touch-btn whitespace-nowrap shadow-sm" title="Zwischen Gesamter Liste und Einzelkapiteln umschalten">
+              Alle / Kapitel
+            </button>
             <button type="button" onclick="SurveyRunner.prevChapter()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs touch-btn">‹</button>
             <button type="button" onclick="SurveyRunner.nextChapter()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs touch-btn">›</button>
           </div>
@@ -400,13 +415,16 @@
               Noch offen
             </button>
             <button type="button" onclick="SurveyRunner.setFilter('has_note')" id="survey-filter-has_note" class="px-2.5 py-1 rounded-xl text-[10.5px] font-bold bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn whitespace-nowrap">
-              Mit Notiz 📝
+              Mit Notiz
             </button>
             <button type="button" onclick="SurveyRunner.setFilter('shame')" id="survey-filter-shame" class="px-2.5 py-1 rounded-xl text-[10.5px] font-bold bg-slate-900 border border-slate-800 text-pink-300 hover:text-white touch-btn whitespace-nowrap">
-              Scham-Schutzanker 🙈
+              Scham-Schutzanker
             </button>
             <button type="button" onclick="SurveyRunner.setFilter('favorites')" id="survey-filter-favorites" class="px-2.5 py-1 rounded-xl text-[10.5px] font-bold bg-slate-900 border border-slate-800 text-amber-300 hover:text-white touch-btn whitespace-nowrap">
               Favoriten (4 &amp; 5)
+            </button>
+            <button type="button" onclick="SurveyRunner.setFilter('taboos')" id="survey-filter-taboos" class="px-2.5 py-1 rounded-xl text-[10.5px] font-bold bg-slate-900 border border-slate-800 text-rose-300 hover:text-white touch-btn whitespace-nowrap">
+              Tabus (Note 1)
             </button>
           </div>
         </div>
@@ -416,7 +434,7 @@
       <div id="survey-questions-container" class="space-y-3"></div>
 
       <!-- SURVEY BOTTOM NAV -->
-      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+      <div id="survey-bottom-nav" class="flex items-center justify-between pt-2 border-t border-slate-800">
         <button type="button" onclick="SurveyRunner.prevChapter()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold rounded-xl text-xs touch-btn">
           ← Vorheriges Kapitel
         </button>
@@ -487,6 +505,21 @@
               <button type="button" onclick="AppSettings.setAssignedRole('B')" id="btn-assign-role-b" class="p-2.5 rounded-xl border text-center font-bold text-xs bg-slate-900 border-slate-800 text-slate-400">
                 Ich bin Partner 2
               </button>
+            </div>
+          </div>
+
+          <!-- KEYHOLDER- / FÜHRUNGS-KONFIGURATION -->
+          <div class="p-3.5 rounded-2xl bg-purple-950/20 border border-purple-900/60 space-y-2">
+            <strong class="text-xs text-purple-200 block font-bold">D/s-Führungsrolle &amp; Schlüsselgewalt:</strong>
+            <div class="space-y-1">
+              <label class="text-[10px] font-mono text-slate-400 uppercase block">Wer führt als Top / Keyholder?</label>
+              <select id="cfg-select-keyholder" onchange="AppSettings.handleKeyholderChange(this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                <option value="A">Partner 1</option>
+                <option value="B">Partner 2</option>
+              </select>
+              <span class="text-[9.5px] text-slate-400 block mt-0.5" id="cfg-keyholder-hint">
+                Partner 1 führt als Top/Keyholder · Partner 2 ist Bottom.
+              </span>
             </div>
           </div>
         </div>
@@ -814,13 +847,15 @@
           showToast(`Sichtweise gewechselt auf: Partner ${next === 'A' ? '1' : '2'}`);
           HubDashboard.render();
           if (AppRouter.currentView === 'survey') {
-            SurveyRunner.renderActiveChapter();
+            SurveyRunner.populateChapterDropdown();
+            SurveyRunner.renderActiveView();
           }
         }
       };
 
+      // --- SURVEY RUNNER (MIT VOLLSTÄNDIGER GESAMTANSICHT ALLER 185 ITEMS) ---
       const SurveyRunner = {
-        currentChapterIndex: 0,
+        currentChapterIndex: 0, // Zahl für Kapitel 0..N oder 'all' für Gesamter Fragebogen
         chapters: [],
         currentFilter: 'all',
         searchQuery: '',
@@ -837,32 +872,46 @@
           }
 
           this.populateChapterDropdown();
-          this.renderActiveChapter();
+          this.renderActiveView();
+        },
+
+        toggleAllChaptersView: function() {
+          if (this.currentChapterIndex === 'all') {
+            this.goToChapter(0);
+            showToast("Einzelkapitel-Modus aktiviert");
+          } else {
+            this.goToChapter('all');
+            showToast("Gesamter Fragebogen (185 Items) geladen");
+          }
         },
 
         setFilter: function(filterKey) {
           this.currentFilter = filterKey;
-          ['all', 'unanswered', 'has_note', 'shame', 'favorites'].forEach(k => {
+          ['all', 'unanswered', 'has_note', 'shame', 'favorites', 'taboos'].forEach(k => {
             const btn = document.getElementById(`survey-filter-${k}`);
             if (btn) {
               if (k === filterKey) {
                 btn.className = "px-2.5 py-1 rounded-xl text-[10.5px] font-bold bg-purple-700 text-white touch-btn whitespace-nowrap shadow-sm";
               } else {
-                btn.className = "px-2.5 py-1 rounded-xl text-[10.5px] font-bold bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn whitespace-nowrap";
+                let textCol = 'text-slate-400';
+                if (k === 'shame') textCol = 'text-pink-300';
+                else if (k === 'favorites') textCol = 'text-amber-300';
+                else if (k === 'taboos') textCol = 'text-rose-300';
+                btn.className = `px-2.5 py-1 rounded-xl text-[10.5px] font-bold bg-slate-900 border border-slate-800 ${textCol} hover:text-white touch-btn whitespace-nowrap`;
               }
             }
           });
-          this.renderActiveChapter();
+          this.renderActiveView();
         },
 
         setSearch: function(query) {
           this.searchQuery = (query || '').toLowerCase().trim();
-          this.renderActiveChapter();
+          this.renderActiveView();
         },
 
         toggleNoteField: function(itemId) {
           this.openNotes[itemId] = !this.openNotes[itemId];
-          this.renderActiveChapter();
+          this.renderActiveView();
         },
 
         saveNote: function(itemId, noteText) {
@@ -895,7 +944,8 @@
           answers[currentRole][`choice_${itemId}`] = choiceValue;
 
           localStorage.setItem('kompass_answers', JSON.stringify(answers));
-          this.renderActiveChapter();
+          this.populateChapterDropdown();
+          this.renderActiveView();
 
           if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
             window.CloudSync.trigger();
@@ -914,7 +964,8 @@
           answers[currentRole][`it_${itemId}_${dim}`] = parseInt(val, 10);
 
           localStorage.setItem('kompass_answers', JSON.stringify(answers));
-          this.renderActiveChapter();
+          this.populateChapterDropdown();
+          this.renderActiveView();
 
           if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
             window.CloudSync.trigger();
@@ -934,9 +985,9 @@
           answers[currentRole][`shame_${itemId}`] = !current;
 
           localStorage.setItem('kompass_answers', JSON.stringify(answers));
-          this.renderActiveChapter();
+          this.renderActiveView();
 
-          showToast(!current ? "Scham-Schutzanker aktiviert (🙈 Spottverbot)" : "Scham-Schutzanker gelöst");
+          showToast(!current ? "Scham-Schutzanker aktiviert (Spottverbot)" : "Scham-Schutzanker gelöst");
 
           if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
             window.CloudSync.trigger();
@@ -947,24 +998,80 @@
           const select = document.getElementById('survey-chapter-select');
           if (!select) return;
 
-          select.innerHTML = this.chapters.map((ch, idx) => `
-            <option value="${idx}" ${idx === this.currentChapterIndex ? 'selected' : ''}>
-              Kapitel ${ch.id}: ${escapeHtml(ch.title)}
+          let answers = {};
+          try {
+            const rawAns = localStorage.getItem('kompass_answers');
+            if (rawAns) answers = JSON.parse(rawAns) || {};
+          } catch (e) {}
+          const currentRole = AppProfile.getAssignedRole();
+          const rAns = answers[currentRole] || {};
+
+          let totalItemsCount = 0;
+          let totalAnsweredCount = 0;
+
+          const optionsHtml = this.chapters.map((ch, idx) => {
+            const items = ch.items || [];
+            let answered = 0;
+            items.forEach(it => {
+              totalItemsCount++;
+              if (it.type === 'choice') {
+                if (rAns[`choice_${it.id}`]) { answered++; totalAnsweredCount++; }
+              } else {
+                if (rAns[`it_${it.id}_r1`] !== undefined || rAns[`it_${it.id}_r2`] !== undefined) {
+                  answered++; totalAnsweredCount++;
+                }
+              }
+            });
+
+            const isCompleted = answered === items.length && items.length > 0;
+            const progressPill = isCompleted ? `(${answered}/${items.length} ✓)` : `(${answered}/${items.length})`;
+            const isSelected = (this.currentChapterIndex !== 'all' && parseInt(this.currentChapterIndex, 10) === idx);
+
+            return `
+              <option value="${idx}" ${isSelected ? 'selected' : ''}>
+                Kapitel ${ch.id}: ${escapeHtml(ch.title.split(': ')[1] || ch.title)} ${progressPill}
+              </option>
+            `;
+          }).join('');
+
+          select.innerHTML = `
+            <option value="all" ${this.currentChapterIndex === 'all' ? 'selected' : ''}>
+              Gesamter Fragebogen (${totalAnsweredCount}/${totalItemsCount || 185} Items)
             </option>
-          `).join('');
+            ${optionsHtml}
+          `;
         },
 
-        goToChapter: function(idx) {
-          const parsed = parseInt(idx, 10);
-          if (!isNaN(parsed) && parsed >= 0 && parsed < this.chapters.length) {
-            this.currentChapterIndex = parsed;
-            this.renderActiveChapter();
-            const select = document.getElementById('survey-chapter-select');
-            if (select) select.value = parsed.toString();
+        goToChapter: function(val) {
+          if (val === 'all') {
+            this.currentChapterIndex = 'all';
+          } else {
+            const parsed = parseInt(val, 10);
+            if (!isNaN(parsed) && parsed >= 0 && parsed < this.chapters.length) {
+              this.currentChapterIndex = parsed;
+            }
           }
+
+          const select = document.getElementById('survey-chapter-select');
+          if (select) select.value = this.currentChapterIndex.toString();
+
+          const toggleBtn = document.getElementById('btn-toggle-all-chapters');
+          if (toggleBtn) {
+            if (this.currentChapterIndex === 'all') {
+              toggleBtn.className = "px-3 py-2 rounded-xl bg-purple-700 text-white font-bold text-xs touch-btn whitespace-nowrap shadow-sm";
+            } else {
+              toggleBtn.className = "px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-purple-300 font-bold text-xs touch-btn whitespace-nowrap shadow-sm";
+            }
+          }
+
+          this.renderActiveView();
         },
 
         nextChapter: function() {
+          if (this.currentChapterIndex === 'all') {
+            showToast("Gesamtansicht aller 185 Fragen aktiv.");
+            return;
+          }
           if (this.currentChapterIndex < this.chapters.length - 1) {
             this.goToChapter(this.currentChapterIndex + 1);
           } else {
@@ -973,19 +1080,19 @@
         },
 
         prevChapter: function() {
+          if (this.currentChapterIndex === 'all') {
+            this.goToChapter(0);
+            return;
+          }
           if (this.currentChapterIndex > 0) {
             this.goToChapter(this.currentChapterIndex - 1);
           }
         },
 
-        renderActiveChapter: function() {
-          const ch = this.chapters[this.currentChapterIndex];
-          if (!ch) return;
-
-          const titleHeader = document.getElementById('survey-chapter-title-header');
-          if (titleHeader) titleHeader.innerText = ch.title;
-
+        renderActiveView: function() {
           const container = document.getElementById('survey-questions-container');
+          const titleHeader = document.getElementById('survey-chapter-title-header');
+          const bottomNav = document.getElementById('survey-bottom-nav');
           if (!container) return;
 
           let answers = {};
@@ -999,9 +1106,73 @@
           const roleAns = answers[currentRole] || {};
           const partnerAns = answers[otherRole] || {};
 
+          const isAllView = (this.currentChapterIndex === 'all');
+
+          if (bottomNav) {
+            bottomNav.style.display = isAllView ? 'none' : 'flex';
+          }
+
+          if (isAllView) {
+            if (titleHeader) titleHeader.innerText = "Gesamter Fragebogen · Alle 36 Kapitel (185 Items)";
+
+            // Sammle alle Kapitel mit ihren Items
+            let renderedHtml = "";
+            let matchCount = 0;
+
+            this.chapters.forEach((ch, chIdx) => {
+              let items = ch.items || [];
+
+              // Suche filtern
+              if (this.searchQuery.length > 0) {
+                items = items.filter(it => 
+                  (it.title || '').toLowerCase().includes(this.searchQuery) ||
+                  (it.desc || '').toLowerCase().includes(this.searchQuery) ||
+                  (it.question || '').toLowerCase().includes(this.searchQuery)
+                );
+              }
+
+              // Filter anwenden
+              if (this.currentFilter !== 'all') {
+                items = items.filter(it => this.matchesFilter(it, roleAns));
+              }
+
+              if (items.length > 0) {
+                matchCount += items.length;
+                renderedHtml += `
+                  <div class="pt-3 pb-1 border-b border-purple-900/60 flex items-center justify-between">
+                    <span class="text-xs font-mono font-bold text-purple-300 uppercase">
+                      Kapitel ${ch.id}: ${escapeHtml(ch.title.split(': ')[1] || ch.title)}
+                    </span>
+                    <span class="text-[9.5px] font-mono text-slate-500">${items.length} Items</span>
+                  </div>
+                  <div class="space-y-3 pt-2">
+                    ${items.map(it => this.renderSingleItemCard(it, roleAns, partnerAns, ch.id)).join('')}
+                  </div>
+                `;
+              }
+            });
+
+            if (matchCount === 0) {
+              container.innerHTML = `
+                <div class="p-8 rounded-3xl theme-card border border-slate-800 text-center text-slate-500 text-xs space-y-1">
+                  <strong class="text-white block font-bold">Keine Fragen gefunden</strong>
+                  <p>Keine Items entsprechen dem aktiven Filter oder deiner Suchanfrage.</p>
+                </div>
+              `;
+            } else {
+              container.innerHTML = renderedHtml;
+            }
+            return;
+          }
+
+          // Einzelkapitel-Modus
+          const ch = this.chapters[this.currentChapterIndex];
+          if (!ch) return;
+
+          if (titleHeader) titleHeader.innerText = ch.title;
+
           let items = ch.items || [];
 
-          // 1. Suche über Titel, Beschreibung und Fragen anwenden
           if (this.searchQuery.length > 0) {
             items = items.filter(it => 
               (it.title || '').toLowerCase().includes(this.searchQuery) ||
@@ -1010,193 +1181,121 @@
             );
           }
 
-          // 2. Filter anwenden
           if (this.currentFilter !== 'all') {
-            items = items.filter(it => {
-              const scoreLead = roleAns[`it_${it.id}_r1`];
-              const scoreRec = roleAns[`it_${it.id}_r2`];
-              const choiceVal = roleAns[`choice_${it.id}`];
-              const noteText = roleAns[`note_${it.id}`];
-              const isShame = roleAns[`shame_${it.id}`] === true;
-
-              if (this.currentFilter === 'unanswered') {
-                if (it.type === 'choice') return !choiceVal;
-                return (scoreLead === undefined || scoreLead === 0) && (scoreRec === undefined || scoreRec === 0);
-              }
-              if (this.currentFilter === 'has_note') {
-                return typeof noteText === 'string' && noteText.trim().length > 0;
-              }
-              if (this.currentFilter === 'shame') {
-                return isShame;
-              }
-              if (this.currentFilter === 'favorites') {
-                return scoreLead >= 4 || scoreRec >= 4;
-              }
-              return true;
-            });
+            items = items.filter(it => this.matchesFilter(it, roleAns));
           }
 
           if (items.length === 0) {
             container.innerHTML = `
               <div class="p-6 rounded-3xl theme-card border border-slate-800 text-center text-slate-500 text-xs">
-                Keine Fragen gefunden, die den aktuellen Kriterien entsprechen.
+                In diesem Kapitel gibt es keine Fragen, die den aktuellen Kriterien entsprechen.
               </div>
             `;
             return;
           }
 
-          container.innerHTML = items.map(it => {
-            const scoreLead = roleAns[`it_${it.id}_r1`];
-            const scoreRec = roleAns[`it_${it.id}_r2`];
-            const choiceScore = roleAns[`choice_${it.id}`];
-            const noteText = roleAns[`note_${it.id}`] || '';
-            const isShame = roleAns[`shame_${it.id}`] === true;
-            const isNoteOpen = !!this.openNotes[it.id] || noteText.trim().length > 0;
+          container.innerHTML = items.map(it => this.renderSingleItemCard(it, roleAns, partnerAns, ch.id)).join('');
+        },
 
-            // Partner-Resonanz berechnen
-            const pScoreLead = partnerAns[`it_${it.id}_r1`];
-            const pScoreRec = partnerAns[`it_${it.id}_r2`];
-            const pChoice = partnerAns[`choice_${it.id}`];
-            let resonancePill = '';
+        matchesFilter: function(it, roleAns) {
+          const scoreLead = roleAns[`it_${it.id}_r1`];
+          const scoreRec = roleAns[`it_${it.id}_r2`];
+          const choiceVal = roleAns[`choice_${it.id}`];
+          const noteText = roleAns[`note_${it.id}`];
+          const isShame = roleAns[`shame_${it.id}`] === true;
 
-            if (it.type === 'choice') {
-              if (pChoice && choiceScore) {
-                if (pChoice === choiceScore) {
-                  resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-900 text-purple-200 border border-purple-600">Übereinstimmung ✓</span>';
-                } else {
-                  resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-700">Partner: gewählt</span>';
-                }
-              }
-            } else {
-              // Skalen-Resonanz
-              if (scoreLead === 5 && pScoreRec === 5) {
-                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-950 text-purple-200 border border-purple-600">5/5 Doppel-Spitze ★</span>';
-              } else if (pScoreRec === 1 || scoreLead === 1) {
-                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">Tabu / Veto 🚫</span>';
-              } else if (scoreLead >= 4 && pScoreRec >= 4) {
-                resonancePill = `<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">${scoreLead}/${pScoreRec} Synergie</span>`;
-              } else if ((scoreLead >= 4 && pScoreRec === 3) || (scoreLead === 3 && pScoreRec >= 4)) {
-                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">Erkundungs-Brücke ⇄</span>';
+          if (this.currentFilter === 'unanswered') {
+            if (it.type === 'choice') return !choiceVal;
+            return (scoreLead === undefined || scoreLead === 0) && (scoreRec === undefined || scoreRec === 0);
+          }
+          if (this.currentFilter === 'has_note') {
+            return typeof noteText === 'string' && noteText.trim().length > 0;
+          }
+          if (this.currentFilter === 'shame') {
+            return isShame;
+          }
+          if (this.currentFilter === 'favorites') {
+            return scoreLead >= 4 || scoreRec >= 4;
+          }
+          if (this.currentFilter === 'taboos') {
+            return scoreLead === 1 || scoreRec === 1;
+          }
+          return true;
+        },
+
+        renderSingleItemCard: function(it, roleAns, partnerAns, chapterId) {
+          const scoreLead = roleAns[`it_${it.id}_r1`];
+          const scoreRec = roleAns[`it_${it.id}_r2`];
+          const choiceScore = roleAns[`choice_${it.id}`];
+          const noteText = roleAns[`note_${it.id}`] || '';
+          const isShame = roleAns[`shame_${it.id}`] === true;
+          const isNoteOpen = !!this.openNotes[it.id] || noteText.trim().length > 0;
+
+          // Partner-Resonanz berechnen
+          const pScoreLead = partnerAns[`it_${it.id}_r1`];
+          const pScoreRec = partnerAns[`it_${it.id}_r2`];
+          const pChoice = partnerAns[`choice_${it.id}`];
+          let resonancePill = '';
+
+          if (it.type === 'choice') {
+            if (pChoice && choiceScore) {
+              if (pChoice === choiceScore) {
+                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-900 text-purple-200 border border-purple-600">Übereinstimmung ✓</span>';
+              } else {
+                resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-700">Partner: gewählt</span>';
               }
             }
-
-            // RENDERING: CHOICE-ITEM (KAPITEL 00: TRAUMA & TRIGGER)
-            if (it.type === 'choice') {
-              return `
-                <div class="p-4 sm:p-5 rounded-3xl theme-card border border-purple-900/40 space-y-3 shadow-md">
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="space-y-0.5 min-w-0 flex-1">
-                      <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="text-[9px] font-mono text-purple-400 font-bold">#${it.id} · SCHUTZRAUM</span>
-                        ${resonancePill}
-                      </div>
-                      <h4 class="text-xs sm:text-sm font-bold text-white leading-tight break-words">${escapeHtml(it.title)}</h4>
-                    </div>
-                  </div>
-
-                  <p class="text-[10.5px] text-slate-300 leading-snug break-words">
-                    ${escapeHtml(it.question || it.desc)}
-                  </p>
-
-                  <!-- CHOICE OPTIONEN -->
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    ${(it.options || []).map(opt => {
-                      const isSelected = choiceScore === opt.val;
-                      return `
-                        <button type="button" onclick="SurveyRunner.setChoiceScore(${it.id}, '${opt.val}')" class="p-2.5 rounded-xl border text-left transition-all touch-btn ${isSelected ? 'bg-purple-950/80 border-purple-500 text-white shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
-                          <div class="flex items-center justify-between">
-                            <span class="text-[10.5px] font-medium leading-snug break-words flex-1">${escapeHtml(opt.label)}</span>
-                            <span class="text-xs font-mono font-bold ml-1.5 ${isSelected ? 'text-purple-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
-                          </div>
-                        </button>
-                      `;
-                    }).join('')}
-                  </div>
-
-                  <!-- NOTIZEN TOGGLE & TEXTAREA -->
-                  <div class="pt-2 border-t border-slate-800/80 space-y-2">
-                    <div class="flex items-center justify-between text-[10px]">
-                      <button type="button" onclick="SurveyRunner.toggleNoteField(${it.id})" class="text-slate-400 hover:text-white font-medium flex items-center gap-1">
-                        <span>📝</span>
-                        <span>${isNoteOpen ? 'Notiz einklappen' : (noteText ? 'Persönliche Notiz anzeigen' : '+ Notiz hinzufügen')}</span>
-                      </button>
-                      ${noteText ? '<span class="text-purple-300 font-mono text-[9px] font-bold">Notiz gespeichert ✓</span>' : ''}
-                    </div>
-
-                    ${isNoteOpen ? `
-                      <textarea 
-                        rows="2" 
-                        placeholder="Persönliche Bemerkung, Bedingungen oder Auslöser notieren..." 
-                        oninput="SurveyRunner.saveNote(${it.id}, this.value)"
-                        class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-[11px] placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
-                      >${escapeHtml(noteText)}</textarea>
-                    ` : ''}
-                  </div>
-                </div>
-              `;
+          } else {
+            if (scoreLead === 5 && pScoreRec === 5) {
+              resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-950 text-purple-200 border border-purple-600">5/5 Doppel-Spitze ★</span>';
+            } else if (pScoreRec === 1 || scoreLead === 1) {
+              resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800">Tabu / Veto 🚫</span>';
+            } else if (scoreLead >= 4 && pScoreRec >= 4) {
+              resonancePill = `<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">${scoreLead}/${pScoreRec} Synergie</span>`;
+            } else if ((scoreLead >= 4 && pScoreRec === 3) || (scoreLead === 3 && pScoreRec >= 4)) {
+              resonancePill = '<span class="px-2 py-0.5 rounded text-[8.5px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">Erkundungs-Brücke ⇄</span>';
             }
+          }
 
-            // RENDERING: STANDARD SCALE-ITEM (0 BIS 5)
-            const scaleLabels = ["Entfällt", "Tabu", "Eher nicht", "Neutral", "Gern", "Must-Have"];
+          // CHOICE-ITEM
+          if (it.type === 'choice') {
             return `
-              <div class="p-4 sm:p-5 rounded-3xl theme-card border border-slate-800/90 space-y-3 shadow-md">
+              <div class="p-4 sm:p-5 rounded-3xl theme-card border border-purple-900/40 space-y-3 shadow-md">
                 <div class="flex items-start justify-between gap-2">
                   <div class="space-y-0.5 min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-[9px] font-mono text-purple-400 font-bold">#${it.id}</span>
+                      <span class="text-[9px] font-mono text-purple-400 font-bold">Kap. ${chapterId} · #${it.id}</span>
                       ${resonancePill}
                     </div>
                     <h4 class="text-xs sm:text-sm font-bold text-white leading-tight break-words">${escapeHtml(it.title)}</h4>
                   </div>
-
-                  <button type="button" onclick="SurveyRunner.toggleShame(${it.id})" title="Scham-Schutzanker (Spottverbot)" class="px-2 py-1 rounded-xl font-mono text-[10px] font-bold flex-shrink-0 touch-btn border transition-all ${isShame ? 'bg-pink-950 text-pink-200 border-pink-700 shadow-sm' : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'}">
-                    🙈 ${isShame ? 'Scham-Anker aktiv' : 'Scham?'}
-                  </button>
                 </div>
 
-                <p class="text-[10.5px] text-slate-400 leading-snug break-words">
-                  ${escapeHtml(it.desc)}
+                <p class="text-[10.5px] text-slate-300 leading-snug break-words">
+                  ${escapeHtml(it.question || it.desc)}
                 </p>
 
-                <!-- 2-ROLLEN BEWERTUNG -->
-                <div class="space-y-2.5 pt-1">
-                  <!-- ROLLE 1: FÜHREN / AUSFÜHREN -->
-                  <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[10px]">
-                      <span class="text-purple-300 font-medium font-mono">r1: Ich führe aus / bestimme</span>
-                      <span class="text-slate-400 font-mono">${scoreLead !== undefined ? scaleLabels[scoreLead] : 'Noch offen'}</span>
-                    </div>
-                    <div class="grid grid-cols-6 gap-1">
-                      ${[0, 1, 2, 3, 4, 5].map(v => `
-                        <button type="button" onclick="SurveyRunner.setScore(${it.id}, 'r1', ${v})" class="py-2 rounded-xl text-xs font-mono font-bold transition-all touch-btn ${scoreLead === v ? 'bg-purple-700 text-white shadow-sm' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:border-slate-700'}">
-                          ${v}
-                        </button>
-                      `).join('')}
-                    </div>
-                  </div>
-
-                  <!-- ROLLE 2: EMPFANGEN / HINGEBEN -->
-                  <div class="space-y-1">
-                    <div class="flex items-center justify-between text-[10px]">
-                      <span class="text-indigo-300 font-medium font-mono">r2: Ich empfange / gebe mich hin</span>
-                      <span class="text-slate-400 font-mono">${scoreRec !== undefined ? scaleLabels[scoreRec] : 'Noch offen'}</span>
-                    </div>
-                    <div class="grid grid-cols-6 gap-1">
-                      ${[0, 1, 2, 3, 4, 5].map(v => `
-                        <button type="button" onclick="SurveyRunner.setScore(${it.id}, 'r2', ${v})" class="py-2 rounded-xl text-xs font-mono font-bold transition-all touch-btn ${scoreRec === v ? 'bg-indigo-700 text-white shadow-sm' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:border-slate-700'}">
-                          ${v}
-                        </button>
-                      `).join('')}
-                    </div>
-                  </div>
+                <!-- Choice-Optionen -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  ${(it.options || []).map(opt => {
+                    const isSelected = choiceScore === opt.val;
+                    return `
+                      <button type="button" onclick="SurveyRunner.setChoiceScore(${it.id}, '${opt.val}')" class="p-2.5 rounded-xl border text-left transition-all touch-btn ${isSelected ? 'bg-purple-950/80 border-purple-500 text-white shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
+                        <div class="flex items-center justify-between">
+                          <span class="text-[10.5px] font-medium leading-snug break-words flex-1">${escapeHtml(opt.label)}</span>
+                          <span class="text-xs font-mono font-bold ml-1.5 ${isSelected ? 'text-purple-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
+                        </div>
+                      </button>
+                    `;
+                  }).join('')}
                 </div>
 
-                <!-- BEMERKUNGSFELD (NOTIZ) -->
+                <!-- Notiz-Feld -->
                 <div class="pt-2 border-t border-slate-800/80 space-y-2">
                   <div class="flex items-center justify-between text-[10px]">
-                    <button type="button" onclick="SurveyRunner.toggleNoteField(${it.id})" class="text-slate-400 hover:text-white font-medium flex items-center gap-1">
-                      <span>📝</span>
-                      <span>${isNoteOpen ? 'Notiz einklappen' : (noteText ? 'Persönliche Notiz anzeigen' : '+ Notiz / Bedingungen hinzufügen')}</span>
+                    <button type="button" onclick="SurveyRunner.toggleNoteField(${it.id})" class="text-slate-400 hover:text-white font-medium flex items-center gap-1.5 touch-btn">
+                      <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                      <span>${isNoteOpen ? 'Notiz einklappen' : (noteText ? 'Persönliche Notiz anzeigen' : '+ Notiz hinzufügen')}</span>
                     </button>
                     ${noteText ? '<span class="text-purple-300 font-mono text-[9px] font-bold">Notiz gespeichert ✓</span>' : ''}
                   </div>
@@ -1204,7 +1303,7 @@
                   ${isNoteOpen ? `
                     <textarea 
                       rows="2" 
-                      placeholder="Persönliche Bemerkung, Grenzen, Rahmenbedingungen (z. B. 'Nur im Urlaub', 'Behutsam anfangen')..." 
+                      placeholder="Persönliche Bemerkung, Bedingungen oder Auslöser notieren..." 
                       oninput="SurveyRunner.saveNote(${it.id}, this.value)"
                       class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-[11px] placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
                     >${escapeHtml(noteText)}</textarea>
@@ -1212,7 +1311,83 @@
                 </div>
               </div>
             `;
-          }).join('');
+          }
+
+          // STANDARD SKALEN-ITEM (0 BIS 5)
+          const scaleLabels = ["Entfällt", "Tabu", "Eher nicht", "Neutral", "Gern", "Must-Have"];
+          return `
+            <div class="p-4 sm:p-5 rounded-3xl theme-card border border-slate-800/90 space-y-3 shadow-md">
+              <div class="flex items-start justify-between gap-2">
+                <div class="space-y-0.5 min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[9px] font-mono text-purple-400 font-bold">Kap. ${chapterId} · #${it.id}</span>
+                    ${resonancePill}
+                  </div>
+                  <h4 class="text-xs sm:text-sm font-bold text-white leading-tight break-words">${escapeHtml(it.title)}</h4>
+                </div>
+
+                <button type="button" onclick="SurveyRunner.toggleShame(${it.id})" title="Scham-Schutzanker (Spottverbot)" class="px-2.5 py-1 rounded-xl font-mono text-[10px] font-bold flex-shrink-0 touch-btn border transition-all flex items-center gap-1.5 ${isShame ? 'bg-pink-950 text-pink-200 border-pink-700 shadow-sm' : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'}">
+                  <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                  <span>${isShame ? 'Schutzanker aktiv' : 'Schutzanker'}</span>
+                </button>
+              </div>
+
+              <p class="text-[10.5px] text-slate-400 leading-snug break-words">
+                ${escapeHtml(it.desc)}
+              </p>
+
+              <!-- 2-Rollen Skalen -->
+              <div class="space-y-2.5 pt-1">
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-purple-300 font-medium font-mono">r1: Ich führe aus / bestimme</span>
+                    <span class="text-slate-400 font-mono">${scoreLead !== undefined ? scaleLabels[scoreLead] : 'Noch offen'}</span>
+                  </div>
+                  <div class="grid grid-cols-6 gap-1">
+                    ${[0, 1, 2, 3, 4, 5].map(v => `
+                      <button type="button" onclick="SurveyRunner.setScore(${it.id}, 'r1', ${v})" class="py-2 rounded-xl text-xs font-mono font-bold transition-all touch-btn ${scoreLead === v ? 'bg-purple-700 text-white shadow-sm' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:border-slate-700'}">
+                        ${v}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-indigo-300 font-medium font-mono">r2: Ich empfange / gebe mich hin</span>
+                    <span class="text-slate-400 font-mono">${scoreRec !== undefined ? scaleLabels[scoreRec] : 'Noch offen'}</span>
+                  </div>
+                  <div class="grid grid-cols-6 gap-1">
+                    ${[0, 1, 2, 3, 4, 5].map(v => `
+                      <button type="button" onclick="SurveyRunner.setScore(${it.id}, 'r2', ${v})" class="py-2 rounded-xl text-xs font-mono font-bold transition-all touch-btn ${scoreRec === v ? 'bg-indigo-700 text-white shadow-sm' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:border-slate-700'}">
+                        ${v}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notizfeld -->
+              <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                <div class="flex items-center justify-between text-[10px]">
+                  <button type="button" onclick="SurveyRunner.toggleNoteField(${it.id})" class="text-slate-400 hover:text-white font-medium flex items-center gap-1.5 touch-btn">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                    <span>${isNoteOpen ? 'Notiz einklappen' : (noteText ? 'Persönliche Notiz anzeigen' : '+ Notiz / Bedingungen hinzufügen')}</span>
+                  </button>
+                  ${noteText ? '<span class="text-purple-300 font-mono text-[9px] font-bold">Notiz gespeichert ✓</span>' : ''}
+                </div>
+
+                ${isNoteOpen ? `
+                  <textarea 
+                    rows="2" 
+                    placeholder="Persönliche Bemerkung, Grenzen, Rahmenbedingungen..." 
+                    oninput="SurveyRunner.saveNote(${it.id}, this.value)"
+                    class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-[11px] placeholder:text-slate-600 focus:border-purple-600 focus:outline-none"
+                  >${escapeHtml(noteText)}</textarea>
+                ` : ''}
+              </div>
+            </div>
+          `;
         }
       };
 
@@ -1234,7 +1409,6 @@
           if (headerRoleEl) headerRoleEl.innerText = `Rolle: ${names[role] || ('Partner ' + (role === 'A' ? '1' : '2'))}`;
           if (btnRole) btnRole.innerText = `Sicht: ${names[role]}`;
 
-          // 1. Fragebogen-Fortschritt (185 Items!)
           let answers = {};
           try {
             const rawAns = localStorage.getItem('kompass_answers');
@@ -1255,7 +1429,6 @@
           const progEl = document.getElementById('stat-survey-progress');
           if (progEl) progEl.innerText = `${answeredCount} / 185`;
 
-          // 2. Tribut-Saldo
           let bal = 0;
           if (window.ProtocolCore && typeof window.ProtocolCore.getBalance === 'function') {
             bal = window.ProtocolCore.getBalance();
@@ -1263,7 +1436,6 @@
           const balEl = document.getElementById('stat-ledger-balance');
           if (balEl) balEl.innerText = `${bal >= 0 ? '+' : ''}${bal} P`;
 
-          // 3. Verschluss-Status
           let isLocked = false;
           let daysLocked = 0;
           let phaseName = 'Adaptation';
@@ -1283,7 +1455,6 @@
           if (chStatus) chStatus.innerText = isLocked ? `Tag ${daysLocked} verriegelt` : 'Frei / Unverschlossen';
           if (chPhase) chPhase.innerText = phaseName;
 
-          // 4. Orgasmus-Ratio
           let ratioStr = "0 : 0";
           if (window.ProtocolRatio && typeof window.ProtocolRatio.getProgress === 'function') {
             const r = window.ProtocolRatio.getProgress();
@@ -1292,7 +1463,6 @@
           const ratioEl = document.getElementById('stat-climax-ratio');
           if (ratioEl) ratioEl.innerText = ratioStr;
 
-          // 5. Drop-Guard Banner
           const dropBanner = document.getElementById('hub-drop-guard-banner');
           if (dropBanner) {
             let guard = null;
@@ -1307,7 +1477,6 @@
             }
           }
 
-          // Header Sync Pill
           const syncPill = document.getElementById('header-sync-pill');
           if (syncPill) {
             const isPaired = localStorage.getItem('kompass_is_paired') === 'true';
@@ -1339,7 +1508,13 @@
           if (inA) inA.value = names.A;
           if (inB) inB.value = names.B;
 
-          // Multi-KI Werte befüllen
+          const khSelect = document.getElementById('cfg-select-keyholder');
+          const savedKh = localStorage.getItem('kompass_keyholder_role') || 'A';
+          if (khSelect) {
+            khSelect.value = savedKh;
+            this.handleKeyholderChange(savedKh);
+          }
+
           const provSelect = document.getElementById('cfg-ai-provider-select');
           const currentProv = localStorage.getItem('tactus_ai_provider') || 'gemini';
           if (provSelect) provSelect.value = currentProv;
@@ -1364,6 +1539,14 @@
         closeModal: function() {
           const modal = document.getElementById('modal-settings');
           if (modal) modal.style.display = 'none';
+        },
+
+        handleKeyholderChange: function(khRole) {
+          const hint = document.getElementById('cfg-keyholder-hint');
+          const cagedRole = (khRole === 'A') ? 'B' : 'A';
+          if (hint) {
+            hint.innerText = `Partner ${khRole === 'A' ? '1' : '2'} führt als Top/Keyholder · Partner ${cagedRole === 'A' ? '1' : '2'} ist Bottom.`;
+          }
         },
 
         switchTab: function(tabKey) {
@@ -1433,7 +1616,6 @@
             res.className = "text-[10.5px] font-mono text-purple-300 animate-pulse";
           }
 
-          // Temporär speichern für Test
           if (window.AIAdapter && typeof window.AIAdapter.setApiKey === 'function') {
             window.AIAdapter.setApiKey(currentProv, key);
           }
@@ -1502,12 +1684,29 @@
           const inA = document.getElementById('cfg-name-a');
           const inB = document.getElementById('cfg-name-b');
           const provSelect = document.getElementById('cfg-ai-provider-select');
+          const khSelect = document.getElementById('cfg-select-keyholder');
 
           const names = {
             A: inA ? inA.value.trim() || 'Partner 1' : 'Partner 1',
             B: inB ? inB.value.trim() || 'Partner 2' : 'Partner 2'
           };
           localStorage.setItem('kompass_names', JSON.stringify(names));
+
+          if (khSelect) {
+            const khRole = khSelect.value || 'A';
+            const cagedRole = (khRole === 'A') ? 'B' : 'A';
+            localStorage.setItem('kompass_keyholder_role', khRole);
+            localStorage.setItem('kompass_caged_role', cagedRole);
+
+            if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
+              const state = window.ProtocolCore.getState();
+              state.keyholder = khRole;
+              state.cagedPartner = cagedRole;
+              if (typeof window.ProtocolCore.saveState === 'function') {
+                window.ProtocolCore.saveState();
+              }
+            }
+          }
 
           if (provSelect) {
             const pId = provSelect.value;
