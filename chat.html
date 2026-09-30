@@ -93,6 +93,10 @@
 
         <!-- DESKTOP ACTIONS -->
         <div class="hidden md:flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="ChatApp.openDateNightModal()" class="px-2.5 py-1.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-700 text-purple-200 font-bold text-xs flex items-center gap-1.5 touch-btn shadow-sm" title="Befehl zur Intimität (Date-Night)">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+            <span>Date-Night</span>
+          </button>
           <button type="button" onclick="ChatApp.clearHistory()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-rose-300 font-bold text-xs flex items-center gap-1 touch-btn" title="Lokalen Chatverlauf leeren">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
             <span>Leeren</span>
@@ -105,6 +109,9 @@
 
         <!-- MOBILE BURGER BUTTON -->
         <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="ChatApp.openDateNightModal()" class="p-2 rounded-xl bg-purple-950 border border-purple-800 text-purple-300 touch-btn" title="Date-Night Trigger">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+          </button>
           <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
           </button>
@@ -181,23 +188,27 @@
   <!-- MAIN STREAM CONTAINER -->
   <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full flex flex-col justify-between space-y-3">
 
-    <!-- ZERO-KNOWLEDGE SECURITY BANNER -->
-    <div class="theme-card rounded-2xl p-3 border border-purple-900/50 shadow-md bg-gradient-to-r from-purple-950/30 via-noir-900 to-indigo-950/20 flex items-center justify-between gap-2 text-xs">
-      <div class="flex items-center gap-2 min-w-0">
-        <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
-        </svg>
-        <span class="text-[10.5px] text-slate-300 truncate">
-          Client-Side AES-GCM-256 verschlüsselt · Fotos verbleiben im isolierten IndexedDB-Tresor
+    <!-- LIVE-RESONANZ TICKER AUS DEM PROTOKOLL -->
+    <div id="chat-live-status-ticker" class="theme-card rounded-2xl p-2.5 border border-purple-900/50 shadow-md bg-gradient-to-r from-purple-950/30 via-noir-900 to-indigo-950/20 flex items-center justify-between gap-2 text-xs overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-3 text-[10.5px] font-mono text-slate-300 whitespace-nowrap">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full" id="ticker-lock-dot"></span>
+          <strong id="ticker-lock-text" class="text-white">Prüfe Status...</strong>
         </span>
+        <span class="text-slate-600">·</span>
+        <span>Saldo: <strong id="ticker-balance-text" class="text-amber-300 font-bold">0 P</strong></span>
+        <span class="text-slate-600">·</span>
+        <span>Ratio: <strong id="ticker-ratio-text" class="text-purple-300 font-bold">0:0</strong></span>
+        <span class="text-slate-600">·</span>
+        <span id="ticker-load-badge"></span>
       </div>
       <button type="button" onclick="ChatApp.openSyncConfigModal()" class="px-2.5 py-1 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-700 text-purple-200 font-mono text-[9.5px] font-bold flex-shrink-0 touch-btn">
-        Verbindungs-Status
+        E2EE-Status
       </button>
     </div>
 
     <!-- CHAT MESSAGES SCROLL AREA -->
-    <div id="chat-messages-container" class="flex-1 overflow-y-auto space-y-3 p-2 sm:p-4 rounded-3xl theme-card border border-slate-800/80 min-h-[50vh] max-h-[62vh] shadow-inner">
+    <div id="chat-messages-container" class="flex-1 overflow-y-auto space-y-3 p-2 sm:p-4 rounded-3xl theme-card border border-slate-800/80 min-h-[50vh] max-h-[60vh] shadow-inner">
       <div class="text-center py-8 text-slate-500 text-xs">
         Lade verschlüsselte Nachrichten...
       </div>
@@ -206,7 +217,7 @@
     <!-- MESSAGE COMPOSER & QUICK ACTIONS -->
     <div class="theme-card rounded-3xl p-3 border border-slate-800 space-y-2 shadow-xl">
       
-      <!-- MODE TOGGLES (STANDARD / FLÜSTERN / ANKER) -->
+      <!-- MODE TOGGLES (STANDARD / FLÜSTERN / REGIE / BRAT / PRAISE) -->
       <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar text-xs">
         <div class="flex items-center gap-1">
           <button type="button" onclick="ChatApp.setMode('standard')" id="btn-mode-standard" class="px-2.5 py-1 rounded-xl font-bold text-[10px] bg-purple-700 text-white touch-btn transition-colors">
@@ -218,13 +229,24 @@
           <button type="button" onclick="ChatApp.setMode('directive')" id="btn-mode-directive" class="px-2.5 py-1 rounded-xl font-bold text-[10px] bg-slate-900 border border-slate-800 text-purple-300 hover:text-white touch-btn transition-colors">
             Regie-Impuls
           </button>
+          <button type="button" onclick="ChatApp.setMode('brat')" id="btn-mode-brat" class="px-2.5 py-1 rounded-xl font-bold text-[10px] bg-slate-900 border border-rose-900/60 text-rose-300 hover:text-white touch-btn transition-colors" title="Spielerischer Trotz (Brat-Ventil)">
+            Trotz-Ping
+          </button>
         </div>
 
-        <!-- FOTO-UPLOAD BUTTON FÜR DEN TRESOR -->
-        <button type="button" onclick="ChatApp.triggerPhotoUpload()" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold text-[10px] flex items-center gap-1 touch-btn">
-          <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
-          <span>Foto-Tresor</span>
-        </button>
+        <div class="flex items-center gap-1 flex-shrink-0">
+          <!-- PRAISE-KAPSEL SEALEN (NUR TOP) -->
+          <button type="button" onclick="ChatApp.openPraiseModal()" id="btn-chat-praise-capsule" class="px-2 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-800/80 text-amber-300 font-bold text-[10px] flex items-center gap-1 touch-btn">
+            <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+            <span>Gunst-Kapsel</span>
+          </button>
+
+          <!-- FOTO-UPLOAD BUTTON FÜR DEN TRESOR -->
+          <button type="button" onclick="ChatApp.triggerPhotoUpload()" class="px-2 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold text-[10px] flex items-center gap-1 touch-btn">
+            <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+            <span>Foto</span>
+          </button>
+        </div>
       </div>
 
       <!-- TEXTEINGABE & SENDE-BUTTON -->
@@ -248,37 +270,84 @@
     </div>
 
   </main>
-
-  <!-- MODAL: SYNC & E2EE SCHLÜSSEL KONFIGURATION -->
-  <div id="modal-chat-sync-config" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
+  <!-- MODAL: DATE-NIGHT TRIGGER (SOFA-HEMMSCHWELLE BRECHEN) -->
+  <div id="modal-date-night-trigger" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs">
       <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
-        <div class="space-y-0.5">
-          <h3 class="text-sm font-bold text-white">E2EE Paar-Synchronisation</h3>
-          <span class="text-[10px] text-slate-400">Zero-Knowledge Peer-Bridge via ntfy</span>
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+            <span>1-Tap Date-Night Trigger</span>
+          </h3>
+          <span class="text-[10px] text-slate-400">Sendet sofortigen Haptik-Impuls ins Schlafzimmer</span>
         </div>
-        <button type="button" onclick="document.getElementById('modal-chat-sync-config').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="document.getElementById('modal-date-night-trigger').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[10.5px] font-mono text-purple-300 uppercase block">Wähle den Einberufungs-Befehl:</label>
+        
+        <button type="button" onclick="ChatApp.sendDateNightTrigger('discipline')" class="w-full p-3 rounded-2xl border text-left bg-slate-950 border-slate-800 hover:border-purple-600 transition-all space-y-1 touch-btn">
+          <strong class="text-xs text-white block">1. Zucht &amp; Strenge (Kniestand vor Bettkante)</strong>
+          <span class="text-[10px] text-slate-400 block leading-snug">„In 10 Minuten im Schlafzimmer. Hemd aus, auf die Knie vor die Bettkante und schweigend warten.“</span>
+        </button>
+
+        <button type="button" onclick="ChatApp.sendDateNightTrigger('sensual')" class="w-full p-3 rounded-2xl border text-left bg-slate-950 border-slate-800 hover:border-purple-600 transition-all space-y-1 touch-btn">
+          <strong class="text-xs text-white block">2. Sinnliche Hingabe (Bett bereiten)</strong>
+          <span class="text-[10px] text-slate-400 block leading-snug">„Licht dimmen. Zieh die Decke auf. Heute liegst du nur da und empfängst meine Berührung.“</span>
+        </button>
+
+        <button type="button" onclick="ChatApp.sendDateNightTrigger('service')" class="w-full p-3 rounded-2xl border text-left bg-slate-950 border-slate-800 hover:border-purple-600 transition-all space-y-1 touch-btn">
+          <strong class="text-xs text-white block">3. Stiller Dienst (Öl &amp; Massage)</strong>
+          <span class="text-[10px] text-slate-400 block leading-snug">„Komm ins Zimmer. Bring das Massageöl mit und sprich kein Wort. Heute bedienst du nur mich.“</span>
+        </button>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex justify-end">
+        <button type="button" onclick="document.getElementById('modal-date-night-trigger').style.display='none'" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRAISE- & GUNST-KAPSEL VERSIEGELN -->
+  <div id="modal-praise-capsule" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-amber-600/50 p-5 space-y-4 shadow-2xl text-xs">
+      <div class="flex items-center justify-between border-b border-amber-900/60 pb-2">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+            <span>Gunst-Kapsel versiegeln</span>
+          </h3>
+          <span class="text-[10px] text-slate-400">Entsiegelt sich automatisch bei Bedingung</span>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-praise-capsule').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <div class="space-y-3">
         <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Geheimer Raum-Name (Room-ID):</label>
-          <input type="text" id="cfg-sync-room" placeholder="z. B. tactus_alpha_9482..." class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
+          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Geheimer Lob- oder Liebesbeweis:</label>
+          <textarea id="praise-capsule-text" rows="3" placeholder="z. B. Ich bin unglaublich stolz auf deine Haltung heute..." class="w-full p-2.5 bg-slate-950 border border-amber-700/60 rounded-xl text-white text-xs focus:outline-none"></textarea>
         </div>
 
-        <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Gemeinsames Paar-Passwort (AES-GCM-256):</label>
-          <input type="password" id="cfg-sync-pass" placeholder="Geheimes Passwort für Entschlüsselung..." class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
-        </div>
-
-        <div class="p-3 rounded-2xl bg-purple-950/30 border border-purple-900/50 text-[10.5px] text-purple-200 leading-snug">
-          Beide Partner müssen exakt denselben Raum-Namen und dasselbe Passwort eingeben. Der Schlüssel verlässt euer Endgerät niemals unverschlüsselt.
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Entsiegelungs-Bedingung:</label>
+            <select id="praise-capsule-type" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+              <option value="points">Nach Tributpunkten</option>
+              <option value="days">Nach Keuschheitstagen</option>
+              <option value="immediate_secret">Sofort (nur mit Siegel)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Schwellenwert (z.B. 100 P / 5 Tage):</label>
+            <input type="number" id="praise-capsule-target" value="100" min="1" class="w-full p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono" />
+          </div>
         </div>
       </div>
 
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-        <button type="button" onclick="document.getElementById('modal-chat-sync-config').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs">Abbrechen</button>
-        <button type="button" onclick="ChatApp.saveSyncConfig()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs shadow-md">Verbinden &amp; Sichern ✓</button>
+        <button type="button" onclick="document.getElementById('modal-praise-capsule').style.display='none'" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="ChatApp.sealPraiseCapsule()" class="px-5 py-2 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Kapsel versiegeln ✓</button>
       </div>
     </div>
   </div>
@@ -304,7 +373,7 @@
       'use strict';
 
       const STORAGE_KEY_MESSAGES = 'kompass_chat_messages';
-      let activeComposerMode = 'standard'; // 'standard' | 'whisper' | 'directive'
+      let activeComposerMode = 'standard'; // 'standard' | 'whisper' | 'directive' | 'brat'
       let messageList = [];
 
       function escapeHtml(str) {
@@ -342,6 +411,68 @@
         }, 2800);
       }
 
+      function isCurrentUserTop() {
+        if (window.ProtocolCore && typeof window.ProtocolCore.isTop === 'function') {
+          return window.ProtocolCore.isTop();
+        }
+        const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const kh = localStorage.getItem('kompass_keyholder_role') || 'A';
+        return myRole === kh;
+      }
+
+      function updateLiveStatusTicker() {
+        let isLocked = false;
+        let daysLocked = 0;
+        let balance = 0;
+        let ratioStr = "0:0";
+        let topLoad = "balanced";
+
+        if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
+          const p = window.ProtocolCore.getState();
+          isLocked = !!p.isLocked;
+          if (isLocked && p.lockedSince) {
+            const diffMs = Math.max(0, Date.now() - p.lockedSince);
+            daysLocked = Math.max(1, Math.floor(diffMs / (24 * 3600 * 1000)) + 1);
+          }
+          balance = window.ProtocolCore.getBalance ? window.ProtocolCore.getBalance() : 0;
+        }
+
+        if (window.ProtocolRatio && typeof window.ProtocolRatio.getProgress === 'function') {
+          const r = window.ProtocolRatio.getProgress();
+          ratioStr = `${r.topCount}:${r.subCount}`;
+        }
+
+        if (window.ProtocolTasks && typeof window.ProtocolTasks.getMentalLoad === 'function') {
+          topLoad = window.ProtocolTasks.getMentalLoad();
+        }
+
+        const dot = document.getElementById('ticker-lock-dot');
+        const lockText = document.getElementById('ticker-lock-text');
+        const balText = document.getElementById('ticker-balance-text');
+        const ratText = document.getElementById('ticker-ratio-text');
+        const loadBadge = document.getElementById('ticker-load-badge');
+
+        if (dot && lockText) {
+          if (isLocked) {
+            dot.className = "w-2 h-2 rounded-full bg-purple-400 animate-pulse";
+            lockText.innerText = `Käfig: Tag ${daysLocked} verriegelt`;
+          } else {
+            dot.className = "w-2 h-2 rounded-full bg-slate-600";
+            lockText.innerText = "Unverschlossen / Frei";
+          }
+        }
+        if (balText) balText.innerText = `${balance >= 0 ? '+' : ''}${balance} P`;
+        if (ratText) ratText.innerText = ratioStr;
+        if (loadBadge) {
+          const badgeMap = {
+            exhausted: '<span class="px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800 font-bold">Top: Erschöpft</span>',
+            balanced: '<span class="px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800 font-bold">Top: Ausgeglichen</span>',
+            strict: '<span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-bold">Top: Streng</span>'
+          };
+          loadBadge.innerHTML = badgeMap[topLoad] || '';
+        }
+      }
+
       function loadMessages() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY_MESSAGES);
@@ -372,10 +503,14 @@
 
       function renderMessages() {
         loadMessages();
+        updateLiveStatusTicker();
+
         const container = document.getElementById('chat-messages-container');
         if (!container) return;
 
         const myRole = getMyRole();
+        const isTop = isCurrentUserTop();
+
         let names = { A: 'Partner 1', B: 'Partner 2' };
         if (window.HubContext && typeof window.HubContext.getNames === 'function') {
           names = window.HubContext.getNames();
@@ -400,6 +535,16 @@
           return;
         }
 
+        let balance = 0;
+        let daysLocked = 0;
+        if (window.ProtocolCore && typeof window.ProtocolCore.getBalance === 'function') {
+          balance = window.ProtocolCore.getBalance();
+          const p = window.ProtocolCore.getState();
+          if (p.isLocked && p.lockedSince) {
+            daysLocked = Math.max(1, Math.floor((Date.now() - p.lockedSince) / (24 * 3600 * 1000)) + 1);
+          }
+        }
+
         container.innerHTML = messageList.map(msg => {
           const isSystem = (msg.senderRole === 'system');
           const isMe = (!isSystem && msg.senderRole === myRole);
@@ -407,35 +552,116 @@
           const timeStr = new Date(msg.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
           const isWhisper = (msg.mode === 'whisper');
           const isDirective = (msg.mode === 'directive');
+          const isBrat = (msg.mode === 'brat');
+          const isActionCard = !!msg.actionCard;
+          const isPraiseCapsule = !!msg.praiseCapsule;
 
+          // 1. SYSTEM-EREIGNISSE & AKTIONEN
           if (isSystem) {
+            const hasTaskAction = msg.taskId && isTop;
+            const hasDropVagus = msg.text.includes('Drop-Wächter') || msg.text.includes('Aftercare');
+
             return `
               <div class="flex justify-center my-2">
-                <div class="px-3.5 py-1.5 rounded-2xl bg-purple-950/40 border border-purple-900/60 text-[10px] text-purple-200 text-center max-w-md shadow-sm">
-                  <span class="font-mono text-purple-400 font-bold block mb-0.5">System-Ereignis · ${timeStr}</span>
-                  <span>${escapeHtml(msg.text)}</span>
+                <div class="px-4 py-2.5 rounded-2xl bg-purple-950/40 border border-purple-900/60 text-xs text-purple-200 max-w-md shadow-md space-y-1.5 w-full">
+                  <div class="flex items-center justify-between border-b border-purple-900/40 pb-1">
+                    <span class="font-mono text-purple-400 font-bold text-[9px] uppercase">System-Ereignis · ${timeStr}</span>
+                    <span class="text-[9px] font-mono text-slate-500">Auto-Log</span>
+                  </div>
+                  <div class="text-[10.5px] leading-snug text-slate-200">${escapeHtml(msg.text)}</div>
+
+                  ${hasTaskAction ? `
+                    <div class="pt-1.5 flex items-center justify-end gap-1.5 border-t border-purple-900/40">
+                      <button type="button" onclick="ChatApp.quickApproveTask('${escapeHtml(msg.taskId)}')" class="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-lg text-[9.5px] touch-btn shadow-sm">
+                        Anerkennen (+Punkte) ✓
+                      </button>
+                      <button type="button" onclick="ChatApp.quickRejectTask('${escapeHtml(msg.taskId)}')" class="px-2 py-1 bg-slate-900 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 rounded-lg text-[9.5px] touch-btn">
+                        Abweisen
+                      </button>
+                    </div>
+                  ` : ''}
+
+                  ${hasDropVagus ? `
+                    <div class="pt-1.5 flex justify-end border-t border-purple-900/40">
+                      <a href="session.html" class="px-3 py-1 bg-purple-800 hover:bg-purple-700 text-white font-bold rounded-lg text-[9.5px] touch-btn shadow-sm flex items-center gap-1">
+                        <span>4-7-8 Vagus-Erdung öffnen →</span>
+                      </a>
+                    </div>
+                  ` : ''}
                 </div>
               </div>
             `;
           }
 
+          // 2. PRAISE- & GUNST-KAPSELN (VERSCHLÜSSELT / TIMELOCKED)
+          if (isPraiseCapsule) {
+            const cap = msg.praiseCapsule;
+            let isUnlocked = false;
+
+            if (cap.type === 'points' && balance >= cap.target) isUnlocked = true;
+            else if (cap.type === 'days' && daysLocked >= cap.target) isUnlocked = true;
+            else if (cap.type === 'immediate_secret') isUnlocked = true;
+
+            return `
+              <div class="flex justify-center my-3">
+                <div class="p-4 rounded-3xl border ${isUnlocked ? 'bg-amber-950/30 border-amber-600/70 text-amber-100 shadow-xl' : 'bg-slate-950/80 border-slate-800 text-slate-400'} max-w-sm w-full space-y-2 text-center">
+                  <div class="flex items-center justify-between border-b border-amber-900/40 pb-1.5">
+                    <span class="text-[9px] font-mono uppercase tracking-wider text-amber-300 font-bold">Gunst-Kapsel des Tops</span>
+                    <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ${isUnlocked ? 'bg-amber-900 text-amber-200' : 'bg-slate-900 text-slate-500'}">
+                      ${isUnlocked ? 'Entsiegelt ✓' : 'Versiegelt 🔒'}
+                    </span>
+                  </div>
+                  ${isUnlocked ? `
+                    <p class="text-xs text-amber-100 italic leading-relaxed py-1 font-serif">„${escapeHtml(cap.text)}“</p>
+                    <span class="text-[9px] text-amber-400/80 block font-mono">Bedingung erfüllt (${cap.target} ${cap.type === 'points' ? 'P' : 'Tage'})</span>
+                  ` : `
+                    <div class="py-2 space-y-1">
+                      <strong class="text-white block text-xs">Verschlossene Gunst-Botschaft</strong>
+                      <span class="text-[10px] text-slate-500 block">Öffnet sich bei: ${cap.target} ${cap.type === 'points' ? 'Tributpunkten' : 'Tagen Keuschheit'}. Aktuell: ${cap.type === 'points' ? balance + ' P' : daysLocked + ' Tage'}</span>
+                    </div>
+                  `}
+                </div>
+              </div>
+            `;
+          }
+
+          // 3. REGULÄRE NACHRICHTEN, WHISPER, DIRECTIVES & BRAT-PINGS
           return `
             <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1">
-              <span class="text-[9px] font-mono text-slate-500 px-2">
-                ${escapeHtml(senderName)} · ${timeStr}
-                ${isWhisper ? '<span class="text-pink-400 font-bold ml-1">Flüstern</span>' : ''}
-                ${isDirective ? '<span class="text-amber-400 font-bold ml-1">Regie-Impuls</span>' : ''}
+              <span class="text-[9px] font-mono text-slate-500 px-2 flex items-center gap-1.5">
+                <span>${escapeHtml(senderName)} · ${timeStr}</span>
+                ${isWhisper ? '<span class="text-pink-400 font-bold">Flüstern</span>' : ''}
+                ${isDirective ? '<span class="text-amber-400 font-bold">Regie-Impuls</span>' : ''}
+                ${isBrat ? '<span class="text-rose-400 font-bold px-1 rounded bg-rose-950/80 border border-rose-800">Trotz-Ping</span>' : ''}
+                ${isDirective && window.SessionVoice ? `
+                  <button type="button" onclick="ChatApp.speakDirectiveText('${escapeHtml(msg.text.replace(/'/g, "\\'"))}')" title="Befehl vorlesen" class="p-0.5 rounded text-purple-400 hover:text-white">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z"/></svg>
+                  </button>
+                ` : ''}
               </span>
+              
               <div class="max-w-[85%] sm:max-w-md p-3 rounded-2xl text-xs leading-relaxed transition-all shadow-md ${
                 isMe 
-                  ? (isWhisper ? 'bg-gradient-to-tr from-pink-950 to-purple-900 text-pink-100 border border-pink-700 rounded-br-none' : (isDirective ? 'bg-gradient-to-tr from-amber-950 to-purple-900 text-amber-100 border border-amber-700 rounded-br-none' : 'bg-purple-800 text-white rounded-br-none'))
-                  : (isWhisper ? 'bg-slate-900 text-pink-200 border border-pink-900/70 rounded-bl-none' : (isDirective ? 'bg-slate-900 text-amber-200 border border-amber-900/70 rounded-bl-none' : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-none'))
+                  ? (isBrat 
+                      ? 'bg-gradient-to-tr from-rose-950 to-purple-900 text-rose-100 border border-rose-700 rounded-br-none' 
+                      : (isWhisper ? 'bg-gradient-to-tr from-pink-950 to-purple-900 text-pink-100 border border-pink-700 rounded-br-none' : (isDirective ? 'bg-gradient-to-tr from-amber-950 to-purple-900 text-amber-100 border border-amber-700 rounded-br-none' : 'bg-purple-800 text-white rounded-br-none')))
+                  : (isBrat 
+                      ? 'bg-rose-950/80 text-rose-200 border border-rose-700 rounded-bl-none shadow-lg' 
+                      : (isWhisper ? 'bg-slate-900 text-pink-200 border border-pink-900/70 rounded-bl-none' : (isDirective ? 'bg-slate-900 text-amber-200 border border-amber-900/70 rounded-bl-none' : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-none')))
               }">
                 ${msg.photoVaultId ? `
                   <div class="mb-2 rounded-xl overflow-hidden border border-purple-500/30">
                     <img id="chat-photo-${escapeHtml(msg.photoVaultId)}" src="${escapeHtml(msg.photoDataUrl || '')}" alt="Tresor-Foto" class="max-h-48 object-cover rounded-xl" />
                   </div>
                 ` : ''}
+
+                ${isBrat && !isMe ? `
+                  <div class="mb-1.5 p-1.5 rounded-lg bg-rose-900/50 text-[9.5px] font-bold text-rose-300 flex items-center justify-between">
+                    <span>Spielerische Provokation registriert!</span>
+                    <a href="protocol.html#view=chores" class="underline text-white">Disziplinieren →</a>
+                  </div>
+                ` : ''}
+
                 <div class="whitespace-pre-wrap">${escapeHtml(msg.text)}</div>
               </div>
             </div>
@@ -474,7 +700,7 @@
         renderMessages();
       }
 
-      function postSystemEvent(eventText) {
+      function postSystemEvent(eventText, taskId = null) {
         if (!eventText) return;
         loadMessages();
         messageList.push({
@@ -483,15 +709,124 @@
           senderRole: 'system',
           text: String(eventText).trim(),
           mode: 'standard',
+          taskId: taskId,
           photoVaultId: null
         });
         saveMessages();
         renderMessages();
       }
 
+      function quickApproveTask(taskId) {
+        if (!taskId) return;
+        if (window.ProtocolTasks && typeof window.ProtocolTasks.approve === 'function') {
+          window.ProtocolTasks.approve(taskId);
+          showToast("Pflicht im Chat quittiert ✓");
+          renderMessages();
+        }
+      }
+
+      function quickRejectTask(taskId) {
+        if (!taskId) return;
+        if (window.ProtocolTasks && typeof window.ProtocolTasks.reject === 'function') {
+          window.ProtocolTasks.reject(taskId, "Zurückgewiesen aus dem Stream");
+          showToast("Pflicht abgewiesen.");
+          renderMessages();
+        }
+      }
+
+      function openDateNightModal() {
+        if (!isCurrentUserTop()) {
+          showToast("Der Date-Night Trigger obliegt allein dem Top.");
+          return;
+        }
+        const modal = document.getElementById('modal-date-night-trigger');
+        if (modal) modal.style.display = 'flex';
+      }
+
+      function sendDateNightTrigger(styleType) {
+        const modal = document.getElementById('modal-date-night-trigger');
+        if (modal) modal.style.display = 'none';
+
+        let directiveText = "In 10 Minuten im Schlafzimmer. Hemd aus, auf die Knie vor die Bettkante und schweigend warten.";
+        if (styleType === 'sensual') directiveText = "Licht dimmen. Zieh die Decke auf. Heute liegst du nur da und empfängst meine Berührung.";
+        else if (styleType === 'service') directiveText = "Komm ins Zimmer. Bring das Massageöl mit und sprich kein Wort. Heute bedienst du nur mich.";
+
+        loadMessages();
+        messageList.push({
+          id: `msg_datenight_${Date.now()}`,
+          timestamp: Date.now(),
+          senderRole: getMyRole(),
+          text: `[DATE-NIGHT BEFEHL]: ${directiveText}`,
+          mode: 'directive',
+          photoVaultId: null
+        });
+        saveMessages();
+        renderMessages();
+
+        // Haptischer Schockpuls
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([100, 50, 100, 50, 200]);
+        }
+
+        showToast("✓ Date-Night Einberufungs-Befehl versendet!");
+      }
+
+      function openPraiseModal() {
+        if (!isCurrentUserTop()) {
+          showToast("Gunst-Kapseln können nur vom Top versiegelt werden.");
+          return;
+        }
+        const modal = document.getElementById('modal-praise-capsule');
+        if (modal) modal.style.display = 'flex';
+      }
+
+      function sealPraiseCapsule() {
+        const textIn = document.getElementById('praise-capsule-text');
+        const typeIn = document.getElementById('praise-capsule-type');
+        const targetIn = document.getElementById('praise-capsule-target');
+
+        const text = textIn ? textIn.value.trim() : '';
+        const type = typeIn ? typeIn.value : 'points';
+        const target = targetIn ? parseInt(targetIn.value, 10) || 50 : 50;
+
+        if (!text) {
+          showToast("Bitte gib eine Botschaft ein.");
+          return;
+        }
+
+        loadMessages();
+        messageList.push({
+          id: `praise_${Date.now()}`,
+          timestamp: Date.now(),
+          senderRole: getMyRole(),
+          text: "Versiegelte Gunst-Kapsel",
+          mode: 'standard',
+          praiseCapsule: {
+            text: text,
+            type: type,
+            target: target
+          }
+        });
+        saveMessages();
+
+        const modal = document.getElementById('modal-praise-capsule');
+        if (modal) modal.style.display = 'none';
+        if (textIn) textIn.value = '';
+
+        renderMessages();
+        showToast("Gunst-Kapsel im Stream versiegelt ✓");
+      }
+
+      function speakDirectiveText(text) {
+        if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+          window.SessionVoice.speak(text, { tonality: 'sovereign_warm', phase: 2 });
+          showToast("Regie-Impuls wird vorgelesen...");
+        }
+      }
+
       function setMode(modeKey) {
         activeComposerMode = modeKey;
-        ['standard', 'whisper', 'directive'].forEach(k => {
+        ['standard', 'whisper', 'directive', 'brat'].forEach(k => {
           const btn = document.getElementById(`btn-mode-${k}`);
           if (btn) {
             if (k === modeKey) {
@@ -601,6 +936,13 @@
         renderMessages: renderMessages,
         handleSendMessage: handleSendMessage,
         postSystemEvent: postSystemEvent,
+        quickApproveTask: quickApproveTask,
+        quickRejectTask: quickRejectTask,
+        openDateNightModal: openDateNightModal,
+        sendDateNightTrigger: sendDateNightTrigger,
+        openPraiseModal: openPraiseModal,
+        sealPraiseCapsule: sealPraiseCapsule,
+        speakDirectiveText: speakDirectiveText,
         setMode: setMode,
         clearHistory: clearHistory,
         openSyncConfigModal: openSyncConfigModal,
@@ -608,7 +950,10 @@
         triggerPhotoUpload: triggerPhotoUpload
       };
 
-      document.addEventListener('DOMContentLoaded', renderMessages);
+      document.addEventListener('DOMContentLoaded', () => {
+        renderMessages();
+        setInterval(updateLiveStatusTicker, 3000);
+      });
 
     })(window);
   </script>
