@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TACTUS · Schlafzimmer-Regie &amp; Somatisches Cockpit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('kompass_theme') || 'dark';
+      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+      var savedZoom = localStorage.getItem('kompass_text_zoom') || '100';
+      if (savedZoom === '115') document.documentElement.style.fontSize = '115%';
+      else if (savedZoom === '130') document.documentElement.style.fontSize = '130%';
+      else document.documentElement.style.fontSize = '100%';
+    })();
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3',
+              500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+              800: '#9f1239', 900: '#881337', 950: '#4c0519',
+            },
+            noir: {
+              950: '#000000', 900: '#05070c', 850: '#0a0e17',
+              800: '#101726', 700: '#172238', 600: '#233454',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: var(--sab);
+      padding-left: var(--sal);
+      padding-right: var(--sar);
+    }
+    .font-serif-title {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+    html.dark body { background-color: #000000 !important; color: #f8fafc !important; }
+    html.dark .theme-card { background-color: #060911 !important; border-color: #172033 !important; color: #f8fafc !important; }
+    html.dark .theme-panel { background-color: #0b111e !important; border-color: #1e2b44 !important; color: #e2e8f0 !important; }
+    html:not(.dark) body { background-color: #f8fafc !important; color: #0f172a !important; }
+    html:not(.dark) .theme-card { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
+    html:not(.dark) .theme-panel { background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
+    .touch-btn {
+      min-height: 48px;
+      transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .touch-btn:active { transform: scale(0.97); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-purple-700 selection:text-white transition-colors duration-200">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-slate-900 shadow-sm" style="padding-top: max(8px, var(--sat));">
+    <div class="max-w-4xl mx-auto px-3 sm:px-6 pb-2 space-y-1.5">
+      <div class="flex items-center justify-between gap-2">
+        <a href="index.html#view=hub" class="flex items-center space-x-2.5 min-w-0 text-left group touch-btn cursor-pointer flex-1">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-950 via-indigo-900 to-rose-950 border border-purple-500/40 text-purple-200 flex items-center justify-center shadow-lg p-1.5 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/>
+            </svg>
+          </div>
+          <div class="truncate min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white truncate font-serif-title">TACTUS · Schlafzimmer-Regie</h1>
+              <span id="session-mode-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800 uppercase flex-shrink-0">STAGING</span>
+            </div>
+            <span class="text-[9.5px] text-slate-400 font-medium block truncate mt-0.5" id="session-header-subtitle">Vorbereitung im Halbdunkel · Top-First</span>
+          </div>
+        </a>
+
+        <!-- DESKTOP ACTIONS -->
+        <div class="hidden md:flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="SessionLive.toggleDimmer()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold text-xs flex items-center gap-1.5 touch-btn" title="OLED Nachttisch-Dimmer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+            <span>Dimmer</span>
+          </button>
+          <button type="button" onclick="SessionLive.renderVagusBreathingModal()" class="px-2.5 py-1.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-800 text-purple-300 font-mono font-bold text-xs flex items-center gap-1 touch-btn">
+            <span>4-7-8 Vagus</span>
+          </button>
+          <a href="protocol.html" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs flex items-center gap-1.5 touch-btn">
+            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Das Protokoll</span>
+          </a>
+        </div>
+
+        <!-- MOBILE BURGER BUTTON -->
+        <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="SessionLive.toggleDimmer()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 touch-btn" title="Dimmer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+          </button>
+          <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 flex items-center justify-center font-bold text-base touch-btn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- DESKTOP NAV -->
+      <nav class="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-xs font-bold -mx-1 px-1">
+        <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Start-Hub</a>
+        <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen</a>
+        <a href="analyse.html" class="px-3 py-1.5 rounded-xl text-amber-300 hover:text-white transition whitespace-nowrap touch-btn">Paar-Analyse</a>
+        <a href="chat.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Paar-Stream</a>
+        <a href="protocol.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Das Protokoll</a>
+        <a href="guide.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Guide</a>
+        <button type="button" class="px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700">Regie (Live)</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MOBILE DRAWER -->
+  <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-purple-950 border border-purple-600 text-purple-300 flex items-center justify-center font-bold text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white font-serif-title">TACTUS OS</h3>
+            <span class="text-[10px] text-slate-400 font-medium block">Schlafzimmer-Regie &amp; Somatik</span>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-1.5 pt-1">
+        <a href="index.html#view=hub" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-white">Start-Hub</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="index.html#view=survey" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-white">Fragebogen (36 Kapitel)</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="analyse.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-amber-300">Paar-Analyse &amp; Synergie</span>
+          <span class="text-[10px] text-amber-400 font-bold">Doppel-5er</span>
+        </a>
+        <a href="protocol.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-purple-300">Das Protokoll &amp; Vertrag</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="chat.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-slate-300">E2EE Paar-Stream</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="guide.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-slate-300">BDSM- &amp; Vertrauens-Guide</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex justify-between gap-2">
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; SessionLive.renderVagusBreathingModal();" class="w-full py-2.5 rounded-xl bg-purple-950 border border-purple-800 text-purple-300 font-bold text-xs touch-btn">
+          4-7-8 Vagus-Erdung
+        </button>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-slate-900 text-center">
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-2.5 bg-slate-900 text-slate-300 font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full space-y-4">
+
+    <!-- SUB-NAV TABS (STAGING / LIVE / SCHWELLEN-COCKPIT / SOUND & STIMME) -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-slate-800/80">
+      <button type="button" onclick="switchSessionView('staging')" id="tab-btn-session-staging" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-700 text-white touch-btn shadow-sm whitespace-nowrap">
+        1. Staging (Vorbereitung)
+      </button>
+      <button type="button" onclick="switchSessionView('live')" id="tab-btn-session-live" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white touch-btn whitespace-nowrap">
+        2. Live-Regie
+      </button>
+      <button type="button" onclick="switchSessionView('edging')" id="tab-btn-session-edging" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white touch-btn whitespace-nowrap">
+        3. Schwellen &amp; JOI
+      </button>
+      <button type="button" onclick="switchSessionView('audio')" id="tab-btn-session-audio" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white touch-btn whitespace-nowrap">
+        Musik &amp; Sprache
+      </button>
+    </div>
+
+    <!-- VIEW 1: STAGING COCKPIT (TOP-AGENDA, TONALITÄT, MOTIVE, DOF-CHECK) -->
+    <div id="view-session-staging" class="space-y-4 animate-fade-in">
+      <div id="staging-cockpit-container"></div>
+    </div>
+
+    <!-- VIEW 2: LIVE REGIE (STATE-MACHINE, TIMER, SAFEWRODS, AD-HOC BRANCHES) -->
+    <div id="view-session-live" class="hidden space-y-4 animate-fade-in">
+      <div id="live-session-container"></div>
+    </div>
+
+    <!-- VIEW 3: SCHWELLEN-, PLATEAU- & JOI-COCKPIT -->
+    <div id="view-session-edging" class="hidden space-y-4 animate-fade-in">
+      <div id="edging-cockpit-container"></div>
+    </div>
+
+    <!-- VIEW 4: GENERATIVE MUSIK & EXPRESSIVE SPRACHE -->
+    <div id="view-session-audio" class="hidden space-y-4 animate-fade-in text-xs">
+      
+      <!-- GENERATIVE WEBAUDIO-SYNTHESE (ECHTE MUSIK) -->
+      <div id="session-audio-widget-container"></div>
+
+      <!-- EXPRESSIVE SPRACHREGIE & STIMM-MODULATION -->
+      <div id="session-voice-widget-container"></div>
+
+    </div>
+
+  </main>
+
+  <!-- MODALS CONTAINER -->
+  <div id="modal-toys-inventory" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="theme-card rounded-3xl max-w-2xl w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs max-h-[92vh] flex flex-col justify-between">
+      <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
+        <div class="space-y-0.5">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>Ausrüstungsschrank &amp; Schlafraum-Inventar</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-800 font-bold" id="toys-modal-active-count">0</span>
+          </h3>
+          <span class="text-[10px] text-slate-400">Verfügbare Hardware bestimmt verbleibende Freiheitsgrade (DoF)</span>
+        </div>
+        <button type="button" onclick="HubToys.close()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <div class="space-y-2 overflow-y-auto pr-1 flex-1">
+        <div id="toys-starter-bundles-container" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+        <div class="pt-2">
+          <input type="text" placeholder="Ausrüstung durchsuchen..." oninput="HubToys.handleSearch(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-purple-600 focus:outline-none" />
+        </div>
+        <div id="toys-modal-items-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1"></div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+        <span class="text-[9.5px] font-mono text-slate-500">1:1 IndexedDB Fototresor aktiv</span>
+        <button type="button" onclick="HubToys.close()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs shadow-md">
+          Bereitgelegt ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
+
+  <!-- CONTROLLER SCRIPT FOR SESSION VIEW ROUTING -->
+  <script>
+    function switchSessionView(viewKey) {
+      ['staging', 'live', 'edging', 'audio'].forEach(key => {
+        const viewEl = document.getElementById(`view-session-${key}`);
+        const btnEl = document.getElementById(`tab-btn-session-${key}`);
+        if (viewEl) {
+          if (key === viewKey) viewEl.classList.remove('hidden');
+          else viewEl.classList.add('hidden');
+        }
+        if (btnEl) {
+          if (key === viewKey) {
+            btnEl.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-700 text-white touch-btn shadow-sm whitespace-nowrap";
+          } else {
+            btnEl.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white touch-btn whitespace-nowrap";
+          }
+        }
+      });
+
+      const badge = document.getElementById('session-mode-badge');
+      const subtitle = document.getElementById('session-header-subtitle');
+      if (badge && subtitle) {
+        if (viewKey === 'staging') {
+          badge.innerText = "STAGING";
+          badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800 uppercase flex-shrink-0";
+          subtitle.innerText = "Vorbereitung im Halbdunkel · Top-First";
+        } else if (viewKey === 'live') {
+          badge.innerText = "LIVE REGIE";
+          badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-800 uppercase flex-shrink-0 animate-pulse";
+          subtitle.innerText = "Aktive State-Machine · Blinde Steuerung";
+        } else if (viewKey === 'edging') {
+          badge.innerText = "SCHWELLEN";
+          badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800 uppercase flex-shrink-0";
+          subtitle.innerText = "Plateau-Führung & Taktiler JOI-Countdown";
+        } else if (viewKey === 'audio') {
+          badge.innerText = "AKUSTIK";
+          badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-indigo-950 text-indigo-300 border border-indigo-800 uppercase flex-shrink-0";
+          subtitle.innerText = "Generative Musikregie & Expressive Sprache";
+        }
+      }
+
+      if (viewKey === 'staging' && window.SessionStaging && typeof window.SessionStaging.render === 'function') {
+        window.SessionStaging.render();
+      } else if (viewKey === 'live' && window.SessionLive && typeof window.SessionLive.renderCockpit === 'function') {
+        window.SessionLive.renderCockpit();
+      } else if (viewKey === 'edging' && window.SessionEdging && typeof window.SessionEdging.render === 'function') {
+        window.SessionEdging.render();
+      } else if (viewKey === 'audio') {
+        if (window.SessionAudio && typeof window.SessionAudio.render === 'function') window.SessionAudio.render();
+        if (window.SessionVoice && typeof window.SessionVoice.render === 'function') window.SessionVoice.render();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Prüfe, ob bereits ein aktives Skript läuft
+      const hasActiveSession = sessionStorage.getItem('tactus_active_session_script');
+      if (hasActiveSession) {
+        switchSessionView('live');
+      } else {
+        switchSessionView('staging');
+      }
+    });
+  </script>
+
+  <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
+  <script src="data/scientific_studies.js"></script>
+  <script src="data/questions_part1.js"></script>
+  <script src="data/questions_part2.js"></script>
+  <script src="data/equipment_catalog.js"></script>
+  <script src="data/toy_combinatorics.js"></script>
+  <script src="data/chastity_database.js"></script>
+  <script src="js/ai_adapter.js"></script>
+  <script src="js/hub_photos.js"></script>
+  <script src="js/hub_toys.js"></script>
+  <script src="js/hub_context.js"></script>
+  <script src="js/cloud_sync.js"></script>
+  <script src="js/protocol_core.js"></script>
+  <script src="js/protocol_ratio.js"></script>
+  <script src="js/session_audio.js"></script>
+  <script src="js/session_voice.js"></script>
+  <script src="js/session_edging.js"></script>
+  <script src="js/session_live.js"></script>
+  <script src="js/session_staging.js"></script>
+
+</body>
+</html>
