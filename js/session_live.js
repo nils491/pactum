@@ -2,19 +2,6 @@
  * js/session_live.js
  * TACTUS Schlafzimmer Live-Regie, Nicht-Lineare State-Machine & Vagus-Erdung (V3.0 Hyper-Dynamisch)
  * Offizielle Web-Präsenz: tactus.digital
- * 
- * Standards & Garantien:
- * - Nicht-lineare State-Machine mit dynamischen Verzweigungen & Ad-Hoc Einschüben (Zucht, Schwellen-Loop)
- * - Tonalitäts-Modulierte Live-Adaption: Befehle passen sich dem Temperament (Kühl, Rau, Verspielt, Warm) an
- * - MediaSession API: Blinde Steuerung im Halbdunkel über Sperrbildschirm & Kopfhörer/AirPods
- * - DoF-Validierung zur Laufzeit: Ad-Hoc Aktionen prüfen aktive Ausrüstung (z.B. Klopfsignal statt Zählen)
- * - Erfassung beider Höhepunkte: Top-Climax & differenzierte Sub-Climax Triage (Ruined, Full, Prostate, Denial)
- * - Autonome 4-7-8 Vagus-Atem-Animation zur Parasympathikus-Aktivierung & Drop-Prävention
- * - 3-Stufen Safeword-System (Grün, Gelb = Drosseln, Rot = Sofortiger Handlungsstillstand)
- * - Reverse Aftercare mit materialspezifischen Toy-Desinfektions-Protokollen (EquipmentCatalog)
- * - 24h / 48h Post-Session Drop-Wächter Scharfstellung im Paar-Stream
- * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
 
 (function(window) {
@@ -134,7 +121,7 @@
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'session-live-dimmer-overlay';
-      overlay.className = 'fixed inset-0 bg-black/80 z-40 pointer-events-none transition-opacity duration-500';
+      overlay.className = 'fixed inset-0 bg-black/85 z-40 pointer-events-none transition-opacity duration-500';
       document.body.appendChild(overlay);
     }
     overlay.style.opacity = isDimmed ? '1' : '0';
@@ -256,6 +243,12 @@
         updateTimerDisplay();
       }
     }, 1000);
+
+    // Auf Wunsch Top-Befehl über Audio-Synthese vorlesen
+    if (phase && phase.topDialogueQuote && window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+      const tonality = activeScript?.tonality || 'sovereign_warm';
+      window.SessionVoice.speak(phase.topDialogueQuote, { tonality: tonality, phase: currentPhaseIndex + 1 });
+    }
   }
 
   function updateTimerDisplay() {
@@ -298,7 +291,6 @@
     let newInstruction = phase.instruction;
     let newQuote = phase.topDialogueQuote;
 
-    // 1. KALTSTOPP (Schwelle zu nah / Kanten-Bremsung)
     if (triggerType === 'edge_too_fast') {
       sessionMetrics.edgesCounted++;
       adjustTimer(2);
@@ -316,9 +308,7 @@
         newInstruction = `KALTER STOPP: Hände ruhig vom Körper nehmen. 90 Sekunden gemeinsame tiefe Bauchatmung. Die Erregung muss vollständig absinken.`;
         newQuote = `„Stillstehen. Lass die Hitze durch deinen Körper fließen, ohne nachzugeben. Ich führe.“`;
       }
-    } 
-    // 2. DÄMPFEN (Nervensystem beruhigen / Reizüberflutung)
-    else if (triggerType === 'overstimulated') {
+    } else if (triggerType === 'overstimulated') {
       if (tonality === 'sovereign_cool') {
         newInstruction = `DROSSELUNG: Intensität um 50 % reduzieren. Langsame, kalte Streichungen. Keine lauten Reize.`;
         newQuote = `„Ich nehme das Tempo raus. Konzentrier dich auf meinen Blick.“`;
@@ -332,9 +322,7 @@
         newInstruction = `DROSSELUNG: Sanfte Handauflegung über dem Kreuzbein zur Vagus-Beruhigung. Intensität halbieren.`;
         newQuote = `„Atme tief in den Bauch. Ich bin bei dir. Alles ist sicher.“`;
       }
-    } 
-    // 3. STEIGERN (Fester, schneller, unnachgiebiger)
-    else if (triggerType === 'intensify') {
+    } else if (triggerType === 'intensify') {
       adjustTimer(3);
 
       if (tonality === 'sovereign_cool') {
@@ -355,6 +343,10 @@
     phase.instruction = newInstruction;
     phase.topDialogueQuote = newQuote;
 
+    if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+      window.SessionVoice.speak(newQuote, { tonality: tonality, phase: currentPhaseIndex + 1 });
+    }
+
     renderLiveCockpit();
     showToast(`Dynamisch adaptiert (${triggerType.replace(/_/g, ' ')}) ✓`);
 
@@ -363,11 +355,13 @@
     }
   }
 
-  function injectMicroDisciplineBranch() {
+  async function injectMicroDisciplineBranch() {
     const phase = getActivePhase();
     if (!phase) return;
 
     let speechDoF = 1.0;
+    let handsDoF = 1.0;
+
     if (window.ToyCombinatorics && typeof window.ToyCombinatorics.calculateDegreesOfFreedom === 'function') {
       let activeToys = [];
       if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
@@ -375,21 +369,87 @@
       }
       const dofRes = window.ToyCombinatorics.calculateDegreesOfFreedom(activeToys);
       speechDoF = dofRes.dof.speech_articulation;
+      handsDoF = dofRes.dof.manual_manipulation;
     }
 
     sessionMetrics.intermissionsCount++;
     adjustTimer(2);
+
+    let synthesizedPosture = "Körper in aufrechter Kniestand-Haltung vor dem Top verharren lassen.";
+    if (window.ProtocolTasks && typeof window.ProtocolTasks.regeneratePosture === 'function' && window.SomaticPostureSynthesizer) {
+      try {
+        synthesizedPosture = await window.SomaticPostureSynthesizer.synthesize('prac_leather_belt');
+      } catch (e) {}
+    } else {
+      const isHandsBound = handsDoF <= 0.05;
+      synthesizedPosture = isHandsBound
+        ? "Stirnlage auf der Bettkante ohne Abstützung durch die Hände (Hände arretiert). Becken exponiert."
+        : "Freier Stand im Raum im 90-Grad-Winkel, Hände fest im Nacken verschränkt.";
+    }
 
     const isSpeechBlocked = speechDoF <= 0.05;
     const countDirective = isSpeechBlocked 
       ? "Bottom quittiert jeden Treffer durch deutliches Klopfen mit der Handfläche auf die Bettkante (Sprache blockiert)."
       : "Bottom zählt jeden Treffer laut, klar und ohne Zögern mit.";
 
-    phase.instruction = `AD-HOC ZUCHT-EINSCHUB: 10 Schläge mit der flachen Hand oder dem Ledergürtel in 90-Grad-Vorbeuge. ${countDirective} Jeder Fehler verdoppelt die Restanzahl.`;
-    phase.topDialogueQuote = `„Vorbeugen. 10 Schläge zur Besinnung. Keine Bewegung im Raum.“`;
+    phase.instruction = `AD-HOC ZUCHT-EINSCHUB: 10 Schläge mit der flachen Hand oder dem Ledergürtel. Haltung: ${synthesizedPosture} ${countDirective}`;
+    phase.topDialogueQuote = `„Position einnehmen. 10 Schläge zur Besinnung. Keine Bewegung im Raum.“`;
+
+    if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+      const tonality = activeScript?.tonality || 'sovereign_warm';
+      window.SessionVoice.speak(phase.topDialogueQuote, { tonality: tonality, phase: currentPhaseIndex + 1 });
+    }
 
     renderLiveCockpit();
-    showToast("Ad-Hoc Zuchtmaßnahme eingesteuert ✓");
+    showToast("Ad-Hoc Zuchtmaßnahme dynamisch eingesteuert ✓");
+  }
+
+  function getSubEmergencyIntervention() {
+    let chosenVal = 'hug';
+    let customTriggers = '';
+
+    try {
+      const rawAns = localStorage.getItem('kompass_answers');
+      if (rawAns) {
+        const parsed = JSON.parse(rawAns);
+        const cagedRole = localStorage.getItem('kompass_caged_role') || 'B';
+        const subAns = parsed[cagedRole] || {};
+        if (subAns['choice_904']) chosenVal = subAns['choice_904'];
+      }
+      const rawPass = localStorage.getItem('tactus_medical_pass');
+      if (rawPass) {
+        const pass = JSON.parse(rawPass);
+        customTriggers = pass.customTriggers || pass.emergencyNotes || '';
+      }
+    } catch (e) {}
+
+    const INTERVENTIONS_MAP = {
+      hug: {
+        title: "Feste, stumme Umarmung (Gewichtsdecken-Effekt)",
+        action: "Feste, beruhigende Umarmung ohne Worte. Körper an den eigenen ziehen und ruhig halten, bis das Zittern aufhört."
+      },
+      distance: {
+        title: "Körperliche Berührung sofort einstellen & Raum geben",
+        action: "Hände sofort zurückziehen. Einen Schritt Abstand nehmen. Dem Sub Raum geben und ruhig im Blickfeld bleiben."
+      },
+      grounding: {
+        title: "Licht anmachen, zudecken & 4-7-8 Vagus-Atmung",
+        action: "Raumlicht sanft einschalten, schwere Decke überlegen und synchrone 4-7-8 Vagus-Atmung anleiten."
+      },
+      water_tea: {
+        title: "Warmen Tee oder Wasser reichen",
+        action: "Schluck warmes Wasser oder gezuckerten Tee reichen. Keine Fragen stellen."
+      },
+      voice: {
+        title: "Mit leiser, ruhiger Stimme reden",
+        action: "Mit tiefer, gleichmäßiger Stimme sprechen: 'Du bist vollkommen sicher bei mir. Alles ist gut.'"
+      }
+    };
+
+    return {
+      desired: INTERVENTIONS_MAP[chosenVal] || INTERVENTIONS_MAP.hug,
+      customTriggers: customTriggers
+    };
   }
 
   function triggerSafeword(color) {
@@ -400,6 +460,8 @@
       isPaused = true;
       releaseWakeLock();
 
+      const emergency = getSubEmergencyIntervention();
+
       const container = document.getElementById('live-session-container');
       if (container) {
         container.innerHTML = `
@@ -409,17 +471,32 @@
                 ✕
               </div>
               <div>
-                <h2 class="text-base font-bold text-white uppercase tracking-wider">Safeword ROT aktiviert</h2>
+                <h2 class="text-base font-bold text-white uppercase tracking-wider font-serif">Safeword ROT aktiviert</h2>
                 <span class="text-rose-200 text-[10.5px]">Sofortiger Handlungsstillstand & Deeskalation</span>
               </div>
             </div>
 
-            <div class="p-3.5 rounded-2xl bg-black/60 border border-rose-800 space-y-2 leading-relaxed">
-              <strong class="text-rose-300 block font-bold">Unverzügliche Sofortmaßnahmen (RACK):</strong>
+            <!-- KAPITEL 00 INTERVENTION DES SUBS -->
+            <div class="p-4 rounded-2xl bg-black/70 border border-rose-500 space-y-2">
+              <span class="text-[9.5px] font-mono uppercase tracking-wider text-rose-400 font-bold block">
+                Gewünschte Notfall-Intervention des Subs (Kapitel 00):
+              </span>
+              <strong class="text-xs text-white block font-bold">${escapeHtml(emergency.desired.title)}</strong>
+              <p class="text-[11px] text-rose-100 leading-snug font-medium">${escapeHtml(emergency.desired.action)}</p>
+            </div>
+
+            ${emergency.customTriggers ? `
+              <div class="p-3 rounded-2xl bg-slate-950/80 border border-rose-900/60 text-[10.5px] text-slate-300 space-y-1">
+                <span class="font-mono text-rose-400 font-bold text-[9px] block">Hinterlegte Traumagrenzen & Trigger:</span>
+                <p class="italic">„${escapeHtml(emergency.customTriggers)}“</p>
+              </div>
+            ` : ''}
+
+            <div class="p-3.5 rounded-2xl bg-black/60 border border-rose-800 space-y-1.5 leading-relaxed text-[10.5px]">
+              <strong class="text-rose-300 block font-bold">Allgemeine RACK-Sicherheitsregeln:</strong>
               <p>1. Alle aktiven Handlungen sofort einstellen. Hände und Reize vom Körper nehmen.</p>
-              <p>2. Enge Fesselungen oder Knebel vorsichtig und ruhig lösen.</p>
-              <p>3. Körper flach oder sitzend aufrichten, Gewichtsdecke reichen und 4-7-8 Atemzüge beginnen.</p>
-              <p>4. Keine Vorwürfe, keine Diskussion im Raum. Erst den Puls stabilisieren.</p>
+              <p>2. Enge Fesselungen oder Knebel vorsichtig und ohne Hektik lösen.</p>
+              <p>3. Keine Vorwürfe, keine Debatte. Erst den Puls stabilisieren.</p>
             </div>
 
             <div class="pt-2 flex justify-between gap-2">
@@ -748,9 +825,7 @@
             
             <!-- SVG CIRCULAR PROGRESS TRACK -->
             <svg class="w-full h-full transform -rotate-90 pointer-events-none" viewBox="0 0 160 160">
-              <!-- Background Circle -->
               <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="4" fill="none" class="text-slate-800/80" />
-              <!-- Animated Foreground Progress Arc -->
               <circle id="vagus-svg-arc" cx="80" cy="80" r="70" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round" class="text-purple-400 transition-all" style="stroke-dasharray: 439.8; stroke-dashoffset: 439.8;" />
             </svg>
 
@@ -826,7 +901,6 @@
 
     const CIRCUMFERENCE = 439.8; // 2 * PI * 70
 
-    // Duck Hintergrundmusik subtil für konzentrierte Atmung
     if (window.SessionAudio && typeof window.SessionAudio.duck === 'function') {
       window.SessionAudio.duck(0.4);
     }
@@ -837,7 +911,6 @@
       label.innerText = stepObj.label;
       desc.innerText = stepObj.text;
 
-      // Haptische Klicks passend zur somatischen Phase
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         try {
           if (stepObj.action === 'inhale') navigator.vibrate([40, 50, 40]);
@@ -846,7 +919,6 @@
         } catch (e) {}
       }
 
-      // Weiche, physiologische Hüllkurve über die exakte Dauer der Phase
       if (stepObj.action === 'inhale') {
         core.style.transition = `transform ${stepObj.duration}s cubic-bezier(0.25, 1, 0.5, 1), border-color 1s ease`;
         core.style.transform = "scale(1.38)";
@@ -888,7 +960,6 @@
 
       if (secEl) secEl.innerText = stepSecondsLeft;
 
-      // Berechne Kreisfortschritt auf dem SVG-Arc
       const activeStep = steps[currentStepIndex];
       const stepTotalDuration = activeStep.duration;
       const progressFraction = (stepTotalDuration - stepSecondsLeft) / stepTotalDuration;
@@ -904,7 +975,6 @@
       if (stepSecondsLeft < 0) {
         currentStepIndex++;
 
-        // Zyklus-Vollendung prüfen
         if (currentStepIndex >= steps.length) {
           currentStepIndex = 0;
           currentCycleNumber++;
@@ -914,7 +984,6 @@
           }
 
           if (currentCycleNumber > TARGET_CYCLES_COUNT) {
-            // Vollständige Vagus-Erdung erreicht
             finishBreathingSequence();
             return;
           }
@@ -1081,7 +1150,6 @@
       localStorage.setItem(STORAGE_KEY_SESSION_LOGS, JSON.stringify(existing.slice(-50)));
       localStorage.setItem(STORAGE_KEY_LEGACY_LOGS, JSON.stringify(existing.slice(-50)));
 
-      // 24h/48h Drop-Wächter Timer scharfstellen
       localStorage.setItem(STORAGE_KEY_DROP_GUARD, JSON.stringify({
         armedAt: Date.now(),
         intensity: activeScript?.intensity || 6,
