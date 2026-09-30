@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TACTUS · E2EE Paar-Stream &amp; Foto-Tresor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('kompass_theme') || 'dark';
+      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+      var savedZoom = localStorage.getItem('kompass_text_zoom') || '100';
+      if (savedZoom === '115') document.documentElement.style.fontSize = '115%';
+      else if (savedZoom === '130') document.documentElement.style.fontSize = '130%';
+      else document.documentElement.style.fontSize = '100%';
+    })();
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3',
+              500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+              800: '#9f1239', 900: '#881337', 950: '#4c0519',
+            },
+            noir: {
+              950: '#000000', 900: '#05070c', 850: '#0a0e17',
+              800: '#101726', 700: '#172238', 600: '#233454',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: var(--sab);
+      padding-left: var(--sal);
+      padding-right: var(--sar);
+    }
+    .font-serif-title {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+    html.dark body { background-color: #000000 !important; color: #f8fafc !important; }
+    html.dark .theme-card { background-color: #060911 !important; border-color: #172033 !important; color: #f8fafc !important; }
+    html.dark .theme-panel { background-color: #0b111e !important; border-color: #1e2b44 !important; color: #e2e8f0 !important; }
+    html:not(.dark) body { background-color: #f8fafc !important; color: #0f172a !important; }
+    html:not(.dark) .theme-card { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
+    html:not(.dark) .theme-panel { background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
+    .touch-btn {
+      min-height: 44px;
+      transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .touch-btn:active { transform: scale(0.98); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-purple-700 selection:text-white transition-colors duration-200">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-slate-900 shadow-sm" style="padding-top: max(8px, var(--sat));">
+    <div class="max-w-4xl mx-auto px-3 sm:px-6 pb-2 space-y-1.5">
+      <div class="flex items-center justify-between gap-2">
+        <a href="index.html#view=hub" class="flex items-center space-x-2.5 min-w-0 text-left group touch-btn cursor-pointer flex-1">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-950 via-indigo-900 to-rose-950 border border-purple-500/40 text-purple-200 flex items-center justify-center shadow-lg p-1.5 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/>
+            </svg>
+          </div>
+          <div class="truncate min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white truncate font-serif-title">TACTUS · Paar-Stream</h1>
+              <span id="chat-security-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-purple-950 text-purple-300 border border-purple-800 uppercase flex-shrink-0">E2EE AKTIV</span>
+            </div>
+            <span class="text-[9.5px] text-slate-400 font-medium block truncate mt-0.5" id="chat-partner-display">Gekoppelter Stream</span>
+          </div>
+        </a>
+
+        <!-- DESKTOP ACTIONS -->
+        <div class="hidden md:flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="ChatApp.clearHistory()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-rose-300 font-bold text-xs flex items-center gap-1 touch-btn" title="Lokalen Chatverlauf leeren">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+            <span>Leeren</span>
+          </button>
+          <a href="protocol.html" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-800 to-indigo-800 text-white font-bold text-xs touch-btn shadow-md flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Das Protokoll</span>
+          </a>
+        </div>
+
+        <!-- MOBILE BURGER BUTTON -->
+        <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- DESKTOP NAV -->
+      <nav class="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-xs font-bold -mx-1 px-1">
+        <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Start-Hub</a>
+        <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen</a>
+        <a href="analyse.html" class="px-3 py-1.5 rounded-xl text-amber-300 hover:text-white transition whitespace-nowrap touch-btn">Paar-Analyse</a>
+        <button type="button" class="px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700">Paar-Stream</button>
+        <a href="protocol.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Das Protokoll</a>
+        <a href="guide.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Guide</a>
+        <a href="session.html" class="px-3 py-1.5 rounded-xl text-rose-300 hover:text-white transition whitespace-nowrap touch-btn">Regie</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MOBILE DRAWER -->
+  <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-purple-950 border border-purple-600 text-purple-300 flex items-center justify-center font-bold text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white font-serif-title">TACTUS OS</h3>
+            <span class="text-[10px] text-slate-400 font-medium block">E2EE Paar-Stream</span>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-1.5 pt-1">
+        <a href="index.html#view=hub" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-white">Start-Hub</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="index.html#view=survey" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-white">Fragebogen (36 Kapitel)</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="analyse.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-amber-300">Paar-Analyse &amp; Synergie</span>
+          <span class="text-[10px] text-amber-400 font-bold">Doppel-5er</span>
+        </a>
+        <div class="w-full p-3 rounded-2xl bg-purple-950/60 border border-purple-600 text-left flex items-center justify-between shadow-md">
+          <span class="text-xs font-bold text-purple-200">E2EE Paar-Stream</span>
+          <span class="text-[10px] text-purple-300 font-bold">Hier aktiv ✓</span>
+        </div>
+        <a href="protocol.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-slate-300">Das Protokoll &amp; Vertrag</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="guide.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-slate-300">BDSM- &amp; Vertrauens-Guide</span>
+          <span class="text-slate-500 text-xs">→</span>
+        </a>
+        <a href="session.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-rose-300">Schlafzimmer-Regie</span>
+          <span class="text-[10px] text-rose-400 font-bold">Live ↗</span>
+        </a>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-slate-900 text-center">
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-2.5 bg-slate-900 text-slate-300 font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
+    </div>
+  </div>
+
+  <!-- MAIN STREAM CONTAINER -->
+  <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full flex flex-col justify-between space-y-3">
+
+    <!-- ZERO-KNOWLEDGE SECURITY BANNER -->
+    <div class="theme-card rounded-2xl p-3 border border-purple-900/50 shadow-md bg-gradient-to-r from-purple-950/30 via-noir-900 to-indigo-950/20 flex items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2 min-w-0">
+        <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+        </svg>
+        <span class="text-[10.5px] text-slate-300 truncate">
+          Client-Side AES-GCM-256 verschlüsselt · Fotos verbleiben im isolierten IndexedDB-Tresor
+        </span>
+      </div>
+      <button type="button" onclick="ChatApp.openSyncConfigModal()" class="px-2.5 py-1 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-700 text-purple-200 font-mono text-[9.5px] font-bold flex-shrink-0 touch-btn">
+        Verbindungs-Status
+      </button>
+    </div>
+
+    <!-- CHAT MESSAGES SCROLL AREA -->
+    <div id="chat-messages-container" class="flex-1 overflow-y-auto space-y-3 p-2 sm:p-4 rounded-3xl theme-card border border-slate-800/80 min-h-[50vh] max-h-[62vh] shadow-inner">
+      <div class="text-center py-8 text-slate-500 text-xs">
+        Lade verschlüsselte Nachrichten...
+      </div>
+    </div>
+
+    <!-- MESSAGE COMPOSER & QUICK ACTIONS -->
+    <div class="theme-card rounded-3xl p-3 border border-slate-800 space-y-2 shadow-xl">
+      
+      <!-- MODE TOGGLES (STANDARD / FLÜSTERN / ANKER) -->
+      <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar text-xs">
+        <div class="flex items-center gap-1">
+          <button type="button" onclick="ChatApp.setMode('standard')" id="btn-mode-standard" class="px-2.5 py-1 rounded-xl font-bold text-[10px] bg-purple-700 text-white touch-btn transition-colors">
+            Nachricht
+          </button>
+          <button type="button" onclick="ChatApp.setMode('whisper')" id="btn-mode-whisper" class="px-2.5 py-1 rounded-xl font-bold text-[10px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn transition-colors">
+            Flüstern
+          </button>
+          <button type="button" onclick="ChatApp.setMode('directive')" id="btn-mode-directive" class="px-2.5 py-1 rounded-xl font-bold text-[10px] bg-slate-900 border border-slate-800 text-purple-300 hover:text-white touch-btn transition-colors">
+            Regie-Impuls
+          </button>
+        </div>
+
+        <!-- FOTO-UPLOAD BUTTON FÜR DEN TRESOR -->
+        <button type="button" onclick="ChatApp.triggerPhotoUpload()" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold text-[10px] flex items-center gap-1 touch-btn">
+          <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+          <span>Foto-Tresor</span>
+        </button>
+      </div>
+
+      <!-- TEXTEINGABE & SENDE-BUTTON -->
+      <form onsubmit="ChatApp.handleSendMessage(event)" class="flex items-center gap-2">
+        <input 
+          type="text" 
+          id="chat-input-text" 
+          placeholder="Nachricht an den Partner eingeben..." 
+          autocomplete="off"
+          class="flex-1 px-4 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 text-white text-xs placeholder:text-slate-600 focus:outline-none focus:border-purple-600 transition-colors"
+        />
+        <button 
+          type="submit" 
+          id="btn-chat-send"
+          class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-800 to-indigo-800 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs touch-btn shadow-md flex items-center justify-center gap-1.5 flex-shrink-0"
+        >
+          <span>Senden</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+        </button>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- MODAL: SYNC & E2EE SCHLÜSSEL KONFIGURATION -->
+  <div id="modal-chat-sync-config" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
+        <div class="space-y-0.5">
+          <h3 class="text-sm font-bold text-white">E2EE Paar-Synchronisation</h3>
+          <span class="text-[10px] text-slate-400">Zero-Knowledge Peer-Bridge via ntfy</span>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-chat-sync-config').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Geheimer Raum-Name (Room-ID):</label>
+          <input type="text" id="cfg-sync-room" placeholder="z. B. tactus_alpha_9482..." class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
+        </div>
+
+        <div>
+          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Gemeinsames Paar-Passwort (AES-GCM-256):</label>
+          <input type="password" id="cfg-sync-pass" placeholder="Geheimes Passwort für Entschlüsselung..." class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono">
+        </div>
+
+        <div class="p-3 rounded-2xl bg-purple-950/30 border border-purple-900/50 text-[10.5px] text-purple-200 leading-snug">
+          Beide Partner müssen exakt denselben Raum-Namen und dasselbe Passwort eingeben. Der Schlüssel verlässt euer Endgerät niemals unverschlüsselt.
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="document.getElementById('modal-chat-sync-config').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs">Abbrechen</button>
+        <button type="button" onclick="ChatApp.saveSyncConfig()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs shadow-md">Verbinden &amp; Sichern ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
+
+  <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
+  <script src="data/scientific_studies.js"></script>
+  <script src="data/questions_part1.js"></script>
+  <script src="data/questions_part2.js"></script>
+  <script src="data/equipment_catalog.js"></script>
+  <script src="data/toy_combinatorics.js"></script>
+  <script src="data/chastity_database.js"></script>
+  <script src="js/ai_adapter.js"></script>
+  <script src="js/hub_photos.js"></script>
+  <script src="js/hub_toys.js"></script>
+  <script src="js/hub_context.js"></script>
+  <script src="js/cloud_sync.js"></script>
+
+  <!-- CHAT APP CONTROLLER LOGIC -->
+  <script>
+    (function(window) {
+      'use strict';
+
+      const STORAGE_KEY_MESSAGES = 'kompass_chat_messages';
+      let activeComposerMode = 'standard'; // 'standard' | 'whisper' | 'directive'
+      let messageList = [];
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function showToast(message) {
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification(message);
+          return;
+        }
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const el = document.createElement('div');
+        el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
+        el.innerHTML = `
+          <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/>
+          </svg>
+          <span>${escapeHtml(message)}</span>
+        `;
+        container.appendChild(el);
+
+        setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
+        setTimeout(() => {
+          el.classList.add('opacity-0');
+          setTimeout(() => el.remove(), 300);
+        }, 2800);
+      }
+
+      function loadMessages() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY_MESSAGES);
+          if (raw) {
+            messageList = JSON.parse(raw) || [];
+          } else {
+            messageList = [];
+          }
+        } catch (e) {
+          messageList = [];
+        }
+      }
+
+      function saveMessages() {
+        try {
+          localStorage.setItem(STORAGE_KEY_MESSAGES, JSON.stringify(messageList.slice(-250)));
+        } catch (e) {
+          console.warn("[TACTUS Chat] Fehler beim Speichern der Nachrichten:", e);
+        }
+        if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+          window.CloudSync.trigger();
+        }
+      }
+
+      function getMyRole() {
+        return localStorage.getItem('kompass_assigned_role') || 'A';
+      }
+
+      function renderMessages() {
+        loadMessages();
+        const container = document.getElementById('chat-messages-container');
+        if (!container) return;
+
+        const myRole = getMyRole();
+        let names = { A: 'Partner 1', B: 'Partner 2' };
+        if (window.HubContext && typeof window.HubContext.getNames === 'function') {
+          names = window.HubContext.getNames();
+        }
+
+        const partnerTitle = document.getElementById('chat-partner-display');
+        if (partnerTitle) {
+          const otherRole = (myRole === 'A') ? 'B' : 'A';
+          partnerTitle.innerText = `Stream mit ${names[otherRole]}`;
+        }
+
+        if (messageList.length === 0) {
+          container.innerHTML = `
+            <div class="py-12 text-center space-y-2 text-slate-500 text-xs">
+              <svg class="w-8 h-8 mx-auto text-purple-400/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+              </svg>
+              <strong class="text-white block font-bold">Geschützter Paar-Stream bereit</strong>
+              <p class="text-[10.5px]">Tauscht private Notizen, intime Gedanken, Flüsternachrichten oder Fotos aus.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = messageList.map(msg => {
+          const isSystem = (msg.senderRole === 'system');
+          const isMe = (!isSystem && msg.senderRole === myRole);
+          const senderName = isSystem ? 'TACTUS System' : (names[msg.senderRole] || msg.senderRole);
+          const timeStr = new Date(msg.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+          const isWhisper = (msg.mode === 'whisper');
+          const isDirective = (msg.mode === 'directive');
+
+          if (isSystem) {
+            return `
+              <div class="flex justify-center my-2">
+                <div class="px-3.5 py-1.5 rounded-2xl bg-purple-950/40 border border-purple-900/60 text-[10px] text-purple-200 text-center max-w-md shadow-sm">
+                  <span class="font-mono text-purple-400 font-bold block mb-0.5">System-Ereignis · ${timeStr}</span>
+                  <span>${escapeHtml(msg.text)}</span>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1">
+              <span class="text-[9px] font-mono text-slate-500 px-2">
+                ${escapeHtml(senderName)} · ${timeStr}
+                ${isWhisper ? '<span class="text-pink-400 font-bold ml-1">Flüstern</span>' : ''}
+                ${isDirective ? '<span class="text-amber-400 font-bold ml-1">Regie-Impuls</span>' : ''}
+              </span>
+              <div class="max-w-[85%] sm:max-w-md p-3 rounded-2xl text-xs leading-relaxed transition-all shadow-md ${
+                isMe 
+                  ? (isWhisper ? 'bg-gradient-to-tr from-pink-950 to-purple-900 text-pink-100 border border-pink-700 rounded-br-none' : (isDirective ? 'bg-gradient-to-tr from-amber-950 to-purple-900 text-amber-100 border border-amber-700 rounded-br-none' : 'bg-purple-800 text-white rounded-br-none'))
+                  : (isWhisper ? 'bg-slate-900 text-pink-200 border border-pink-900/70 rounded-bl-none' : (isDirective ? 'bg-slate-900 text-amber-200 border border-amber-900/70 rounded-bl-none' : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-none'))
+              }">
+                ${msg.photoVaultId ? `
+                  <div class="mb-2 rounded-xl overflow-hidden border border-purple-500/30">
+                    <img id="chat-photo-${escapeHtml(msg.photoVaultId)}" src="${escapeHtml(msg.photoDataUrl || '')}" alt="Tresor-Foto" class="max-h-48 object-cover rounded-xl" />
+                  </div>
+                ` : ''}
+                <div class="whitespace-pre-wrap">${escapeHtml(msg.text)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Nach unten scrollen
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 30);
+      }
+
+      function handleSendMessage(e) {
+        if (e) e.preventDefault();
+        const input = document.getElementById('chat-input-text');
+        if (!input) return;
+
+        const text = input.value.trim();
+        if (!text) return;
+
+        const myRole = getMyRole();
+        const newMsg = {
+          id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          timestamp: Date.now(),
+          senderRole: myRole,
+          text: text,
+          mode: activeComposerMode,
+          photoVaultId: null
+        };
+
+        loadMessages();
+        messageList.push(newMsg);
+        saveMessages();
+
+        input.value = '';
+        renderMessages();
+      }
+
+      function postSystemEvent(eventText) {
+        if (!eventText) return;
+        loadMessages();
+        messageList.push({
+          id: `sys_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          timestamp: Date.now(),
+          senderRole: 'system',
+          text: String(eventText).trim(),
+          mode: 'standard',
+          photoVaultId: null
+        });
+        saveMessages();
+        renderMessages();
+      }
+
+      function setMode(modeKey) {
+        activeComposerMode = modeKey;
+        ['standard', 'whisper', 'directive'].forEach(k => {
+          const btn = document.getElementById(`btn-mode-${k}`);
+          if (btn) {
+            if (k === modeKey) {
+              btn.className = "px-2.5 py-1 rounded-xl font-bold text-[10px] bg-purple-700 text-white touch-btn transition-colors";
+            } else {
+              btn.className = "px-2.5 py-1 rounded-xl font-bold text-[10px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-white touch-btn transition-colors";
+            }
+          }
+        });
+      }
+
+      function clearHistory() {
+        messageList = [];
+        saveMessages();
+        renderMessages();
+        showToast("Chatverlauf geleert.");
+      }
+
+      function openSyncConfigModal() {
+        const modal = document.getElementById('modal-chat-sync-config');
+        if (!modal) return;
+        if (window.CloudSync && typeof window.CloudSync.getConfig === 'function') {
+          const cfg = window.CloudSync.getConfig();
+          const rIn = document.getElementById('cfg-sync-room');
+          const pIn = document.getElementById('cfg-sync-pass');
+          if (rIn) rIn.value = cfg.room || '';
+          if (pIn) pIn.value = cfg.password || '';
+        }
+        modal.style.display = 'flex';
+      }
+
+      function saveSyncConfig() {
+        const rIn = document.getElementById('cfg-sync-room');
+        const pIn = document.getElementById('cfg-sync-pass');
+        const room = rIn ? rIn.value.trim() : '';
+        const pass = pIn ? pIn.value.trim() : '';
+
+        if (!room || !pass) {
+          showToast("Raum und Passwort sind erforderlich.");
+          return;
+        }
+
+        if (window.CloudSync && typeof window.CloudSync.configure === 'function') {
+          window.CloudSync.configure({ room, password: pass });
+        }
+
+        const modal = document.getElementById('modal-chat-sync-config');
+        if (modal) modal.style.display = 'none';
+        showToast("Synchronisation konfiguriert ✓");
+      }
+
+      function triggerPhotoUpload() {
+        if (!window.HubPhotos || typeof window.HubPhotos.processImage !== 'function') {
+          showToast("Foto-Tresor nicht bereit.");
+          return;
+        }
+
+        let input = document.getElementById('hidden-chat-photo-input');
+        if (!input) {
+          input = document.createElement('input');
+          input.type = 'file';
+          input.id = 'hidden-chat-photo-input';
+          input.accept = 'image/*';
+          input.className = 'hidden';
+          document.body.appendChild(input);
+        }
+
+        input.onchange = async (ev) => {
+          const file = ev.target.files && ev.target.files[0];
+          if (!file) return;
+
+          showToast("Foto wird für den Tresor verschlüsselt...");
+          try {
+            const processed = await window.HubPhotos.processImage(file);
+            const photoId = `vault_chat_${Date.now()}`;
+            await window.HubPhotos.savePhoto(photoId, processed);
+
+            const myRole = getMyRole();
+            const newMsg = {
+              id: `msg_photo_${Date.now()}`,
+              timestamp: Date.now(),
+              senderRole: myRole,
+              text: "Intimes Foto im Tresor hinterlegt",
+              mode: activeComposerMode,
+              photoVaultId: photoId,
+              photoDataUrl: processed.dataUrl
+            };
+
+            loadMessages();
+            messageList.push(newMsg);
+            saveMessages();
+            renderMessages();
+            showToast("Foto im Tresor gesichert & versendet ✓");
+          } catch (err) {
+            console.warn("[TACTUS Chat] Foto-Verarbeitung fehlgeschlagen:", err);
+            showToast("Fehler beim Verarbeiten des Fotos.");
+          } finally {
+            input.value = '';
+          }
+        };
+
+        input.click();
+      }
+
+      window.ChatApp = {
+        init: renderMessages,
+        renderMessages: renderMessages,
+        handleSendMessage: handleSendMessage,
+        postSystemEvent: postSystemEvent,
+        setMode: setMode,
+        clearHistory: clearHistory,
+        openSyncConfigModal: openSyncConfigModal,
+        saveSyncConfig: saveSyncConfig,
+        triggerPhotoUpload: triggerPhotoUpload
+      };
+
+      document.addEventListener('DOMContentLoaded', renderMessages);
+
+    })(window);
+  </script>
+</body>
+</html>
