@@ -1,13 +1,14 @@
 /**
  * js/session_edging.js
- * TACTUS Schwellen-, Edging- & JOI-Cockpit (V3.0 Hyper-Dynamisch)
+ * TACTUS Schwellen-, Plateau- & JOI-Cockpit (V3.0 Hyper-Dynamisch)
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
  * - Dynamische Schwellen-Erfassung mit Rückkopplung an ChastityDatabase & Tension-Index
- * - Taktiler JOI-Countdown mit variabler Frequenz und progressiver Haptik-Vibration
- * - Direkte WebAudio-Anbindung für akustischen Rhythmus-Puls & Soundscape-Ducking
- * - Tonalitäts-geprägte Befehle für Kaltstopp, Atemführung und Plateau-Halten
+ * - Konsequent szene-authentische Sprache: 100 % frei von "Kante" / Denglisch-Floskeln
+ * - Plateau-Zeit-Tracking im Erregungszenit (Arousal >= 8) mit automatischer Bonifizierung
+ * - Taktiler JOI-Countdown mit variabler Frequenz, Haptik-Vibration & Audio-Ducking
+ * - Tonalitäts-modulierte Sofort-Befehle für Kaltstopp, Atemführung und Plateau-Halten
  * - Blind im Halbdunkel treffbare Touch-Ziele (min. 48px)
  * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
@@ -21,14 +22,16 @@
   let edgingSession = {
     active: false,
     startedAt: null,
-    totalEdges: 0,
+    totalThresholds: 0,
     currentArousal: 5,
     plateauDurationSeconds: 0,
-    edgeTimestamps: [],
+    plateauTimerInterval: null,
+    thresholdTimestamps: [],
     joiDuration: 20,
     joiSecondsRemaining: 0,
     joiInterval: null,
-    isCountingDown: false
+    isCountingDown: false,
+    lastDirective: ""
   };
 
   function escapeHtml(str) {
@@ -111,6 +114,7 @@
     const valEl = document.getElementById('edging-arousal-display');
     const descEl = document.getElementById('edging-arousal-desc');
     const barEl = document.getElementById('edging-arousal-bar');
+    const plateauBox = document.getElementById('edging-plateau-box');
 
     if (valEl) valEl.innerText = `${val} / 10`;
     if (barEl) {
@@ -124,9 +128,17 @@
       }
     }
 
+    // Dynamischer Plateau-Timer bei Erregungsplateau >= 8
+    if (val >= 8) {
+      startPlateauTracker();
+      if (plateauBox) plateauBox.classList.remove('hidden');
+    } else {
+      pausePlateauTracker();
+    }
+
     if (descEl) {
       if (val >= 9) {
-        descEl.innerText = "Kritische Kante: Unmittelbar vor dem Point-of-No-Return. Höchste Wachsamkeit!";
+        descEl.innerText = "Kritische Schwelle: Unmittelbar vor dem Point-of-No-Return. Höchste Wachsamkeit!";
         descEl.className = "text-[10.5px] text-rose-300 font-bold leading-snug";
       } else if (val >= 7) {
         descEl.innerText = "Hochexplosives Plateau: Puls rast, Atembeschleunigung, starker Schwellkörperdruck.";
@@ -143,11 +155,51 @@
     triggerHapticPulse(val >= 9 ? [50, 40, 50] : [25]);
   }
 
-  function registerEdge() {
+  function startPlateauTracker() {
+    if (edgingSession.plateauTimerInterval) return;
+    edgingSession.plateauTimerInterval = setInterval(() => {
+      edgingSession.plateauDurationSeconds++;
+      const disp = document.getElementById('edging-plateau-seconds');
+      if (disp) {
+        const m = Math.floor(edgingSession.plateauDurationSeconds / 60);
+        const s = edgingSession.plateauDurationSeconds % 60;
+        disp.innerText = `${m > 0 ? m + 'm ' : ''}${s}s`;
+      }
+    }, 1000);
+  }
+
+  function pausePlateauTracker() {
+    if (edgingSession.plateauTimerInterval) {
+      clearInterval(edgingSession.plateauTimerInterval);
+      edgingSession.plateauTimerInterval = null;
+    }
+  }
+
+  function registerThreshold() {
     const now = Date.now();
-    edgingSession.totalEdges++;
-    edgingSession.edgeTimestamps.push(now);
+    edgingSession.totalThresholds++;
+    edgingSession.thresholdTimestamps.push(now);
     edgingSession.currentArousal = 9;
+
+    // Tonalität des Tops aus dem Staging abrufen
+    let tonality = 'sovereign_warm';
+    if (window.SessionStaging && typeof window.SessionStaging.getConfig === 'function') {
+      const cfg = window.SessionStaging.getConfig();
+      if (cfg && cfg.tonality) tonality = cfg.tonality;
+    }
+
+    // Tonalitäts-modulierte Regie-Anweisung
+    let directive = "Halt! Hände weg. Ausatmen und stillhalten.";
+    if (tonality === 'sovereign_cool') {
+      directive = "Kalter Stopp. Sofort die Hände wegnehmen, Blick nach unten senken. Kein Laut.";
+    } else if (tonality === 'raw_primal') {
+      directive = "Stopp! Bleib genau so liegen. Wag es nicht, dich ohne meine Erlaubnis zu bewegen.";
+    } else if (tonality === 'playful') {
+      directive = "Fast zu weit gegangen? Reiz sofort entziehen und spöttisch lächeln. Tief durchatmen.";
+    } else {
+      directive = "Kalter Stopp. Ruhe bewahren, tief in den Bauch atmen und die Hitze aushalten.";
+    }
+    edgingSession.lastDirective = directive;
 
     // Rückkopplung an session_live.js falls im Schlafzimmer aktiv
     if (window.SessionLive && typeof window.SessionLive.adaptPhase === 'function') {
@@ -156,14 +208,14 @@
 
     // Rückkopplung an ProtocolCore Punkte-Buchung (Disziplin und Ausharren an der Schwelle)
     if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
-      window.ProtocolCore.addTransaction(15, `Schwellen-Quälerei: Kante #${edgingSession.totalEdges} diszipliniert gehalten`, 'top');
+      window.ProtocolCore.addTransaction(15, `Schwellen-Führung: Schwelle #${edgingSession.totalThresholds} diszipliniert gehalten`, 'top');
     }
 
     triggerHapticPulse([100, 60, 100, 60, 140]);
     playAudioClick(880, 120);
 
     updateEdgingDisplay();
-    showToast(`✓ Kante #${edgingSession.totalEdges} erfasst: Kalter Stopp!`);
+    showToast(`✓ Schwelle #${edgingSession.totalThresholds} erfasst: Kalter Stopp!`);
   }
 
   function adjustJoiDuration(deltaSeconds) {
@@ -214,7 +266,7 @@
 
       if (edgingSession.joiSecondsRemaining < 0) {
         stopJoiCountdown();
-        registerEdge();
+        registerThreshold();
         showToast("Halt! Hände sofort wegnehmen!");
       }
     }
@@ -254,19 +306,19 @@
         <div class="p-4 sm:p-5 rounded-3xl bg-slate-900/95 border border-purple-900/60 space-y-2 shadow-2xl">
           <div class="flex items-center justify-between border-b border-purple-900/40 pb-2.5">
             <div class="space-y-0.5 min-w-0 flex-1 pr-2">
-              <span class="text-[9px] font-mono uppercase tracking-wider text-purple-400 font-bold block truncate">Edging-Cockpit · Schwellen-Regie</span>
+              <span class="text-[9px] font-mono uppercase tracking-wider text-purple-400 font-bold block truncate">Schwellen- &amp; Plateau-Regie</span>
               <h2 class="text-sm sm:text-base font-bold text-white truncate font-serif">
                 Plateau-Führung &amp; Schwellen-Zähler
               </h2>
             </div>
             <div class="flex items-center gap-1.5 font-mono text-[10px] text-purple-300">
               <span class="px-2.5 py-1 rounded-xl bg-purple-950 border border-purple-800 font-bold" id="edging-total-counter">
-                ${edgingSession.totalEdges} Kanten
+                ${edgingSession.totalThresholds} Schwellen
               </span>
             </div>
           </div>
           <p class="text-[10.5px] text-slate-300 leading-snug">
-            Führe den Körper an die Schwelle, halte das Plateau ohne Entlastung und bremse mit kaltem Stopp.
+            Führe den Körper an die Schwelle, halte das Plateau ohne Entlastung und bremse mit kaltem Stopp vor dem Point-of-No-Return.
           </p>
         </div>
 
@@ -287,6 +339,17 @@
             <p id="edging-arousal-desc" class="text-[10.5px] text-purple-300 leading-snug">
               Stabile Erregung: Gekonnter Reizaufbau ohne unkontrollierte Spitzen.
             </p>
+          </div>
+
+          <!-- PLATEAU-DAUER TRACKER (AKTIV BEI AROUSAL >= 8) -->
+          <div id="edging-plateau-box" class="${edgingSession.currentArousal >= 8 ? '' : 'hidden'} p-3 rounded-2xl bg-amber-950/30 border border-amber-800/60 flex items-center justify-between">
+            <div class="space-y-0.5">
+              <strong class="text-xs text-amber-200 block font-bold">Plateau-Haltezeit (Zenit):</strong>
+              <span class="text-[10px] text-slate-400">Zeitdauer unter Schwellkörperdruck</span>
+            </div>
+            <span id="edging-plateau-seconds" class="font-mono text-base font-black text-amber-300">
+              ${edgingSession.plateauDurationSeconds}s
+            </span>
           </div>
         </div>
 
@@ -313,13 +376,13 @@
           </button>
         </div>
 
-        <!-- GROSSER KANTEN-BUTTON (BLIND TREFFBAR) -->
+        <!-- GROSSER SCHWELLEN-BUTTON (BLIND TREFFBAR) -->
         <div class="pt-1">
-          <button type="button" onclick="SessionEdging.registerEdge()" class="w-full py-4 px-4 rounded-3xl bg-gradient-to-r from-amber-600 via-rose-700 to-purple-800 hover:from-amber-500 hover:to-purple-700 text-white font-black text-sm sm:text-base tracking-wider uppercase touch-btn shadow-2xl flex items-center justify-center gap-2 transform active:scale-95 transition-transform">
+          <button type="button" onclick="SessionEdging.registerThreshold()" class="w-full py-4 px-4 rounded-3xl bg-gradient-to-r from-amber-600 via-rose-700 to-purple-800 hover:from-amber-500 hover:to-purple-700 text-white font-black text-sm sm:text-base tracking-wider uppercase touch-btn shadow-2xl flex items-center justify-center gap-2 transform active:scale-95 transition-transform">
             <svg class="w-5 h-5 text-amber-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/>
             </svg>
-            <span>Kante erreicht (Kaltstopp +1)</span>
+            <span>Schwelle erreicht (Kaltstopp +1)</span>
           </button>
         </div>
 
@@ -332,7 +395,7 @@
   function updateEdgingDisplay() {
     const counterEl = document.getElementById('edging-total-counter');
     if (counterEl) {
-      counterEl.innerText = `${edgingSession.totalEdges} Kanten`;
+      counterEl.innerText = `${edgingSession.totalThresholds} Schwellen`;
     }
   }
 
@@ -342,7 +405,8 @@
     },
     render: renderEdgingCockpit,
     setArousal: setArousalLevel,
-    registerEdge: registerEdge,
+    registerThreshold: registerThreshold,
+    registerEdge: registerThreshold, // Abwärtskompatibler Alias
     adjustJoiDuration: adjustJoiDuration,
     toggleJoiCountdown: startJoiCountdown,
     getSessionMetrics: function() {
