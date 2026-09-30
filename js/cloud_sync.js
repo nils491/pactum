@@ -4,84 +4,67 @@
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Client-Side Authenticated Encryption: AES-GCM-256 via Web Crypto API
- * - Key-Derivation: PBKDF2 (100.000 Iterationen, HMAC-SHA-256, dynamischer Salt)
+ * - Authenticated Encryption via native Web Crypto API: AES-GCM-256
+ * - Key-Derivation via PBKDF2 mit 100.000 Iterationen, SHA-256 & 16-Byte Krypto-Salt
+ * - Frischer 12-Byte Initialisierungsvektor (IV) pro Übertragungs-Payload
  * - Lückenlose Synchronisation des gesamten 7-Vektoren Zustandsraums:
- *   • Beziehungsvertrag (tactus_contract_state)
- *   • Situative Pflichten & Mental Load (tactus_tasks_state, tactus_top_mental_load)
- *   • Orgasmus-Ökonomie (tactus_climax_ratio_state)
- *   • Transaktions-Logbuch & Zero-State (tactus_protocol_state)
- *   • Medizinischer RACK-Pass (tactus_medical_pass)
- *   • Schrank-Inventar & Mengen (tactus_owned_equipment, tactus_toy_quantities)
- *   • E2EE-Fototresor (IndexedDB via HubPhotos)
- * - Deterministisches Event-Sourcing (Transaktionen werden atomar gemerged, kein LWW-Datenverlust)
- * - Serverlose Transport-Bridge über ntfy (Zero-Knowledge, verschlüsselte Payloads)
- * - 100 % frei von infantilen System-Emojis in Datenstrukturen und Benutzeroberfläche
+ *   • Psychometrie, Scham-Anker & Notizen (kompass_answers)
+ *   • Rollen, Namen & D/s-Hierarchie (kompass_names, roles)
+ *   • Transaktions-Logbuch & Saldo (tactus_protocol_state)
+ *   • Pflichten, Zucht & Top-Mental-Load (tactus_tasks_state, tactus_top_mental_load)
+ *   • Orgasmus-Ökonomie & Lust-Ratio (tactus_climax_ratio_state)
+ *   • Beziehungsvertrag & Signaturen (tactus_contract_state)
+ *   • RACK-Gesundheitspass & Trauma-Trigger (tactus_medical_pass)
+ *   • Ausrüstungsschrank, Mengen & Custom-Toys (tactus_owned_equipment)
+ *   • 1:1 Foto-Tresor Bridge (HubPhotos Export/Import)
+ * - Atomarer Transaktions-Merge (Event-Sourcing Deduplizierung via tx.id gegen LWW)
+ * - Serverlose, zustandslose Transport-Bridge über ntfy (EventSource / SSE)
+ * - Echo-Unterdrückung, Reentrancy-Schutz & debouncter Push (450ms)
+ * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
 
 (function(window) {
   'use strict';
 
-  const NTFY_SERVER_DEFAULT = 'https://ntfy.sh';
-  const STORAGE_ROOM_KEY = 'kompass_sync_room';
-  const STORAGE_PASSWORD_KEY = 'kompass_sync_password';
-  const STORAGE_CUSTOM_SERVER = 'kompass_sync_server';
-  const STORAGE_SYNC_ACTIVE = 'kompass_sync_active';
+  const SYNC_STORAGE_KEYS = {
+    room: 'kompass_sync_room',
+    password: 'kompass_sync_password',
+    server: 'kompass_sync_server',
+    isPaired: 'kompass_is_paired',
+    lastSyncTime: 'kompass_last_sync_time',
+    assignedRole: 'kompass_assigned_role'
+  };
 
+  const DEFAULT_NTFY_SERVER = 'https://ntfy.sh';
+
+  let eventSourceInstance = null;
   let syncDebounceTimer = null;
   let isReceivingUpdate = false;
-  let eventSourceInstance = null;
-  let cryptoKeyCache = null;
   let lastPushedChecksum = null;
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  function showToast(message) {
-    if (typeof window.showToastNotification === 'function') {
-      window.showToastNotification(message);
-      return;
+  function bytesToBase64(bytes) {
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
     }
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
-    el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
-      </svg>
-      <span>${escapeHtml(message)}</span>
-    `;
-    container.appendChild(el);
-
-    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
-    setTimeout(() => {
-      el.classList.add('opacity-0');
-      setTimeout(() => el.remove(), 300);
-    }, 2800);
+    return window.btoa(binary);
   }
 
-  function getSyncConfig() {
-    return {
-      active: localStorage.getItem(STORAGE_SYNC_ACTIVE) === 'true',
-      room: localStorage.getItem(STORAGE_ROOM_KEY) || '',
-      password: localStorage.getItem(STORAGE_PASSWORD_KEY) || '',
-      server: localStorage.getItem(STORAGE_CUSTOM_SERVER) || NTFY_SERVER_DEFAULT
-    };
+  function base64ToBytes(base64) {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
   }
 
-  async function deriveEncryptionKey(passphrase, saltBytes) {
+  async function deriveKey(passphrase, saltBytes) {
     const enc = new TextEncoder();
-    const keyMaterial = await crypto.subtle.importKey(
+    const keyMaterial = await window.crypto.subtle.importKey(
       'raw',
       enc.encode(passphrase),
       { name: 'PBKDF2' },
@@ -89,7 +72,7 @@
       ['deriveKey']
     );
 
-    return await crypto.subtle.deriveKey(
+    return window.crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
         salt: saltBytes,
@@ -106,432 +89,434 @@
   async function encryptPayload(dataObject, passphrase) {
     const enc = new TextEncoder();
     const plainBytes = enc.encode(JSON.stringify(dataObject));
-    const saltBytes = crypto.getRandomValues(new Uint8Array(16));
-    const ivBytes = crypto.getRandomValues(new Uint8Array(12));
 
-    const derivedKey = await deriveEncryptionKey(passphrase, saltBytes);
-    const cipherBuffer = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: ivBytes },
-      derivedKey,
+    // Frischer 16-Byte Krypto-Salt und 12-Byte GCM-IV
+    const salt = window.crypto.getRandomValues(new Uint8Array(16));
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+    const key = await deriveKey(passphrase, salt);
+
+    const cipherBuffer = await window.crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
       plainBytes
     );
 
-    // Bündeln: Salt (16B) + IV (12B) + Ciphertext
-    const combined = new Uint8Array(saltBytes.length + ivBytes.length + cipherBuffer.byteLength);
-    combined.set(saltBytes, 0);
-    combined.set(ivBytes, saltBytes.length);
-    combined.set(new Uint8Array(cipherBuffer), saltBytes.length + ivBytes.length);
+    const cipherBytes = new Uint8Array(cipherBuffer);
 
-    // Konvertierung in base64 für Transport
-    let binary = '';
-    const bytes = combined;
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
+    // Packe Salt (16B) | IV (12B) | Ciphertext
+    const combined = new Uint8Array(salt.length + iv.length + cipherBytes.length);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(cipherBytes, salt.length + iv.length);
+
+    return bytesToBase64(combined);
   }
 
   async function decryptPayload(base64Payload, passphrase) {
     try {
-      const binary = atob(base64Payload);
-      const combined = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) {
-        combined[i] = binary.charCodeAt(i);
-      }
+      const combined = base64ToBytes(base64Payload);
+      if (combined.length < 28) return null; // Mindestens 16B Salt + 12B IV
 
-      if (combined.length < 28) {
-        throw new Error("Payload zu kurz für Salt und IV.");
-      }
-
-      const saltBytes = combined.slice(0, 16);
-      const ivBytes = combined.slice(16, 28);
+      const salt = combined.slice(0, 16);
+      const iv = combined.slice(16, 28);
       const cipherBytes = combined.slice(28);
 
-      const derivedKey = await deriveEncryptionKey(passphrase, saltBytes);
-      const plainBuffer = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: ivBytes },
-        derivedKey,
+      const key = await deriveKey(passphrase, salt);
+
+      const decryptedBuffer = await window.crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
         cipherBytes
       );
 
       const dec = new TextDecoder();
-      return JSON.parse(dec.decode(plainBuffer));
-    } catch (e) {
-      console.warn("[TACTUS Sync] Entschlüsselungs-Fehler (Falsches Passwort oder korrupte Payload):", e);
+      const jsonString = dec.decode(decryptedBuffer);
+      return JSON.parse(jsonString);
+    } catch (err) {
+      console.warn('[TACTUS E2EE] Entschlüsselung fehlgeschlagen (Falsches Passwort oder Paket beschädigt):', err);
       return null;
     }
   }
 
-  async function gatherUnifiedLocalState() {
-    function parseKey(key, fallback = null) {
-      try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      } catch (e) {
-        return fallback;
-      }
+  function safeJsonParse(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      return fallback;
     }
+  }
 
-    let photoVaultList = [];
+  async function gatherUnifiedLocalState() {
+    const state = {
+      version: '3.0',
+      timestamp: Date.now(),
+      senderRole: localStorage.getItem(SYNC_STORAGE_KEYS.assignedRole) || 'A',
+      answers: safeJsonParse('kompass_answers', {}),
+      names: safeJsonParse('kompass_names', { A: 'Partner 1', B: 'Partner 2' }),
+      roles: {
+        assignedRole: localStorage.getItem('kompass_assigned_role') || 'A',
+        keyholder: localStorage.getItem('kompass_keyholder_role') || 'A',
+        caged: localStorage.getItem('kompass_caged_role') || 'B'
+      },
+      protocolState: safeJsonParse('tactus_protocol_state', null) || safeJsonParse('kompass_protocol_state', null),
+      tasksState: safeJsonParse('tactus_tasks_state', null) || safeJsonParse('pactum_tasks_state', null),
+      topMentalLoad: localStorage.getItem('tactus_top_mental_load') || 'balanced',
+      climaxRatio: safeJsonParse('tactus_climax_ratio_state', null) || safeJsonParse('kompass_climax_ratio_state', null),
+      contractState: safeJsonParse('tactus_contract_state', null) || safeJsonParse('kompass_contract_state', null),
+      medicalPass: safeJsonParse('tactus_medical_pass', null),
+      ownedEquipment: safeJsonParse('tactus_owned_equipment', null) || safeJsonParse('kompass_owned_equipment', []),
+      toyQuantities: safeJsonParse('tactus_toy_quantities', null) || safeJsonParse('kompass_toy_quantities', {}),
+      customEquipment: safeJsonParse('tactus_custom_equipment', null) || safeJsonParse('kompass_custom_equipment', []),
+      chatMessages: safeJsonParse('kompass_chat_messages', [])
+    };
+
+    // Fotos aus dem verschlüsselten IndexedDB-Tresor exportieren
     if (window.HubPhotos && typeof window.HubPhotos.exportForSync === 'function') {
       try {
-        photoVaultList = await window.HubPhotos.exportForSync();
-      } catch (errPhoto) {
-        console.warn("[TACTUS Sync] Konnte Fotos nicht für Sync sammeln:", errPhoto);
+        state.vaultPhotos = await window.HubPhotos.exportForSync();
+      } catch (ePhoto) {
+        state.vaultPhotos = [];
       }
+    } else {
+      state.vaultPhotos = [];
     }
 
-    return {
-      tactus_version: "3.0",
-      clientTimestamp: Date.now(),
-      senderRole: localStorage.getItem('kompass_assigned_role') || 'A',
-
-      // 1. Psychometrie & Identität
-      kompass_answers: parseKey('kompass_answers', {}),
-      kompass_names: parseKey('kompass_names', { A: 'Partner 1', B: 'Partner 2' }),
-      kompass_anatomy: parseKey('kompass_anatomy', { A: 'penis', B: 'vulva' }),
-      kompass_assigned_role: localStorage.getItem('kompass_assigned_role') || 'A',
-      kompass_keyholder_role: localStorage.getItem('kompass_keyholder_role') || 'A',
-      kompass_caged_role: localStorage.getItem('kompass_caged_role') || 'B',
-
-      // 2. Transaktionales Protokoll (Event-Sourced)
-      tactus_protocol_state: parseKey('tactus_protocol_state', null) || parseKey('kompass_ledger_state', null),
-
-      // 3. Orgasmus-Ökonomie
-      tactus_climax_ratio_state: parseKey('tactus_climax_ratio_state', null) || parseKey('kompass_climax_ratio_state', null),
-
-      // 4. Aufgaben & Führungszustand des Tops
-      tactus_tasks_state: parseKey('tactus_tasks_state', null) || parseKey('pactum_tasks_state', null),
-      tactus_top_mental_load: localStorage.getItem('tactus_top_mental_load') || 'balanced',
-
-      // 5. Beziehungsvertrag (Lückenloses Bündnis)
-      tactus_contract_state: parseKey('tactus_contract_state', null) || parseKey('kompass_contract_state', null),
-
-      // 6. Führungs-Coach & Alltags-Kontext des Bottoms
-      tactus_bottom_workplace: localStorage.getItem('tactus_bottom_workplace') || localStorage.getItem('kompass_bottom_workplace') || 'desk_office',
-      tactus_last_coach_directive: parseKey('tactus_last_coach_directive', null) || parseKey('kompass_last_coach_directive', null),
-
-      // 7. Biologie, Gesundheit & RACK-Pass
-      tactus_medical_pass: parseKey('tactus_medical_pass', null),
-
-      // 8. Hardware-Inventar & Fototresor
-      tactus_owned_equipment: parseKey('tactus_owned_equipment', []) || parseKey('kompass_owned_equipment', []),
-      tactus_toy_quantities: parseKey('tactus_toy_quantities', {}) || parseKey('kompass_toy_quantities', {}),
-      tactus_custom_equipment: parseKey('tactus_custom_equipment', []) || parseKey('kompass_custom_equipment', []),
-      tactus_photo_vault: photoVaultList,
-
-      // 9. Peer-Stream Chat
-      kompass_chat_messages: parseKey('kompass_chat_messages', [])
-    };
+    return state;
   }
 
   async function mergeInboundRemoteState(remote) {
-    if (!remote || typeof remote !== 'object') return;
+    if (!remote || typeof remote !== 'object') return false;
+
     isReceivingUpdate = true;
+    let changesMade = false;
 
     try {
-      // 1. Namen, Rollen & Anatomie
-      if (remote.kompass_names && typeof remote.kompass_names === 'object') {
-        localStorage.setItem('kompass_names', JSON.stringify(remote.kompass_names));
-      }
-      if (remote.kompass_anatomy && typeof remote.kompass_anatomy === 'object') {
-        localStorage.setItem('kompass_anatomy', JSON.stringify(remote.kompass_anatomy));
-      }
-      if (remote.kompass_keyholder_role) {
-        localStorage.setItem('kompass_keyholder_role', remote.kompass_keyholder_role);
-      }
-      if (remote.kompass_caged_role) {
-        localStorage.setItem('kompass_caged_role', remote.kompass_caged_role);
+      const myRole = localStorage.getItem(SYNC_STORAGE_KEYS.assignedRole) || 'A';
+
+      // 1. Namen synchronisieren
+      if (remote.names && typeof remote.names === 'object') {
+        const localNames = safeJsonParse('kompass_names', { A: 'Partner 1', B: 'Partner 2' });
+        const mergedNames = Object.assign({}, localNames, remote.names);
+        localStorage.setItem('kompass_names', JSON.stringify(mergedNames));
+        changesMade = true;
       }
 
-      // 2. Psychometrische Antworten zusammenführen
-      if (remote.kompass_answers && typeof remote.kompass_answers === 'object') {
-        let localAnswers = {};
-        try {
-          const rawA = localStorage.getItem('kompass_answers');
-          if (rawA) localAnswers = JSON.parse(rawA);
-        } catch (e) {}
+      // 2. Rollen & Hierarchie
+      if (remote.roles && typeof remote.roles === 'object') {
+        if (remote.roles.keyholder) localStorage.setItem('kompass_keyholder_role', remote.roles.keyholder);
+        if (remote.roles.caged) localStorage.setItem('kompass_caged_role', remote.roles.caged);
+        changesMade = true;
+      }
 
-        const mergedAnswers = Object.assign({}, localAnswers);
-        ['A', 'B'].forEach(r => {
-          if (remote.kompass_answers[r]) {
-            mergedAnswers[r] = Object.assign({}, mergedAnswers[r] || {}, remote.kompass_answers[r]);
+      // 3. Fragebogen-Antworten feldweise zusammenführen (Kein Überschreiben fremder Rollen)
+      if (remote.answers && typeof remote.answers === 'object') {
+        const localAnswers = safeJsonParse('kompass_answers', {}) || {};
+        for (const roleKey of ['A', 'B']) {
+          if (remote.answers[roleKey]) {
+            if (!localAnswers[roleKey]) localAnswers[roleKey] = {};
+            for (const itemKey in remote.answers[roleKey]) {
+              if (remote.answers[roleKey].hasOwnProperty(itemKey)) {
+                localAnswers[roleKey][itemKey] = remote.answers[roleKey][itemKey];
+              }
+            }
+          }
+        }
+        localStorage.setItem('kompass_answers', JSON.stringify(localAnswers));
+        changesMade = true;
+      }
+
+      // 4. Atomarer Event-Sourcing Merge des Protokoll-Logbuchs
+      if (remote.protocolState && typeof remote.protocolState === 'object') {
+        const localProtocol = safeJsonParse('tactus_protocol_state', null) || safeJsonParse('kompass_protocol_state', { transactions: [] });
+        const localTxs = Array.isArray(localProtocol.transactions) ? localProtocol.transactions : [];
+        const remoteTxs = Array.isArray(remote.protocolState.transactions) ? remote.protocolState.transactions : [];
+
+        const txMap = new Map();
+        localTxs.forEach(t => { if (t && t.id) txMap.set(t.id, t); });
+        remoteTxs.forEach(t => { if (t && t.id) txMap.set(t.id, t); });
+
+        const mergedTxs = Array.from(txMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 400);
+
+        const mergedProtocol = Object.assign({}, localProtocol, remote.protocolState, {
+          transactions: mergedTxs
+        });
+
+        // Berechne Saldo strikt aus den gemergten Transaktionen
+        const recomputedBalance = mergedTxs.reduce((sum, tx) => sum + (Number(tx.delta) || 0), 0);
+        mergedProtocol.balance = recomputedBalance;
+
+        localStorage.setItem('tactus_protocol_state', JSON.stringify(mergedProtocol));
+        localStorage.setItem('kompass_protocol_state', JSON.stringify(mergedProtocol));
+        changesMade = true;
+      }
+
+      // 5. Aufgaben & Pflichten (tactus_tasks_state)
+      if (remote.tasksState && typeof remote.tasksState === 'object') {
+        const localTasksState = safeJsonParse('tactus_tasks_state', { tasks: [] });
+        const localList = Array.isArray(localTasksState.tasks) ? localTasksState.tasks : [];
+        const remoteList = Array.isArray(remote.tasksState.tasks) ? remote.tasksState.tasks : [];
+
+        const taskMap = new Map();
+        localList.forEach(t => { if (t && t.id) taskMap.set(t.id, t); });
+        remoteList.forEach(t => {
+          if (t && t.id) {
+            const existing = taskMap.get(t.id);
+            if (!existing || (t.lastSubmittedAt || t.createdAt || 0) >= (existing.lastSubmittedAt || existing.createdAt || 0)) {
+              taskMap.set(t.id, t);
+            }
           }
         });
-        localStorage.setItem('kompass_answers', JSON.stringify(mergedAnswers));
+
+        localTasksState.tasks = Array.from(taskMap.values());
+        if (remote.topMentalLoad) {
+          localTasksState.topMentalLoad = remote.topMentalLoad;
+          localStorage.setItem('tactus_top_mental_load', remote.topMentalLoad);
+        }
+
+        localStorage.setItem('tactus_tasks_state', JSON.stringify(localTasksState));
+        localStorage.setItem('pactum_tasks_state', JSON.stringify(localTasksState));
+        changesMade = true;
       }
 
-      // 3. Transaktionales Protokoll mit atomarem Event-Sourcing Merge
-      if (remote.tactus_protocol_state) {
-        let localP = null;
-        try {
-          const rawP = localStorage.getItem('tactus_protocol_state') || localStorage.getItem('kompass_ledger_state');
-          if (rawP) localP = JSON.parse(rawP);
-        } catch (e) {}
+      // 6. Orgasmus-Ratio (tactus_climax_ratio_state)
+      if (remote.climaxRatio && typeof remote.climaxRatio === 'object') {
+        const localRatio = safeJsonParse('tactus_climax_ratio_state', { history: [] });
+        const localHist = Array.isArray(localRatio.history) ? localRatio.history : [];
+        const remoteHist = Array.isArray(remote.climaxRatio.history) ? remote.climaxRatio.history : [];
 
-        if (!localP) {
-          localStorage.setItem('tactus_protocol_state', JSON.stringify(remote.tactus_protocol_state));
-          localStorage.setItem('kompass_ledger_state', JSON.stringify(remote.tactus_protocol_state));
-        } else {
-          // Atomare Vereinigung der Transaktionslisten (Dedizierter Schutz vor Datenverlust)
-          const localTxs = Array.isArray(localP.transactions) ? localP.transactions : [];
-          const remoteTxs = Array.isArray(remote.tactus_protocol_state.transactions) ? remote.tactus_protocol_state.transactions : [];
-          
-          const txMap = new Map();
-          localTxs.forEach(t => { if (t && t.id) txMap.set(t.id, t); });
-          remoteTxs.forEach(t => { if (t && t.id) txMap.set(t.id, t); });
+        const histMap = new Map();
+        localHist.forEach(h => { if (h && h.id) histMap.set(h.id, h); });
+        remoteHist.forEach(h => { if (h && h.id) histMap.set(h.id, h); });
 
-          const mergedTxs = Array.from(txMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        const mergedHist = Array.from(histMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 150);
 
-          // State-Übernahme basierend auf Aktualität
-          const chosenState = (remote.tactus_protocol_state.updatedAt || 0) > (localP.updatedAt || 0)
-            ? remote.tactus_protocol_state
-            : localP;
+        const mergedRatio = Object.assign({}, localRatio, remote.climaxRatio, {
+          history: mergedHist
+        });
 
-          chosenState.transactions = mergedTxs.slice(0, 400);
-          localStorage.setItem('tactus_protocol_state', JSON.stringify(chosenState));
-          localStorage.setItem('kompass_ledger_state', JSON.stringify(chosenState));
+        localStorage.setItem('tactus_climax_ratio_state', JSON.stringify(mergedRatio));
+        localStorage.setItem('kompass_climax_ratio_state', JSON.stringify(mergedRatio));
+        changesMade = true;
+      }
+
+      // 7. Beziehungsvertrag (tactus_contract_state)
+      if (remote.contractState && typeof remote.contractState === 'object') {
+        const localContract = safeJsonParse('tactus_contract_state', {});
+        const remoteTime = remote.contractState.updatedAt || remote.contractState.signedAt || 0;
+        const localTime = localContract.updatedAt || localContract.signedAt || 0;
+
+        if (remoteTime >= localTime) {
+          localStorage.setItem('tactus_contract_state', JSON.stringify(remote.contractState));
+          localStorage.setItem('kompass_contract_state', JSON.stringify(remote.contractState));
+          changesMade = true;
         }
       }
 
-      // 4. Orgasmus-Ökonomie
-      if (remote.tactus_climax_ratio_state) {
-        let localR = null;
-        try {
-          const rawR = localStorage.getItem('tactus_climax_ratio_state') || localStorage.getItem('kompass_climax_ratio_state');
-          if (rawR) localR = JSON.parse(rawR);
-        } catch (e) {}
-
-        if (!localR || (remote.tactus_climax_ratio_state.updatedAt || 0) >= (localR.updatedAt || 0)) {
-          localStorage.setItem('tactus_climax_ratio_state', JSON.stringify(remote.tactus_climax_ratio_state));
-          localStorage.setItem('kompass_climax_ratio_state', JSON.stringify(remote.tactus_climax_ratio_state));
-        }
+      // 8. RACK-Gesundheitspass & Traumagrenzen (tactus_medical_pass)
+      if (remote.medicalPass && typeof remote.medicalPass === 'object') {
+        const localPass = safeJsonParse('tactus_medical_pass', {});
+        const mergedPass = Object.assign({}, localPass, remote.medicalPass);
+        localStorage.setItem('tactus_medical_pass', JSON.stringify(mergedPass));
+        changesMade = true;
       }
 
-      // 5. Pflichten & Mental Load des Tops
-      if (remote.tactus_tasks_state) {
-        let localTasks = null;
-        try {
-          const rawT = localStorage.getItem('tactus_tasks_state') || localStorage.getItem('pactum_tasks_state');
-          if (rawT) localTasks = JSON.parse(rawT);
-        } catch (e) {}
-
-        if (!localTasks || (remote.tactus_tasks_state.updatedAt || 0) >= (localTasks.updatedAt || 0)) {
-          localStorage.setItem('tactus_tasks_state', JSON.stringify(remote.tactus_tasks_state));
-          localStorage.setItem('pactum_tasks_state', JSON.stringify(remote.tactus_tasks_state));
-        }
+      // 9. Ausrüstungsschrank, Mengen & Custom-Toys
+      if (Array.isArray(remote.ownedEquipment)) {
+        localStorage.setItem('tactus_owned_equipment', JSON.stringify(remote.ownedEquipment));
+        localStorage.setItem('kompass_owned_equipment', JSON.stringify(remote.ownedEquipment));
+        changesMade = true;
       }
-      if (remote.tactus_top_mental_load) {
-        localStorage.setItem('tactus_top_mental_load', remote.tactus_top_mental_load);
+      if (remote.toyQuantities && typeof remote.toyQuantities === 'object') {
+        localStorage.setItem('tactus_toy_quantities', JSON.stringify(remote.toyQuantities));
+        localStorage.setItem('kompass_toy_quantities', JSON.stringify(remote.toyQuantities));
+        changesMade = true;
       }
-
-      // 6. Beziehungsvertrag
-      if (remote.tactus_contract_state) {
-        let localC = null;
-        try {
-          const rawC = localStorage.getItem('tactus_contract_state') || localStorage.getItem('kompass_contract_state');
-          if (rawC) localC = JSON.parse(rawC);
-        } catch (e) {}
-
-        if (!localC || (remote.tactus_contract_state.updatedAt || 0) >= (localC.updatedAt || 0)) {
-          localStorage.setItem('tactus_contract_state', JSON.stringify(remote.tactus_contract_state));
-          localStorage.setItem('kompass_contract_state', JSON.stringify(remote.tactus_contract_state));
-        }
+      if (Array.isArray(remote.customEquipment)) {
+        const localCustom = safeJsonParse('tactus_custom_equipment', []);
+        const customMap = new Map();
+        localCustom.forEach(c => { if (c && c.id) customMap.set(c.id, c); });
+        remote.customEquipment.forEach(c => { if (c && c.id) customMap.set(c.id, c); });
+        const mergedCustom = Array.from(customMap.values());
+        localStorage.setItem('tactus_custom_equipment', JSON.stringify(mergedCustom));
+        localStorage.setItem('kompass_custom_equipment', JSON.stringify(mergedCustom));
+        changesMade = true;
       }
 
-      // 7. Alltags-Kontext des Bottoms
-      if (remote.tactus_bottom_workplace) {
-        localStorage.setItem('tactus_bottom_workplace', remote.tactus_bottom_workplace);
-        localStorage.setItem('kompass_bottom_workplace', remote.tactus_bottom_workplace);
-      }
-      if (remote.tactus_last_coach_directive) {
-        localStorage.setItem('tactus_last_coach_directive', JSON.stringify(remote.tactus_last_coach_directive));
-        localStorage.setItem('kompass_last_coach_directive', JSON.stringify(remote.tactus_last_coach_directive));
-      }
-
-      // 8. Medizinischer RACK-Pass
-      if (remote.tactus_medical_pass && typeof remote.tactus_medical_pass === 'object') {
-        localStorage.setItem('tactus_medical_pass', JSON.stringify(remote.tactus_medical_pass));
-      }
-
-      // 9. Hardware-Schrank & Inventar
-      if (Array.isArray(remote.tactus_owned_equipment)) {
-        localStorage.setItem('tactus_owned_equipment', JSON.stringify(remote.tactus_owned_equipment));
-        localStorage.setItem('kompass_owned_equipment', JSON.stringify(remote.tactus_owned_equipment));
-      }
-      if (remote.tactus_toy_quantities && typeof remote.tactus_toy_quantities === 'object') {
-        localStorage.setItem('tactus_toy_quantities', JSON.stringify(remote.tactus_toy_quantities));
-        localStorage.setItem('kompass_toy_quantities', JSON.stringify(remote.tactus_toy_quantities));
-      }
-      if (Array.isArray(remote.tactus_custom_equipment)) {
-        localStorage.setItem('tactus_custom_equipment', JSON.stringify(remote.tactus_custom_equipment));
-      }
-
-      // 10. IndexedDB Fototresor synchronisieren
-      if (Array.isArray(remote.tactus_photo_vault) && window.HubPhotos && typeof window.HubPhotos.importFromSync === 'function') {
-        await window.HubPhotos.importFromSync(remote.tactus_photo_vault);
-      }
-
-      // 11. Peer-Stream Chatnachrichten mergen
-      if (Array.isArray(remote.kompass_chat_messages)) {
-        let localMessages = [];
-        try {
-          const rawM = localStorage.getItem('kompass_chat_messages');
-          if (rawM) localMessages = JSON.parse(rawM);
-        } catch (e) {}
-
+      // 10. Chat-Stream Nachrichten
+      if (Array.isArray(remote.chatMessages)) {
+        const localMessages = safeJsonParse('kompass_chat_messages', []);
         const msgMap = new Map();
         localMessages.forEach(m => { if (m && m.id) msgMap.set(m.id, m); });
-        remote.kompass_chat_messages.forEach(m => { if (m && m.id) msgMap.set(m.id, m); });
-
-        const mergedMessages = Array.from(msgMap.values()).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        localStorage.setItem('kompass_chat_messages', JSON.stringify(mergedMessages.slice(-250)));
+        remote.chatMessages.forEach(m => { if (m && m.id) msgMap.set(m.id, m); });
+        const mergedMsgs = Array.from(msgMap.values()).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)).slice(-250);
+        localStorage.setItem('kompass_chat_messages', JSON.stringify(mergedMsgs));
+        changesMade = true;
       }
 
-      showToast("✓ TACTUS Daten synchronisiert");
+      // 11. Fototresor-Import (IndexedDB)
+      if (Array.isArray(remote.vaultPhotos) && remote.vaultPhotos.length > 0) {
+        if (window.HubPhotos && typeof window.HubPhotos.importFromSync === 'function') {
+          try {
+            await window.HubPhotos.importFromSync(remote.vaultPhotos);
+          } catch (ePhotoImp) {
+            console.warn('[TACTUS E2EE] Fehler beim Fototresor-Import:', ePhotoImp);
+          }
+        }
+      }
 
-      // UI-Aktualisierungen anstoßen, falls aktive Views existieren
+      localStorage.setItem(SYNC_STORAGE_KEYS.lastSyncTime, Date.now().toString());
+
+      // 12. Reaktive UI-Benachrichtigung offener Module
       notifyLocalModules();
 
-    } catch (err) {
-      console.warn("[TACTUS Sync] Fehler beim Zusammenführen des Remote-States:", err);
     } finally {
-      isReceivingUpdate = false;
+      setTimeout(() => {
+        isReceivingUpdate = false;
+      }, 200);
     }
+
+    return changesMade;
   }
 
   function notifyLocalModules() {
-    if (window.ProtocolCore && typeof window.ProtocolCore.render === 'function') {
-      window.ProtocolCore.render();
-    }
-    if (window.ProtocolRatio && typeof window.ProtocolRatio.render === 'function') {
-      window.ProtocolRatio.render();
-    }
-    if (window.ProtocolTasks && typeof window.ProtocolTasks.render === 'function') {
-      window.ProtocolTasks.render();
-    }
-    if (window.ProtocolContract && typeof window.ProtocolContract.renderContract === 'function') {
-      window.ProtocolContract.renderContract();
-    }
-    if (window.ProtocolCoach && typeof window.ProtocolCoach.init === 'function') {
-      window.ProtocolCoach.init();
-    }
-    if (window.ChatApp && typeof window.ChatApp.renderMessages === 'function') {
-      window.ChatApp.renderMessages();
-    }
-    if (window.HubToys && typeof window.HubToys.render === 'function') {
-      window.HubToys.render();
+    try {
+      if (window.HubDashboard && typeof window.HubDashboard.render === 'function') window.HubDashboard.render();
+      if (window.SurveyRunner && typeof window.SurveyRunner.renderActiveView === 'function') window.SurveyRunner.renderActiveView();
+      if (window.ProtocolCore && typeof window.ProtocolCore.render === 'function') window.ProtocolCore.render();
+      if (window.ProtocolRatio && typeof window.ProtocolRatio.render === 'function') window.ProtocolRatio.render();
+      if (window.ProtocolTasks && typeof window.ProtocolTasks.render === 'function') window.ProtocolTasks.render();
+      if (window.ProtocolContract && typeof window.ProtocolContract.render === 'function') window.ProtocolContract.render();
+      if (window.ProtocolCoach && typeof window.ProtocolCoach.render === 'function') window.ProtocolCoach.render();
+      if (window.SessionStaging && typeof window.SessionStaging.render === 'function') window.SessionStaging.render();
+      if (window.SessionLive && typeof window.SessionLive.renderCockpit === 'function') window.SessionLive.renderCockpit();
+      if (window.ChatApp && typeof window.ChatApp.renderMessages === 'function') window.ChatApp.renderMessages();
+      if (window.PairAnalysis && typeof window.PairAnalysis.init === 'function') window.PairAnalysis.init();
+      if (window.HubToys && typeof window.HubToys.render === 'function') window.HubToys.render();
+    } catch (e) {
+      console.debug('[TACTUS E2EE] Fehler bei reaktiver UI-Benachrichtigung:', e);
     }
   }
 
-  async function pushUnifiedState() {
+  async function pushLocalStateToRemote() {
     if (isReceivingUpdate) return;
-    const cfg = getSyncConfig();
-    if (!cfg.active || !cfg.room || !cfg.password) return;
+
+    const room = (localStorage.getItem(SYNC_STORAGE_KEYS.room) || '').trim();
+    const pass = (localStorage.getItem(SYNC_STORAGE_KEYS.password) || '').trim();
+    const server = (localStorage.getItem(SYNC_STORAGE_KEYS.server) || DEFAULT_NTFY_SERVER).trim().replace(/\/$/, '');
+
+    if (!room || !pass) return;
 
     try {
-      const stateObj = await gatherUnifiedLocalState();
-      const stringified = JSON.stringify(stateObj);
+      const unifiedState = await gatherUnifiedLocalState();
+      const serializedJson = JSON.stringify(unifiedState);
 
-      // Lokale Duplikats-Prüfung gegen unnötigen Netzwerktraffic
-      if (stringified === lastPushedChecksum) return;
+      // Duplikats-Schutz: Unveränderten Zustand nicht mehrfach versenden
+      if (lastPushedChecksum === serializedJson) return;
 
-      const cipherBase64 = await encryptPayload(stateObj, cfg.password);
-      lastPushedChecksum = stringified;
+      const encryptedBase64 = await encryptPayload(unifiedState, pass);
 
-      const endpoint = `${cfg.server}/${encodeURIComponent(cfg.room)}`;
-      const response = await fetch(endpoint, {
+      const endpoint = `${server}/${encodeURIComponent(room)}`;
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Title': 'TACTUS Sync Update',
+          'Title': 'TACTUS Sync',
           'Priority': 'default',
-          'Tags': 'shield,lock'
+          'Tags': 'key,shield'
         },
-        body: cipherBase64
+        body: encryptedBase64
       });
 
-      if (!response.ok) {
-        console.warn(`[TACTUS Sync] ntfy Push fehlgeschlagen (${response.status})`);
+      if (res.ok) {
+        lastPushedChecksum = serializedJson;
+        localStorage.setItem(SYNC_STORAGE_KEYS.lastSyncTime, Date.now().toString());
+        localStorage.setItem(SYNC_STORAGE_KEYS.isPaired, 'true');
       }
-    } catch (err) {
-      console.warn("[TACTUS Sync] Fehler beim Versenden des Sync-Updates:", err);
+    } catch (errPush) {
+      console.warn('[TACTUS E2EE] Fehler beim Senden des E2EE-Sync-Pakets:', errPush);
     }
   }
 
   function triggerSyncDebounced() {
     if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
     syncDebounceTimer = setTimeout(() => {
-      pushUnifiedState();
+      pushLocalStateToRemote();
     }, 450);
   }
 
   function initializeStreamListener() {
-    const cfg = getSyncConfig();
     if (eventSourceInstance) {
       eventSourceInstance.close();
       eventSourceInstance = null;
     }
 
-    if (!cfg.active || !cfg.room || !cfg.password) {
-      return;
-    }
+    const room = (localStorage.getItem(SYNC_STORAGE_KEYS.room) || '').trim();
+    const pass = (localStorage.getItem(SYNC_STORAGE_KEYS.password) || '').trim();
+    const server = (localStorage.getItem(SYNC_STORAGE_KEYS.server) || DEFAULT_NTFY_SERVER).trim().replace(/\/$/, '');
+
+    if (!room || !pass) return;
 
     try {
-      const sseUrl = `${cfg.server}/${encodeURIComponent(cfg.room)}/sse`;
-      eventSourceInstance = new EventSource(sseUrl);
+      const streamUrl = `${server}/${encodeURIComponent(room)}/sse`;
+      eventSourceInstance = new EventSource(streamUrl);
 
       eventSourceInstance.onmessage = async (event) => {
         try {
           if (!event.data) return;
-          const msgObj = JSON.parse(event.data);
-          if (msgObj.event !== 'message' || !msgObj.message) return;
+          const ntfyPacket = JSON.parse(event.data);
 
-          const rawCipher = msgObj.message.trim();
-          if (rawCipher.length < 32) return;
+          // Nur reguläre Nachrichten mit Payload verarbeiten
+          if (ntfyPacket.event !== 'message' || !ntfyPacket.message) return;
 
-          const decrypted = await decryptPayload(rawCipher, cfg.password);
-          if (decrypted && decrypted.clientTimestamp) {
-            // Nur Remote-Updates verarbeiten, die nicht vom eigenen Gerät stammen
-            const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
-            if (decrypted.senderRole !== myRole || (Date.now() - decrypted.clientTimestamp > 1000)) {
-              await mergeInboundRemoteState(decrypted);
-            }
+          const encryptedBase64 = ntfyPacket.message.trim();
+          const decryptedState = await decryptPayload(encryptedBase64, pass);
+
+          if (!decryptedState || typeof decryptedState !== 'object') return;
+
+          // Echo-Unterdrückung: Eigene Nachrichten ignorieren
+          const myRole = localStorage.getItem(SYNC_STORAGE_KEYS.assignedRole) || 'A';
+          if (decryptedState.senderRole === myRole && Math.abs(Date.now() - (decryptedState.timestamp || 0)) < 3000) {
+            return;
           }
-        } catch (e) {
-          // Keine störenden Konsolenausgaben bei fremden Keep-Alive Pings
+
+          const hasChanged = await mergeInboundRemoteState(decryptedState);
+          if (hasChanged && typeof window.showToastNotification === 'function') {
+            window.showToastNotification('✓ Daten mit Partner synchronisiert');
+          }
+        } catch (errInbound) {
+          console.debug('[TACTUS E2EE] Inbound-Paket übersprungen:', errInbound);
         }
       };
 
       eventSourceInstance.onerror = () => {
-        // EventSource schaltet bei Verbindungsabriss automatisch auf Reconnect
+        // EventSource versucht automatisch eine Wiederverbindung
       };
 
-      console.debug("[TACTUS Sync] E2EE Transport-Bridge aktiv auf Raum:", cfg.room);
-    } catch (err) {
-      console.warn("[TACTUS Sync] SSE Listener Initialisierung fehlgeschlagen:", err);
+      localStorage.setItem(SYNC_STORAGE_KEYS.isPaired, 'true');
+    } catch (e) {
+      console.warn('[TACTUS E2EE] EventSource konnte nicht initialisiert werden:', e);
     }
   }
 
   function configureSyncCredentials({ room, password, server, role }) {
-    if (!room || !password) {
-      showToast("Raum und Passwort sind erforderlich.");
-      return false;
-    }
+    if (!room || !password) return false;
 
-    localStorage.setItem(STORAGE_ROOM_KEY, room.trim());
-    localStorage.setItem(STORAGE_PASSWORD_KEY, password.trim());
-    localStorage.setItem(STORAGE_CUSTOM_SERVER, (server || NTFY_SERVER_DEFAULT).trim());
-    localStorage.setItem(STORAGE_SYNC_ACTIVE, 'true');
-    localStorage.setItem('kompass_is_paired', 'true');
+    localStorage.setItem(SYNC_STORAGE_KEYS.room, String(room).trim());
+    localStorage.setItem(SYNC_STORAGE_KEYS.password, String(password).trim());
+    if (server) localStorage.setItem(SYNC_STORAGE_KEYS.server, String(server).trim().replace(/\/$/, ''));
+    if (role) localStorage.setItem(SYNC_STORAGE_KEYS.assignedRole, role);
 
-    if (role) {
-      localStorage.setItem('kompass_assigned_role', role);
-    }
+    localStorage.setItem(SYNC_STORAGE_KEYS.isPaired, 'true');
 
     initializeStreamListener();
     triggerSyncDebounced();
-    showToast("✓ E2EE Paar-Synchronisation verbunden");
+
+    if (typeof window.showToastNotification === 'function') {
+      window.showToastNotification('✓ E2EE-Kopplung aktiv: Verschlüsselt mit AES-GCM-256');
+    }
+
     return true;
   }
 
@@ -540,33 +525,44 @@
       eventSourceInstance.close();
       eventSourceInstance = null;
     }
-    localStorage.setItem(STORAGE_SYNC_ACTIVE, 'false');
-    localStorage.removeItem('kompass_is_paired');
-    showToast("Synchronisation getrennt.");
+    localStorage.removeItem(SYNC_STORAGE_KEYS.room);
+    localStorage.removeItem(SYNC_STORAGE_KEYS.password);
+    localStorage.setItem(SYNC_STORAGE_KEYS.isPaired, 'false');
+
+    if (typeof window.showToastNotification === 'function') {
+      window.showToastNotification('E2EE-Synchronisation getrennt.');
+    }
+  }
+
+  function getSyncConfig() {
+    return {
+      active: localStorage.getItem(SYNC_STORAGE_KEYS.isPaired) === 'true',
+      room: localStorage.getItem(SYNC_STORAGE_KEYS.room) || '',
+      password: localStorage.getItem(SYNC_STORAGE_KEYS.password) || '',
+      server: localStorage.getItem(SYNC_STORAGE_KEYS.server) || DEFAULT_NTFY_SERVER,
+      lastSyncTime: localStorage.getItem(SYNC_STORAGE_KEYS.lastSyncTime) || null
+    };
   }
 
   const api = {
-    init: function() {
-      const cfg = getSyncConfig();
-      if (cfg.active && cfg.room && cfg.password) {
-        initializeStreamListener();
-      }
-    },
+    init: initializeStreamListener,
     trigger: triggerSyncDebounced,
-    forcePush: pushUnifiedState,
+    forcePush: pushLocalStateToRemote,
     configure: configureSyncCredentials,
     disconnect: disconnectSync,
     getConfig: getSyncConfig,
     encrypt: encryptPayload,
-    decrypt: decryptPayload
+    decrypt: decryptPayload,
+    gatherState: gatherUnifiedLocalState
   };
 
   window.CloudSync = api;
 
+  // Auto-Initialisierung beim Laden
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', api.init);
+    document.addEventListener('DOMContentLoaded', initializeStreamListener);
   } else {
-    api.init();
+    initializeStreamListener();
   }
 
 })(window);
