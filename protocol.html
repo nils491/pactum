@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>TACTUS · Das Protokoll &amp; Beziehungsvertrag</title>
+  <title>TACTUS · Das Protokoll, Disziplin &amp; Beziehungsvertrag</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     (function() {
@@ -71,7 +71,7 @@
 
     @media print {
       body { background-color: #ffffff !important; color: #000000 !important; }
-      header, nav, #bottom-readonly-banner, .no-print, #modal-contract-signature, #modal-contract-print-choice { display: none !important; }
+      header, nav, #bottom-readonly-banner, .no-print, #modal-contract-signature, #modal-contract-print-choice, #modal-reject-task, #modal-execute-discipline { display: none !important; }
       #view-ledger-contract { display: block !important; }
       #view-ledger-dashboard, #view-ledger-chores, #view-ledger-ai_coach { display: none !important; }
       body.print-blank-signatures #sig-box-top img,
@@ -98,18 +98,18 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
             </svg>
           </div>
-          <div class="truncate min-w-0">
+          <div class="min-w-0">
             <div class="flex items-center gap-1.5">
-              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white truncate font-serif-title">TACTUS · Das Protokoll</h1>
+              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white font-serif-title">TACTUS · Das Protokoll</h1>
               <span id="ledger-lock-status-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-800 uppercase flex-shrink-0">OFFEN</span>
             </div>
-            <span class="text-[9.5px] text-slate-400 font-medium block truncate mt-0.5" id="ledger-header-roles">Top: Partner 1 · Bottom: Partner 2</span>
+            <span class="text-[9.5px] text-slate-400 font-medium block mt-0.5" id="ledger-header-roles">Top: Partner 1 · Bottom: Partner 2</span>
           </div>
         </a>
 
         <!-- DESKTOP ACTIONS -->
         <div class="hidden md:flex items-center gap-1.5 flex-shrink-0">
-          <div class="px-3 py-1.5 rounded-xl bg-purple-950/70 border border-purple-800 text-purple-200 font-mono font-bold text-xs flex items-center gap-1.5" title="Aktueller Saldo (Tribut-Konto)">
+          <div class="px-3 py-1.5 rounded-xl bg-purple-950/70 border border-purple-800 text-purple-200 font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm" title="Aktueller Saldo (Tribut-Konto)">
             <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span id="header-balance-display">0 P</span>
           </div>
@@ -117,7 +117,7 @@
             <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
             <span>Stream</span>
           </a>
-          <button type="button" onclick="ProtocolCore.openBreakGlass()" class="px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold text-xs flex items-center gap-1 touch-btn" title="Notfall-Öffnung (Break-Glass)">
+          <button type="button" onclick="ProtocolCore.openBreakGlass()" class="px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold text-xs flex items-center gap-1 touch-btn shadow-sm" title="Notfall-Öffnung (Break-Glass)">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
             <span>Notfall-Öffnung</span>
           </button>
@@ -139,7 +139,7 @@
       <!-- DESKTOP NAV -->
       <nav class="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-xs font-bold -mx-1 px-1">
         <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Start-Hub</a>
-        <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen</a>
+        <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen (185)</a>
         <a href="analyse.html" class="px-3 py-1.5 rounded-xl text-amber-300 hover:text-white transition whitespace-nowrap touch-btn">Paar-Analyse</a>
         <a href="chat.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Paar-Stream</a>
         <button type="button" class="px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700">Das Protokoll</button>
@@ -148,6 +148,7 @@
       </nav>
     </div>
   </header>
+
   <!-- MOBILE DRAWER -->
   <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs">
     <div class="space-y-4">
@@ -172,7 +173,7 @@
           <span class="text-slate-500 text-xs">→</span>
         </a>
         <a href="index.html#view=survey" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-white">Fragebogen (36 Kapitel)</span>
+          <span class="text-xs font-bold text-white">Fragebogen (185 Items)</span>
           <span class="text-slate-500 text-xs">→</span>
         </a>
         <a href="analyse.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
@@ -208,6 +209,7 @@
       <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-2.5 bg-slate-900 text-slate-300 font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
     </div>
   </div>
+
   <!-- MAIN CONTAINER -->
   <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full space-y-4">
 
@@ -217,7 +219,7 @@
         <svg class="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
         <div>
           <strong class="text-white block font-bold text-xs">Ansicht für den Partner (Bottom)</strong>
-          <span class="text-[10.5px] text-slate-300 block leading-snug">Du kannst alle Zähler, Pflichten und den Kodex einsehen. Anpassungen und Freigaben obliegen dem Top.</span>
+          <span class="text-[10.5px] text-slate-300 block leading-snug">Du kannst alle Zähler, Pflichten, Strafen und den Kodex einsehen. Anpassungen und Freigaben obliegen dem Top.</span>
         </div>
       </div>
       <span class="px-2 py-0.5 rounded bg-indigo-900 text-indigo-300 font-mono text-[9.5px] font-bold flex-shrink-0">Einblick</span>
@@ -229,7 +231,7 @@
         Status &amp; Saldo
       </button>
       <button type="button" onclick="ProtocolCore.switchTab('chores')" id="tab-btn-chores" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 touch-btn whitespace-nowrap">
-        Pflichten &amp; Aufgaben
+        Pflichten &amp; Zuchtkatalog
       </button>
       <button type="button" onclick="ProtocolCore.switchTab('contract')" id="tab-btn-contract" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 touch-btn whitespace-nowrap">
         Beziehungsvertrag
@@ -238,21 +240,25 @@
         <span>Führungs-Coach</span>
       </button>
     </div>
+
     <!-- VIEW 1: DASHBOARD (STATUS, RATIO, MIKRO-HYGIENE, WÜRFEL, CHRONIK) -->
     <div id="view-ledger-dashboard" class="space-y-4 animate-fade-in">
       
       <!-- TOP STATUS CARD -->
       <div class="theme-card rounded-3xl p-5 sm:p-6 border border-purple-900/60 shadow-xl bg-gradient-to-br from-purple-950/40 via-noir-900 to-indigo-950/20 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-3">
-          <div>
+          <div class="space-y-0.5 min-w-0 flex-1 pr-2">
             <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800 inline-block">
               Keuschheits- &amp; Verschluss-Status
             </span>
-            <h2 class="text-base sm:text-xl font-bold text-white mt-1" id="dash-device-title">
-              Frei / Unverschlossen (Cherrykeeper Micro)
+            <h2 class="text-sm sm:text-lg font-bold text-white mt-1 break-words leading-tight" id="dash-device-title">
+              Frei / Unverschlossen (Cherrykeeper Micro Stub)
             </h2>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button type="button" onclick="openRoleConfigModal()" id="btn-open-role-cfg" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs touch-btn" title="Hardware &amp; Rollen kalibrieren">
+              Hardware
+            </button>
             <button type="button" onclick="ProtocolCore.toggleLockState()" id="btn-toggle-lock" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs touch-btn">
               Verriegeln
             </button>
@@ -271,11 +277,11 @@
           </div>
           <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-0.5">
             <span class="text-[10px] text-slate-400 block font-medium">Schlüsselgewalt:</span>
-            <strong class="text-xs font-bold text-slate-200 truncate block mt-0.5" id="dash-key-location">kSafe</strong>
+            <strong class="text-xs font-bold text-slate-200 break-words block mt-0.5 leading-snug" id="dash-key-location">kSafe</strong>
           </div>
           <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-0.5">
             <span class="text-[10px] text-slate-400 block font-medium">Duschpausen-Abzug:</span>
-            <strong class="text-xs font-bold text-rose-300 truncate block mt-0.5" id="hygiene-rule-desc">-15 P / Min</strong>
+            <strong class="text-xs font-bold text-rose-300 break-words block mt-0.5 leading-snug" id="hygiene-rule-desc">-15 P / Min</strong>
           </div>
         </div>
       </div>
@@ -344,10 +350,11 @@
       </div>
 
     </div>
-    <!-- VIEW 2: PFLICHTEN, INTERVALL-TASKS & BELOHNUNGEN -->
+
+    <!-- VIEW 2: PFLICHTEN, ZUCHTKATALOG (MIT SUB-NOTEN) & BELOHNUNGEN -->
     <div id="view-ledger-chores" class="hidden space-y-4 animate-fade-in text-xs">
       
-      <!-- AUFGABEN- & INTERVALL-STEUERUNG (PROTOCOLTASKS) -->
+      <!-- 1. AUFGABEN- & INTERVALL-STEUERUNG (PROTOCOLTASKS) -->
       <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-3 shadow-md">
         <div class="flex items-center justify-between border-b border-slate-800 pb-2">
           <div>
@@ -358,7 +365,32 @@
         <div id="tasks-manager-container"></div>
       </div>
 
-      <!-- BELOHNUNGEN & WÜNSCHE -->
+      <!-- 2. WIEDERHERGESTELLTER DISZIPLINAR- & STRAFENKATALOG (MIT SUB-NOTEN) -->
+      <div class="theme-card rounded-3xl p-5 border border-rose-900/60 space-y-3 shadow-md bg-gradient-to-br from-rose-950/20 via-noir-900 to-purple-950/20">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/40 pb-2.5">
+          <div class="space-y-0.5 min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+              <strong class="text-xs sm:text-sm text-rose-200 font-bold block">Disziplinar- &amp; Strafenregister (Sühne):</strong>
+            </div>
+            <p class="text-[10px] text-slate-400">
+              Maßnahmen bei Pflichtverletzung oder Regelbruch. Zeigt direkt die <strong>persönliche Fragebogen-Note des Subs (r2)</strong> zum Schutz vor Übergriffen.
+            </p>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-mono text-[9px] font-bold flex-shrink-0">
+            RACK-Schutz aktiv
+          </span>
+        </div>
+
+        <!-- Hier rendert ProtocolTasks das Strafenregister dynamisch -->
+        <div id="discipline-punishments-container" class="space-y-2.5">
+          <div class="py-4 text-center text-slate-500 text-xs">
+            Lade Disziplinarkatalog mit Sub-Noten...
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. BELOHNUNGEN & WÜNSCHE -->
       <div class="theme-card rounded-3xl p-5 border border-amber-900/60 space-y-3 shadow-md">
         <div class="flex items-center justify-between border-b border-amber-900/60 pb-2">
           <div class="space-y-0.5">
@@ -370,6 +402,7 @@
       </div>
 
     </div>
+
     <!-- VIEW 3: DER BEZIEHUNGSVERTRAG -->
     <div id="view-ledger-contract" class="hidden space-y-4 animate-fade-in text-xs">
       
@@ -444,6 +477,7 @@
       </div>
 
     </div>
+
     <!-- VIEW 4: DER KI-FÜHRUNGSASSISTENT FÜR DEN TOP -->
     <div id="view-ledger-ai_coach" class="hidden space-y-4 animate-fade-in text-xs">
       
@@ -473,7 +507,7 @@
           <strong class="text-white text-xs block">Berufs- &amp; Alltags-Kontext des Bottoms:</strong>
           <span class="text-[10px] font-mono text-purple-300" id="coach-workplace-label">Büro / Homeoffice</span>
         </div>
-        <select id="coach-workplace-select" onchange="ProtocolCoach.setWorkplace(this.value)" class="w-full text-xs p-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+        <select id="coach-workplace-select" onchange="ProtocolCoach.setWorkplace(this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
           <option value="desk_office">Büro / Homeoffice (Langes Sitzen, Meetings)</option>
           <option value="craft_physical">Handwerk / Körperlich (Bücken, Schwitzen, Leitersteigen)</option>
           <option value="medical_service">Pflege / Gastronomie (8–12h Stehen, enge Kasacks)</option>
@@ -511,6 +545,7 @@
     </div>
 
   </main>
+
   <!-- MODAL: ROLLEN- & HARDWARE CONFIG -->
   <div id="modal-ledger-role-config" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
     <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
@@ -522,7 +557,7 @@
       <div class="space-y-3">
         <div>
           <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Wer führt als Top / Keyholder?</label>
-          <select id="cfg-select-keyholder" class="w-full text-xs p-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+          <select id="cfg-select-keyholder" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
             <option value="A">Partner 1</option>
             <option value="B">Partner 2</option>
           </select>
@@ -530,7 +565,7 @@
 
         <div>
           <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Verschluss-Hardware:</label>
-          <select id="cfg-select-hardware" class="w-full text-xs p-2 bg-slate-900 border border-slate-700 rounded-xl text-white">
+          <select id="cfg-select-hardware" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
             <option value="penis_cherrykeeper">Cherrykeeper Micro Stub (&lt;= 35mm)</option>
             <option value="penis_cobra">Kink3D Cobra (SLS-Nylon)</option>
             <option value="penis_viper">Kink3D Viper (Kompakt)</option>
@@ -549,8 +584,81 @@
       </div>
 
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-        <button type="button" onclick="document.getElementById('modal-ledger-role-config').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs">Abbrechen</button>
-        <button type="button" onclick="saveProtocolRoleConfig()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs shadow-md">Speichern ✓</button>
+        <button type="button" onclick="document.getElementById('modal-ledger-role-config').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="saveProtocolRoleConfig()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Speichern ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEUES / WIEDERHERGESTELLTES MODAL: TOP-ABLEHNUNG MIT BEGRÜNDUNG -->
+  <div id="modal-reject-task" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-rose-800/80 p-5 space-y-4 shadow-2xl text-xs">
+      <div class="flex items-center justify-between border-b border-rose-900/60 pb-2">
+        <div class="flex items-center gap-2 text-rose-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+          <h3 class="text-sm font-bold text-white">Pflicht abweisen (Feedback)</h3>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-reject-task').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <div class="space-y-2">
+        <p class="text-[10.5px] text-slate-300 leading-snug">
+          Begründe kurz, warum die Pflicht nicht anerkannt wird. Diese Nachricht wird dem Bottom im Paar-Stream übermittelt.
+        </p>
+        <textarea id="input-reject-task-reason" rows="3" placeholder="z. B. Küche nicht vollständig gereinigt / Handtücher vergessen. Bitte gründlich nachbessern..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-600 focus:border-rose-600 focus:outline-none"></textarea>
+        <input type="hidden" id="input-reject-task-id" value="" />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="document.getElementById('modal-reject-task').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="ProtocolTasks.confirmRejectWithReason()" class="px-5 py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Abweisung senden</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEUES / WIEDERHERGESTELLTES MODAL: ZUCHT-VOLLZUG & ANORDNUNG -->
+  <div id="modal-execute-discipline" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="theme-card rounded-3xl max-w-md w-full border border-rose-800/80 p-5 space-y-4 shadow-2xl text-xs max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-rose-900/60 pb-2">
+        <div class="flex items-center gap-2 text-rose-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+          <h3 class="text-sm font-bold text-white" id="modal-discipline-title">Zuchtmaßnahme anordnen</h3>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-execute-discipline').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <!-- SUB-NOTEN HINWEISBOX -->
+      <div id="modal-discipline-subnote-box" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1"></div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Anzahl der Hiebe / Einheiten:</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="input-discipline-count" value="10" min="1" max="50" class="flex-1 p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono" />
+            <div class="flex items-center gap-1 font-mono text-[10px]">
+              <button type="button" onclick="document.getElementById('input-discipline-count').value = '5'" class="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold">5</button>
+              <button type="button" onclick="document.getElementById('input-discipline-count').value = '10'" class="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold">10</button>
+              <button type="button" onclick="document.getElementById('input-discipline-count').value = '15'" class="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold">15</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Körperhaltung &amp; Anweisung:</label>
+          <textarea id="input-discipline-directive" rows="2" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs"></textarea>
+        </div>
+
+        <div>
+          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Punkte-Abzug (Tribut):</label>
+          <input type="number" id="input-discipline-penalty" value="20" min="0" max="150" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono" />
+        </div>
+
+        <input type="hidden" id="input-discipline-item-id" value="" />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="document.getElementById('modal-execute-discipline').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="ProtocolTasks.confirmExecuteDiscipline()" class="px-5 py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Zucht vollziehen &amp; buchen</button>
       </div>
     </div>
   </div>
