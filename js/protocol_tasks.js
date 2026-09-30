@@ -1,17 +1,24 @@
 /**
  * js/protocol_tasks.js
- * TACTUS Kontextuelle Service- & Micro-D/s-Engine (V3.0 Hyper-Dynamisch)
+ * TACTUS Aufgaben-, Pflichten- & Hyperdynamische Zucht-Engine (V3.0 Hyper-Dynamisch)
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Dynamische Pflichten-Generierung: Pflicht = f(Top-Mental-Load, Bottom-Arbeitsplatz, Keuschheitsphase, Tageszeit)
- * - Top-Entlastungs-Trigger: Umschaltung zwischen 'exhausted', 'balanced' und 'strict'
- *   wandelt Pflichten sofort in stillen Dienst zur Entlastung des Tops um
- * - Generative Micro-D/s Synthese via AIAdapter (Gemini, Claude, GPT) oder prozeduraler Heuristik
- * - Anti-TftB Workflow: Bottom meldet Vollzug ('submitted'); Punkte werden
- *   AUSSCHLIESSLICH nach Prüfung und Bestätigung durch den Top verbucht
- * - Automatische Verknüpfung mit ProtocolCore.addTransaction() und CloudSync
- * - 100 % frei von infantilen System-Emojis in Buttons und Datenstrukturen
+ * - Hyperdynamischer SomaticPostureSynthesizer: Kinetische Vektor-Kombinatorik
+ *   über alle 3 Basislagen (Liegen, Stehen im Raum, Knien/Sitzen), Beckenkippung,
+ *   Mobiliar-Kopplung und ritualisierte Demutsachsen
+ * - Vollständige Integration des 7-Vektoren Paarkontextes (Namen, D/s-Hierarchie,
+ *   Top-Mental-Load, RACK-Gesundheitspass, Keuschheits-Tragedauer, DoF-Blockaden)
+ * - Multi-KI Haltungssynthese via AIAdapter mit autarkem kinetischem Fallback
+ * - RACK-Sicherheitsradar: Echtzeit-Abgleich mit den Fragebogen-Noten des Subs (r2)
+ *   • Note 1: Harter RACK-Veto-Schutzblock (Ausführung gesperrt)
+ *   • Note 2: Drosselungs-Warnung (Sanfte Grenze, max. 5 Treffer)
+ *   • Note 3: Erkundungs-Brücke (Behutsamer Probelauf)
+ *   • Note 4 & 5: Einvernehmliche Freigabe (Volles Zuchtrepertoire)
+ * - Transparente Einblendung persönlicher Sub-Notizen (note_${id}) zu Werkzeugen
+ * - Interaktiver Button [Haltung neu berechnen / auswürfeln] im Zucht-Modal
+ * - Begründetes Ablehnungs-Modal mit Feedback-Stream an den Paar-Chat
+ * - 100 % frei von infantilen System-Emojis in Datenstrukturen und UI
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
 
@@ -22,9 +29,111 @@
   const STORAGE_KEY_TOP_LOAD = 'tactus_top_mental_load';
   const STORAGE_KEY_LEGACY = 'pactum_tasks_state';
 
-  // Prozedurale Pflichten-Bibliothek für situative Heuristik-Generierung
+  // Kernkatalog der Zucht- und Sühnepraktiken mit Fragebogen-Item-Referenzen
+  const SOMATIC_PRACTICE_REFERENCES = [
+    {
+      id: "prac_hand_spanking",
+      title: "Spanking mit der flachen Hand",
+      itemId: 56, // Kap. 11
+      category: "manual_impact",
+      defaultHits: 15,
+      defaultPenalty: 20,
+      zone: "gluteal_pelvis",
+      basePostureType: "prone_or_standing"
+    },
+    {
+      id: "prac_otk_spanking",
+      title: "Züchtigung über das Knie gelegt (OTK)",
+      itemId: 57, // Kap. 11
+      category: "manual_impact",
+      defaultHits: 20,
+      defaultPenalty: 25,
+      zone: "gluteal_pelvis",
+      basePostureType: "otk_lap"
+    },
+    {
+      id: "prac_leather_flogger",
+      title: "Schwerer Lederflogger (Fransenpeitsche)",
+      itemId: 61, // Kap. 12
+      category: "tool_impact",
+      defaultHits: 25,
+      defaultPenalty: 30,
+      zone: "gluteal_pelvis",
+      basePostureType: "standing_or_kneeling"
+    },
+    {
+      id: "prac_leather_paddle",
+      title: "Breites Sattelleder-Paddle",
+      itemId: 62, // Kap. 12
+      category: "tool_impact",
+      defaultHits: 10,
+      defaultPenalty: 35,
+      zone: "gluteal_pelvis",
+      basePostureType: "prone_elevated"
+    },
+    {
+      id: "prac_leather_belt",
+      title: "Schwerer Ledergürtel (doppelt gelegt)",
+      itemId: 63, // Kap. 12
+      category: "tool_impact",
+      defaultHits: 10,
+      defaultPenalty: 40,
+      zone: "gluteal_pelvis",
+      basePostureType: "standing_bend"
+    },
+    {
+      id: "prac_riding_crop",
+      title: "Schlanke Reitgerte (Crop)",
+      itemId: 64, // Kap. 12
+      category: "tool_impact",
+      defaultHits: 8,
+      defaultPenalty: 30,
+      zone: "thighs_inner",
+      basePostureType: "supine_or_standing_spread"
+    },
+    {
+      id: "prac_cane_punishment",
+      title: "Rohrstock (Cane) / Intensive Zucht",
+      itemId: 65, // Kap. 12
+      category: "heavy_discipline",
+      defaultHits: 5,
+      defaultPenalty: 60,
+      zone: "gluteal_pelvis",
+      basePostureType: "strict_forward_bend"
+    },
+    {
+      id: "prac_kneeling_penance",
+      title: "Körperliche Ehrerbietung & Kniestand-Appell",
+      itemId: 49, // Kap. 9
+      category: "posture_penance",
+      defaultHits: 15, // Steht für 15 Minuten
+      defaultPenalty: 25,
+      zone: "limbs_ankles_feet",
+      basePostureType: "kneeling_nadu"
+    },
+    {
+      id: "prac_ice_shock",
+      title: "Eiswürfel-Sensibilisierung & Kälteschock",
+      itemId: 68, // Kap. 13
+      category: "thermal_shock",
+      defaultHits: 10, // Steht für 10 Schmelz-Minuten
+      defaultPenalty: 20,
+      zone: "perineum_pelvic_floor",
+      basePostureType: "supine_spread"
+    },
+    {
+      id: "prac_chores_service",
+      title: "Straf-Aufgaben im Haushalt / Zusatzdienst",
+      itemId: 90, // Kap. 17
+      category: "household_penance",
+      defaultHits: 45, // Steht für 45 Minuten
+      defaultPenalty: 30,
+      zone: "full_body",
+      basePostureType: "dynamic_chores"
+    }
+  ];
+
   const PROCEDURAL_DUTY_TEMPLATES = {
-    // 1. Entlastungspflichten bei Erschöpfung des Tops (Mental Load Schutz)
     exhausted: [
       {
         title: "Stiller Empfang & Entlastungsdienst",
@@ -51,8 +160,6 @@
         desc: "Bett aufdecken, Wasserflasche bereitstellen, Vorhänge schließen. Rückzug auf die eigene Seite ohne Anforderung an Nähe oder Gespräch."
       }
     ],
-
-    // 2. Ausgewogene Gesten bei stabiler, führender Energie
     balanced: [
       {
         title: "Morgenappell im Kniestand (30s)",
@@ -74,20 +181,18 @@
         title: "Wochenend-Frühstücksdienst auf Knien",
         category: "service",
         interval: "weekly",
-        dayOfWeek: 6, // Samstag
+        dayOfWeek: 6,
         dueTime: "09:30",
         points: 30,
         desc: "Kaffee und Frühstück für den Top servieren; dabei aufrechte Haltung und Danken für die Mahlzeit."
       }
     ],
-
-    // 3. Strikte Inspektions- und Disziplinar-Pflichten
     strict: [
       {
         title: "Intimrasur & Körperpflege-Appell",
         category: "discipline",
         interval: "weekly",
-        dayOfWeek: 5, // Freitag
+        dayOfWeek: 5,
         dueTime: "18:00",
         points: 30,
         desc: "Vollständige Glattrasur des Genitalbereichs und Vorzeigen zur Inspektion vor dem Wochenende. Keine Stoppeln geduldet."
@@ -114,10 +219,45 @@
   let tasksState = {
     tasks: [],
     filterTab: 'all',
-    topMentalLoad: 'balanced', // 'exhausted' | 'balanced' | 'strict'
+    topMentalLoad: 'balanced',
     lastSynthesizedAt: null,
     updatedAt: Date.now()
   };
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function showToast(message) {
+    if (typeof window.showToastNotification === 'function') {
+      window.showToastNotification(message);
+      return;
+    }
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const el = document.createElement('div');
+    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
+    el.innerHTML = `
+      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>${escapeHtml(message)}</span>
+    `;
+    container.appendChild(el);
+
+    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
+    setTimeout(() => {
+      el.classList.add('opacity-0');
+      setTimeout(() => el.remove(), 300);
+    }, 2800);
+  }
 
   function loadTasksState() {
     try {
@@ -173,41 +313,6 @@
     }
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  function showToast(message) {
-    if (typeof window.showToastNotification === 'function') {
-      window.showToastNotification(message);
-      return;
-    }
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
-    el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      <span>${escapeHtml(message)}</span>
-    `;
-    container.appendChild(el);
-
-    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
-    setTimeout(() => {
-      el.classList.add('opacity-0');
-      setTimeout(() => el.remove(), 300);
-    }, 2800);
-  }
-
   function isUserTop() {
     if (window.ProtocolCore && typeof window.ProtocolCore.isTop === 'function') {
       return window.ProtocolCore.isTop();
@@ -219,11 +324,15 @@
     return myRole === kh;
   }
 
+  function getBottomRole() {
+    const kh = localStorage.getItem('kompass_keyholder_role') || 'A';
+    return (kh === 'A') ? 'B' : 'A';
+  }
+
   function synthesizeProceduralTasks(mentalLoad = 'balanced', forceReset = false) {
     const pool = PROCEDURAL_DUTY_TEMPLATES[mentalLoad] || PROCEDURAL_DUTY_TEMPLATES.balanced;
     const now = Date.now();
 
-    // Arbeitsplatz-Profil des Bottoms berücksichtigen
     let workplaceStressor = 'desk_office';
     if (window.HubContext && typeof window.HubContext.getUnifiedState === 'function') {
       const ctx = window.HubContext.getUnifiedState();
@@ -247,7 +356,6 @@
       createdAt: now
     }));
 
-    // Arbeitsplatz-spezifische Pflicht ergänzen
     if (workplaceStressor === 'craft_physical') {
       generated.push({
         id: `task_craft_wash_${now}`,
@@ -273,7 +381,6 @@
     if (forceReset) {
       tasksState.tasks = generated;
     } else {
-      // Nur bestehende Pflichten belassen, die aktuell 'submitted' sind, Rest durch neue Situation ersetzen
       const inReview = tasksState.tasks.filter(t => t.status === 'submitted');
       tasksState.tasks = [...inReview, ...generated];
     }
@@ -284,100 +391,551 @@
     checkAllDueDates();
   }
 
-  async function generateAIAssistedDailyDuties() {
-    if (!isUserTop()) {
-      showToast("Nur der Top kann situative Pflichten generieren.");
-      return;
-    }
+  function checkAllDueDates() {
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMins = now.getMinutes();
+    const currentTimeStr = `${String(currentHours).padStart(2, '0')}:${String(currentMins).padStart(2, '0')}`;
+    const currentDayOfWeek = now.getDay();
+    let hasChanged = false;
 
-    if (!window.AIAdapter || typeof window.AIAdapter.generateText !== 'function') {
-      synthesizeProceduralTasks(tasksState.topMentalLoad, false);
-      renderTasksDashboard();
-      showToast("Situative Pflichten prozedural aktualisiert ✓");
-      return;
-    }
+    tasksState.tasks.forEach(task => {
+      if (task.status === 'submitted') return;
 
-    showToast("Generiere situative Pflichten abgestimmt auf deinen Zustand...");
-
-    let topName = 'Top';
-    let bottomName = 'Bottom';
-    let tensionDesc = 'Tag 4 im Verschluss';
-    let workplace = 'Büro / Homeoffice';
-
-    if (window.HubContext && typeof window.HubContext.getUnifiedState === 'function') {
-      const ctx = window.HubContext.getUnifiedState();
-      topName = ctx.metadata.topName;
-      bottomName = ctx.metadata.bottomName;
-      tensionDesc = `Tag ${ctx.v2_somatic.daysLocked} im Verschluss (${ctx.v2_somatic.tension.archetype.name})`;
-      if (ctx.v4_energy.workplaceProfile) workplace = ctx.v4_energy.workplaceProfile.label;
-    }
-
-    const prompt = `
-Erstelle 3 maßgeschneiderte, alltagstaugliche Pflichten für ${bottomName} (Bottom), die heute von ${topName} (Top) angeordnet werden.
-
-KONTEXT:
-- Mental Load des Tops: ${tasksState.topMentalLoad} (${tasksState.topMentalLoad === 'exhausted' ? 'ERSCHÖPFT ──► Pflichten MÜSSEN den Top im Haushalt entlasten oder stillen Pflegedienst leisten!' : 'Führend & Ausgeglichen'})
-- Keuschheit: ${tensionDesc}
-- Beruf des Bottoms: ${workplace}
-
-LEITLINIEN:
-- Kein Kitsch, keine Schwulst ('andächtig', 'feierlich' strikt verboten).
-- Fokus auf echte Entlastung des Tops (Anti-TftB).
-
-Antworte als valides JSON-Array ohne Fences:
-[
-  {
-    "title": "Prägnanter Titel",
-    "category": "relief_service | micro_ds | household | discipline",
-    "interval": "daily | weekly | once",
-    "dueTime": "20:00",
-    "points": 25,
-    "desc": "Konkrete, präzise Handlungsanweisung für ${bottomName}."
-  }
-]
-`;
-
-    try {
-      const generated = await window.AIAdapter.generateText({
-        systemPrompt: "Du bist der somatische Alltagsregisseur für TACTUS.",
-        userPrompt: prompt,
-        temperature: 0.6,
-        returnJson: true
-      });
-
-      if (Array.isArray(generated) && generated.length > 0) {
-        const now = Date.now();
-        const formatted = generated.map((t, i) => ({
-          id: `task_ai_${now}_${i}`,
-          title: t.title || 'Situative Pflicht',
-          category: t.category || 'household',
-          interval: t.interval || 'daily',
-          dueTime: t.dueTime || '20:00',
-          dayOfWeek: 0,
-          points: parseInt(t.points, 10) || 20,
-          desc: t.desc || '',
-          status: 'pending',
-          lastSubmittedAt: null,
-          lastApprovedAt: null,
-          createdAt: now
-        }));
-
-        const inReview = tasksState.tasks.filter(t => t.status === 'submitted');
-        tasksState.tasks = [...inReview, ...formatted];
-        tasksState.lastSynthesizedAt = now;
-        saveTasksState();
-        renderTasksDashboard();
-        showToast("✓ Neue situative Pflichten durch KI kalibriert!");
-        return;
+      if (task.interval === 'daily' && task.lastApprovedAt) {
+        const lastApp = new Date(task.lastApprovedAt);
+        const isSameDay = lastApp.getDate() === now.getDate() &&
+                          lastApp.getMonth() === now.getMonth() &&
+                          lastApp.getFullYear() === now.getFullYear();
+        if (!isSameDay) {
+          task.status = 'pending';
+          hasChanged = true;
+        }
       }
-    } catch (err) {
-      console.warn("[TACTUS Tasks] KI-Pflichtengenerierung fehlgeschlagen, nutze Heuristik:", err);
+
+      if (task.interval === 'weekly' && task.lastApprovedAt) {
+        const diffMs = now.getTime() - task.lastApprovedAt;
+        if (diffMs > 5 * 24 * 3600 * 1000) {
+          task.status = 'pending';
+          hasChanged = true;
+        }
+      }
+
+      if (task.status === 'pending') {
+        if (task.interval === 'daily') {
+          task.isDueNow = (currentTimeStr >= (task.dueTime || '20:00'));
+        } else if (task.interval === 'weekly') {
+          const targetDay = task.dayOfWeek !== null ? task.dayOfWeek : 0;
+          task.isDueNow = (currentDayOfWeek === targetDay && currentTimeStr >= (task.dueTime || '20:00'));
+        } else {
+          task.isDueNow = true;
+        }
+      } else {
+        task.isDueNow = false;
+      }
+    });
+
+    if (hasChanged) {
+      saveTasksState(true);
+    }
+  }
+
+  function getSubPracticeInterpretation(itemId) {
+    let answers = {};
+    try {
+      const raw = localStorage.getItem('kompass_answers');
+      if (raw) answers = JSON.parse(raw) || {};
+    } catch (e) {}
+
+    const bottomRole = getBottomRole();
+    const subAnswers = answers[bottomRole] || {};
+
+    const rawScore = subAnswers[`it_${itemId}_r2`]; // r2 = Empfangen / Hingeben
+    const note = subAnswers[`note_${itemId}`] || '';
+    const isShame = subAnswers[`shame_${itemId}`] === true;
+
+    const scaleLabels = ["Entfällt", "Tabu / Veto", "Eher nicht", "Neutral", "Gern", "Must-Have"];
+    const score = (typeof rawScore === 'number') ? rawScore : 0;
+
+    let tier = 'open';
+    let badgeClass = 'bg-slate-900 text-slate-400 border-slate-700';
+    let badgeText = 'Noch nicht bewertet';
+    let isVeto = false;
+    let interpretation = 'Noch kein Eintrag im Fragebogen vorhanden.';
+
+    if (score === 1) {
+      tier = 'taboo';
+      badgeClass = 'bg-rose-950 text-rose-300 border-rose-800 font-bold';
+      badgeText = 'Tabu / Veto (Note 1)';
+      isVeto = true;
+      interpretation = 'Unantastbares Veto des Subs. Zucht mit dieser Praxis ist als Grenzübertritt untersagt (RACK-Schutz).';
+    } else if (score === 2) {
+      tier = 'soft_boundary';
+      badgeClass = 'bg-amber-950 text-amber-300 border-amber-800 font-bold';
+      badgeText = 'Sanfte Grenze (Note 2)';
+      interpretation = 'Der Sub empfindet hier Unbehagen. Nur gedrosselt, mit Ankündigung und maximal 5 leichten Treffern anwenden.';
+    } else if (score === 3) {
+      tier = 'neutral';
+      badgeClass = 'bg-indigo-950 text-indigo-300 border-indigo-800 font-bold';
+      badgeText = 'Offen / Erkundung (Note 3)';
+      interpretation = 'Ausprobieren gestattet. Aufmerksam auf nonverbale Signale und Atemführung achten.';
+    } else if (score >= 4) {
+      tier = 'preferred';
+      badgeClass = 'bg-purple-950 text-purple-200 border-purple-700 font-bold';
+      badgeText = `${scaleLabels[score]} (${score}/5)`;
+      interpretation = 'Einvernehmlich gewünscht. Ideales Werkzeug zur disziplinarischen Erdung.';
     }
 
-    // Heuristik-Fallback
-    synthesizeProceduralTasks(tasksState.topMentalLoad, false);
+    return {
+      score: score,
+      tier: tier,
+      label: scaleLabels[score] || 'Offen',
+      badgeClass: badgeClass,
+      badgeText: badgeText,
+      isVeto: isVeto,
+      note: note.trim(),
+      isShame: isShame,
+      interpretation: interpretation
+    };
+  }
+
+  /**
+   * Kinetischer SomaticPostureSynthesizer
+   * Generiert Haltungen vollkommen dynamisch aus den 5 somatischen Freiheitsgrad-Achsen:
+   * 1. Basislage (Horizontal/Liegen, Vertikal/Stehen im Raum/Wand, Bodennah/Knien/Nadu)
+   * 2. Becken- & Wirbelsäulen-Vektor (Lordose/Hohlkreuz, Torsion, Überhöhung)
+   * 3. Extremitäten-Arretierung (DoF-geprüft: berücksichtigt Bondage-Status)
+   * 4. Mobiliar & Umweltkopplung (Bettkante, Wand, Schreibtisch, Teppich, freier Raum)
+   * 5. Ritualisierte Demutsachsen (Gorean-Prinzipien, Blickachse, akustisches Klopfen bei Knebel)
+   * Nutzt bei vorhandenem API-Key den Multi-KI Adapter für maßgeschneiderte Unikate.
+   */
+  const SomaticPostureSynthesizer = {
+    // Kinetische Vektor-Achsen für den autarken Offline-Kombinator
+    kineticAxes: {
+      horizontal_lying: [
+        { base: "Flache Bauchlage im freien Raum auf dem Teppich", support: "Bodenkontakt", pelvis: "Becken flach, Fersen lückenlos zusammengepresst" },
+        { base: "Bauchlage quer über die Bettkante", support: "Hüfte aufliegend", pelvis: "Becken durch Kissen leicht überhöht, Beine hängen angewinkelt herab" },
+        { base: "Flache Rückenlage (Supine) im freien Raum", support: "Rücken auf Matratze", pelvis: "Beine maximal gespreizt, Knie angewinkelt und nach außen gekippt" },
+        { base: "Bauchlage über der Schreibtischplatte", support: "Oberkörper aufliegend", pelvis: "Becken überhängend, Zehenspitzen halten leichten Bodenkontakt" }
+      ],
+      vertical_standing: [
+        { base: "Freier Stand mitten im Zimmer ohne Möbelkontakt", support: "Reines Gleichgewicht", pelvis: "Becken leicht gekippt, Knie durchgedrückt, absolute Bewegungslosigkeit" },
+        { base: "90-Grad-Standvorbeuge an der Türzarge", support: "Stirn am Holz gelehnt", pelvis: "Gesäß maximal nach hinten herausgestellt, Fersen fest am Boden" },
+        { base: "Wand-Stütze im 45-Grad-Winkel", support: "Hände oder Stirn an Wand", pelvis: "Beine weit gegrätscht, Wadenmuskulatur unter kontinuierlicher Dehnung" },
+        { base: "Standvorbeuge mit Händen an den eigenen Fesseln", support: "Autonomer Griff", pelvis: "Maximale vertikale Dehnung der Oberschenkelrückseite" }
+      ],
+      ground_kneeling: [
+        { base: "Aufrechter Kniestand (High Kneeling) vor dem Top", support: "Knie auf harter Unterlage", pelvis: "Hüfte vollständig nach vorne durchgedrückt, kein Absacken auf die Fersen" },
+        { base: "Klassischer Fersensitz (Gorean Nadu)", support: "Gesäß auf den Fersen", pelvis: "Oberschenkel gespreizt, aufrechter Oberkörper, Schultern zurückgezogen" },
+        { base: "Tiefe Hocke (Frog Posture)", support: "Auf den Ballen balancierend", pelvis: "Knie maximal geöffnet, Fersen berühren sich in der Luft" },
+        { base: "Vierfüßlerstand mit gesenkter Stirn", support: "Knie und Stirn am Boden", pelvis: "Hohlkreuz (starke Lordose), Becken als höchster Punkt im Raum exponiert" }
+      ],
+      lap_otk: [
+        { base: "Klassische Bauchlage quer über den Oberschenkeln des Tops", support: "Schoß des sitzenden Tops", pelvis: "Beine zwischen den Knien des Tops eingeklemmt, Hände ruhen am Boden" }
+      ]
+    },
+
+    limbDirectives: {
+      arms_free: [
+        "Hände im Nacken fest verschränkt, Ellenbogen maximal nach hinten gezogen.",
+        "Arme kerzengerade nach oben gestreckt, Handflächen nach innen gerichtet.",
+        "Hände flach auf den eigenen Waden fixiert.",
+        "Arme seitlich wie ein Kreuz ausgestreckt, Handflächen zum Boden.",
+        "Hände hinter dem Rücken auf den Lendenwirbeln aufliegend ohne Verhakung."
+      ],
+      arms_bound: [
+        "Gebundene Handgelenke ruhen bewegungslos auf den Lendenwirbeln.",
+        "Fixierte Arme bleiben passiv und ohne Gegenwehr hängen.",
+        "Stirn dient als primärer Balance-Anker, keine Entlastungsbewegung der Schultern."
+      ]
+    },
+
+    cognitiveAxes: {
+      gorean_demut: [
+        "Blick unverrückbar auf die Dielen vor den Knien des Tops gerichtet; jedes Aufsehen unterbricht die Zählung.",
+        "Starrer Blickkontakt in die Augen des Tops ohne Blinzeln oder Ausweichen.",
+        "Blick in den großen Spiegel: Der Sub muss die eigene Demutshaltung ununterbrochen selbst beobachten.",
+        "Augen geschlossen: Vollständige Konzentration auf den heranfliegenden Reiz."
+      ],
+      speech_substitutions: {
+        vocal: "Lautes, klares Mitzählen jedes Treffers unmittelbar nach dem Aufschlag.",
+        gagged: "Nonverbales Quittieren: Deutliches Klopfen mit den Fingerknöcheln auf das Holz bei jedem Treffer (Sprache blockiert).",
+        reverent: "Jeder Treffer wird mit 'Danke für Schlag Nummer X, dass du mich züchtigst' quittiert."
+      }
+    },
+
+    /**
+     * Synthetisiert eine Haltungsanweisung unter Einbeziehung des gesamten Kontextes
+     */
+    synthesize: async function(practiceId, customPreferences = {}) {
+      const practice = SOMATIC_PRACTICE_REFERENCES.find(p => p.id === practiceId) || SOMATIC_PRACTICE_REFERENCES[0];
+      
+      // 1. Kontext-Aggregation aus HubContext & lokalen Modulen
+      let ctx = null;
+      if (window.HubContext && typeof window.HubContext.getUnifiedState === 'function') {
+        ctx = window.HubContext.getUnifiedState();
+      }
+
+      const topName = ctx ? ctx.metadata.topName : 'Top';
+      const bottomName = ctx ? ctx.metadata.bottomName : 'Bottom';
+      const topMentalLoad = ctx ? ctx.v4_energy.topMentalLoad : (localStorage.getItem(STORAGE_KEY_TOP_LOAD) || 'balanced');
+      const isLocked = ctx ? ctx.v2_somatic.isLocked : false;
+      const daysLocked = ctx ? ctx.v2_somatic.daysLocked : 1;
+      const healthGuards = ctx ? ctx.v5_biology.activeHealthGuards : [];
+      const dof = ctx ? ctx.v7_hardware.remainingDegreesOfFreedom : { speech_articulation: 1.0, manual_manipulation: 1.0 };
+      const subPrefs = getSubPracticeInterpretation(practice.itemId);
+
+      // 2. Primärpfad: Multi-KI Synthese via AIAdapter (falls Schlüssel vorliegt)
+      if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
+        try {
+          const aiPrompt = `
+Erstelle eine prägnante, anatomisch und kinetisch anspruchsvolle Haltungs- und Raumdirektive für die Zuchtmaßnahme „${practice.title}“ (${practice.defaultHits} Einheiten).
+
+KONTEXT DES PAARES & DER SESSION:
+- Top: ${topName} (Mental Load: ${topMentalLoad})
+- Bottom: ${bottomName} (Keuschheit: ${isLocked ? `Tag ${daysLocked} im Käfig` : 'Frei'})
+- Sub-Präferenz: Note ${subPrefs.score}/5 („${subPrefs.label}“)${subPrefs.note ? `, Persönliche Notiz: „${subPrefs.note}“` : ''}
+- DoF-Einschränkungen: ${dof.speech_articulation <= 0.05 ? 'Mund blockiert/Geknebelt (Kein lautes Zählen möglich!)' : 'Sprache frei'}, ${dof.manual_manipulation <= 0.05 ? 'Hände fixiert/arretiert' : 'Hände frei'}
+- Biologische RACK-Schranken: ${healthGuards.map(g => g.directive).join('; ') || 'Keine'}
+
+ANFORDERUNGEN:
+- Wähle eine kinetisch interessante Lage (z.B. freies Stehen im Raum, tiefe Bauchlage/Kissen, Wandstütze, Gorean Nadu oder Fersensitz).
+- Wenn der Top 'exhausted' ist: Der Top muss sich körperlich nicht anstrengen (Bottom hält die schwere Haltung am Boden).
+- Berücksichtige eventuell geblockte Sprache (Klopfen statt Zählen).
+- Antworte in exakt 2 prägnanten Sätzen, direkt formuliert als klare Handlungsanweisung ohne Floskeln.
+`;
+          const aiResponse = await window.AIAdapter.generateText({
+            systemPrompt: "Du bist der somatische Kinetik- und Haltungsexperte für TACTUS.",
+            userPrompt: aiPrompt,
+            temperature: 0.7
+          });
+
+          if (aiResponse && aiResponse.trim().length > 20) {
+            return aiResponse.trim().replace(/^["„']|["“']$/g, '');
+          }
+        } catch (err) {
+          console.debug("[TACTUS Posture] KI-Synthese fehlgeschlagen, nutze kinetischen Kombinator:", err);
+        }
+      }
+
+      // 3. Autarker Kinetischer Fallback-Kombinator
+      return this.synthesizeProcedural(practice, dof, topMentalLoad, healthGuards, subPrefs);
+    },
+
+    synthesizeProcedural: function(practice, dof, topMentalLoad, healthGuards, subPrefs) {
+      const isHandsBound = (dof && dof.manual_manipulation <= 0.05);
+      const isMouthGagged = (dof && dof.speech_articulation <= 0.05);
+
+      // Basislagen-Pool nach Praktik filtern
+      let posturePool = [];
+      if (practice.basePostureType === "otk_lap") {
+        posturePool = this.kineticAxes.lap_otk;
+      } else if (practice.basePostureType === "prone_elevated" || practice.basePostureType === "prone_or_standing") {
+        posturePool = [...this.kineticAxes.horizontal_lying, ...this.kineticAxes.ground_kneeling];
+      } else if (practice.basePostureType === "standing_bend" || practice.basePostureType === "strict_forward_bend") {
+        posturePool = this.kineticAxes.vertical_standing;
+      } else if (practice.basePostureType === "kneeling_nadu") {
+        posturePool = this.kineticAxes.ground_kneeling;
+      } else {
+        posturePool = [...this.kineticAxes.horizontal_lying, ...this.kineticAxes.vertical_standing, ...this.kineticAxes.ground_kneeling];
+      }
+
+      // Bei Hypermobilität extreme Dehnungen dämpfen
+      const hasHypermobility = healthGuards.some(g => g.type === 'joint_overextension_guard');
+
+      // Zufällige somatische Vektoren ziehen
+      const baseObj = posturePool[Math.floor(Math.random() * posturePool.length)];
+      
+      const armPool = isHandsBound ? this.limbDirectives.arms_bound : this.limbDirectives.arms_free;
+      const armDirective = armPool[Math.floor(Math.random() * armPool.length)];
+
+      const demutPool = this.cognitiveAxes.gorean_demut;
+      const demutDirective = demutPool[Math.floor(Math.random() * demutPool.length)];
+
+      const speechDirective = isMouthGagged 
+        ? this.cognitiveAxes.speech_substitutions.gagged 
+        : (topMentalLoad === 'strict' ? this.cognitiveAxes.speech_substitutions.reverent : this.cognitiveAxes.speech_substitutions.vocal);
+
+      return `${baseObj.base}. ${baseObj.pelvis}. ${armDirective} ${demutDirective} ${speechDirective}`;
+    }
+  };
+
+  function renderDisciplineCatalog() {
+    const container = document.getElementById('discipline-punishments-container');
+    if (!container) return;
+
+    const isTop = isUserTop();
+    const bottomRole = getBottomRole();
+
+    let names = { A: 'Partner 1', B: 'Partner 2' };
+    if (window.HubContext && typeof window.HubContext.getNames === 'function') {
+      names = window.HubContext.getNames();
+    }
+    const subName = names[bottomRole] || 'Bottom';
+
+    container.innerHTML = SOMATIC_PRACTICE_REFERENCES.map(item => {
+      const interp = getSubPracticeInterpretation(item.itemId);
+
+      return `
+        <div class="p-3.5 sm:p-4 rounded-2xl border transition-all space-y-2.5 ${interp.isVeto ? 'bg-rose-950/20 border-rose-900/60 opacity-80' : (interp.score >= 4 ? 'bg-purple-950/20 border-purple-900/60 shadow-sm' : 'bg-slate-900/70 border-slate-800')}">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="space-y-0.5 min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <strong class="text-xs text-white font-bold block">${escapeHtml(item.title)}</strong>
+                <span class="px-2 py-0.5 rounded text-[9.5px] font-mono border ${interp.badgeClass}">
+                  ${interp.badgeText}
+                </span>
+                ${interp.isShame ? '<span class="px-1.5 py-0.2 rounded text-[8.5px] font-mono bg-pink-950 text-pink-300 border border-pink-800 font-bold">Scham-Schutzanker</span>' : ''}
+              </div>
+              <span class="text-[9.5px] font-mono text-slate-500 block">Fragebogen Item #${item.itemId} · Zone: ${escapeHtml(item.zone)}</span>
+            </div>
+
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="font-mono text-xs font-bold text-rose-300">-${item.defaultPenalty} P</span>
+              ${isTop ? `
+                <button type="button" ${interp.isVeto ? 'disabled' : ''} onclick="ProtocolTasks.openDisciplineModal('${item.id}')" class="px-3 py-1.5 rounded-xl font-bold text-xs touch-btn shadow-sm transition-all ${interp.isVeto ? 'bg-slate-900 border border-slate-800 text-slate-600 cursor-not-allowed' : 'bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200'}">
+                  ${interp.isVeto ? 'Veto (Gesperrt)' : 'Zucht anordnen ↗'}
+                </button>
+              ` : `
+                <span class="text-[10px] text-slate-500 font-mono italic">Top-Regie</span>
+              `}
+            </div>
+          </div>
+
+          <!-- Interpretierte Sub-Transparenz & Notizen -->
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1 text-[10.5px]">
+            <p class="text-slate-300 leading-snug">${escapeHtml(interp.interpretation)}</p>
+            ${interp.note ? `
+              <div class="pt-1 border-t border-slate-800/60 flex items-start gap-1.5 text-purple-300 italic font-sans">
+                <span class="font-bold font-mono not-italic text-[9.5px] text-purple-400 flex-shrink-0">[Notiz von ${escapeHtml(subName)}]:</span>
+                <span class="break-words">„${escapeHtml(interp.note)}“</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function openDisciplineModal(practiceId) {
+    if (!isUserTop()) {
+      showToast("Nur der Top kann Zuchtmaßnahmen anordnen.");
+      return;
+    }
+
+    const item = SOMATIC_PRACTICE_REFERENCES.find(p => p.id === practiceId);
+    if (!item) return;
+
+    const interp = getSubPracticeInterpretation(item.itemId);
+    if (interp.isVeto) {
+      showToast("Veto-Schutz: Diese Praxis ist vom Sub als Tabu hinterlegt!");
+      return;
+    }
+
+    const modal = document.getElementById('modal-execute-discipline');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('modal-discipline-title');
+    const countInput = document.getElementById('input-discipline-count');
+    const dirArea = document.getElementById('input-discipline-directive');
+    const penInput = document.getElementById('input-discipline-penalty');
+    const idInput = document.getElementById('input-discipline-item-id');
+    const noteBox = document.getElementById('modal-discipline-subnote-box');
+
+    if (titleEl) titleEl.innerText = `Zucht anordnen: ${item.title}`;
+    if (countInput) countInput.value = item.defaultHits;
+    if (penInput) penInput.value = item.defaultPenalty;
+    if (idInput) idInput.value = item.id;
+
+    if (noteBox) {
+      noteBox.innerHTML = `
+        <div class="flex items-center justify-between text-[10px] font-mono">
+          <span class="text-slate-400">Sub-Bewertung:</span>
+          <span class="${interp.badgeClass} px-2 py-0.5 rounded">${interp.badgeText}</span>
+        </div>
+        <p class="text-[10.5px] text-slate-300 leading-snug pt-0.5">${escapeHtml(interp.interpretation)}</p>
+        ${interp.note ? `<p class="text-[10px] text-purple-300 italic pt-1 border-t border-slate-800">[Notiz des Subs]: „${escapeHtml(interp.note)}“</p>` : ''}
+      `;
+    }
+
+    // Haltungsanweisung über den SomaticPostureSynthesizer dynamisch generieren
+    if (dirArea) {
+      dirArea.value = "Kalkuliere somatische Haltungsdirektive...";
+      const posture = await SomaticPostureSynthesizer.synthesize(item.id);
+      dirArea.value = posture;
+    }
+
+    // Button zum Neuauswürfeln / Neukalkulieren der Haltung einhängen falls noch nicht vorhanden
+    let reGenBtn = document.getElementById('btn-regenerate-posture');
+    if (!reGenBtn && dirArea && dirArea.parentElement) {
+      const btnWrapper = document.createElement('div');
+      btnWrapper.className = "flex justify-end pt-1";
+      btnWrapper.innerHTML = `
+        <button type="button" id="btn-regenerate-posture" onclick="ProtocolTasks.regeneratePosture()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-purple-300 font-mono text-[10px] font-bold flex items-center gap-1 touch-btn">
+          <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          <span>Haltung neu auswürfeln</span>
+        </button>
+      `;
+      dirArea.parentElement.appendChild(btnWrapper);
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  async function regeneratePosture() {
+    const idInput = document.getElementById('input-discipline-item-id');
+    const dirArea = document.getElementById('input-discipline-directive');
+    if (!idInput || !dirArea) return;
+
+    dirArea.value = "Generiere alternative Haltung...";
+    const newPosture = await SomaticPostureSynthesizer.synthesize(idInput.value);
+    dirArea.value = newPosture;
+    showToast("Neue somatische Haltungsdirektive generiert ✓");
+  }
+
+  function confirmExecuteDiscipline() {
+    if (!isUserTop()) return;
+
+    const idInput = document.getElementById('input-discipline-item-id');
+    const countInput = document.getElementById('input-discipline-count');
+    const dirArea = document.getElementById('input-discipline-directive');
+    const penInput = document.getElementById('input-discipline-penalty');
+
+    const practiceId = idInput ? idInput.value : '';
+    const hits = countInput ? parseInt(countInput.value, 10) || 10 : 10;
+    const directive = dirArea ? dirArea.value.trim() : '';
+    const penalty = penInput ? parseInt(penInput.value, 10) || 20 : 20;
+
+    const item = SOMATIC_PRACTICE_REFERENCES.find(p => p.id === practiceId);
+    const title = item ? item.title : 'Zuchtmaßnahme';
+
+    // Punkte im Protokoll abbuchen
+    if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
+      window.ProtocolCore.addTransaction(-penalty, `Zucht vollzogen: ${title} (${hits} Einheiten)`, 'top');
+    }
+
+    // Ereignis in den Paar-Stream posten
+    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
+      window.ChatApp.postSystemEvent(`Zucht angeordnet: ${title} (${hits} Einheiten, -${penalty} P). Haltung: „${directive}“.`);
+    }
+
+    const modal = document.getElementById('modal-execute-discipline');
+    if (modal) modal.style.display = 'none';
+
+    showToast(`✓ Zuchtmaßnahme „${title}“ vollzogen & gebucht (-${penalty} P)`);
+  }
+
+  function openRejectModal(taskId) {
+    if (!isUserTop()) return;
+    const modal = document.getElementById('modal-reject-task');
+    if (!modal) return;
+
+    const idInput = document.getElementById('input-reject-task-id');
+    const reasonInput = document.getElementById('input-reject-task-reason');
+    if (idInput) idInput.value = taskId;
+    if (reasonInput) reasonInput.value = '';
+
+    modal.style.display = 'flex';
+  }
+
+  function confirmRejectWithReason() {
+    if (!isUserTop()) return;
+    const idInput = document.getElementById('input-reject-task-id');
+    const reasonInput = document.getElementById('input-reject-task-reason');
+
+    const taskId = idInput ? idInput.value : '';
+    const reason = reasonInput ? reasonInput.value.trim() : '';
+
+    loadTasksState();
+    const task = tasksState.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.status = 'pending';
+    task.lastSubmittedAt = null;
+
+    saveTasksState();
     renderTasksDashboard();
-    showToast("Situative Pflichten prozedural aktualisiert ✓");
+
+    const formattedReason = reason ? ` Grund: ${reason}` : ' Bitte gründlich nachbessern.';
+    showToast(`Pflicht abgewiesen.${formattedReason}`);
+
+    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
+      window.ChatApp.postSystemEvent(`Pflicht abgewiesen: „${task.title}“ wurde vom Top nicht anerkannt.${formattedReason}`);
+    }
+
+    const modal = document.getElementById('modal-reject-task');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function submitTaskByBottom(taskId, note = '') {
+    loadTasksState();
+    const task = tasksState.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    if (task.status === 'submitted') {
+      showToast("Pflicht wurde bereits zur Prüfung eingereicht.");
+      return;
+    }
+
+    task.status = 'submitted';
+    task.lastSubmittedAt = Date.now();
+    task.submissionNote = String(note || '').trim();
+
+    saveTasksState();
+    renderTasksDashboard();
+
+    showToast(`✓ „${task.title}“ eingereicht. Freigabe durch den Top ausstehend.`);
+
+    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
+      const noteSuffix = task.submissionNote ? ` („${task.submissionNote}“)` : '';
+      window.ChatApp.postSystemEvent(`Pflicht zur Prüfung eingereicht: ${task.title}${noteSuffix}. Freigabe durch den Top ausstehend.`, task.id);
+    }
+  }
+
+  function approveTaskByTop(taskId) {
+    if (!isUserTop()) {
+      showToast("Nur der Top kann eingereichte Pflichten quittieren.");
+      return;
+    }
+
+    loadTasksState();
+    const task = tasksState.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.status = 'approved';
+    task.lastApprovedAt = Date.now();
+    task.isDueNow = false;
+
+    if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
+      window.ProtocolCore.addTransaction(task.points || 20, `Pflicht erfüllt: ${task.title}`, 'top');
+    }
+
+    saveTasksState();
+    renderTasksDashboard();
+
+    showToast(`✓ Pflicht bestätigt: +${task.points} Tribut-Punkte verbucht`);
+
+    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
+      window.ChatApp.postSystemEvent(`Pflicht quittiert: „${task.title}“ vom Top anerkannt (+${task.points} P).`);
+    }
+  }
+
+  function getFilteredTasks() {
+    checkAllDueDates();
+    const tab = tasksState.filterTab;
+
+    return tasksState.tasks.filter(t => {
+      if (tab === 'due') return t.isDueNow && t.status === 'pending';
+      if (tab === 'submitted') return t.status === 'submitted';
+      if (tab === 'relief') return t.category === 'relief_service' || t.category === 'household';
+      if (tab === 'micro_ds') return t.category === 'micro_ds' || t.category === 'discipline';
+      return true;
+    });
+  }
+
+  function setFilterTab(tabName) {
+    tasksState.filterTab = tabName;
+    renderTasksDashboard();
   }
 
   function setTopMentalLoad(loadState) {
@@ -404,154 +962,6 @@ Antworte als valides JSON-Array ohne Fences:
     }
   }
 
-  function checkAllDueDates() {
-    const now = new Date();
-    const currentHours = now.getHours();
-    const currentMins = now.getMinutes();
-    const currentTimeStr = `${String(currentHours).padStart(2, '0')}:${String(currentMins).padStart(2, '0')}`;
-    const currentDayOfWeek = now.getDay();
-    let hasChanged = false;
-
-    tasksState.tasks.forEach(task => {
-      if (task.status === 'submitted') return; // Wartet auf Freigabe durch den Top
-
-      // Reset täglicher Aufgaben am Folgetag
-      if (task.interval === 'daily' && task.lastApprovedAt) {
-        const lastApp = new Date(task.lastApprovedAt);
-        const isSameDay = lastApp.getDate() === now.getDate() &&
-                          lastApp.getMonth() === now.getMonth() &&
-                          lastApp.getFullYear() === now.getFullYear();
-        if (!isSameDay) {
-          task.status = 'pending';
-          hasChanged = true;
-        }
-      }
-
-      // Reset wöchentlicher Aufgaben bei neuem Wochenzyklus
-      if (task.interval === 'weekly' && task.lastApprovedAt) {
-        const diffMs = now.getTime() - task.lastApprovedAt;
-        if (diffMs > 5 * 24 * 3600 * 1000) {
-          task.status = 'pending';
-          hasChanged = true;
-        }
-      }
-
-      // Fälligkeits-Erkennung
-      if (task.status === 'pending') {
-        if (task.interval === 'daily') {
-          task.isDueNow = (currentTimeStr >= (task.dueTime || '20:00'));
-        } else if (task.interval === 'weekly') {
-          const targetDay = task.dayOfWeek !== null ? task.dayOfWeek : 0;
-          task.isDueNow = (currentDayOfWeek === targetDay && currentTimeStr >= (task.dueTime || '20:00'));
-        } else {
-          task.isDueNow = true;
-        }
-      } else {
-        task.isDueNow = false;
-      }
-    });
-
-    if (hasChanged) {
-      saveTasksState(true);
-    }
-  }
-
-  function submitTaskByBottom(taskId, note = '') {
-    loadTasksState();
-    const task = tasksState.tasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    if (task.status === 'submitted') {
-      showToast("Pflicht wurde bereits zur Prüfung eingereicht.");
-      return;
-    }
-
-    task.status = 'submitted';
-    task.lastSubmittedAt = Date.now();
-    task.submissionNote = String(note || '').trim();
-
-    saveTasksState();
-    renderTasksDashboard();
-
-    showToast(`✓ „${task.title}“ eingereicht. Freigabe durch den Top ausstehend.`);
-
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      const noteSuffix = task.submissionNote ? ` („${task.submissionNote}“)` : '';
-      window.ChatApp.postSystemEvent(`Pflicht zur Prüfung eingereicht: ${task.title}${noteSuffix}. Freigabe durch den Top ausstehend.`);
-    }
-  }
-
-  function approveTaskByTop(taskId) {
-    if (!isUserTop()) {
-      showToast("Nur der Top kann eingereichte Pflichten quittieren.");
-      return;
-    }
-
-    loadTasksState();
-    const task = tasksState.tasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    task.status = 'approved';
-    task.lastApprovedAt = Date.now();
-    task.isDueNow = false;
-
-    // Punkte im Transaktions-Logbuch gutschreiben
-    if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
-      window.ProtocolCore.addTransaction(task.points || 20, `Pflicht erfüllt: ${task.title}`, 'top');
-    }
-
-    saveTasksState();
-    renderTasksDashboard();
-
-    showToast(`✓ Pflicht bestätigt: +${task.points} Tribut-Punkte verbucht`);
-
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Pflicht quittiert: „${task.title}“ vom Top anerkannt (+${task.points} P).`);
-    }
-  }
-
-  function rejectTaskByTop(taskId, rejectionReason = '') {
-    if (!isUserTop()) {
-      showToast("Nur der Top kann Pflichten ablehnen.");
-      return;
-    }
-
-    loadTasksState();
-    const task = tasksState.tasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    task.status = 'pending';
-    task.lastSubmittedAt = null;
-
-    saveTasksState();
-    renderTasksDashboard();
-
-    const reason = rejectionReason ? ` Grund: ${rejectionReason}` : ' Bitte gründlich nachbessern.';
-    showToast(`Pflicht abgewiesen.${reason}`);
-
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Pflicht abgewiesen: „${task.title}“ wurde vom Top nicht anerkannt.${reason}`);
-    }
-  }
-
-  function getFilteredTasks() {
-    checkAllDueDates();
-    const tab = tasksState.filterTab;
-
-    return tasksState.tasks.filter(t => {
-      if (tab === 'due') return t.isDueNow && t.status === 'pending';
-      if (tab === 'submitted') return t.status === 'submitted';
-      if (tab === 'relief') return t.category === 'relief_service' || t.category === 'household';
-      if (tab === 'micro_ds') return t.category === 'micro_ds' || t.category === 'discipline';
-      return true;
-    });
-  }
-
-  function setFilterTab(tabName) {
-    tasksState.filterTab = tabName;
-    renderTasksDashboard();
-  }
-
   function renderTasksDashboard() {
     const container = document.getElementById('tasks-manager-container');
     if (!container) return;
@@ -568,9 +978,7 @@ Antworte als valides JSON-Array ohne Fences:
         <!-- TOP-ENTLASTUNGS-TRIGGER: ZUSTANDS-KONTROLLE -->
         <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-purple-900/40 space-y-2 shadow-sm">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-bold block">Führungszustand des Tops:</span>
-            </div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-bold block">Führungszustand des Tops:</span>
             ${isTop ? `
               <button type="button" onclick="ProtocolTasks.generateAIAssisted()" class="px-2 py-0.5 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-200 font-mono text-[9.5px] font-bold flex items-center gap-1 touch-btn">
                 <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
@@ -648,7 +1056,12 @@ Antworte als valides JSON-Array ohne Fences:
                         ${isSubmitted ? 'In Prüfung' : (isApproved ? 'Anerkannt ✓' : (isDue ? 'Fällig' : 'Offen'))}
                       </span>
                     </div>
-                    <p class="text-[10.5px] text-slate-400 leading-snug line-clamp-2">${escapeHtml(task.desc)}</p>
+                    <p class="text-[10.5px] text-slate-400 leading-snug break-words">${escapeHtml(task.desc)}</p>
+                    ${task.submissionNote ? `
+                      <p class="text-[10px] text-amber-300 italic pt-1 border-t border-slate-800/60">
+                        [Vollzugsnotiz]: „${escapeHtml(task.submissionNote)}“
+                      </p>
+                    ` : ''}
                   </div>
                   <span class="font-mono text-xs font-black text-amber-300 flex-shrink-0">+${task.points} P</span>
                 </div>
@@ -670,8 +1083,8 @@ Antworte als valides JSON-Array ohne Fences:
                       <button type="button" onclick="ProtocolTasks.approve('${task.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs touch-btn shadow-sm">
                         Anerkennen (+${task.points})
                       </button>
-                      <button type="button" onclick="ProtocolTasks.reject('${task.id}')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 font-bold text-xs touch-btn">
-                        Abweisen
+                      <button type="button" onclick="ProtocolTasks.openRejectModal('${task.id}')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 font-bold text-xs touch-btn">
+                        Abweisen...
                       </button>
                     ` : ''}
 
@@ -688,6 +1101,8 @@ Antworte als valides JSON-Array ohne Fences:
         </div>
       </div>
     `;
+
+    renderDisciplineCatalog();
   }
 
   function openCreateModal() {
@@ -873,15 +1288,20 @@ Antworte als valides JSON-Array ohne Fences:
       renderTasksDashboard();
     },
     render: renderTasksDashboard,
+    renderDiscipline: renderDisciplineCatalog,
     setTab: setFilterTab,
     setMentalLoad: setTopMentalLoad,
-    generateAIAssisted: generateAIAssistedDailyDuties,
     synthesizeProcedural: synthesizeProceduralTasks,
     submit: submitTaskByBottom,
     openSubmitModal: openSubmitModal,
     confirmSubmit: confirmSubmit,
     approve: approveTaskByTop,
-    reject: rejectTaskByTop,
+    reject: function(id) { openRejectModal(id); },
+    openRejectModal: openRejectModal,
+    confirmRejectWithReason: confirmRejectWithReason,
+    openDisciplineModal: openDisciplineModal,
+    regeneratePosture: regeneratePosture,
+    confirmExecuteDiscipline: confirmExecuteDiscipline,
     openCreateModal: openCreateModal,
     saveNewTask: saveNewTask,
     deleteTask: deleteTask,
@@ -891,7 +1311,7 @@ Antworte als valides JSON-Array ohne Fences:
   };
 
   window.ProtocolTasks = api;
-  // Abwärtskompatibler Alias für bestehende Templates
+  // Abwärtskompatibler Alias
   window.HubTasks = api;
 
   if (document.readyState === 'loading') {
