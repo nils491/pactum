@@ -1,441 +1,372 @@
 /**
  * data/chastity_database.js
  * TACTUS Somatische Spannungs-, Ergonomie- & Alltags-Engine (V3.0 Hyper-Dynamisch)
- * Offizielle Web-Präsenz: tactus.digital
+ * Offizielle Web-Praesenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Dynamischer Spannungs-Vektor (Tension Index) mit biologischer Hysterese statt starrer Kalendertage
- * - Parametrisierte Alltags-Stressoren (Ergonomie, Reibung, Schweiß, Diskretion, Hygiene-Intervalle)
- * - Kombinatorischer Teasing-Synthesizer: Modaliät x Intensitäts-Stufe x Top-Mental-Load
- * - Material-physikalische Profile (PA12 SLS, Bioresin, Edelstahl 316L, Polycarbonat)
- * - 100 % frei von trivialen Emojis in Datenstrukturen
- * - Authentische Szene-Terminologie ohne Schwulst und Kitsch
+ * - Biologische Hysterese-Spannungsberechnung (Tage, Schwellenkontakt, Ruined Orgasm)
+ * - 4 Somatische Phasen-Archetypen (Gewoehnung, Peak, Tiefe Hingabe, Zenit)
+ * - Anti-Top-Fatigue Doktrin im Teasing-Synthesizer (Pivoting zu Entlastungsdienst)
+ * - 5 Biomechanische Arbeitsplatz- & Alltagsprofile (Buerositz, Bau, Pflege, Fahrt, Schicht)
+ * - Detaillierte physikalische Hardware-Profile (Materialien, Mazeration, Belueftung)
+ * - 100 % frei von infantilen System-Emojis in Datenstrukturen und Code
+ * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umstaenden
  */
 
 (function(window) {
   'use strict';
 
-  const TENSION_ARCHETYPES = {
-    adaptation: {
+  // 4 Fundamentale somatische Phasen-Archetypen
+  const SOMATIC_ARCHETYPES = [
+    {
       id: "adaptation",
-      name: "Phase 1: Gewöhnung & Antizipation",
-      baseDaysRange: [1, 3],
-      hormonalVector: {
-        dopamineBase: "high_novelty",
-        freeTestosteroneDelta: 0.1,
-        pelvicFloorTonus: "variable_reactive"
-      },
-      somaticRisks: ["skin_pressure_ring", "initial_nocturnal_edema"],
-      directiveObjective: "Gewebeschutz, Etablierung des urologischen Spülrituals und Festigung der Führungs-Hierarchie.",
-      topFocus: "Wachsame Prüfung auf Druckstellen, kurze visuelle Kontrollen, Bestätigung der Führung."
+      phaseIndex: 1,
+      name: "Phase 1: Gewoehnung & Antizipation (Tag 1–3)",
+      dayRange: [1, 3],
+      primaryFocus: "Hautschutz, anatomische Ruhe & Gewoehnung an die mechanische Grenze",
+      pelvicTone: "Leicht gespannt; unbewusste Schwellungsversuche in der REM-Schlafphase",
+      directiveObjective: "Etablierung der urologischen Spuelroutine und beruhigende Handauflegung",
+      somaticGuidance: "Der Koerper gewoehnt sich an das Fremdmaterial. Nachts treten unwillkuerliche Erektionen auf, die durch den Kaefig sanft begrenzt werden. Keine zusaetzlichen Schmerzreize setzen; der Fokus liegt auf Mazerationsschutz."
     },
-    climbing: {
-      id: "climbing",
-      name: "Phase 2: Erregungsanstieg & Nervosität (Kritische Schwelle)",
-      baseDaysRange: [4, 7],
-      hormonalVector: {
-        dopamineBase: "fluctuating_craving",
-        freeTestosteroneDelta: 1.0, // Peak um Tag 7
-        pelvicFloorTonus: "hyper_sensitive"
-      },
-      somaticRisks: ["frustration_restlessness", "involuntary_tumescence_pain"],
-      directiveObjective: "Kanalisierung von Unruhe in Alltagsdienst zur Entlastung des Tops; Vermeidung von Verwahrlosung durch Reizimpulse.",
-      topFocus: "Auffangen von Frust durch gezielte Berührungsanker oder Cunnilingus-Bedienung ohne Freigabe des Bottoms."
+    {
+      id: "testosterone_peak",
+      phaseIndex: 2,
+      name: "Phase 2: Testosteron-Peak & Reizbarkeit (Tag 4–7)",
+      dayRange: [4, 7],
+      primaryFocus: "Kanalisierung von hormoneller Unruhe und Ueberdruss in Gehorsam und Haushaltsdienst",
+      pelvicTone: "Hochexplosiv; gesteigerte Erregbarkeit bei geringsten taktilen Beruehrungen",
+      directiveObjective: "Strikte Ablehnung von Verhandlungen; Umwandlung von Nervositaet in koerperliche Pflichten",
+      somaticGuidance: "Gemaess Canivet et al. (2025) erreicht das freie Testosteron um Tag 5–7 ein voruebergehendes Maximum. Der Sub neigt zu subtiler Rebellion, Schmollen oder TftB-Versuchen. Disziplinierung und schwere Pflichten erden das Nervensystem."
     },
-    deep_subspace: {
-      id: "deep_subspace",
-      name: "Phase 3: Tiefe Unterordnung & Fokus",
-      baseDaysRange: [8, 21],
-      hormonalVector: {
-        dopamineBase: "stable_attunement",
-        freeTestosteroneDelta: 0.4, // Rezeptor-Downregulation / Stabilisierung
-        pelvicFloorTonus: "calm_conditioned"
-      },
-      somaticRisks: ["subtle_subdrop_vulnerability", "habituation_neglect"],
-      directiveObjective: "Verankerung stabiler Dienstrituale, Vertiefung emotionaler Resonanz und Auskosten ungeteilter Hingabe.",
-      topFocus: "Erhöhung der Orgasmus-Ratio zugunsten des Tops, Verknüpfung von Verschluss mit sensorischem Entzug oder Zucht."
+    {
+      id: "deep_surrender",
+      phaseIndex: 3,
+      name: "Phase 3: Tiefe Unterordnung & Fokus (Tag 8–21)",
+      dayRange: [8, 21],
+      primaryFocus: "Neuronale Akzeptanz der Schranke; vollstaendige Verlagerung der Lust auf die Zufriedenheit des Tops",
+      pelvicTone: "Tief entspannt mit blitzartiger Erregbarkeit auf wörtliche Befehle des Tops",
+      directiveObjective: "Hingabedienste, P-Spot Erkundung, zarte Zuechtigung und feste Hierarchie",
+      somaticGuidance: "Die ständige Beschaeftigung mit der eigenen Ejakulation weicht einer tiefen Gelassenheit. Der Sub empfindet Erleichterung ueber die abgegebene Verantwortung. Schwellen-Quälerei (Edging) fuehrt hier zu tiefem Subspace."
     },
-    permanent_zenith: {
-      id: "permanent_zenith",
-      name: "Phase 4: Kontinuierliche Hingabe (Langzeit-Zenit)",
-      baseDaysRange: [22, 9999],
-      hormonalVector: {
-        dopamineBase: "enduring_devotion",
-        freeTestosteroneDelta: 0.2,
-        pelvicFloorTonus: "decoupled_orgasm_independent"
-      },
-      somaticRisks: ["chronic_maceration_risk", "hardware_fatigue"],
-      directiveObjective: "Vollständige Entkopplung der Bindung vom Samenerguss; das Schloss wird als integrales Körperelement erlebt.",
-      topFocus: "Gewissenhafter Hautschutz, Freigaben primär über Prostata oder Ruined Orgasm, partnerschaftliche Reflexion auf Augenhöhe."
+    {
+      id: "zenith_equilibrium",
+      phaseIndex: 4,
+      name: "Phase 4: Kontinuierlicher Zenit & Demut (Tag 22+)",
+      dayRange: [22, 999],
+      primaryFocus: "Der Verschluss wird zur koerperlichen Selbstverstaendlichkeit und festen Beziehungsbasis",
+      pelvicTone: "Vollstaendige somatische Desensibilisierung des Schafts; maximale Vagus-Resonanz",
+      directiveObjective: "Langfristige Treuebekenntnisse, exklusive Fuehrung der Herrin und absolute Ruhe",
+      somaticGuidance: "Der Kaefig wird nicht mehr als Einschraenkung, sondern als Schutzhuelle und Demutsanker wahrgenommen. Die Ejakulationsgier ist voellig entkoppelt; Orgasmen erfolgen nur noch als seltene Gunst oder Ruined Orgasm auf Befehl."
     }
-  };
+  ];
 
-  const WORKPLACE_STRESS_FACTORS = {
+  // 5 Biomechanische Alltags- und Arbeitsplatzprofile
+  const WORKPLACE_PROFILES = {
     desk_office: {
       id: "desk_office",
-      label: "Büro, Bildschirmarbeit & Homeoffice",
-      ergonomics: {
-        primaryPosture: "sedentary",
-        pelvicCompressionRisk: "high", // Dauerdruck Stuhlrand auf Skrotum/Schambein
-        frictionRisk: "low",
-        thermalHeatBuildup: "medium_high"
-      },
-      discretionLevel: "high_professional",
-      hygieneWindowHours: 4,
-      teasingAffordanceVectors: ["pelvic_kegel_command", "discrete_photo_check", "key_presence_reminder"]
+      label: "Büro / Homeoffice (Dauersitzen & Bildschirmarbeit)",
+      primaryPosture: "Sitzen auf Bürostuhl mit 90-Grad-Hüftwinkel",
+      frictionRisk: "Dauerdruck auf Schambein und Hodenansatz; venöse Stauung im Beckenboden",
+      hygieneWindowHours: 12,
+      recommendedRelief: "Diskrete Beckenboden-Kontraktionen (Kegel-Befehle) alle 2 Stunden",
+      allotmentDirectives: {
+        morning: "Vor Verlassen der Wohnung: 30 Sekunden aufrechter Kniestand mit ruhigem Blickkontakt vor den Knien der Herrin.",
+        workday: "3x 20 diskrete Beckenboden-Kontraktionen waehrend Meetings oder Schreibtischarbeit zur Entlastung des Schambeinbogens.",
+        evening: "Schuhe der Partnerin an der Tuer abnehmen; 15 Minuten schweigende Fussmassage auf Knien."
+      }
     },
     craft_physical: {
       id: "craft_physical",
-      label: "Handwerk, Montage & Baustelle",
-      ergonomics: {
-        primaryPosture: "locomotion_heavy",
-        pelvicCompressionRisk: "medium",
-        frictionRisk: "very_high", // Raue Arbeitskleidung, Schweiß, Bücken
-        thermalHeatBuildup: "very_high"
-      },
-      discretionLevel: "medium",
+      label: "Handwerk / Baustelle (Körperliche Belastung & Schwitzen)",
+      primaryPosture: "Bücken, Heben, Treppensteigen, Knien auf harten Böden",
+      frictionRisk: "Starker Schweiß, Staub und Reibung; erhöhtes Risiko für Mazeration und Follikulitis",
       hygieneWindowHours: 6,
-      teasingAffordanceVectors: ["morning_lock_inspection", "post_shift_irrigation_mandate", "fatigue_grounding"]
+      recommendedRelief: "Kochsalzspülung sofort nach Feierabend; Tragen atmungsaktiver SLS-Nylon-Käfige",
+      allotmentDirectives: {
+        morning: "Prüfung des festen Verschlusses; Schutzbalsam auf Damm und Oberschenkelinnenseiten auftragen.",
+        workday: "Konsequenter Fokus auf die Arbeit. Jede körperliche Anstrengung als Zeichen der Dienstbereitschaft empfinden.",
+        evening: "Sofortige urologische Spülung der Vorhautkammer unter der Dusche; Vorzeigen des sauberen Hautbilds."
+      }
     },
     medical_service: {
       id: "medical_service",
-      label: "Pflege, Medizin, Labor & Gastronomie",
-      ergonomics: {
-        primaryPosture: "standing_walking",
-        pelvicCompressionRisk: "low",
-        frictionRisk: "high", // 8–12h Innenschenkel-Reibung
-        thermalHeatBuildup: "medium"
-      },
-      discretionLevel: "maximum_clinical",
-      hygieneWindowHours: 5,
-      teasingAffordanceVectors: ["pre_shift_kneeling_focus", "relief_permission_protocol", "foot_service_for_top"]
+      label: "Pflege / Gastronomie / Einzelhandel (Dauerhaftes Stehen & Gehen)",
+      primaryPosture: "8–12 Stunden aufrechtes Stehen und zügiges Gehen in engen Kasacks/Schuhen",
+      frictionRisk: "Scheuern des Basisrings an den Hodenkanten; Ermüdung der Lendenwirbelsäule",
+      hygieneWindowHours: 8,
+      recommendedRelief: "Glatt gepolsterte Ringe; Entlastungshochlagerung der Beine nach Schichtende",
+      allotmentDirectives: {
+        morning: "Kühler Dammguss vor Dienstantritt zur Beruhigung des Schwellkörpergewebes.",
+        workday: "Jeder Schritt erinnert an die Grenze; keine hastigen Klogänge; striktes Einhalten der Haltung.",
+        evening: "Vollständige Haushaltsentlastung der Herrin: Kochen, Tischdecken und Aufräumen ohne jede Gegenforderung."
+      }
     },
     driver_field: {
       id: "driver_field",
-      label: "Fahrer, Außendienst, Bahn & Pendler",
-      ergonomics: {
-        primaryPosture: "vibrational_sedentary",
-        pelvicCompressionRisk: "high", // Sicherheitsgurt-Druck, Erschütterungen
-        frictionRisk: "low",
-        thermalHeatBuildup: "high"
-      },
-      discretionLevel: "variable_customer_facing",
-      hygieneWindowHours: 4,
-      teasingAffordanceVectors: ["traffic_light_awareness_ping", "departure_arrival_protocol", "voice_anchor"]
+      label: "Fahrer / Außendienst / Pendler (Autositz & Vibration)",
+      primaryPosture: "Längeres Sitzen im Fahrzeugsitz mit Vibration und Beckenerschütterung",
+      frictionRisk: "Reibung durch Sicherheitsgurt und Schaltsitz; Hitzeentwicklung im Lendenbereich",
+      hygieneWindowHours: 10,
+      recommendedRelief: "Leichte Silikon- oder PA12-Käfige; regelmäßige Streckpausen an Raststätten",
+      allotmentDirectives: {
+        morning: "Duftanker der Herrin im Auto anbringen; Konzentrationsfokus auf defensive, ruhige Fahrweise.",
+        workday: "An jeder roten Ampel: Hände fest am Lenkrad lassen, aufrecht hinsetzen und tief ausatmen.",
+        evening: "Einkäufe und schwere Taschen ins Haus tragen; Abendbrot auf Knien anrichten."
+      }
     },
     shift_variable: {
       id: "shift_variable",
-      label: "Schichtdienst & Wechselnder Biorhythmus",
-      ergonomics: {
-        primaryPosture: "circadian_disrupted",
-        pelvicCompressionRisk: "medium",
-        frictionRisk: "medium",
-        thermalHeatBuildup: "medium"
-      },
-      discretionLevel: "medium",
-      hygieneWindowHours: 4,
-      teasingAffordanceVectors: ["circadian_independent_irrigation", "corridor_greeting_ritual", "bedside_anchor_note"]
-    }
-  };
-
-  const TEASING_MODALITIES = {
-    acoustic: {
-      id: "acoustic",
-      label: "Akustische Konditionierung",
-      sensoryChannel: "auditory",
-      levels: {
-        1: { title: "Kurzes Schlüsselklimpern", action: "3-sekündiges helles Metallklirren als Audio-Notiz oder im Flur.", energyCost: 1 },
-        3: { title: "Geflüsterter Schloss-Befehl", action: "Ruhige Sprachnachricht mit Erinnerung, wer den Schlüssel verwahrt.", energyCost: 2 },
-        5: { title: "Akustischer Schwellen-Countdown", action: "Live-Audiospur mit getaktetem Atem- und Berührungsverbot.", energyCost: 3 }
-      }
-    },
-    visual: {
-      id: "visual",
-      label: "Visuelle Präsenz & Distanz",
-      sensoryChannel: "visual",
-      levels: {
-        1: { title: "Schlüssel-Präsenz am Körper des Tops", action: "Top trägt den Schlüssel an Kette oder Ring sichtbar im Raum.", energyCost: 1 },
-        3: { title: "Reizwäsche mit Berührungsverbot", action: "Top trägt feine Garderobe, untersagt aber jede Annäherung.", energyCost: 2 },
-        5: { title: "Spiegel-Inspektion im Halbdunkel", action: "Bottom muss das verriegelte Gitter im Spiegel betrachten.", energyCost: 3 }
-      }
-    },
-    tactile_mechanical: {
-      id: "tactile_mechanical",
-      label: "Taktile Schwingung & Kanten-Quälerei",
-      sensoryChannel: "somatosensory_vibrational",
-      levels: {
-        2: { title: "Vibration auf das Käfiggitter", action: "Aufsetzen eines Vibrators auf den Zylinder für 60s ohne Entlastung.", energyCost: 2 },
-        4: { title: "Tease & Relock (Kalter Stopp)", action: "Kurzes Abnehmen, Führen an die Schwelle, sofortiger Verschluss.", energyCost: 4 },
-        5: { title: "Prostata-Schwellenreizung im Verschluss", action: "Tiefe P-Spot Stimulation bei vollständig versiegeltem Genital.", energyCost: 4 }
-      }
-    },
-    mental_service: {
-      id: "mental_service",
-      label: "Dienstauftrag zur Top-Entlastung",
-      sensoryChannel: "cognitive_submissive",
-      levels: {
-        1: { title: "Spontane Erfrischung reichen", action: "Befehl, dem Top unaufgefordert ein Glas Wasser oder Tee zu bringen.", energyCost: 1 },
-        3: { title: "Haushalts-Entlastung bei Triebdruck", action: "Umwandlung von sexueller Unruhe in 30 Min. gründliche Küchenreinigung.", energyCost: 1 },
-        5: { title: "Stiller Fuß- & Massagedienst", action: "25 Min. intensive Entlastungsmassage für den Top ohne Gegenleistung.", energyCost: 2 }
-      }
-    },
-    somatosensory_temperature: {
-      id: "somatosensory_temperature",
-      label: "Temperatur- & Kontraktionsreize",
-      sensoryChannel: "thermal_nociceptive",
-      levels: {
-        2: { title: "Kältestreichung am Damm", action: "Gezielter Eiswürfel über Skrotum und Dammnaht bei verriegeltem Gitter.", energyCost: 2 },
-        4: { title: "Wechselwarme Kompresse", action: "Heiß-Kalt-Reizung des Beckenbodens zur vegetativen Tonisierung.", energyCost: 3 }
+      label: "Schichtdienst / Wechselschicht (Verschobener Biorhythmus)",
+      primaryPosture: "Unregelmäßige Tag-Nacht-Rhythmen, gestörte REM-Schlafphasen",
+      frictionRisk: "Verschobene Testosteron-Peaks; erhöhte Cortisolausschüttung bei Schlafmangel",
+      hygieneWindowHours: 8,
+      recommendedRelief: "Flexible Spülzeiten angepasst an Schlafblöcke; Gewichtsdecke zur Schlafberuhigung",
+      allotmentDirectives: {
+        morning: "Schlafzimmer abdunkeln, Gewichtsdecke auflegen, 4-7-8 Vagus-Atmung vor dem Tagesschlaf.",
+        workday: "Stille Konzentration in der Nachtschicht; Gedankenanker an die schlafende Partnerin daheim.",
+        evening: "Kaffee ans Bett bringen, wenn der Top aufwacht; diskreter Statusrapport im Kniestand."
       }
     }
   };
 
+  // Physikalische Hardware-Profile gängiger Verschlussmodelle
   const HARDWARE_PROFILES = {
+    penis_cherrykeeper: {
+      id: "penis_cherrykeeper",
+      name: "Cherrykeeper Micro Stub (<= 35mm)",
+      manufacturer: "Cherrykeeper",
+      materials: ["nylon_sls", "brass"],
+      weightGrams: 28,
+      ventilationRating: 0.85,
+      macerationRiskFactor: 0.25,
+      isAntiErectionAbsolute: true,
+      ergonomicProfile: "Ultra-kompakt; drückt die Eichel vollständig zurück; ideal für Bürositz und Alltag.",
+      recommendedDisinfection: "isopropanol_soak"
+    },
     penis_cobra: {
       id: "penis_cobra",
-      name: "Kink3D Cobra (SLS-Nylon)",
-      material: "Polyamid 12 (PA12 Laser-Sinterung)",
-      thermalConductivity: "low",
-      weightGrams: 28,
-      ventilationCoefficient: 0.95, // Offenes Wabenmuster
-      macerationRiskIndex: "minimal",
-      ringErgonomics: "dual_arc_contour",
-      suitability: "24/7 Langzeittragen, Sport, intensive Bewegung",
-      hygieneRequirements: "Tägliche Spülung mit Wasser oder Kochsalz; alkoholfreie Desinfektion."
+      name: "Kink3D Cobra (SLS-Nylon PA12)",
+      manufacturer: "Kink3D",
+      materials: ["nylon_sls"],
+      weightGrams: 34,
+      ventilationRating: 0.95,
+      macerationRiskFactor: 0.18,
+      isAntiErectionAbsolute: true,
+      ergonomicProfile: "Hervorragende Belüftung durch Gitterstruktur; leichtes Tragegefühl; sehr gut für Sport/Bau.",
+      recommendedDisinfection: "boiling_or_isopropanol"
     },
     penis_viper: {
       id: "penis_viper",
       name: "Kink3D Viper (Kompakt)",
-      material: "Polyamid 12 (PA12)",
-      thermalConductivity: "low",
-      weightGrams: 24,
-      ventilationCoefficient: 0.88,
-      macerationRiskIndex: "minimal",
-      ringErgonomics: "compact_sport",
-      suitability: "Sportliche Träger, kompakte Anatomie, minimaler Überstand",
-      hygieneRequirements: "Regelmäßige Kontrolle der Dammansatz-Nähte."
-    },
-    penis_cherrykeeper: {
-      id: "penis_cherrykeeper",
-      name: "Cherrykeeper Micro Stub (<= 35mm)",
-      material: "3D-Resin / SLS-Nylon",
-      thermalConductivity: "low",
-      weightGrams: 22,
-      ventilationCoefficient: 0.78,
-      macerationRiskIndex: "medium", // Enges Spaltmaß verlangt strikte Spülung
-      ringErgonomics: "modular_custom_fit",
-      suitability: "Maximale Schaftkompression, Grower-Anatomie, absolute Erektionsvermeidung",
-      hygieneRequirements: "Zwingende tägliche urologische Spülung mit stumpfer Spritze."
+      manufacturer: "Kink3D",
+      materials: ["nylon_sls"],
+      weightGrams: 32,
+      ventilationRating: 0.90,
+      macerationRiskFactor: 0.20,
+      isAntiErectionAbsolute: true,
+      ergonomicProfile: "Kurzer Käfig mit geschwungenem Führungsbogen; minimiert Druck auf den Damm.",
+      recommendedDisinfection: "boiling_or_isopropanol"
     },
     penis_holytrainer: {
       id: "penis_holytrainer",
-      name: "HolyTrainer V6 (Bioresin)",
-      material: "Medizinisches Bioresin",
-      thermalConductivity: "body_adaptive", // Wird bei 36°C seidig warm
-      weightGrams: 35,
-      ventilationCoefficient: 0.82,
-      macerationRiskIndex: "low",
-      ringErgonomics: "anatomical_stealth",
-      suitability: "Hautschonendes Tragegefühl, elegante Ästhetik",
-      hygieneRequirements: "Handwarm reinigen; kein kochendes Wasser verwenden."
+      name: "HolyTrainer V6 (Bioresin / Bio-Harz)",
+      manufacturer: "HolyTrainer",
+      materials: ["bioresin", "medical_silicone"],
+      weightGrams: 48,
+      ventilationRating: 0.65,
+      macerationRiskFactor: 0.45,
+      isAntiErectionAbsolute: true,
+      ergonomicProfile: "Sehr glatte, hautschonende Oberfläche; benötigt konsequente tägliche Spülungen.",
+      recommendedDisinfection: "mild_soap_handwash"
     },
     penis_jailbird: {
       id: "penis_jailbird",
       name: "Mature Metal Jailbird (Edelstahl 316L)",
-      material: "Chirurgischer Edelstahl 316L",
-      thermalConductivity: "high", // Passt sich Raumtemperatur an, kühl/spürbar
+      manufacturer: "Mature Metal",
+      materials: ["medical_steel"],
       weightGrams: 195,
-      ventilationCoefficient: 0.98, // Maximale Belüftung durch Gitterstäbe
-      macerationRiskIndex: "minimal",
-      ringErgonomics: "rigid_high_pressure",
-      suitability: "Liebhaber von spürbarem Gewicht, maximale Formstabilität",
-      hygieneRequirements: "Vollständig desinfektionsmittelbeständig und sterilisierbar."
+      ventilationRating: 0.70,
+      macerationRiskFactor: 0.35,
+      isAntiErectionAbsolute: true,
+      ergonomicProfile: "Schweres, kaltes Metallgewicht; spürbare physische Präsenz bei jedem Schritt.",
+      recommendedDisinfection: "isopropanol_immersion"
     },
     penis_flat: {
       id: "penis_flat",
-      name: "Flat Shield (Nun-Cage)",
-      material: "Polycarbonat oder PA12",
-      thermalConductivity: "medium",
-      weightGrams: 30,
-      ventilationCoefficient: 0.60,
-      macerationRiskIndex: "high",
-      ringErgonomics: "extreme_flattening",
-      suitability: "0 mm Silhouette unter Anzughosen, zeitlich begrenzte Disziplin",
-      hygieneRequirements: "Druckstellen am Damm täglich prüfen; Tragezeit zeitlich begrenzen."
+      name: "Flat Shield / Nun-Cage (Flachverschluss)",
+      manufacturer: "Anatomical Custom",
+      materials: ["polycarbonate", "steel"],
+      weightGrams: 42,
+      ventilationRating: 0.60,
+      macerationRiskFactor: 0.40,
+      isAntiErectionAbsolute: true,
+      ergonomicProfile: "Erzwingt flache Ausrichtung an der Bauchwand; unsichtbar unter Anzügen.",
+      recommendedDisinfection: "isopropanol_wipe"
     },
     female_belt: {
       id: "female_belt",
-      name: "Weiblicher Keuschheitsgürtel (Shield)",
-      material: "Edelstahl mit Silikon-Kantenschutz",
-      thermalConductivity: "variable",
-      weightGrams: 380,
-      ventilationCoefficient: 0.80,
-      macerationRiskIndex: "medium",
-      ringErgonomics: "pelvic_waist_locking",
-      suitability: "Verhinderung klitoraler Selbststimulation, rituelle Führung",
-      hygieneRequirements: "Silikoneinfassungen täglich säubern und vollständig trocknen."
+      name: "Weiblicher Keuschheitsgürtel (Shield Belt)",
+      manufacturer: "Steel & Leather Craft",
+      materials: ["medical_steel", "leather"],
+      weightGrams: 620,
+      ventilationRating: 0.50,
+      macerationRiskFactor: 0.55,
+      isAntiErectionAbsolute: false,
+      ergonomicProfile: "Vollständige klitorale Barriere mit pelviner Arretierung; verlangt polsternde Einlagen.",
+      recommendedDisinfection: "antiseptic_leather_spray"
     }
   };
 
-  const DynamicChastityEngine = {
-    tensionArchetypes: TENSION_ARCHETYPES,
-    workplaceStressors: WORKPLACE_STRESS_FACTORS,
-    teasingModalities: TEASING_MODALITIES,
-    hardwareProfiles: HARDWARE_PROFILES,
+  /**
+   * Berechnet die biologische Hysterese-Spannung:
+   * Berücksichtigt Tage im Verschluss, Zeit seit letztem Schwellenkontakt (Edging)
+   * und vorübergehende Dämpfung durch Ruined Orgasm.
+   */
+  function calculateDynamicTension({ daysLocked = 1, lastEdgeHoursAgo = 999, hadRecentRuinedOrgasm = false }) {
+    const rawDays = Math.max(1, parseInt(daysLocked, 10) || 1);
 
-    /**
-     * Berechnet den dynamischen Spannungs-Vektor unter Berücksichtigung von Hysterese-Events.
-     * @param {Object} params
-     * @param {number} params.daysLocked - Roh-Tage im Verschluss
-     * @param {number} [params.lastEdgeHoursAgo] - Stunden seit letzter Schwellenreizung
-     * @param {boolean} [params.hadRecentRuinedOrgasm] - Letzter Höhepunkt war 'ruined' (setzt Dopamin teils zurück)
-     * @param {number} [params.topLustRatio] - Aktuelles Verhältnis N_Top : N_Sub
-     * @returns {Object} Dynamischer Spannungszustand
-     */
-    calculateDynamicTension: function({ daysLocked = 1, lastEdgeHoursAgo = 999, hadRecentRuinedOrgasm = false, topLustRatio = 1 }) {
-      const rawDays = Math.max(1, parseInt(daysLocked, 10) || 1);
-      
-      // Biologische Hysterese-Modulation:
-      // Ein Ruined Orgasm dämpft akuten Testosterondruck, erhält aber mentale Unterordnung
-      let effectiveTensionIndex = rawDays;
-      if (hadRecentRuinedOrgasm) {
-        effectiveTensionIndex = Math.max(2, rawDays * 0.7);
-      }
-      if (lastEdgeHoursAgo < 24) {
-        // Frische Schwellenreizung erhöht die Nervensensibilität um 30 %
-        effectiveTensionIndex += 1.5;
-      }
+    // Hysterese-Korrektur: Ruined Orgasm senkt akute Ejakulationsnot, erhält aber Unterordnung
+    let effectiveTensionIndex = rawDays;
+    if (hadRecentRuinedOrgasm) {
+      effectiveTensionIndex = Math.max(2, rawDays * 0.7);
+    }
 
-      let activeArchetype = TENSION_ARCHETYPES.adaptation;
-      if (effectiveTensionIndex >= 22) {
-        activeArchetype = TENSION_ARCHETYPES.permanent_zenith;
-      } else if (effectiveTensionIndex >= 8) {
-        activeArchetype = TENSION_ARCHETYPES.deep_subspace;
-      } else if (effectiveTensionIndex >= 4) {
-        activeArchetype = TENSION_ARCHETYPES.climbing;
-      }
+    // Frisches Edging (<24h) erhöht die pelvine Reizbarkeit spürbar
+    if (lastEdgeHoursAgo < 24) {
+      effectiveTensionIndex += 1.8;
+    } else if (lastEdgeHoursAgo < 48) {
+      effectiveTensionIndex += 0.9;
+    }
 
+    // Archetyp-Bestimmung anhand der berechneten Tage
+    let matchedArchetype = SOMATIC_ARCHETYPES[0];
+    for (let i = 0; i < SOMATIC_ARCHETYPES.length; i++) {
+      const arch = SOMATIC_ARCHETYPES[i];
+      if (rawDays >= arch.dayRange[0] && rawDays <= arch.dayRange[1]) {
+        matchedArchetype = arch;
+        break;
+      }
+    }
+
+    // Pelvine Sensitivitäts-Skala (1 bis 10)
+    let pelvicSensitivityScore = 3;
+    if (rawDays >= 1 && rawDays <= 3) pelvicSensitivityScore = 4;
+    else if (rawDays >= 4 && rawDays <= 7) pelvicSensitivityScore = 8;
+    else if (rawDays >= 8 && rawDays <= 14) pelvicSensitivityScore = 9;
+    else if (rawDays >= 15 && rawDays <= 21) pelvicSensitivityScore = 10;
+    else pelvicSensitivityScore = 8; // Einpendeln in Langzeit-Gelassenheit
+
+    if (lastEdgeHoursAgo < 12) pelvicSensitivityScore = Math.min(10, pelvicSensitivityScore + 1);
+
+    return {
+      rawDays: rawDays,
+      effectiveTensionIndex: parseFloat(effectiveTensionIndex.toFixed(1)),
+      archetype: matchedArchetype,
+      pelvicSensitivityScore: pelvicSensitivityScore,
+      requiresMacerationCheck: rawDays >= 3,
+      isHighTensionPeak: rawDays >= 4 && rawDays <= 7,
+      hadRecentRuinedOrgasm: hadRecentRuinedOrgasm,
+      lastEdgeHoursAgo: lastEdgeHoursAgo
+    };
+  }
+
+  /**
+   * Generiert situative Führungs- und Teasing-Direktiven für den Top.
+   * STRIKTE TOP-FIRST DOKTRIN: Ist der Top 'exhausted', wird jede erotische
+   * Anforderung zwingend in stillen Entlastungsdienst durch den Sub umgewandelt!
+   */
+  function synthesizeTeasingDirectives(context = {}) {
+    const topLoad = context.topMentalLoad || 'balanced';
+    const workplaceKey = context.workplaceId || 'desk_office';
+    const daysLocked = context.daysLocked || 1;
+    const tension = calculateDynamicTension({ daysLocked });
+    const profile = WORKPLACE_PROFILES[workplaceKey] || WORKPLACE_PROFILES.desk_office;
+
+    // 1. TOP IST ERSCHÖPFT: STRIKTE ALLTAGS-ENTLASTUNG (ANTI-TOP-FATIGUE)
+    if (topLoad === 'exhausted') {
       return {
-        effectiveTensionIndex: parseFloat(effectiveTensionIndex.toFixed(1)),
-        archetype: activeArchetype,
-        rawDaysLocked: rawDays,
-        isClimbingPeak: effectiveTensionIndex >= 4 && effectiveTensionIndex <= 8,
-        pelvicSensitivityScore: Math.min(10, Math.round(effectiveTensionIndex * 0.45 + (lastEdgeHoursAgo < 36 ? 3 : 1)))
+        strategy: "relief_and_rest",
+        title: "Stiller Entlastungsdienst (Top-Fatigue Schutz)",
+        tone: "sovereign_quiet",
+        guidance: "Kein erotisches Chat-Teasing heute. Führen ist ein Privileg der Freude, kein zweiter Verwaltungsjob. Der Sub hat den Feierabend vorzubereiten und den Raum ruhig zu halten.",
+        directives: [
+          {
+            timing: "Morgen",
+            action: "Stummer 30-Sekunden Kniestand vor dem Verlassen der Wohnung. Blick auf die Dielen gerichtet. Kein Redebedarf."
+          },
+          {
+            timing: "Tagsüber",
+            action: `Konzentration auf den Beruf (${profile.label}). Vor Feierabend 10 Minuten Stille einlegen und Einkäufe erledigen.`
+          },
+          {
+            timing: "Feierabend",
+            action: "Küche makellos bereinigen, Schuhe an der Wohnungstür abnehmen, warmes Wasser oder Tee servieren und 20 Minuten schweigende Fußmassage anbieten."
+          }
+        ]
       };
-    },
+    }
 
-    /**
-     * Erzeugt dynamische Teasing-Aktionen passend zu Top-Energie, Arbeitsplatz und Spannungsphase.
-     * @param {Object} context
-     * @param {string} context.workplaceId - ID des Arbeitsplatzes
-     * @param {string} [context.topMentalLoad] - 'exhausted' | 'balanced' | 'dominant_strict'
-     * @param {number} [context.effectiveTensionIndex] - Berechneter Tension-Wert
-     * @returns {Array<Object>} Situativ kuratierte Teasing-Impulse
-     */
-    synthesizeTeasingDirectives: function({ workplaceId = 'desk_office', topMentalLoad = 'balanced', effectiveTensionIndex = 4 }) {
-      const stressProfile = WORKPLACE_STRESS_FACTORS[workplaceId] || WORKPLACE_STRESS_FACTORS.desk_office;
-      const suggestions = [];
+    // 2. TOP IST STRENG: INSPEKTION & DISZIPLIN
+    if (topLoad === 'strict') {
+      return {
+        strategy: "strict_discipline",
+        title: `Strikte Führung & Disziplin (${tension.archetype.name.split(':')[0]})`,
+        tone: "sovereign_cool",
+        guidance: "Fordernde Ausrichtung. Jedes Zögern oder Schmollen wird mit Aufgaben geahndet. Die Ejakulationsschranke bleibt kompromisslos verriegelt.",
+        directives: [
+          {
+            timing: "Morgen",
+            action: "Appell im aufrechten Kniestand. Vorzeigen des tadellosen Sitzes des Verschlusses. Trockener, ruhiger Blickkontakt."
+          },
+          {
+            timing: "Tagsüber",
+            action: `Striktes Durchführen der Berufsübung: ${profile.allotmentDirectives.workday}`
+          },
+          {
+            timing: "Feierabend",
+            action: "Urologische Spülung vorzeigen. Danach 10 Schläge mit der flachen Hand auf das Gesäß zur Besinnung über den Gehorsam des Tages."
+          }
+        ]
+      };
+    }
 
-      // 1. Top-Fatigue Guard: Wenn der Top erschöpft ist, wandelt das System Teasing in DIENST um
-      if (topMentalLoad === 'exhausted') {
-        suggestions.push({
-          modality: 'mental_service',
-          intensityLevel: 3,
-          title: "Stiller Entlastungsdienst statt sexueller Forderung",
-          action: "Bottom übernimmt sofort Küche und Hausschuhe; anschließende 20 Min. abgedunkelte Fußmassage für den Top ohne Gespräch.",
-          rationale: "Schützt den Top vor Mental Load und kanalisiert die Unruhe des Bottoms in produktive Fürsorge."
-        });
-        suggestions.push({
-          modality: 'acoustic',
-          intensityLevel: 1,
-          title: "Diskretes Schlüsselklimpern als Ruhe-Signal",
-          action: "Kurzes Klirren des Vorhängeschlosses vor Beginn der Massage als Bestätigung der Führung.",
-          rationale: "Reaktiviert den vegetativen Anker ohne Handlungsaufwand für den Top."
-        });
-        return suggestions;
-      }
+    // 3. TOP IST AUSGEGLICHEN: HARMONISCHE D/S-BALANCE
+    return {
+      strategy: "balanced_guidance",
+      title: `Souveräne Begleitung (${tension.archetype.name.split(':')[0]})`,
+      tone: "sovereign_warm",
+      guidance: "Ausgewogener Rhythmus zwischen klarer Führung, Alltagsentlastung und spürbarer Verbundenheit im Halbdunkel.",
+      directives: [
+        {
+          timing: "Morgen",
+          action: profile.allotmentDirectives.morning
+        },
+        {
+          timing: "Tagsüber",
+          action: profile.allotmentDirectives.workday
+        },
+        {
+          timing: "Feierabend",
+          action: profile.allotmentDirectives.evening
+        }
+      ]
+    };
+  }
 
-      // 2. Arbeitsplatz-spezifischer Alltags-Teaser
-      if (stressProfile.id === 'desk_office') {
-        suggestions.push({
-          modality: 'tactile_mechanical',
-          intensityLevel: 2,
-          title: "Beckenboden-Kompression im Sitzen",
-          action: "Befehl zur diskreten Durchführung von 25 Kegel-Kontraktionen während der Arbeitszeit gegen das feste Gitter.",
-          rationale: "Aktiviert die Schwellkörper-Wahrnehmung bei Dauerdruck des Schreibtischstuhls."
-        });
-      } else if (stressProfile.id === 'craft_physical') {
-        suggestions.push({
-          modality: 'mental_service',
-          intensityLevel: 2,
-          title: "Pflicht zur urologischen Feierabend-Spülung",
-          action: "Direkt nach Rückkehr: Gründliche Kochsalzspülung der Eichelkammer und schriftliche Bestätigung reizfreier Haut an den Top.",
-          rationale: "Schützt vor Balanitis nach körperlicher Arbeit und Schweißbildung."
-        });
-      } else if (stressProfile.id === 'driver_field') {
-        suggestions.push({
-          modality: 'acoustic',
-          intensityLevel: 2,
-          title: "Ampel-Fokus-Signal",
-          action: "Kurze Sprachnachricht des Tops vor Fahrtantritt: Bewusstes Spüren der Berührung an roten Signalen.",
-          rationale: "Verbindet Reisezeit mit mentaler Präsenz der Schlüsselgewalt."
-        });
-      }
-
-      // 3. Phasen-spezifische Intensivierung
-      if (effectiveTensionIndex >= 8) {
-        suggestions.push({
-          modality: 'tactile_mechanical',
-          intensityLevel: 4,
-          title: "Tease & Relock (Schwellen-Quälerei)",
-          action: "Käfig abnehmen, Heranführen an das Erregungsplateau, kalter Abbruch vor der Ejakulation und sofortiges Wiederverriegeln.",
-          rationale: "Brennt das Bewusstsein der Führung tief in das Nervensystem ein (Tiefe Unterordnung)."
-        });
-      } else {
-        suggestions.push({
-          modality: 'visual',
-          intensityLevel: 2,
-          title: "Körperliche Präsenz mit Berührungsverbot",
-          action: "Top exponiert die eigene Garderobe im Raum, untersagt dem Bottom jedoch jede Annäherung.",
-          rationale: "Erhöht den visuellen Triebdruck bei gleichzeitig unerbittlicher Handlungsbegrenzung."
-        });
-      }
-
-      return suggestions;
-    },
-
-    /**
-     * Abwärtskompatible Hilfsmethode zur Ermittlung der Basisphase anhand von Tagen.
-     */
-    getPhaseByDays: function(days) {
-      return this.calculateDynamicTension({ daysLocked: days }).archetype;
-    },
-
-    /**
-     * Liefert Teasing-Methoden nach Kategorie oder komplett.
-     */
-    getTeasingMethods: function(category) {
-      if (!category || category === 'all') {
-        return Object.values(TEASING_MODALITIES);
-      }
-      return TEASING_MODALITIES[category] ? [TEASING_MODALITIES[category]] : [];
-    },
-
-    /**
-     * Liefert das Belastungsprofil eines Arbeitsplatzes.
-     */
-    getWorkplaceProfile: function(workplaceId) {
-      return WORKPLACE_STRESS_FACTORS[workplaceId] || WORKPLACE_STRESS_FACTORS.desk_office;
-    },
-
-    /**
-     * Liefert die Material- und Hygienespezifikation eines Käfigs.
-     */
-    getHardwareProfile: function(hardwareId) {
-      return HARDWARE_PROFILES[hardwareId] || HARDWARE_PROFILES.penis_cherrykeeper;
+  const api = {
+    calculateDynamicTension: calculateDynamicTension,
+    synthesizeTeasingDirectives: synthesizeTeasingDirectives,
+    getWorkplaceProfile: (key) => WORKPLACE_PROFILES[key] || WORKPLACE_PROFILES.desk_office,
+    getAllWorkplaceProfiles: () => Object.values(WORKPLACE_PROFILES),
+    getHardwareProfile: (id) => HARDWARE_PROFILES[id] || HARDWARE_PROFILES.penis_cherrykeeper,
+    getAllHardwareProfiles: () => Object.values(HARDWARE_PROFILES),
+    getArchetypes: () => SOMATIC_ARCHETYPES.slice(),
+    getArchetypeByDay: (day) => {
+      const d = parseInt(day, 10) || 1;
+      return SOMATIC_ARCHETYPES.find(a => d >= a.dayRange[0] && d <= a.dayRange[1]) || SOMATIC_ARCHETYPES[0];
     }
   };
 
-  window.ChastityDatabase = DynamicChastityEngine;
+  window.ChastityDatabase = api;
 
 })(window);
