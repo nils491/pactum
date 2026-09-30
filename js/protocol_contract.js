@@ -6,8 +6,12 @@
  * Standards & Garantien:
  * - 100 % OPTIONALES MODUL: Keuschheit, Zucht oder der gesamte Vertrag können
  *   vollständig deaktiviert werden (Stufe 0 = Klausel entfällt restlos)
- * - Generative Klausel-Synthese: Speisung aus dem 7-Vektoren-Kontextraum (Psychometrie,
- *   Doppel-5er, Tabu-Vetos, Scham-Marker 🙈 und medizinischer RACK-Gesundheitspass)
+ * - Gewichtete Psychometrie-Synthese:
+ *   • Doppel-Spitzen (5/5): Voll integriert (Gewicht 1.0)
+ *   • Hohe Synergien (5/4 & 4/5): Fester Bestandteil (Gewicht 0.85)
+ *   • Erkundungs-Brücken (5/3 & 4/3): Einfließen als behutsame Probe-Klauseln (Gewicht 0.65)
+ *   • Verletzliche Sehnsüchte (Scham-Marker 🙈 bei Score >= 3): Schutzraum-Klauseln mit Spottverbot
+ *   • Tabu-Vetos (Score 1) & Sanfte Grenzen (Score 2): Automatische Sperren & Drosselung
  * - Psychosomatische Cross-Clause Resonanz:
  *   • Denial-Kompensation (Keuschheit >= 4 erzwingt Fürsorge >= 3 & Berührungsanker)
  *   • Top-Fatigue Schutz (Disziplin >= 4 erzwingt Haushaltsdienst zur Entlastung)
@@ -24,6 +28,18 @@
 
   const STORAGE_KEY_CONTRACT = 'tactus_contract_state';
   const STORAGE_KEY_LEGACY = 'kompass_contract_state';
+
+  // Zuordnung der 36 Fragebogen-Kapitel zu den 8 Vertrags-Dimensionen für gewichtete Cluster-Berechnung
+  const CHAPTER_CLUSTER_MAP = {
+    k1_preamble: [0, 1, 9],               // Anatomie, Romantik/Konsens, BDSM-Basics
+    k2_hierarchy: [9, 15, 17],            // BDSM-Basics, Scham/Nacktheit, Rollenspiele
+    k3_spheres: [5, 16],                  // Sexuelle Frequenz/Alltag, Diskrete Öffentlichkeit
+    k4_aftercare: [1, 14, 19, 34, 35],    // Romantik, Kitzeln/Schutz, Caregiver, Vagus, Drop-Prävention
+    k5_chastity: [7, 8],                  // Keuschheit/Orgasmuskontrolle, Hardware/Schlösser
+    k6_service: [3, 9, 23, 29, 31],       // Orale Hingabe, Rollen, Fuß-Service, Feminisierung, Finanzieller Dienst
+    k7_discipline: [10, 11, 12, 24, 25],  // Fesselung, Spanking, Impact Tools, Knebel/Atem, CBT
+    k8_safewords: [9, 24, 34, 35]         // BDSM-Basics (SSC/RACK), Atemgrenzen, Vagus, Nachsorge
+  };
 
   const DUKTUS_TONALITIES = {
     sovereign_warm: {
@@ -159,20 +175,21 @@
   function getDefaultContractState() {
     return {
       version: "1.0 Entwurf",
-      status: "draft", // 'draft' | 'active' | 'paused_break_glass'
+      status: "draft",
       duktus: 'sovereign_warm',
       chapters: CONTRACT_DIMENSIONS.map(dim => ({
         key: dim.key,
         num: dim.num,
         title: dim.title,
         canDisable: dim.canDisable,
-        level: (dim.key === 'k5_chastity') ? 0 : 3, // Keuschheit standardmäßig 0 bis vom Paar aktiviert!
+        level: (dim.key === 'k5_chastity') ? 0 : 3,
         customText: null
       })),
       signatureTop: null,
       signatureSub: null,
       signedAt: null,
       healthGuardsApplied: [],
+      psychometricInsights: null,
       updatedAt: Date.now()
     };
   }
@@ -279,13 +296,152 @@
       });
     }
 
-    // 3. Stufe 0 Konsistenzprüfung: Keuschheit optional
+    // 3. Stufe 0 Konsistenzprüfung
     const isChastityDisabled = chMap['k5_chastity'] === 0;
 
     return {
       score: Math.max(65, 100 - (warnings.length * 15)),
       warnings: warnings,
       isChastityDisabled: isChastityDisabled
+    };
+  }
+
+  /**
+   * Berechnet eine mehrstufig gewichtete psychometrische Resonanz-Matrix aus allen 36 Fragebogen-Kapiteln.
+   * Berücksichtigt nicht nur Doppel-5er, sondern gewichtet:
+   * - 5/5: Doppel-Spitzen (Gewicht 1.0)
+   * - 5/4 & 4/5: Hohe Synergien (Gewicht 0.85)
+   * - 5/3 & 4/3: Erkundungs-Brücken (Gewicht 0.65)
+   * - Scham-Marker 🙈 bei Score >= 3: Verletzliche Sehnsüchte mit Spottverbot
+   * - Score 1 (Tabu) & Score 2 (Sanfte Grenze): Drosselungs- und Veto-Schranken
+   */
+  function analyzeWeightedPsychometrics(topRole = 'A', bottomRole = 'B') {
+    let rawAnswers = {};
+    try {
+      const stored = localStorage.getItem('kompass_answers');
+      if (stored) rawAnswers = JSON.parse(stored);
+    } catch (e) {}
+
+    const ansTop = rawAnswers[topRole] || {};
+    const ansBottom = rawAnswers[bottomRole] || {};
+
+    const chapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+    const itemMap = new Map();
+    chapters.forEach(ch => {
+      (ch.items || []).forEach(it => {
+        itemMap.set(it.id, { id: it.id, title: it.title, desc: it.desc, chapterId: ch.id, chapterTitle: ch.title });
+      });
+    });
+
+    const doubleFives = [];
+    const highSynergies = [];
+    const explorationBridges = [];
+    const bottomTaboos = [];
+    const softBoundaries = [];
+    const vulnerableShameItems = [];
+
+    // Cluster-Akkumulatoren für die 8 Vertrags-Dimensionen
+    const dimensionScores = {
+      k1_preamble: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
+      k2_hierarchy: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
+      k3_spheres: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
+      k4_aftercare: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
+      k5_chastity: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
+      k6_service: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
+      k7_discipline: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
+      k8_safewords: { totalWeight: 0, sumScore: 0, itemsCount: 0 }
+    };
+
+    itemMap.forEach((meta, itemId) => {
+      const sTop = ansTop[`it_${itemId}_r1`];      // Top führt aus / bestimmt
+      const sBottom = ansBottom[`it_${itemId}_r2`]; // Bottom empfängt / gibt sich hin
+      const isShame = ansBottom[`shame_${itemId}`] === true;
+
+      if (typeof sTop !== 'number' || typeof sBottom !== 'number') return;
+      if (sTop === 0 && sBottom === 0) return; // Beidseitig entfallen
+
+      // 1. Tabu- und Grenz-Erkennung
+      if (sBottom === 1) {
+        bottomTaboos.push({ id: itemId, title: meta.title, reason: 'Tabu des Bottoms (Note 1)' });
+      } else if (sBottom === 2) {
+        softBoundaries.push({ id: itemId, title: meta.title, reason: 'Sanfte Grenze des Bottoms (Note 2)' });
+      }
+
+      // 2. Scham- und Schutzraum-Erkennung (🙈)
+      if (isShame && sBottom >= 3) {
+        vulnerableShameItems.push({
+          id: itemId,
+          title: meta.title,
+          bottomScore: sBottom,
+          topScore: sTop,
+          chapterTitle: meta.chapterTitle
+        });
+      }
+
+      // 3. Mehrstufige Resonanz-Klassifizierung
+      let weight = 0;
+      let resonanceType = null;
+
+      if (sTop === 5 && sBottom === 5) {
+        weight = 1.0;
+        resonanceType = 'double_five';
+        doubleFives.push({ id: itemId, title: meta.title, chapterTitle: meta.chapterTitle, score: '5/5' });
+      } else if ((sTop === 5 && sBottom === 4) || (sTop === 4 && sBottom === 5)) {
+        weight = 0.85;
+        resonanceType = 'high_synergy';
+        highSynergies.push({ id: itemId, title: meta.title, chapterTitle: meta.chapterTitle, score: `${sTop}/${sBottom}` });
+      } else if ((sTop >= 4 && sBottom === 3) || (sTop === 3 && sBottom >= 4)) {
+        weight = 0.65;
+        resonanceType = 'bridge';
+        explorationBridges.push({
+          id: itemId,
+          title: meta.title,
+          chapterTitle: meta.chapterTitle,
+          topLead: sTop >= 4,
+          score: `${sTop}/${sBottom}`
+        });
+      }
+
+      // 4. Zuordnung zu Vertrags-Dimensionen
+      for (const [dimKey, clusterChIds] of Object.entries(CHAPTER_CLUSTER_MAP)) {
+        if (clusterChIds.includes(meta.chapterId)) {
+          const dimAcc = dimensionScores[dimKey];
+          // Harmonischer Mittelwert zwischen Top-Wille und Bottom-Hingabe
+          const combinedIntensity = (sTop * 0.6) + (sBottom * 0.4);
+          dimAcc.sumScore += combinedIntensity;
+          dimAcc.totalWeight += (sBottom === 1) ? 0 : 1; // Tabus drücken das Gewicht
+          dimAcc.itemsCount++;
+        }
+      }
+    });
+
+    // Berechne empfohlene Stufen (0, 1, 3, 5) für jede Dimension
+    const recommendedLevels = {};
+    for (const [dimKey, acc] of Object.entries(dimensionScores)) {
+      if (acc.itemsCount === 0 || acc.totalWeight === 0) {
+        recommendedLevels[dimKey] = (dimKey === 'k5_chastity' || dimKey === 'k7_discipline') ? 0 : 3;
+        continue;
+      }
+      const meanScore = acc.sumScore / acc.itemsCount;
+      if (meanScore < 1.8) {
+        recommendedLevels[dimKey] = 0; // Zu geringe Relevanz oder viele Tabus
+      } else if (meanScore < 2.8) {
+        recommendedLevels[dimKey] = 1; // Mild / Behutsam
+      } else if (meanScore < 4.2) {
+        recommendedLevels[dimKey] = 3; // Klassisch / D/s-Standard
+      } else {
+        recommendedLevels[dimKey] = 5; // Strikte Hingabe / Zenit
+      }
+    }
+
+    return {
+      doubleFives,
+      highSynergies,
+      explorationBridges,
+      bottomTaboos,
+      softBoundaries,
+      vulnerableShameItems,
+      recommendedLevels
     };
   }
 
@@ -296,29 +452,28 @@
     }
 
     loadContractState();
-    showToast("Synthetisiere Bündnis aus Psychometrie, RACK-Pass & Somatik...");
+    showToast("Synthetisiere Bündnis aus gewichteter Psychometrie, RACK-Pass & Somatik...");
 
     let ctx = null;
     if (window.HubContext && typeof window.HubContext.getUnifiedState === 'function') {
       ctx = window.HubContext.getUnifiedState();
     }
 
-    // Grund-Ebene aus Kontext ableiten
-    const hasCage = ctx ? ctx.v2_somatic.isLocked : false;
     const topRole = ctx ? ctx.metadata.roles.topRole : 'A';
     const bottomRole = ctx ? ctx.metadata.roles.bottomRole : 'B';
-
-    // RACK-Sicherheits-Pass Constraints einbinden
+    const hasCage = ctx ? ctx.v2_somatic.isLocked : false;
     const healthGuards = (ctx && ctx.v5_biology) ? ctx.v5_biology.activeHealthGuards : [];
-    const bottomTaboos = (ctx && ctx.v1_psychometry) ? ctx.v1_psychometry.bottomTaboos : [];
-    const doubleFives = (ctx && ctx.v1_psychometry) ? ctx.v1_psychometry.doubleFives : [];
+
+    // Gewichtete Psychometrie-Matrix berechnen
+    const insights = analyzeWeightedPsychometrics(topRole, bottomRole);
 
     const newChapters = CONTRACT_DIMENSIONS.map(dim => {
-      let lvl = 3;
-      if (dim.key === 'k5_chastity') {
-        lvl = hasCage ? 3 : 0; // Stufe 0 wenn kein Verschluss vorhanden
-      } else if (dim.key === 'k7_discipline') {
-        lvl = doubleFives.some(d => d.title.toLowerCase().includes('spanking') || d.title.toLowerCase().includes('zucht')) ? 4 : 2;
+      let lvl = insights.recommendedLevels[dim.key] !== undefined ? insights.recommendedLevels[dim.key] : 3;
+
+      // Zusätzliche somatische Schutz-Bedingungen:
+      if (dim.key === 'k5_chastity' && !hasCage && lvl > 0) {
+        // Falls kein physischer Käfig vorhanden, Keuschheit maximal auf Stufe 1 (mentaler Triebaufschub) drosseln
+        lvl = Math.min(1, lvl);
       }
 
       return {
@@ -331,37 +486,74 @@
       };
     });
 
-    // Medizinisches Veto und Tabus in § 8 und § 7 anfügen
+    // Detaillierte Anhänge & Schutz-Klauseln synthetisieren
+    const k8 = newChapters.find(c => c.key === 'k8_safewords');
+    const k7 = newChapters.find(c => c.key === 'k7_discipline');
+    const k1 = newChapters.find(c => c.key === 'k1_preamble');
+
     let safetyAddendum = "";
+
+    // 1. Biologische RACK-Sicherheitsgrenzen
     if (healthGuards.length > 0) {
       safetyAddendum += "\n\nBiologische RACK-Sicherheitsgrenzen (Unantastbar):\n" +
         healthGuards.map(g => `• ${g.directive}`).join("\n");
     }
-    if (bottomTaboos.length > 0) {
-      safetyAddendum += "\n\nRollenbasierte Tabu-Schranken aus dem Fragebogen:\n" +
-        bottomTaboos.slice(0, 6).map(t => `• ${t.title} (${t.reason})`).join("\n");
+
+    // 2. Harte Tabu-Vetos (Note 1)
+    if (insights.bottomTaboos.length > 0) {
+      safetyAddendum += "\n\nUnantastbare Tabu-Schranken des Bottoms (Ausschluss):\n" +
+        insights.bottomTaboos.slice(0, 6).map(t => `• ${t.title} (${t.reason})`).join("\n");
     }
 
-    if (safetyAddendum.length > 0) {
-      const k8 = newChapters.find(c => c.key === 'k8_safewords');
-      if (k8) {
-        k8.customText = (CONTRACT_DIMENSIONS.find(d => d.key === 'k8_safewords').levels[3]) + safetyAddendum;
-      }
+    // 3. Sanfte Grenzen (Note 2)
+    if (insights.softBoundaries.length > 0) {
+      safetyAddendum += "\n\nSanfte Grenzen (Besondere Achtsamkeit & Drosselung):\n" +
+        insights.softBoundaries.slice(0, 4).map(b => `• ${b.title}`).join("\n");
+    }
+
+    if (safetyAddendum.length > 0 && k8) {
+      const baseText = CONTRACT_DIMENSIONS.find(d => d.key === 'k8_safewords').levels[k8.level || 3];
+      k8.customText = baseText + safetyAddendum;
+    }
+
+    // 4. Geschützte verletzliche Sehnsüchte (Scham-Marker 🙈) in § 1 einweben
+    if (insights.vulnerableShameItems.length > 0 && k1) {
+      const shameAddendum = "\n\nBesonderer Schutzraum für sensible Sehnsüchte (§ 1 Abs. 2):\n" +
+        "Beide Partner anerkennen, dass geteilte verletzliche Fantasien (" +
+        insights.vulnerableShameItems.slice(0, 3).map(s => `„${s.title}“`).join(', ') +
+        ") im Rahmen dieses Bündnisses unter absolutem Spottverbot stehen und nur in einer Atmosphäre bedingungsloser Geborgenheit erkundet werden dürfen.";
+      const baseText1 = CONTRACT_DIMENSIONS.find(d => d.key === 'k1_preamble').levels[k1.level || 3];
+      k1.customText = baseText1 + shameAddendum;
+    }
+
+    // 5. Erkundungs-Brücken (5/3 & 4/3 Matches) in § 7 (Disziplin) oder § 6 (Dienst) einweben
+    if (insights.explorationBridges.length > 0 && k7 && k7.level > 0) {
+      const bridgeItems = insights.explorationBridges.slice(0, 3).map(b => `• ${b.title} (Brücke: ${b.topLead ? 'Top leitet an' : 'Bottom wünscht behutsame Führung'})`).join("\n");
+      const bridgeAddendum = "\n\nVereinbarte Erkundungs-Brücken (Protokollierte Probe-Phasen):\n" + bridgeItems;
+      const baseText7 = CONTRACT_DIMENSIONS.find(d => d.key === 'k7_discipline').levels[k7.level || 3];
+      k7.customText = baseText7 + bridgeAddendum;
     }
 
     contractState.chapters = newChapters;
     contractState.status = "draft";
-    contractState.version = `1.0 Entwurf (${new Date().toLocaleDateString('de-DE')})`;
+    contractState.version = `1.0 Gewichteter Entwurf (${new Date().toLocaleDateString('de-DE')})`;
     contractState.signatureTop = null;
     contractState.signatureSub = null;
     contractState.healthGuardsApplied = healthGuards.map(g => g.type);
+    contractState.psychometricInsights = {
+      doubleFivesCount: insights.doubleFives.length,
+      synergiesCount: insights.highSynergies.length,
+      bridgesCount: insights.explorationBridges.length,
+      shameCount: insights.vulnerableShameItems.length,
+      taboosCount: insights.bottomTaboos.length
+    };
 
     saveContractState();
     renderContractDashboard();
-    showToast("✓ Bündnis aus 7-Vektoren-Kontext & RACK-Pass generiert!");
+    showToast(`✓ Bündnis gewichtet generiert (${insights.doubleFives.length} Spitzen, ${insights.explorationBridges.length} Brücken)`);
 
     if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent("Neuer Beziehungsvertrags-Entwurf kalibriert. Bereit zur Prüfung.");
+      window.ChatApp.postSystemEvent(`Neuer Beziehungsvertrag gewichtet kalibriert (${insights.doubleFives.length} Doppel-5er, ${insights.explorationBridges.length} Brücken, ${insights.vulnerableShameItems.length} Scham-Schutzanker). Bereit zur Prüfung.`);
     }
   }
 
@@ -391,11 +583,12 @@
     }
     if (verLbl) verLbl.innerText = contractState.version || "Version 1.0";
 
-    // Psychosomatisches Harmonie-Banner
+    // Psychosomatisches Harmonie- & Psychometrie-Banner
     const harmonyContainer = document.getElementById('contract-harmony-banner');
     if (harmonyContainer) {
+      const insights = contractState.psychometricInsights;
       harmonyContainer.innerHTML = `
-        <div class="p-3.5 rounded-2xl border transition-all text-xs space-y-1.5 ${harmony.warnings.length === 0 ? 'bg-emerald-950/20 border-emerald-800/60 text-emerald-200' : 'bg-amber-950/30 border-amber-800/80 text-amber-200'}">
+        <div class="p-3.5 rounded-2xl border transition-all text-xs space-y-2 ${harmony.warnings.length === 0 ? 'bg-emerald-950/20 border-emerald-800/60 text-emerald-200' : 'bg-amber-950/30 border-amber-800/80 text-amber-200'}">
           <div class="flex items-center justify-between">
             <span class="font-bold flex items-center gap-1.5">
               <span>${harmony.warnings.length === 0 ? '✓' : '⚠️'}</span>
@@ -404,6 +597,15 @@
             <span class="text-[10px] font-mono text-slate-400">${harmony.warnings.length === 0 ? 'Ausbalanciert' : 'Resonanz-Warnung'}</span>
           </div>
           ${harmony.warnings.map(w => `<p class="text-[10.5px] leading-relaxed text-amber-300/90">• ${escapeHtml(w.text)}</p>`).join('')}
+
+          ${insights ? `
+            <div class="pt-1.5 border-t border-slate-800/60 flex items-center gap-3 text-[10px] font-mono text-slate-400 flex-wrap">
+              <span class="text-purple-300">★ ${insights.doubleFivesCount} Doppel-Spitzen</span>
+              <span class="text-indigo-300">⇄ ${insights.bridgesCount} Erkundungs-Brücken</span>
+              <span class="text-pink-300">🛡️ ${insights.shameCount} Schutzanker (🙈)</span>
+              <span class="text-rose-300">🚫 ${insights.taboosCount} Tabu-Vetos</span>
+            </div>
+          ` : ''}
         </div>
       `;
     }
@@ -496,7 +698,7 @@
     if (!ch) return;
 
     ch.level = levelNum;
-    ch.customText = null; // Auf Standard der gewählten Stufe zurücksetzen
+    ch.customText = null;
     saveContractState();
     renderContractDashboard();
     showToast(`${ch.num} auf Stufe ${levelNum} kalibriert ✓`);
@@ -836,6 +1038,7 @@
     openPrintDialog: openPrintDialog,
     executePrint: executePrint,
     validateHarmony: validatePsychosomaticHarmony,
+    analyzeWeightedPsychometrics: analyzeWeightedPsychometrics,
     getActiveContract: function() { loadContractState(); return contractState; }
   };
 
