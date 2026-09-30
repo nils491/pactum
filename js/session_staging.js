@@ -4,8 +4,10 @@
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - 4 Top-Dimensionen: Tonalität (Temperament), Top-Lust (Agenda), Hauptmotiv (dynamisch aus allen 180 Bogen-Items), Keuschheits-Triage
- * - Live-Schnittmengenprüfung via ToyCombinatorics: Erkennt funktionale Konflikte (z.B. Knebel blockiert Oralservice)
+ * - 4 Top-Dimensionen: Tonalität (Temperament), Top-Lust (Agenda), Hauptmotiv (dynamisch aus allen 185 Bogen-Items), Keuschheits-Triage
+ * - Psychosomatisches Kapitel-00-Radar: Automatischer Abgleich von Trauma-Vorerfahrungen (901) und Flashback-Triggern (902)
+ * - Transparente Sub-Notizen: Persönliche Bedingungen (note_${id}) und Scham-Schutzanker (🙈) werden für den Top hervorgehoben
+ * - Live-Schnittmengenprüfung via ToyCombinatorics: Erkennt funktionale Konflikte (z. B. Knebel blockiert Oralservice)
  * - RACK-Sicherheits-Checkpunkte (Glukose, Asthma, Wundkontrolle) aus dem medizinischen Pass
  * - Vollständige 7-Vektoren Prompt-Synthese an AIAdapter (Gemini, Claude, GPT, WebGPU)
  * - Prozedurale Heuristik-Synthese moduliert Zitate & Phasen dynamisch nach Tonalität und Agenda
@@ -157,18 +159,40 @@
     return myRole === khRole;
   }
 
-  /**
-   * Scannt alle 36 Fragebogenkapitel (180 Items) dynamisch durch.
-   * Selektiert Vorlieben des Tops (r1 >= 4) und schließt Tabus des Bottoms (r2 === 1) aus.
-   */
-  function extractDynamicMotifCandidates() {
+  function getRolesAndNames() {
     let topRole = 'A';
     let bottomRole = 'B';
+    let names = { A: 'Partner 1', B: 'Partner 2' };
+
     if (window.HubContext && typeof window.HubContext.getRoles === 'function') {
-      const roles = window.HubContext.getRoles();
-      topRole = roles.topRole;
-      bottomRole = roles.bottomRole;
+      const r = window.HubContext.getRoles();
+      topRole = r.topRole;
+      bottomRole = r.bottomRole;
+      names = window.HubContext.getNames();
+    } else {
+      try {
+        const rawNames = localStorage.getItem('kompass_names');
+        if (rawNames) names = Object.assign({}, names, JSON.parse(rawNames));
+        topRole = localStorage.getItem('kompass_keyholder_role') || 'A';
+        bottomRole = (topRole === 'A') ? 'B' : 'A';
+      } catch (e) {}
     }
+
+    return {
+      topRole,
+      bottomRole,
+      topName: names[topRole] || 'Top',
+      bottomName: names[bottomRole] || 'Bottom'
+    };
+  }
+
+  /**
+   * Scannt alle 36 Fragebogenkapitel dynamisch durch.
+   * Selektiert Vorlieben des Tops (r1 >= 4), schließt Tabus des Bottoms (r2 === 1) aus
+   * und extrahiert persönliche Notizen sowie Scham-Schutzanker (🙈) beider Partner.
+   */
+  function extractDynamicMotifCandidates() {
+    const { topRole, bottomRole } = getRolesAndNames();
 
     let answers = {};
     try {
@@ -184,10 +208,16 @@
 
     allChapters.forEach(ch => {
       (ch.items || []).forEach(it => {
+        // Überspringe Choice-Items bei den Motiven
+        if (it.type === 'choice') return;
+
         const scoreTop = ansTop[`it_${it.id}_r1`];
         const scoreBottom = ansSub[`it_${it.id}_r2`];
+        const noteSub = (ansSub[`note_${it.id}`] || '').trim();
+        const noteTop = (ansTop[`note_${it.id}`] || '').trim();
+        const isShame = ansSub[`shame_${it.id}`] === true;
 
-        // Bottom-Tabu ausschließen
+        // Bottom-Tabu (Note 1) kategorisch ausschließen (RACK-Schutz)
         if (scoreBottom === 1) return;
 
         // Top-Präferenz mindestens 4 (Gern oder Must-Have)
@@ -199,21 +229,24 @@
             title: it.title,
             desc: it.desc,
             scoreTop: scoreTop,
-            scoreBottom: scoreBottom || 3,
+            scoreBottom: scoreBottom !== undefined ? scoreBottom : 3,
+            noteSub: noteSub,
+            noteTop: noteTop,
+            isShame: isShame,
             isDoubleFive: (scoreTop === 5 && scoreBottom === 5)
           });
         }
       });
     });
 
-    // Nach Doppel-5ern und Top-Score priorisieren
+    // Nach Doppel-5ern und kombiniertem Score priorisieren
     candidateMotifs.sort((a, b) => {
       if (a.isDoubleFive && !b.isDoubleFive) return -1;
       if (!a.isDoubleFive && b.isDoubleFive) return 1;
       return (b.scoreTop + b.scoreBottom) - (a.scoreTop + a.scoreBottom);
     });
 
-    // Wenn der Bogen noch nicht gefüllt ist, universelle Fallbacks bereitstellen
+    // Universelle Standard-Fallbacks falls Bogen noch leer ist
     if (candidateMotifs.length === 0) {
       return [
         {
@@ -224,6 +257,9 @@
           desc: 'Bottom bedient den Top rückhaltlos mit Mund und Zunge.',
           scoreTop: 5,
           scoreBottom: 4,
+          noteSub: '',
+          noteTop: '',
+          isShame: false,
           isDoubleFive: false
         },
         {
@@ -234,6 +270,9 @@
           desc: 'Gezielte Schläge in Vorbeuge mit flacher Hand oder Lederwerkzeug.',
           scoreTop: 4,
           scoreBottom: 4,
+          noteSub: '',
+          noteTop: '',
+          isShame: false,
           isDoubleFive: false
         },
         {
@@ -244,6 +283,9 @@
           desc: 'Heranführen an das Plateau mit kaltem Stopp und Verweigerung.',
           scoreTop: 5,
           scoreBottom: 3,
+          noteSub: '',
+          noteTop: '',
+          isShame: false,
           isDoubleFive: false
         },
         {
@@ -254,48 +296,107 @@
           desc: 'Hilflosigkeit durch Fesselung der Gliedmaßen und Augenbinde.',
           scoreTop: 4,
           scoreBottom: 4,
+          noteSub: '',
+          noteTop: '',
+          isShame: false,
           isDoubleFive: false
         }
       ];
     }
 
-    return candidateMotifs.slice(0, 10);
+    return candidateMotifs.slice(0, 12);
   }
 
   /**
-   * Prüft mit ToyCombinatorics, ob das gewählte Motiv und die Ausrüstung harmonieren
+   * Prüft mit ToyCombinatorics und Kapitel 00, ob Motiv, Ausrüstung und Trauma-Trigger harmonieren.
    */
   function evaluateDynamicConflicts(motif, selectedEquipmentObjects, chastityAction, isLocked) {
-    if (!window.ToyCombinatorics || typeof window.ToyCombinatorics.calculateDegreesOfFreedom !== 'function') {
-      return { warnings: [], blocks: [] };
-    }
-
-    const dofResult = window.ToyCombinatorics.calculateDegreesOfFreedom(selectedEquipmentObjects);
-    const dof = dofResult.dof;
+    const { bottomRole, bottomName } = getRolesAndNames();
     const warnings = [];
     const blocks = [];
 
-    const motifTitleLower = (motif ? motif.title : '').toLowerCase();
+    let answers = {};
+    try {
+      const raw = localStorage.getItem('kompass_answers');
+      if (raw) answers = JSON.parse(raw) || {};
+    } catch (e) {}
 
-    // 1. Oralservice bei geschlossenem Knebel
-    const requiresTongue = motifTitleLower.includes('oral') || motifTitleLower.includes('cunnilingus') || motifTitleLower.includes('lecken');
-    if (requiresTongue && dof.tongue_mobility_external <= 0.05) {
-      blocks.push("Funktions-Konflikt: Dein gewähltes Motiv erfordert Zungenservice des Bottoms, doch die aktive Ausrüstung blockiert die Zunge vollständig.");
+    const ansSub = answers[bottomRole] || {};
+
+    // 1. Kapitel-00 Psychosomatisches Schutz-Radar (Trauma & Flashbacks)
+    const traumaExperience = ansSub['choice_901']; // none, boundary, trauma, private
+    const flashbackTrigger = ansSub['choice_902'];  // words, smell, airway, restraint, darkness, none
+    const desiredIntervention = ansSub['choice_904']; // hug, distance, grounding, water_tea, voice
+    const triggerNote = (ansSub['note_902'] || ansSub['note_901'] || '').trim();
+
+    const motifTitleLower = (motif ? motif.title + ' ' + motif.desc : '').toLowerCase();
+    const equipmentIds = (selectedEquipmentObjects || []).map(o => o.id || '');
+
+    // Flashback-Trigger Abgleich:
+    if (flashbackTrigger === 'restraint') {
+      const involvesRestraint = motifTitleLower.includes('fessel') || motifTitleLower.includes('shibari') ||
+                                motifTitleLower.includes('arretier') || equipmentIds.some(id => id.includes('rope') || id.includes('cuff') || id.includes('pillory'));
+      if (involvesRestraint) {
+        warnings.push(`⚠️ Psychosomatischer Trigger-Hinweis (Kapitel 00): ${bottomName} hat bei Flashback-Triggern „Vollständige Fixierung / Fesseln“ angegeben! Enge Fesselungen nur mit jederzeit möglicher Eigenbefreiung oder stetem Körperkontakt.`);
+      }
     }
 
-    // 2. Mitzählen bei Sprachblockade
-    const requiresCounting = motifTitleLower.includes('zählung') || motifTitleLower.includes('spanking') || motifTitleLower.includes('zucht');
-    if (requiresCounting && dof.speech_articulation <= 0.05) {
-      warnings.push("Akustik-Hinweis: Geknebelter Bottom kann Schläge nicht laut zählen. Ersetze das Zählen durch Klopfsignale auf die Matratze.");
+    if (flashbackTrigger === 'airway') {
+      const involvesAirway = motifTitleLower.includes('knebel') || motifTitleLower.includes('atem') || motifTitleLower.includes('queening') ||
+                             motifTitleLower.includes('facesitting') || equipmentIds.some(id => id.includes('gag'));
+      if (involvesAirway) {
+        warnings.push(`⚠️ Psychosomatischer Trigger-Hinweis (Kapitel 00): ${bottomName} reagiert hochsensibel auf Atemwegsbeeinträchtigung! Ausschluss dichter Knebel; Mund- und Nasenatmung müssen frei bleiben.`);
+      }
     }
 
-    // 3. Keuschheitskonflikt: Schwellenreizung bei dauerhaft verriegeltem Käfig
-    const requiresPenileEdging = motifTitleLower.includes('schwellen') || motifTitleLower.includes('edging') || motifTitleLower.includes('denial');
-    if (requiresPenileEdging && isLocked && chastityAction === 'remain_locked') {
-      warnings.push("Verschluss-Hinweis: Direkte Schwellen-Quälerei am Schaft ist im Käfig unmöglich. Wähle 'Tease & Relock' zum temporären Lösen oder nutze Damm- und Vibrationsreize.");
+    if (flashbackTrigger === 'darkness') {
+      const involvesDarkness = motifTitleLower.includes('augenbinde') || motifTitleLower.includes('dunkel') || equipmentIds.some(id => id.includes('blindfold'));
+      if (involvesDarkness) {
+        warnings.push(`⚠️ Psychosomatischer Trigger-Hinweis (Kapitel 00): ${bottomName} hat „Plötzliche Dunkelheit“ als Trigger markiert. Augenbinde nur mit sanfter verbaler Begleitung.`);
+      }
     }
 
-    return { warnings, blocks, dofResult };
+    if (flashbackTrigger === 'words') {
+      const involvesDirtyTalk = motifTitleLower.includes('dirty talk') || motifTitleLower.includes('erniedrig') || motifTitleLower.includes('schimpf');
+      if (involvesDirtyTalk) {
+        warnings.push(`⚠️ Trigger-Hinweis (Kapitel 00): Verbale Erniedrigung oder harte Schimpfwörter sind für ${bottomName} ein potenzieller Belastungs-Trigger. Sprache souverän und respektvoll halten.`);
+      }
+    }
+
+    // 2. DoF-Schnittmengenprüfung via ToyCombinatorics
+    let dofResult = null;
+    if (window.ToyCombinatorics && typeof window.ToyCombinatorics.calculateDegreesOfFreedom === 'function') {
+      dofResult = window.ToyCombinatorics.calculateDegreesOfFreedom(selectedEquipmentObjects);
+      const dof = dofResult.dof;
+
+      // Oralservice bei blockierter Zunge
+      const requiresTongue = motifTitleLower.includes('oral') || motifTitleLower.includes('cunnilingus') || motifTitleLower.includes('lecken');
+      if (requiresTongue && dof.tongue_mobility_external <= 0.05) {
+        blocks.push("Funktions-Konflikt: Dein gewähltes Motiv erfordert Zungenservice des Bottoms, doch die aktive Ausrüstung blockiert die Zunge vollständig.");
+      }
+
+      // Mitzählen bei Sprachblockade
+      const requiresCounting = motifTitleLower.includes('zählung') || motifTitleLower.includes('spanking') || motifTitleLower.includes('zucht');
+      if (requiresCounting && dof.speech_articulation <= 0.05) {
+        warnings.push("Akustik-Hinweis: Geknebelter Bottom kann Schläge nicht laut zählen. Ersetze das Zählen durch Klopfsignale auf die Matratze.");
+      }
+
+      // Keuschheitsbarriere bei Schwellenreizung
+      const requiresPenileEdging = motifTitleLower.includes('schwellen') || motifTitleLower.includes('edging') || motifTitleLower.includes('denial');
+      if (requiresPenileEdging && isLocked && chastityAction === 'remain_locked') {
+        warnings.push("Verschluss-Hinweis: Direkte Schwellen-Quälerei am Schaft ist im Käfig unmöglich. Wähle 'Tease & Relock' zum temporären Lösen oder nutze Damm- und Vibrationsreize.");
+      }
+    }
+
+    return {
+      warnings,
+      blocks,
+      dofResult,
+      traumaExperience,
+      flashbackTrigger,
+      desiredIntervention,
+      triggerNote
+    };
   }
 
   function renderStagingCockpit() {
@@ -304,6 +405,7 @@
 
     loadStagingConfig();
     const isTop = isUserTop();
+    const { topName, bottomName } = getRolesAndNames();
     const unifiedContext = window.HubContext ? window.HubContext.getUnifiedState() : null;
 
     const isLocked = unifiedContext ? unifiedContext.v2_somatic.isLocked : false;
@@ -311,7 +413,7 @@
     const tension = unifiedContext ? unifiedContext.v2_somatic.tension : { archetype: { name: 'Gewöhnung' } };
     const healthGuards = unifiedContext ? unifiedContext.v5_biology.activeHealthGuards : [];
     
-    // Motive dynamisch aus allen 180 Bogen-Items ermitteln
+    // Motive dynamisch aus allen 185 Bogen-Items ermitteln
     const dynamicMotifs = extractDynamicMotifCandidates();
 
     if (!stagingConfig.motifId && dynamicMotifs.length > 0) {
@@ -327,6 +429,16 @@
 
     const selectedMotif = dynamicMotifs.find(m => m.id === stagingConfig.motifId) || dynamicMotifs[0];
     const conflictAnalysis = evaluateDynamicConflicts(selectedMotif, selectedItemsObjects, stagingConfig.chastityAction, isLocked);
+
+    // Text für gewünschte Intervention übersetzen
+    const interventionMap = {
+      hug: 'Feste, stumme Umarmung & Halten (Gewichtsdecken-Effekt)',
+      distance: 'Körperliche Berührung sofort einstellen & etwas Raum geben',
+      grounding: 'Licht anmachen, zudecken & ruhige 4-7-8 Vagus-Atmung anleiten',
+      water_tea: 'Schluck warmen Tee oder Wasser reichen, ohne zu fragen',
+      voice: 'Mit leiser, ruhiger Stimme reden und Sicherheit zusprechen'
+    };
+    const interventionText = interventionMap[conflictAnalysis.desiredIntervention] || 'Ruhige Vagus-Atmung & Zudecken';
 
     container.innerHTML = `
       <div class="space-y-4 max-w-3xl mx-auto text-xs">
@@ -347,7 +459,21 @@
             </div>
           </div>
           <p class="text-[10.5px] text-slate-300 leading-snug">
-            Kalibriere Haltung, eigene Lust und Hauptmotiv. Das System prüft physische Freiheitsgrade (DoF) und RACK-Schranken in Echtzeit.
+            Kalibriere Haltung, eigene Lust und Hauptmotiv. Das System gleicht DoF-Freiheitsgrade, persönliche Notizen von ${escapeHtml(bottomName)} und RACK-Schranken in Echtzeit ab.
+          </p>
+        </div>
+
+        <!-- NOTFALL-INTERVENTIONS-MEMO BEI ÜBERFORDERUNG (AUS KAPITEL 00) -->
+        <div class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-900/50 space-y-1 text-xs">
+          <div class="flex items-center justify-between">
+            <strong class="text-emerald-300 text-[11px] font-bold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>Gewünschte Sofort-Hilfe von ${escapeHtml(bottomName)} bei Trigger (Kap. 00):</span>
+            </strong>
+            <span class="text-[9px] font-mono text-emerald-400">Schutz-Memo</span>
+          </div>
+          <p class="text-[10.5px] text-slate-200 leading-snug pl-3 border-l border-emerald-600/40">
+            ${escapeHtml(interventionText)}
           </p>
         </div>
 
@@ -365,8 +491,8 @@
         ` : ''}
 
         ${conflictAnalysis.warnings.length > 0 ? `
-          <div class="p-3 rounded-2xl bg-amber-950/30 border border-amber-800 text-[10.5px] text-amber-200 space-y-1">
-            ${conflictAnalysis.warnings.map(w => `<p>• ${escapeHtml(w)}</p>`).join('')}
+          <div class="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-800 text-[10.5px] text-amber-200 space-y-1.5">
+            ${conflictAnalysis.warnings.map(w => `<p class="leading-snug">• ${escapeHtml(w)}</p>`).join('')}
           </div>
         ` : ''}
 
@@ -375,7 +501,7 @@
           <div class="p-3.5 rounded-2xl bg-amber-950/25 border border-amber-800/80 space-y-1 text-xs">
             <div class="flex items-center gap-2 text-amber-300 font-bold">
               <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
-              <span>RACK-Gesundheitspass: Aktive Sicherheits-Garantien</span>
+              <span>RACK-Gesundheitspass: Aktive biologische Schutzgrenzen</span>
             </div>
             <div class="space-y-0.5 text-[10.5px] text-amber-200/90 pl-6">
               ${healthGuards.map(g => `<p>• ${escapeHtml(g.directive)}</p>`).join('')}
@@ -398,7 +524,7 @@
                     <strong class="text-xs block font-bold">${escapeHtml(ton.label)}</strong>
                     <span class="text-xs font-mono font-bold ${isSelected ? 'text-purple-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
                   </div>
-                  <p class="text-[10px] text-slate-400 leading-snug">${escapeHtml(ton.desc)}</p>
+                  <p class="text-[10px] text-slate-400 leading-snug break-words">${escapeHtml(ton.desc)}</p>
                 </button>
               `;
             }).join('')}
@@ -420,38 +546,66 @@
                     <strong class="text-xs block font-bold">${escapeHtml(ag.label)}</strong>
                     <span class="text-xs font-mono font-bold ${isSelected ? 'text-purple-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
                   </div>
-                  <p class="text-[10px] text-slate-400 leading-snug">${escapeHtml(ag.desc)}</p>
+                  <p class="text-[10px] text-slate-400 leading-snug break-words">${escapeHtml(ag.desc)}</p>
                 </button>
               `;
             }).join('')}
           </div>
         </div>
 
-        <!-- DIMENSION 3: HAUPTMOTIV (DYNAMISCH AUS ALLEN 180 FRAGEN) -->
+        <!-- DIMENSION 3: HAUPTMOTIV (DYNAMISCH AUS ALLEN 185 FRAGEN MIT SUB-NOTIZEN) -->
         <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-2.5 shadow-md">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <div>
               <strong class="text-xs text-white block font-bold">3. Hauptmotiv des Abends:</strong>
-              <span class="text-[10px] text-slate-400">Dynamisch extrahiert aus deinen Top-Vorlieben (r1 ≥ 4) ohne Tabus</span>
+              <span class="text-[10px] text-slate-400">Extrahiert aus deinen Top-Vorlieben (r1 ≥ 4) ohne Tabus des Bottoms</span>
             </div>
-            <span class="text-[10px] font-mono text-indigo-300 font-bold">${dynamicMotifs.length} Treffer</span>
+            <span class="text-[10px] font-mono text-indigo-300 font-bold">${dynamicMotifs.length} Optionen</span>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+
+          <!-- DETAIL-KARTE ZUM AKTUELL AUSGEWÄHLTEN MOTIV (INKL. SUB-NOTIZ) -->
+          ${selectedMotif ? `
+            <div class="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-700/60 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[9.5px] font-mono text-indigo-300 font-bold uppercase">Gewähltes Motiv:</span>
+                <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold ${selectedMotif.isDoubleFive ? 'bg-purple-950 text-purple-200 border border-purple-600' : 'bg-slate-900 text-slate-300 border border-slate-700'}">
+                  ${selectedMotif.scoreTop}/5 Top · ${selectedMotif.scoreBottom}/5 Bottom
+                </span>
+              </div>
+              <strong class="text-xs text-white font-bold block">${escapeHtml(selectedMotif.title)}</strong>
+              <p class="text-[10.5px] text-slate-300 leading-snug break-words">${escapeHtml(selectedMotif.desc)}</p>
+
+              <!-- PERSÖNLICHE NOTIZ DES SUBS ZU DIESEM THEMA -->
+              ${selectedMotif.noteSub ? `
+                <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1 text-[10.5px]">
+                  <span class="text-purple-300 font-mono font-bold text-[9.5px] block">[Persönliche Notiz von ${escapeHtml(bottomName)}]:</span>
+                  <p class="text-slate-200 italic break-words leading-snug">„${escapeHtml(selectedMotif.noteSub)}“</p>
+                </div>
+              ` : ''}
+
+              ${selectedMotif.isShame ? `
+                <div class="p-2 rounded-xl bg-pink-950/40 border border-pink-900/60 text-[10px] text-pink-200">
+                  Schutzanker aktiv: ${escapeHtml(bottomName)} empfindet hier Scham. Strenges Alltags-Spottverbot (§ 1 Abs. 2) und behutsame Annäherung!
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+
+          <!-- AUSWAHL-LISTE DER MOTIVE (VOLLSTÄNDIG LESBAR OHNE LINE-CLAMP) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto pr-1">
             ${dynamicMotifs.map(m => {
               const isSelected = (stagingConfig.motifId === m.id);
               return `
-                <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectMotif('${m.id}')" class="p-2.5 rounded-2xl border text-left transition-all touch-btn ${isSelected ? 'bg-indigo-950/70 border-indigo-500 text-white shadow-md' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
-                  <div class="flex items-center justify-between">
-                    <div class="min-w-0 pr-1">
-                      <span class="text-[8.5px] font-mono text-purple-400 block truncate">${escapeHtml(m.chapterTitle)}</span>
-                      <strong class="text-xs block font-bold truncate">${escapeHtml(m.title)}</strong>
+                <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectMotif('${m.id}')" class="p-3 rounded-2xl border text-left transition-all touch-btn ${isSelected ? 'bg-indigo-950/70 border-indigo-500 text-white shadow-md' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
+                  <div class="flex items-start justify-between gap-1 mb-1">
+                    <div class="min-w-0 flex-1">
+                      <span class="text-[8.5px] font-mono text-purple-400 block">${escapeHtml(m.chapterTitle)}</span>
+                      <strong class="text-xs block font-bold leading-tight break-words">${escapeHtml(m.title)}</strong>
                     </div>
-                    <div class="flex items-center gap-1 flex-shrink-0">
-                      ${m.isDoubleFive ? '<span class="px-1.5 py-0.2 rounded text-[8.5px] bg-purple-900 text-purple-200 font-bold">5/5 Match</span>' : ''}
-                      <span class="text-xs font-mono font-bold ${isSelected ? 'text-indigo-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
-                    </div>
+                    <span class="text-xs font-mono font-bold flex-shrink-0 ml-1 ${isSelected ? 'text-indigo-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
                   </div>
-                  <p class="text-[9.5px] text-slate-400 leading-snug mt-1 line-clamp-2">${escapeHtml(m.desc)}</p>
+                  <p class="text-[9.5px] text-slate-400 leading-snug break-words">${escapeHtml(m.desc)}</p>
+                  ${m.noteSub ? `<span class="text-[9px] text-purple-300 font-mono block mt-1">Notiz vorhanden ✓</span>` : ''}
                 </button>
               `;
             }).join('')}
@@ -472,22 +626,22 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             ${isLocked ? `
-              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('remain_locked')" class="p-2.5 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'remain_locked' ? 'bg-purple-950/70 border-purple-600 text-white' : 'bg-slate-950 border-slate-800 text-slate-300'}">
+              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('remain_locked')" class="p-3 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'remain_locked' ? 'bg-purple-950/70 border-purple-600 text-white' : 'bg-slate-950 border-slate-800 text-slate-300'}">
                 <strong class="text-xs block font-bold">Im Verschluss belassen</strong>
-                <span class="text-[9.5px] text-slate-400 block mt-0.5">Käfig bleibt kalt und verriegelt am Körper; Schaftberührung unmöglich.</span>
+                <span class="text-[9.5px] text-slate-400 block mt-0.5 break-words">Käfig bleibt kalt und verriegelt am Körper; Schaftberührung unmöglich.</span>
               </button>
-              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('tease_relock')" class="p-2.5 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'tease_relock' ? 'bg-amber-950/70 border-amber-600 text-amber-200' : 'bg-slate-950 border-slate-800 text-slate-300'}">
+              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('tease_relock')" class="p-3 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'tease_relock' ? 'bg-amber-950/70 border-amber-600 text-amber-200' : 'bg-slate-950 border-slate-800 text-slate-300'}">
                 <strong class="text-xs block font-bold">Tease &amp; Relock (Temporär lösen)</strong>
-                <span class="text-[9.5px] text-slate-400 block mt-0.5">Schloss öffnen für Schwellen-Quälerei; am Ende zwingend wieder weggesperrt.</span>
+                <span class="text-[9.5px] text-slate-400 block mt-0.5 break-words">Schloss öffnen für Schwellen-Quälerei; am Ende zwingend wieder weggesperrt.</span>
               </button>
             ` : `
-              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('leave_unlocked')" class="p-2.5 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'leave_unlocked' ? 'bg-purple-950/70 border-purple-600 text-white' : 'bg-slate-950 border-slate-800 text-slate-300'}">
+              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('leave_unlocked')" class="p-3 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'leave_unlocked' ? 'bg-purple-950/70 border-purple-600 text-white' : 'bg-slate-950 border-slate-800 text-slate-300'}">
                 <strong class="text-xs block font-bold">Frei belassen</strong>
-                <span class="text-[9.5px] text-slate-400 block mt-0.5">Offen für manuelle oder orale Reize ohne Verschluss.</span>
+                <span class="text-[9.5px] text-slate-400 block mt-0.5 break-words">Offen für manuelle oder orale Reize ohne Verschluss.</span>
               </button>
-              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('relock_tonight')" class="p-2.5 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'relock_tonight' ? 'bg-amber-950/70 border-amber-600 text-amber-200' : 'bg-slate-950 border-slate-800 text-slate-300'}">
+              <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectChastityAction('relock_tonight')" class="p-3 rounded-2xl border text-left transition-all touch-btn ${stagingConfig.chastityAction === 'relock_tonight' ? 'bg-amber-950/70 border-amber-600 text-amber-200' : 'bg-slate-950 border-slate-800 text-slate-300'}">
                 <strong class="text-xs block font-bold">Wegsperren für die Nacht</strong>
-                <span class="text-[9.5px] text-slate-400 block mt-0.5">Session endet mit dem Verschluss im Käfig vor dem Einschlafen.</span>
+                <span class="text-[9.5px] text-slate-400 block mt-0.5 break-words">Session endet mit dem Verschluss im Käfig vor dem Einschlafen.</span>
               </button>
             `}
           </div>
@@ -509,8 +663,8 @@
             ${selectedItemsObjects.length === 0 ? `
               <span class="text-[10px] text-slate-500 italic py-1">Keine Ausrüstung vorselektiert. Klicke auf 'Schrank öffnen'.</span>
             ` : selectedItemsObjects.map(it => `
-              <span class="px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-[10.5px] text-slate-200 flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+              <span class="px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-[10.5px] text-slate-200 flex items-center gap-1.5 break-words">
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span>
                 <span>${escapeHtml(it.name)}</span>
               </span>
             `).join('')}
@@ -588,26 +742,33 @@
       `;
     }
 
-    let topName = 'Top';
-    let bottomName = 'Bottom';
-    if (window.HubContext && typeof window.HubContext.getNames === 'function') {
-      const names = window.HubContext.getNames();
-      const roles = window.HubContext.getRoles();
-      topName = names[roles.topRole] || 'Top';
-      bottomName = names[roles.bottomRole] || 'Bottom';
-    }
-
+    const { topName, bottomName, bottomRole } = getRolesAndNames();
     const dynamicMotifs = extractDynamicMotifCandidates();
     const activeMotif = dynamicMotifs.find(m => m.id === stagingConfig.motifId) || dynamicMotifs[0];
 
+    let answers = {};
+    try {
+      const raw = localStorage.getItem('kompass_answers');
+      if (raw) answers = JSON.parse(raw) || {};
+    } catch (e) {}
+
+    const ansSub = answers[bottomRole] || {};
+    const traumaData = {
+      choice901: ansSub['choice_901'],
+      choice902: ansSub['choice_902'],
+      choice904: ansSub['choice_904'],
+      noteSub: activeMotif.noteSub || '',
+      isShame: activeMotif.isShame
+    };
+
     let generatedScript = null;
 
-    // 1. Primärpfad: AIAdapter (Multi-KI Gateway mit vollständigem 7-Vektoren Briefing)
+    // 1. Primärpfad: AIAdapter mit vollständiger Sub-Notiz & Trigger-Einspeisung
     if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
       try {
-        let prompt = "";
+        let basePrompt = "";
         if (window.HubContext && typeof window.HubContext.createBedroomScriptPrompt === 'function') {
-          prompt = window.HubContext.createBedroomScriptPrompt({
+          basePrompt = window.HubContext.createBedroomScriptPrompt({
             tonality: stagingConfig.tonality,
             intensityLevel: stagingConfig.intensityLevel,
             focusMotif: activeMotif.title,
@@ -617,9 +778,19 @@
           });
         }
 
+        // Sub-Notiz & Trauma-Leitplanke explizit in den Prompt einbinden
+        const safetyInjection = `
+VERBINDLICHE SUB-NOTIZEN & SCHUTZANKER ZUM HAUPTMOTIV:
+- Persönliche Notiz von ${bottomName}: ${traumaData.noteSub ? `„${traumaData.noteSub}“` : 'Keine spezifische Einschränkung notiert.'}
+- Scham-Schutzanker (🙈): ${traumaData.isShame ? 'AKTIV! Höchste Achtsamkeit, absolutes Alltags-Spottverbot.' : 'Nicht schambesetzt.'}
+- Flashback-Trigger (Kap. 00): ${traumaData.choice902 || 'Keine'}
+- Bei emotionaler Überforderung wünscht ${bottomName}: ${traumaData.choice904 || 'Umarmung & Vagus-Atmung'}
+Berücksichtige diese Wünsche zwingend in den wörtlichen Regie-Anweisungen und Haltungsbefehlen!
+`;
+
         generatedScript = await window.AIAdapter.generateText({
           systemPrompt: "Du bist der somatische Schlafzimmer-Live-Regisseur für TACTUS.",
-          userPrompt: prompt,
+          userPrompt: basePrompt + "\n" + safetyInjection,
           temperature: 0.65,
           returnJson: true
         });
@@ -628,9 +799,9 @@
       }
     }
 
-    // 2. Fallback: Vollwertige prozedurale Heuristik
+    // 2. Fallback: Prozedurale Heuristik mit Notizen-Berücksichtigung
     if (!generatedScript || !Array.isArray(generatedScript.phases) || generatedScript.phases.length === 0) {
-      generatedScript = synthesizeProceduralScript(topName, bottomName, activeMotif);
+      generatedScript = synthesizeProceduralScript(topName, bottomName, activeMotif, traumaData);
     }
 
     // Skript in sessionStorage hinterlegen für session_live.js
@@ -659,7 +830,7 @@
     }, 300);
   }
 
-  function synthesizeProceduralScript(topName, bottomName, motif) {
+  function synthesizeProceduralScript(topName, bottomName, motif, traumaData) {
     const ton = TONALITIES[stagingConfig.tonality] || TONALITIES.sovereign_warm;
     const ag = TOP_AGENDAS[stagingConfig.topAgenda] || TOP_AGENDAS.focus_top;
     const isRelockTonight = stagingConfig.chastityAction === 'relock_tonight';
@@ -682,6 +853,12 @@
       quotePhase1 = `„Komm her zu mir. Mal sehen, wie brav du heute wirklich sein kannst.“`;
       quotePhase2 = `„Zuckst du schon? Das war doch erst der Anfang.“`;
       quotePhase3 = `„Verwöhn mich, bis ich fertig bin – und dann sehen wir weiter.“`;
+    }
+
+    // Phase 2 Instruktion ergänzen um Sub-Bedingung falls vorhanden
+    let phase2Instruction = `Etablierung der Hierarchie. Umsetzung von „${motif.title}“: ${motif.desc}`;
+    if (traumaData && traumaData.noteSub) {
+      phase2Instruction += ` [Achtung: ${bottomName} hat vereinbart: „${traumaData.noteSub}“].`;
     }
 
     // Phase 3 Instruktion modulieren nach Top-Agenda
@@ -710,7 +887,7 @@
         {
           phaseIndex: 2,
           title: `Phase 2: Machtaufbau & ${motif.title}`,
-          instruction: `Etablierung der Hierarchie. Umsetzung von „${motif.title}“: ${motif.desc}`,
+          instruction: phase2Instruction,
           topDialogueQuote: quotePhase2,
           somaticZone: "gluteal_pelvis",
           estimatedMinutes: 12
