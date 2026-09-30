@@ -25,423 +25,228 @@
   let sfxGain = null;
 
   let isPlaying = false;
-  let activeSoundscapeId = 'velvet_drone';
+  let activeSoundscapeId = 'generative_noir';
   let masterVolume = 0.65;
   let isDucked = false;
 
   // Aktive Klangquellen & Generatoren
   let activeGenerators = [];
-  let heartbeatTimer = null;
-  let heartbeatBpm = 62;
+  let musicLoopTimer = null;
+  let arpTimer = null;
+  let currentChordStep = 0;
 
   // Dynamischer Modulations-Status
   let currentArousal = 5;
   let currentSessionPhase = 1;
   let currentTonality = 'sovereign_warm';
 
-  function getAudioContext() {
-    if (!audioCtx) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) {
-        console.warn("[TACTUS Audio] WebAudio API von diesem Browser nicht unterstützt.");
-        return null;
-      }
-      audioCtx = new AudioContextClass();
-
-      // Master Gain
-      masterGain = audioCtx.createGain();
-      masterGain.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
-
-      // Musik Bus
-      musicGain = audioCtx.createGain();
-      musicGain.gain.setValueAtTime(0.7, audioCtx.currentTime);
-
-      // SFX / Takt Bus
-      sfxGain = audioCtx.createGain();
-      sfxGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
-
-      // Routing
-      musicGain.connect(masterGain);
-      sfxGain.connect(masterGain);
-      masterGain.connect(audioCtx.destination);
-    }
-
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-
-    return audioCtx;
+  // MIDI-zu-Frequenz-Wandler
+  function midiToFreq(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  function showToast(message) {
-    if (typeof window.showToastNotification === 'function') {
-      window.showToastNotification(message);
-      return;
-    }
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
-    el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z"/>
-      </svg>
-      <span>${escapeHtml(message)}</span>
-    `;
-    container.appendChild(el);
-
-    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
-    setTimeout(() => {
-      el.classList.add('opacity-0');
-      setTimeout(() => el.remove(), 300);
-    }, 2800);
-  }
+  // Musikalische Harmonien & Akkord-Matrizen
+  const HARMONIC_PROGRESSIONS = {
+    // Phase 1: Tiefe, beruhigende Moll- und Sus-Akkorde (Erdung & Subspace)
+    grounding: [
+      { name: "Dm9", notes: [38, 50, 57, 60, 64] },      // D2, D3, A3, C4, E4
+      { name: "Bbmaj7", notes: [34, 46, 53, 57, 62] },   // Bb1, Bb2, F3, A3, D4
+      { name: "Gm9", notes: [31, 43, 50, 53, 57] },      // G1, G2, D3, F3, A3
+      { name: "Asus4", notes: [33, 45, 52, 57, 62] }     // A1, A2, E3, A3, D4
+    ],
+    // Phase 2: D-Dorisch mit hypnotischer Bewegung (Macht & Reizaufbau)
+    tension: [
+      { name: "Dm7", notes: [38, 50, 57, 60, 65] },      // D2, D3, A3, C4, F4
+      { name: "Em7/D", notes: [38, 52, 55, 59, 64] },    // D2, E3, G3, B3, E4
+      { name: "Fmaj7", notes: [41, 53, 57, 60, 64] },    // F2, F3, A3, C4, E4
+      { name: "G7sus4", notes: [43, 55, 58, 62, 67] }    // G2, G3, Bb3, D4, G4
+    ],
+    // Phase 3: Erregungszenit & Katharsis (Dichte Harmonik, treibend)
+    catharsis: [
+      { name: "Dm(add9)", notes: [38, 50, 57, 62, 64] },
+      { name: "Cadd9/E", notes: [40, 52, 55, 60, 62] },
+      { name: "Bbmaj7(#11)", notes: [34, 46, 55, 57, 64] },
+      { name: "A7(b13)", notes: [33, 45, 52, 58, 61] }
+    ],
+    // Phase 4: Sanfte Erlösung & Entlastung (Reverse Aftercare)
+    aftercare: [
+      { name: "Fmaj9", notes: [41, 53, 57, 60, 64, 67] }, // Lichter Dur-Klang
+      { name: "Dsus2", notes: [38, 50, 57, 62, 64] },
+      { name: "Gmaj7", notes: [35, 47, 54, 59, 62] },
+      { name: "D(pure)", notes: [38, 50, 57, 62] }
+    ]
+  };
 
   /**
-   * Generiert eine tiefe, warme Samt-Drone mit binauraler Schwebung (Theta 6 Hz)
-   * zur Aktivierung des Parasympathikus und Eintauchen in den Subspace.
+   * Polyphoner, mikrotonal schwebender Ambient-Pad-Synthesizer
+   * Erzeugt warme, reiche Akkorde mit zwei detunten Oszillatoren pro Stimme.
    */
-  function startVelvetDrone(ctx, targetGainNode) {
-    const baseFreq = currentTonality === 'sovereign_cool' ? 108 : (currentTonality === 'raw_primal' ? 54 : 72);
-    const thetaBeat = 6.0; // 6 Hz Frequenzdifferenz für Trance
-
-    // Linker Kanal
-    const oscL = ctx.createOscillator();
-    oscL.type = 'sine';
-    oscL.frequency.setValueAtTime(baseFreq, ctx.currentTime);
-
-    // Rechter Kanal (Offset um Theta-Frequenz)
-    const oscR = ctx.createOscillator();
-    oscR.type = 'sine';
-    oscR.frequency.setValueAtTime(baseFreq + thetaBeat, ctx.currentTime);
-
-    // Sub-Bass Unterton
-    const subOsc = ctx.createOscillator();
-    subOsc.type = 'triangle';
-    subOsc.frequency.setValueAtTime(baseFreq / 2, ctx.currentTime);
-
-    // Filter mit Arousal-Kopplung
+  function playGenerativePadChord(ctx, targetGainNode, chordNotes, durationSeconds = 12.0) {
+    const chordVoices = [];
+    const chordGain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
+
+    // Dynamischer Filter-Cutoff gekoppelt an Erregung und Phase
     filter.type = 'lowpass';
-    const cutoff = Math.min(1800, 200 + (currentArousal * 90));
-    filter.frequency.setValueAtTime(cutoff, ctx.currentTime);
-    filter.Q.setValueAtTime(2.5, ctx.currentTime);
-
-    // Gain Envelopes
-    const padGain = ctx.createGain();
-    padGain.gain.setValueAtTime(0.001, ctx.currentTime);
-    padGain.gain.exponentialRampToValueAtTime(0.45, ctx.currentTime + 3.0);
-
-    // Panner
-    const pannerL = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-    const pannerR = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-    if (pannerL) pannerL.pan.setValueAtTime(-0.85, ctx.currentTime);
-    if (pannerR) pannerR.pan.setValueAtTime(0.85, ctx.currentTime);
-
-    // Routing
-    if (pannerL && pannerR) {
-      oscL.connect(pannerL);
-      pannerL.connect(filter);
-      oscR.connect(pannerR);
-      pannerR.connect(filter);
-    } else {
-      oscL.connect(filter);
-      oscR.connect(filter);
-    }
-    subOsc.connect(filter);
-
-    filter.connect(padGain);
-    padGain.connect(targetGainNode);
-
-    oscL.start();
-    oscR.start();
-    subOsc.start();
-
-    return {
-      name: 'velvet_drone',
-      filterNode: filter,
-      stop: (fadeSeconds = 2.0) => {
-        try {
-          padGain.gain.setValueAtTime(padGain.gain.value, ctx.currentTime);
-          padGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + fadeSeconds);
-          setTimeout(() => {
-            try {
-              oscL.stop();
-              oscR.stop();
-              subOsc.stop();
-            } catch (e) {}
-          }, fadeSeconds * 1000 + 100);
-        } catch (e) {}
-      }
-    };
-  }
-
-  /**
-   * Modale Resonanz-Synthese einer tibetischen Klangschale (Grundfrequenz 432 Hz).
-   * Erzeugt obertonreiche Schwebungen mit langsam ausklingender Nachhall-Dämpfung.
-   */
-  function startTibetanBowl432(ctx, targetGainNode) {
-    const fundamental = 432;
-    const partials = [
-      { ratio: 1.0, gain: 0.45 },
-      { ratio: 2.76, gain: 0.28 },
-      { ratio: 5.40, gain: 0.12 },
-      { ratio: 8.92, gain: 0.05 }
-    ];
-
-    const bowlGain = ctx.createGain();
-    bowlGain.gain.setValueAtTime(0.001, ctx.currentTime);
-    bowlGain.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + 2.5);
-
-    const oscillators = [];
-
-    partials.forEach(p => {
-      const osc = ctx.createOscillator();
-      const pGain = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(fundamental * p.ratio, ctx.currentTime);
-
-      // Sanfte LFO-Amplituden-Modulation für lebendigen Schwebungseffekt
-      const lfo = ctx.createOscillator();
-      const lfoGain = ctx.createGain();
-      lfo.frequency.setValueAtTime(0.25 + (Math.random() * 0.2), ctx.currentTime);
-      lfoGain.gain.setValueAtTime(p.gain * 0.15, ctx.currentTime);
-
-      lfo.connect(lfoGain.gain);
-      pGain.gain.setValueAtTime(p.gain, ctx.currentTime);
-
-      osc.connect(pGain);
-      pGain.connect(bowlGain);
-
-      osc.start();
-      lfo.start();
-      oscillators.push(osc, lfo);
-    });
-
-    bowlGain.connect(targetGainNode);
-
-    return {
-      name: 'tibetan_bowl_432',
-      stop: (fadeSeconds = 3.0) => {
-        try {
-          bowlGain.gain.setValueAtTime(bowlGain.gain.value, ctx.currentTime);
-          bowlGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + fadeSeconds);
-          setTimeout(() => {
-            oscillators.forEach(o => {
-              try { o.stop(); } catch (e) {}
-            });
-          }, fadeSeconds * 1000 + 100);
-        } catch (e) {}
-      }
-    };
-  }
-
-  /**
-   * Generiert eine gefilterte Wind- und Atem-Klanglandschaft über moduliertes Pink Noise.
-   */
-  function startNightBreeze(ctx, targetGainNode) {
-    const bufferSize = ctx.sampleRate * 2;
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-
-    // Paul Kellet Pink Noise Algorithmus
-    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      b0 = 0.99886 * b0 + white * 0.0555179;
-      b1 = 0.99332 * b1 + white * 0.0750759;
-      b2 = 0.96900 * b2 + white * 0.1538520;
-      b3 = 0.86650 * b3 + white * 0.3104856;
-      b4 = 0.55000 * b4 + white * 0.5329522;
-      b5 = -0.7616 * b5 - white * 0.0168980;
-      output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-      output[i] *= 0.11; // Pegelkorrektur
-      b6 = white * 0.115926;
-    }
-
-    const whiteNoise = ctx.createBufferSource();
-    whiteNoise.buffer = noiseBuffer;
-    whiteNoise.loop = true;
-
-    // Tiefpassfilter mit Atem-Wellen
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(320, ctx.currentTime);
+    const baseCutoff = currentSessionPhase >= 3 ? 900 : (currentSessionPhase === 2 ? 650 : 380);
+    const dynamicCutoff = Math.min(2400, baseCutoff + (currentArousal * 85));
+    filter.frequency.setValueAtTime(dynamicCutoff * 0.7, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(dynamicCutoff, ctx.currentTime + (durationSeconds * 0.4));
+    filter.frequency.exponentialRampToValueAtTime(dynamicCutoff * 0.6, ctx.currentTime + durationSeconds);
     filter.Q.setValueAtTime(1.8, ctx.currentTime);
 
-    // LFO für wellenförmige Windstöße
-    const windLfo = ctx.createOscillator();
-    const windLfoGain = ctx.createGain();
-    windLfo.frequency.setValueAtTime(0.12, ctx.currentTime); // ~8 Sekunden Atemzyklus
-    windLfoGain.gain.setValueAtTime(180, ctx.currentTime);
+    // Sanfte Hüllkurve (Lush Envelope)
+    chordGain.gain.setValueAtTime(0.001, ctx.currentTime);
+    chordGain.gain.exponentialRampToValueAtTime(0.38, ctx.currentTime + (durationSeconds * 0.35));
+    chordGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSeconds);
 
-    windLfo.connect(filter.frequency);
+    filter.connect(chordGain);
+    chordGain.connect(targetGainNode);
 
-    const breezeGain = ctx.createGain();
-    breezeGain.gain.setValueAtTime(0.001, ctx.currentTime);
-    breezeGain.gain.exponentialRampToValueAtTime(0.38, ctx.currentTime + 2.5);
+    // Erzeuge zwei Oszillatoren pro Note (Sawtooth + Triangle mit Chorus-Detuning)
+    chordNotes.forEach(midi => {
+      const freq = midiToFreq(midi);
 
-    whiteNoise.connect(filter);
-    filter.connect(breezeGain);
-    breezeGain.connect(targetGainNode);
+      // Oszillator 1 (Warm Triangle)
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(freq, ctx.currentTime);
 
-    whiteNoise.start();
-    windLfo.start();
+      // Oszillator 2 (Soft Saw mit +4 Cent Schwebung für analoge Wärme)
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sawtooth';
+      osc2.frequency.setValueAtTime(freq * 1.0025, ctx.currentTime);
+
+      const voiceGain = ctx.createGain();
+      voiceGain.gain.setValueAtTime(0.18, ctx.currentTime);
+
+      osc1.connect(voiceGain);
+      osc2.connect(voiceGain);
+      voiceGain.connect(filter);
+
+      osc1.start(ctx.currentTime);
+      osc2.start(ctx.currentTime);
+
+      osc1.stop(ctx.currentTime + durationSeconds + 0.1);
+      osc2.stop(ctx.currentTime + durationSeconds + 0.1);
+
+      chordVoices.push(osc1, osc2);
+    });
 
     return {
-      name: 'night_breeze',
-      stop: (fadeSeconds = 2.0) => {
+      voices: chordVoices,
+      filter: filter,
+      stop: () => {
         try {
-          breezeGain.gain.setValueAtTime(breezeGain.gain.value, ctx.currentTime);
-          breezeGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + fadeSeconds);
+          chordGain.gain.cancelScheduledValues(ctx.currentTime);
+          chordGain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 1.5);
           setTimeout(() => {
-            try {
-              whiteNoise.stop();
-              windLfo.stop();
-            } catch (e) {}
-          }, fadeSeconds * 1000 + 100);
+            chordVoices.forEach(v => { try { v.stop(); } catch (e) {} });
+          }, 1600);
         } catch (e) {}
       }
     };
   }
 
   /**
-   * Erzeugt einen gedämpften, sub-aurikulären Herzschlag-Puls.
-   * BPM skaliert dynamisch mit der Erregungsstufe (Arousal 1..10).
+   * Generativer melodischer Arpeggiator & Glocken-Plucks
+   * Streut organische Melodietöne aus dem aktuellen Akkord ein.
    */
-  function triggerHeartbeatSingle(ctx, targetGainNode, frequency = 58, intensity = 0.5) {
+  function triggerGenerativePluck(ctx, targetGainNode, midiNote) {
     try {
       const now = ctx.currentTime;
+      const freq = midiToFreq(midiNote);
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
 
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(120, now);
+      // Flötiger Sinus-/Rechteck-Mischklang mit perkussivem Filter-Pluck
+      osc.type = Math.random() > 0.4 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(frequency, now);
-      osc.frequency.exponentialRampToValueAtTime(34, now + 0.16);
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(freq * 1.8, now);
+      filter.Q.setValueAtTime(3.5, now);
 
       gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(intensity * 0.45, now + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      gain.gain.linearRampToValueAtTime(0.09, now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(targetGainNode);
 
       osc.start(now);
-      osc.stop(now + 0.25);
+      osc.stop(now + 3.0);
     } catch (e) {}
   }
 
-  function startHeartbeatLoop(ctx, targetGainNode) {
-    if (heartbeatTimer) clearInterval(heartbeatTimer);
+  /**
+   * Die generative Kompositions-Engine (Endloser, dynamischer Musikfluss)
+   */
+  function startGenerativeMusic(ctx, targetGainNode) {
+    stopGenerativeMusic();
 
-    function scheduleBeats() {
-      // Berechnung BPM: Basis 58 + Arousal-Zuschlag
-      heartbeatBpm = Math.max(50, Math.min(130, 56 + (currentArousal * 6)));
-      const intervalMs = (60 / heartbeatBpm) * 1000;
+    let activePad = null;
+    const chordDuration = currentSessionPhase === 3 ? 9.0 : 13.0;
 
-      // Lub-Dub: Doppelschlag
-      triggerHeartbeatSingle(ctx, targetGainNode, 64, 0.45);
-      setTimeout(() => {
-        triggerHeartbeatSingle(ctx, targetGainNode, 52, 0.32);
-      }, 140);
+    function stepProgression() {
+      let progressionSet = HARMONIC_PROGRESSIONS.grounding;
+      if (currentSessionPhase === 2) progressionSet = HARMONIC_PROGRESSIONS.tension;
+      else if (currentSessionPhase === 3) progressionSet = HARMONIC_PROGRESSIONS.catharsis;
+      else if (currentSessionPhase >= 4) progressionSet = HARMONIC_PROGRESSIONS.aftercare;
 
-      heartbeatTimer = setTimeout(scheduleBeats, intervalMs);
+      const currentChord = progressionSet[currentChordStep % progressionSet.length];
+      currentChordStep++;
+
+      // Spiele den nächsten warmen Pad-Akkord
+      activePad = playGenerativePadChord(ctx, targetGainNode, currentChord.notes, chordDuration + 1.5);
+      activeGenerators.push(activePad);
+
+      // Starte subtilen Melodie-Fluss über die Töne dieses Akkords
+      scheduleArpNotes(ctx, targetGainNode, currentChord.notes, chordDuration);
+
+      // Nächsten Akkord rechtzeitig vorbereiten (sanftes Ineinander-Überblenden)
+      musicLoopTimer = setTimeout(stepProgression, (chordDuration - 1.2) * 1000);
     }
 
-    scheduleBeats();
+    stepProgression();
 
     return {
-      name: 'heartbeat_dark',
-      stop: () => {
-        if (heartbeatTimer) {
-          clearTimeout(heartbeatTimer);
-          heartbeatTimer = null;
-        }
-      }
+      name: 'generative_noir',
+      stop: () => stopGenerativeMusic()
     };
   }
 
-  /**
-   * Senkt die Hintergrund-Soundscape sanft um 14 dB ab, wenn Regieanweisungen
-   * gesprochen werden oder Taktklicks im Erregungszenit ertönen.
-   */
-  function duckMusic(duckDurationSeconds = 3.5, duckLevel = 0.18) {
-    if (!musicGain || !audioCtx) return;
-    const now = audioCtx.currentTime;
+  function scheduleArpNotes(ctx, targetGainNode, chordNotes, duration) {
+    if (arpTimer) clearTimeout(arpTimer);
+    const melodyCandidates = chordNotes.filter(n => n >= 50); // Nur mittlere & höhere Töne
+    let elapsed = 1.0;
 
-    try {
-      isDucked = true;
-      musicGain.gain.cancelScheduledValues(now);
-      musicGain.gain.setValueAtTime(musicGain.gain.value, now);
-      musicGain.gain.linearRampToValueAtTime(duckLevel, now + 0.25);
-
-      setTimeout(() => {
-        unduckMusic();
-      }, duckDurationSeconds * 1000);
-    } catch (e) {}
-  }
-
-  function unduckMusic(restoreTimeSeconds = 1.2) {
-    if (!musicGain || !audioCtx || !isDucked) return;
-    const now = audioCtx.currentTime;
-    try {
-      musicGain.gain.cancelScheduledValues(now);
-      musicGain.gain.setValueAtTime(musicGain.gain.value, now);
-      musicGain.gain.linearRampToValueAtTime(0.7, now + restoreTimeSeconds);
-      isDucked = false;
-    } catch (e) {}
-  }
-
-  /**
-   * Taktiler Percussion-Klick für den JOI-Taktgeber und Schwellen-Timer.
-   */
-  function playPercussionClick(frequency = 440, durationMs = 60, customGain = 0.35) {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-
-    try {
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(frequency, now);
-
-      gain.gain.setValueAtTime(customGain, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + (durationMs / 1000));
-
-      osc.connect(gain);
-      gain.connect(sfxGain || ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + (durationMs / 1000) + 0.02);
-    } catch (e) {}
-  }
-
-  function setSoundscape(soundscapeId) {
-    activeSoundscapeId = soundscapeId || 'velvet_drone';
-    if (isPlaying) {
-      stopAllGenerators(1.0);
-      startCurrentSoundscape();
+    function playNextNote() {
+      if (elapsed >= duration - 2.0 || !isPlaying) return;
+      if (Math.random() > 0.3) {
+        const randomNote = melodyCandidates[Math.floor(Math.random() * melodyCandidates.length)];
+        const octaveShift = Math.random() > 0.7 ? 12 : 0;
+        triggerGenerativePluck(ctx, targetGainNode, randomNote + octaveShift);
+      }
+      const nextDelay = 1.5 + (Math.random() * 2.2);
+      elapsed += nextDelay;
+      arpTimer = setTimeout(playNextNote, nextDelay * 1000);
     }
-    updateUi();
+
+    arpTimer = setTimeout(playNextNote, 1200);
+  }
+
+  function stopGenerativeMusic() {
+    if (musicLoopTimer) {
+      clearTimeout(musicLoopTimer);
+      musicLoopTimer = null;
+    }
+    if (arpTimer) {
+      clearTimeout(arpTimer);
+      arpTimer = null;
+    }
   }
 
   function startCurrentSoundscape() {
@@ -461,9 +266,9 @@
       case 'heartbeat_dark':
         generator = startHeartbeatLoop(ctx, musicGain);
         break;
-      case 'velvet_drone':
+      case 'generative_noir':
       default:
-        generator = startVelvetDrone(ctx, musicGain);
+        generator = startGenerativeMusic(ctx, musicGain);
         break;
     }
 
@@ -475,6 +280,7 @@
   }
 
   function stopAllGenerators(fadeSeconds = 1.5) {
+    stopGenerativeMusic();
     activeGenerators.forEach(g => {
       if (g && typeof g.stop === 'function') {
         g.stop(fadeSeconds);
@@ -487,77 +293,14 @@
     }
   }
 
-  function togglePlay() {
-    if (isPlaying) {
-      stopAllGenerators(1.5);
-      isPlaying = false;
-      showToast("Soundscape pausiert");
-    } else {
-      startCurrentSoundscape();
-      showToast("Soundscape aktiv");
-    }
-    updateUi();
-  }
-
-  function setMasterVolume(val) {
-    masterVolume = Math.max(0.0, Math.min(1.0, parseFloat(val) || 0.65));
-    if (masterGain && audioCtx) {
-      masterGain.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
-    }
-    const label = document.getElementById('session-audio-vol-label');
-    if (label) label.innerText = `${Math.round(masterVolume * 100)}%`;
-  }
-
-  /**
-   * Dynamische Kopplung: Reagiert auf Erregungsänderungen aus session_edging.js
-   */
-  function setArousalModulation(arousalLevel) {
-    currentArousal = Math.max(1, Math.min(10, parseInt(arousalLevel, 10) || 5));
-
-    // Moduliere Filter der aktiven Drone
-    if (audioCtx) {
-      activeGenerators.forEach(g => {
-        if (g.filterNode) {
-          const targetCutoff = Math.min(1800, 200 + (currentArousal * 90));
-          g.filterNode.frequency.linearRampToValueAtTime(targetCutoff, audioCtx.currentTime + 0.8);
-        }
-      });
-    }
-  }
-
-  /**
-   * Dynamische Kopplung: Reagiert auf Phasenwechsel aus session_live.js
-   */
-  function setSessionPhase(phaseIndex, tonality = 'sovereign_warm') {
-    currentSessionPhase = phaseIndex;
-    currentTonality = tonality;
-
-    // Automatische Raum-Empfehlung passend zur Dramaturgie
-    if (phaseIndex === 1) {
-      // Transition & Erdung: Velvet Drone mit 6Hz Binaural-Beat
-      setSoundscape('velvet_drone');
-    } else if (phaseIndex === 2) {
-      // Reizaufbau & Macht: Nachtbrise oder Drone
-      if (activeSoundscapeId !== 'velvet_drone' && activeSoundscapeId !== 'night_breeze') {
-        setSoundscape('night_breeze');
-      }
-    } else if (phaseIndex === 3) {
-      // Katharsis: Herzschlag-Puls
-      setSoundscape('heartbeat_dark');
-    } else if (phaseIndex >= 4) {
-      // Aftercare: 432 Hz Tibetische Klangschale
-      setSoundscape('tibetan_bowl_432');
-    }
-  }
-
   function renderAudioWidget(containerId = 'session-audio-widget-container') {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const soundscapes = [
+      { id: 'generative_noir', label: 'TACTUS Generative Musik', desc: 'Unendliche Harmonien, Pads & Melodiefluss (Voll-Dynamisch)' },
       { id: 'velvet_drone', label: 'Velvet Drone (6Hz Binaural)', desc: 'Tieffrequente Schwebung für Subspace & Trance' },
       { id: 'tibetan_bowl_432', label: 'Klangschale (432Hz)', desc: 'Resonante Obertöne zur Nervensystem-Erdung' },
-      { id: 'night_breeze', label: 'Nachtbrise (Pink Noise)', desc: 'Wellenförmiges Rauschen zur Reizabschirmung' },
       { id: 'heartbeat_dark', label: 'Herzschlag (Pulsator)', desc: 'Sub-Bass Herzschlag, gekoppelt an Erregung' }
     ];
 
@@ -571,8 +314,8 @@
               </svg>
             </div>
             <div>
-              <strong class="text-xs text-white block font-bold">Klangregie &amp; Raum-Synthese</strong>
-              <span class="text-[9.5px] text-purple-300 font-mono">100 % Autarke WebAudio-Synthese</span>
+              <strong class="text-xs text-white block font-bold">Generative Musikregie</strong>
+              <span class="text-[9.5px] text-purple-300 font-mono">100 % Autarke WebAudio-Synthese (Echte Musik)</span>
             </div>
           </div>
           <button type="button" id="btn-audio-toggle" onclick="SessionAudio.togglePlay()" class="px-3 py-1.5 rounded-xl font-bold text-xs touch-btn transition-colors ${isPlaying ? 'bg-purple-700 text-white shadow-md' : 'bg-slate-800 text-slate-300 hover:text-white'}">
