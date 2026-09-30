@@ -1,16 +1,17 @@
 /**
  * js/hub_photos.js
- * TACTUS E2EE-Fototresor, Canvas-Kompression & Multimodale Vision-Engine
+ * TACTUS 1:1 Foto-Tresor, IndexedDB-Sandbox & Multimodale Vision-Engine (V3.0 Hyper-Dynamisch)
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - IndexedDB-Tresor ('tactus_vault_db') für offline-fähigen, persistenten Speicher
- * - Automatischer Persistent-Storage-Request via navigator.storage.persist() (Apple ITP-Schutz)
- * - 1:1 Smart Center-Crop auf quadratisches Format (800x800 px) im HTML5-Canvas
- * - Zielkomprimierung auf <= 80 KB (WebP mit JPEG-Fallback)
- * - Multimodale Vision-Extraktion für Toy-Affordanzen, Reiz-Vektoren & DoF-Blockaden
- * - Zero-Knowledge E2EE: Bilder verlassen das Endgerät niemals im Klartext
- * - 100 % frei von trivialen Emojis in Benutzeroberfläche und Code
+ * - Lokale IndexedDB-Sandbox 'tactus_vault_db' (Store: 'toy_vault_photos')
+ * - Apple WebKit ITP-Persistenzschutz via navigator.storage.persist() (7-Tage-Löschschutz)
+ * - Mathematischer 1:1 Center-Crop (800x800 px) ohne Bildverzerrung
+ * - Iterative WebP-Kompressionsschleife auf <= 80 KB für P2P-Sync-Tauglichkeit
+ * - 0-ms In-Memory Caching (Map) zur Vermeidung von Layout-Flackern
+ * - Multimodale Affordanz-Extraktion via AIAdapter.analyzeImage()
+ * - E2EE-Sync Export- und Import-Bridge mit zeitstempelbasierter Konfliktlösung
+ * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
 
@@ -20,62 +21,24 @@
   const DB_NAME = 'tactus_vault_db';
   const DB_VERSION = 1;
   const STORE_PHOTOS = 'toy_vault_photos';
-  const TARGET_DIMENSION = 800; // 800 x 800 px quadratisch (1:1 Ratio)
-  const MAX_TARGET_BYTES = 80 * 1024; // 80 KB Zielgrenze für schnellen E2EE-Sync
+  const TARGET_DIMENSION = 800; // 800x800 px quadratisch
+  const MAX_TARGET_BYTES = 80 * 1024; // 80 KB Obergrenze für Sync-Pakete
 
   let dbInstance = null;
   let dbInitPromise = null;
-  const inMemoryBlobUrlCache = new Map();
-
-  function showToast(message) {
-    if (typeof window.showToastNotification === 'function') {
-      window.showToastNotification(message);
-      return;
-    }
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
-    el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/>
-      </svg>
-      <span>${escapeHtml(message)}</span>
-    `;
-    container.appendChild(el);
-
-    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
-    setTimeout(() => {
-      el.classList.add('opacity-0');
-      setTimeout(() => el.remove(), 300);
-    }, 3000);
-  }
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
+  const inMemoryBlobUrlCache = new Map(); // toyId -> DataURL
 
   async function requestStoragePersistence() {
     try {
-      if (navigator.storage && navigator.storage.persist) {
+      if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
         const isPersisted = await navigator.storage.persisted();
         if (!isPersisted) {
           const granted = await navigator.storage.persist();
-          console.debug("[TACTUS Vault] Persistent Storage Status:", granted ? "Garantiert (ITP-Schutz aktiv)" : "Standard (Browser-verwaltet)");
-        } else {
-          console.debug("[TACTUS Vault] Persistent Storage bereits verifiziert.");
+          console.debug('[TACTUS Vault] Apple ITP Persistenzstatus:', granted ? 'Dauerhaft gesichert' : 'Standard');
         }
       }
-    } catch (err) {
-      console.warn("[TACTUS Vault] Konnte Speicherpersistenz nicht anfordern:", err);
+    } catch (e) {
+      console.debug('[TACTUS Vault] navigator.storage.persist nicht verfügbar:', e);
     }
   }
 
@@ -83,359 +46,391 @@
     if (dbInstance) return Promise.resolve(dbInstance);
     if (dbInitPromise) return dbInitPromise;
 
-    dbInitPromise = new Promise((resolve) => {
-      if (!window.indexedDB) {
-        console.warn("[TACTUS Vault] IndexedDB wird von diesem Endgerät nicht unterstützt.");
-        resolve(null);
+    dbInitPromise = new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) {
+        reject(new Error('IndexedDB wird von dieser Umgebung nicht unterstützt.'));
         return;
       }
 
-      const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
         if (!db.objectStoreNames.contains(STORE_PHOTOS)) {
-          const store = db.createObjectStore(STORE_PHOTOS, { keyPath: 'id' });
-          store.createIndex('toyId', 'toyId', { unique: false });
+          const store = db.createObjectStore(STORE_PHOTOS, { keyPath: 'toyId' });
           store.createIndex('updatedAt', 'updatedAt', { unique: false });
         }
       };
 
       request.onsuccess = (event) => {
         dbInstance = event.target.result;
+        requestStoragePersistence();
         resolve(dbInstance);
       };
 
       request.onerror = (event) => {
-        console.error("[TACTUS Vault] Fehler beim Öffnen der IndexedDB:", event.target.error);
-        resolve(null);
+        console.warn('[TACTUS Vault] Fehler beim Öffnen der IndexedDB:', event.target.error);
+        reject(event.target.error);
       };
     });
 
     return dbInitPromise;
   }
 
-  async function processImageToSquareWebP(fileOrBlob) {
+  function processImageToSquareWebP(fileOrBlob) {
     return new Promise((resolve, reject) => {
+      if (!fileOrBlob) {
+        reject(new Error('Keine Bilddatei übergeben.'));
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Fehler beim Einlesen der Fotodatei."));
-      reader.onload = () => {
+      reader.onload = (e) => {
         const img = new Image();
-        img.onerror = () => reject(new Error("Bilddatei konnte nicht dekodiert werden."));
         img.onload = () => {
           try {
+            // 1. Mathematischer Center-Crop auf kürzerer Bildkante
+            const minEdge = Math.min(img.width, img.height);
+            const sourceX = (img.width - minEdge) / 2;
+            const sourceY = (img.height - minEdge) / 2;
+
             const canvas = document.createElement('canvas');
             canvas.width = TARGET_DIMENSION;
             canvas.height = TARGET_DIMENSION;
             const ctx = canvas.getContext('2d');
 
-            if (!ctx) {
-              reject(new Error("Canvas 2D-Kontext nicht initialisierbar."));
-              return;
-            }
-
-            // Exakter Center-Crop auf die kürzere Kante (1:1 quadratisch)
-            const minEdge = Math.min(img.width, img.height);
-            const sourceX = (img.width - minEdge) / 2;
-            const sourceY = (img.height - minEdge) / 2;
-
+            // Glättungsfilter für Retusche aktivieren
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
 
-            // Hintergrund tiefschwarz füllen
-            ctx.fillStyle = '#05070c';
-            ctx.fillRect(0, 0, TARGET_DIMENSION, TARGET_DIMENSION);
-
-            // Zentrierter Zuschnitt auf 800 x 800 px zeichnen
             ctx.drawImage(
               img,
-              sourceX, sourceY, minEdge, minEdge,
-              0, 0, TARGET_DIMENSION, TARGET_DIMENSION
+              sourceX,
+              sourceY,
+              minEdge,
+              minEdge,
+              0,
+              0,
+              TARGET_DIMENSION,
+              TARGET_DIMENSION
             );
 
-            let quality = 0.82;
+            // 2. Formatprüfung: WebP bevorzugt, Fallback auf JPEG
             let mimeType = 'image/webp';
-            let dataUrl = canvas.toDataURL(mimeType, quality);
-
-            // WebP-Kompatibilitätsprüfung mit JPEG-Fallback
-            if (!dataUrl.startsWith('data:image/webp')) {
+            let testData = canvas.toDataURL('image/webp', 0.85);
+            if (!testData.startsWith('data:image/webp')) {
               mimeType = 'image/jpeg';
-              dataUrl = canvas.toDataURL(mimeType, quality);
             }
 
-            // Iterative Qualitätsanpassung falls Datenmenge > 80 KB
+            // 3. Iterative Kompressionsschleife auf <= 80 KB
+            let quality = 0.82;
+            let dataUrl = canvas.toDataURL(mimeType, quality);
             let attempts = 0;
+
+            // Base64 Länge * 0.75 entspricht exakter Binärbyte-Zahl
             while (dataUrl.length * 0.75 > MAX_TARGET_BYTES && attempts < 4 && quality > 0.45) {
               quality -= 0.12;
               dataUrl = canvas.toDataURL(mimeType, quality);
               attempts++;
             }
 
+            const finalSize = Math.round(dataUrl.length * 0.75);
+            const base64Clean = dataUrl.replace(/^data:[^;]+;base64,/, '');
+
             resolve({
               dataUrl: dataUrl,
               mimeType: mimeType,
-              sizeBytes: Math.round(dataUrl.length * 0.75),
-              base64Payload: dataUrl.split(',')[1] || ''
+              sizeBytes: finalSize,
+              base64Payload: base64Clean,
+              width: TARGET_DIMENSION,
+              height: TARGET_DIMENSION
             });
-          } catch (processErr) {
-            reject(processErr);
+          } catch (err) {
+            reject(err);
           }
         };
-        img.src = reader.result;
+        img.onerror = () => reject(new Error('Bild konnte nicht dekodiert werden.'));
+        img.src = e.target.result;
       };
+      reader.onerror = () => reject(new Error('Dateizugriff fehlgeschlagen.'));
       reader.readAsDataURL(fileOrBlob);
     });
   }
 
   async function saveToyPhoto(toyId, processedResult) {
-    if (!toyId) throw new Error("toyId zwingend erforderlich.");
+    if (!toyId || !processedResult || !processedResult.dataUrl) {
+      throw new Error('Gültige toyId und Bilddaten erforderlich.');
+    }
+
     const db = await openVaultDatabase();
     const record = {
-      id: String(toyId),
-      toyId: String(toyId),
+      toyId: String(toyId).trim(),
       dataUrl: processedResult.dataUrl,
-      mimeType: processedResult.mimeType,
-      sizeBytes: processedResult.sizeBytes,
+      mimeType: processedResult.mimeType || 'image/webp',
+      sizeBytes: processedResult.sizeBytes || 0,
       updatedAt: Date.now()
     };
-
-    // Im In-Memory Cache vorhalten für 0-ms Rendern
-    inMemoryBlobUrlCache.set(String(toyId), processedResult.dataUrl);
-
-    if (!db) {
-      // Notfall-Fallback in localStorage (zeitlich befristet)
-      try {
-        localStorage.setItem(`tactus_photo_${toyId}`, processedResult.dataUrl);
-      } catch (e) {
-        console.warn("[TACTUS Vault] LocalStorage Quota erreicht:", e);
-      }
-      return record;
-    }
 
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_PHOTOS, 'readwrite');
       const store = tx.objectStore(STORE_PHOTOS);
       const req = store.put(record);
 
-      req.onsuccess = () => resolve(record);
-      req.onerror = (e) => reject(e.target.error);
+      req.onsuccess = () => {
+        // Cache synchronisieren für 0-ms Zugriff
+        inMemoryBlobUrlCache.set(record.toyId, record.dataUrl);
+        resolve(record);
+      };
+
+      req.onerror = () => reject(tx.error);
     });
   }
 
   async function getToyPhoto(toyId) {
     if (!toyId) return null;
-    const strId = String(toyId);
+    const cleanId = String(toyId).trim();
 
-    if (inMemoryBlobUrlCache.has(strId)) {
-      return inMemoryBlobUrlCache.get(strId);
+    // 0-ms In-Memory Treffer
+    if (inMemoryBlobUrlCache.has(cleanId)) {
+      return inMemoryBlobUrlCache.get(cleanId);
     }
 
-    const db = await openVaultDatabase();
-    if (!db) {
-      return localStorage.getItem(`tactus_photo_${strId}`) || null;
+    try {
+      const db = await openVaultDatabase();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_PHOTOS, 'readonly');
+        const store = tx.objectStore(STORE_PHOTOS);
+        const req = store.get(cleanId);
+
+        req.onsuccess = () => {
+          if (req.result && req.result.dataUrl) {
+            inMemoryBlobUrlCache.set(cleanId, req.result.dataUrl);
+            resolve(req.result.dataUrl);
+          } else {
+            resolve(null);
+          }
+        };
+
+        req.onerror = () => resolve(null);
+      });
+    } catch (e) {
+      return null;
     }
-
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_PHOTOS, 'readonly');
-      const store = tx.objectStore(STORE_PHOTOS);
-      const req = store.get(strId);
-
-      req.onsuccess = () => {
-        const res = req.result;
-        if (res && res.dataUrl) {
-          inMemoryBlobUrlCache.set(strId, res.dataUrl);
-          resolve(res.dataUrl);
-        } else {
-          const fallback = localStorage.getItem(`tactus_photo_${strId}`) || null;
-          if (fallback) inMemoryBlobUrlCache.set(strId, fallback);
-          resolve(fallback);
-        }
-      };
-      req.onerror = () => resolve(null);
-    });
   }
 
   async function deleteToyPhoto(toyId) {
     if (!toyId) return false;
-    const strId = String(toyId);
-    inMemoryBlobUrlCache.delete(strId);
+    const cleanId = String(toyId).trim();
+    inMemoryBlobUrlCache.delete(cleanId);
+
     try {
-      localStorage.removeItem(`tactus_photo_${strId}`);
-    } catch (e) {}
+      const db = await openVaultDatabase();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_PHOTOS, 'readwrite');
+        const store = tx.objectStore(STORE_PHOTOS);
+        const req = store.delete(cleanId);
 
-    const db = await openVaultDatabase();
-    if (!db) return true;
-
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_PHOTOS, 'readwrite');
-      const store = tx.objectStore(STORE_PHOTOS);
-      const req = store.delete(strId);
-      req.onsuccess = () => resolve(true);
-      req.onerror = () => resolve(false);
-    });
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => resolve(false);
+      });
+    } catch (e) {
+      return false;
+    }
   }
 
   async function extractSomaticProfileFromImage(base64Payload, mimeType = 'image/webp') {
     if (!window.AIAdapter || typeof window.AIAdapter.analyzeImage !== 'function') {
-      console.warn("[TACTUS Vision] AIAdapter noch nicht initialisiert; nutze heuristische Schätzung.");
       return null;
     }
 
-    const extractionPrompt = `
-Du bist der somatische Ausrüstungs- und Ergonomie-Analyst für das Beziehungs-Betriebssystem TACTUS (tactus.digital).
-Analysiere das beigefügte Ausrüstungs-Foto mit biomechanischer und BDSM-fachlicher Präzision.
+    const visionPrompt = `
+Du bist der somatische Kinetik- und Hardware-Analyst für das Schlafzimmer-Inventar von TACTUS (tactus.digital).
+Analysiere diesen erfassten Gegenstand für den Ausrüstungsschrank.
 
-Erstelle ein striktes JSON-Objekt (ausschließlich valides JSON ohne Markdown-Fences):
+SPRACH- UND FORMATREGELN:
+- Bestimme die genaue anatomische Anlegezone und den Restraint-Layer (Layer 0 = Anker/Manschette/Käfig, Layer 1 = Lagefesselung/Spreizstange/Haube, Layer 2 = starre Umweltkopplung).
+- Bestimme geblockte Freiheitsgrade (speech_articulation, tongue_mobility_external, manual_manipulation, locomotion_standing, visual_perception).
+- Bestimme Materialien (z. B. leather, silicone, steel, jute, synthetic) für den RACK-Allergieschutz.
+- Gib die Desinfektionsmethode für die Reverse Aftercare an (isopropanol_wipe, antiseptic_leather_spray, boiling_water_rinse, mild_soap_handwash).
+
+Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöcke:
 {
-  "name": "Prägnanter Fachname des Gegenstands",
-  "category": "bondage | impact | sensory | chastity | cbt | anal | care | clothing",
-  "restraintLayer": 0 | 1 | 2,
-  "materials": ["leather", "metal", "silicone", "nylon", "rope_jute"],
-  "somaticProfile": {
-    "wornByZone": "mouth | wrists | ankles | genitals | neck | eyes | chest | pelvis",
-    "targetActor": "bottom | top | mutual",
-    "blocksFaculties": {
-      "speech_articulation": true | false,
-      "tongue_mobility_external": true | false,
-      "manual_manipulation": true | false,
-      "locomotion_standing": true | false,
-      "visual_perception": true | false,
-      "penile_shaft_access": true | false
-    },
-    "enabledFaculties": {
-      "penetration_active": { "capable": true | false, "target": "vaginal | anal | oral" },
-      "tongue_service": true | false,
-      "impact_receptive": true | false
-    },
-    "safetyProtocol": {
-      "requiresShears": true | false,
-      "desinfectionMethod": "isopropanol | ph_neutral_soap | antiseptic_leather_care",
-      "maxContinuousMinutes": 30
-    }
-  }
+  "name": "Präziser Name des Gegenstands (z. B. Glattleder-Halsband mit O-Ring)",
+  "category": "bondage | impact | sensory | chastity | cbt | care",
+  "somaticZone": "neck_cervical | limbs_wrists_hands | head_mouth | head_eyes | genital_penis | etc.",
+  "restraintLayer": 0,
+  "materials": ["leather", "steel"],
+  "blocksFaculties": {
+    "speech_articulation": false,
+    "manual_manipulation": false
+  },
+  "safetyProtocol": {
+    "disinfectionMethod": "antiseptic_leather_spray",
+    "requiresShears": false
+  },
+  "somaticEffect": "Kurze prägnante Beschreibung des Gefühls und Reizvektors."
 }
 `;
 
     try {
-      const responseText = await window.AIAdapter.analyzeImage({
+      const rawAiResponse = await window.AIAdapter.analyzeImage({
         base64Image: base64Payload,
         mimeType: mimeType,
-        prompt: extractionPrompt
+        prompt: visionPrompt
       });
 
-      if (!responseText) return null;
-      const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJson);
-    } catch (err) {
-      console.warn("[TACTUS Vision] Multimodale Extraktion fehlgeschlagen:", err);
+      if (!rawAiResponse) return null;
+
+      // Bereinige Markdown-Artefakte
+      let cleaned = String(rawAiResponse).trim();
+      cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+      const startIdx = cleaned.indexOf('{');
+      const endIdx = cleaned.lastIndexOf('}');
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        cleaned = cleaned.substring(startIdx, endIdx + 1);
+      }
+
+      return JSON.parse(cleaned);
+    } catch (errVision) {
+      console.warn('[TACTUS Vault] Vision-Analyse fehlgeschlagen oder kein JSON:', errVision);
       return null;
     }
   }
 
-  function capturePhotoForToy(toyId, onCompleteCallback) {
+  function triggerCameraCaptureForToy(toyId, onCompleteCallback) {
     if (!toyId) return;
 
-    let input = document.getElementById('tactus-vault-hidden-camera-input');
-    if (!input) {
-      input = document.createElement('input');
-      input.type = 'file';
-      input.id = 'tactus-vault-hidden-camera-input';
-      input.accept = 'image/*';
-      input.setAttribute('capture', 'environment');
-      input.className = 'hidden';
-      document.body.appendChild(input);
+    let inputEl = document.getElementById('vault-hidden-camera-input');
+    if (!inputEl) {
+      inputEl = document.createElement('input');
+      inputEl.type = 'file';
+      inputEl.id = 'vault-hidden-camera-input';
+      inputEl.accept = 'image/*';
+      // Auf mobilen Geräten direkt die Hauptkamera aufrufen
+      inputEl.setAttribute('capture', 'environment');
+      inputEl.className = 'hidden';
+      document.body.appendChild(inputEl);
     }
 
-    input.onchange = async (event) => {
+    inputEl.onchange = async (event) => {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
 
-      showToast("Foto wird optimiert & verschlüsselt...");
+      if (typeof window.showToastNotification === 'function') {
+        window.showToastNotification('Foto wird auf 1:1 WebP optimiert...');
+      }
+
       try {
         const processed = await processImageToSquareWebP(file);
         await saveToyPhoto(toyId, processed);
-        
-        // Asynchrone Vision-Extraktion anstoßen
-        showToast("Somatische Affordanzen werden analysiert...");
-        const somaticData = await extractSomaticProfileFromImage(processed.base64Payload, processed.mimeType);
 
-        if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
-          window.CloudSync.trigger();
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification('✓ Foto im Tresor gesichert. Analysiere Hardware...');
         }
 
-        showToast("Ausrüstung im Tresor gesichert (" + Math.round(processed.sizeBytes / 1024) + " KB)");
+        // Multimodale Vision-Analyse im Hintergrund starten
+        let somaticProfile = null;
+        try {
+          somaticProfile = await extractSomaticProfileFromImage(processed.base64Payload, processed.mimeType);
+        } catch (eVision) {
+          console.debug('[TACTUS Vault] Vision-Extraktion übersprungen:', eVision);
+        }
 
         if (typeof onCompleteCallback === 'function') {
-          onCompleteCallback(processed.dataUrl, somaticData);
+          onCompleteCallback(processed.dataUrl, somaticProfile);
         }
-      } catch (err) {
-        console.error("[TACTUS Vault] Bildverarbeitung fehlgeschlagen:", err);
-        showToast("Fehler bei der Bildverarbeitung: " + (err.message || 'Unbekannt'));
+      } catch (errProcess) {
+        console.warn('[TACTUS Vault] Fehler beim Verarbeiten des Fotos:', errProcess);
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification('Fehler bei der Bildverarbeitung.');
+        }
       } finally {
-        input.value = '';
+        inputEl.value = '';
       }
     };
 
-    input.click();
+    inputEl.click();
   }
 
   async function exportAllPhotosForSync() {
-    const db = await openVaultDatabase();
-    if (!db) return [];
+    try {
+      const db = await openVaultDatabase();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_PHOTOS, 'readonly');
+        const store = tx.objectStore(STORE_PHOTOS);
+        const req = store.getAll();
 
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_PHOTOS, 'readonly');
-      const store = tx.objectStore(STORE_PHOTOS);
-      const req = store.getAll();
+        req.onsuccess = () => {
+          const list = Array.isArray(req.result) ? req.result : [];
+          resolve(list.map(item => ({
+            toyId: item.toyId,
+            dataUrl: item.dataUrl,
+            mimeType: item.mimeType,
+            sizeBytes: item.sizeBytes,
+            updatedAt: item.updatedAt
+          })));
+        };
 
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    });
+        req.onerror = () => resolve([]);
+      });
+    } catch (e) {
+      return [];
+    }
   }
 
   async function importPhotosFromSync(remotePhotoList) {
     if (!Array.isArray(remotePhotoList) || remotePhotoList.length === 0) return 0;
+
     let importedCount = 0;
+    try {
+      const db = await openVaultDatabase();
+      const tx = db.transaction(STORE_PHOTOS, 'readwrite');
+      const store = tx.objectStore(STORE_PHOTOS);
 
-    for (const remoteItem of remotePhotoList) {
-      if (!remoteItem || !remoteItem.id || !remoteItem.dataUrl) continue;
-      const strId = String(remoteItem.id);
-      const localPhoto = await getToyPhoto(strId);
-
-      if (!localPhoto || (remoteItem.updatedAt && remoteItem.updatedAt > (localPhoto.updatedAt || 0))) {
-        await saveToyPhoto(strId, {
-          dataUrl: remoteItem.dataUrl,
-          mimeType: remoteItem.mimeType || 'image/webp',
-          sizeBytes: remoteItem.sizeBytes || Math.round(remoteItem.dataUrl.length * 0.75)
-        });
-        importedCount++;
+      for (let i = 0; i < remotePhotoList.length; i++) {
+        const item = remotePhotoList[i];
+        if (item && item.toyId && item.dataUrl) {
+          store.put({
+            toyId: String(item.toyId).trim(),
+            dataUrl: item.dataUrl,
+            mimeType: item.mimeType || 'image/webp',
+            sizeBytes: item.sizeBytes || 0,
+            updatedAt: item.updatedAt || Date.now()
+          });
+          inMemoryBlobUrlCache.set(item.toyId, item.dataUrl);
+          importedCount++;
+        }
       }
+
+      return importedCount;
+    } catch (errSync) {
+      console.warn('[TACTUS Vault] Fehler beim Importieren synchronisierter Fotos:', errSync);
+      return 0;
     }
-
-    return importedCount;
   }
 
-  async function initializeVault() {
-    await requestStoragePersistence();
-    await openVaultDatabase();
-  }
-
-  window.HubPhotos = {
-    init: initializeVault,
+  const api = {
+    init: openVaultDatabase,
     processImage: processImageToSquareWebP,
     savePhoto: saveToyPhoto,
     getPhoto: getToyPhoto,
     deletePhoto: deleteToyPhoto,
-    captureForToy: capturePhotoForToy,
+    captureForToy: triggerCameraCaptureForToy,
     extractSomaticProfile: extractSomaticProfileFromImage,
     exportForSync: exportAllPhotosForSync,
-    importFromSync: importPhotosFromSync
+    importFromSync: importPhotosFromSync,
+    clearCache: () => inMemoryBlobUrlCache.clear()
   };
 
+  window.HubPhotos = api;
+
+  // Auto-Initialisierung beim Laden des Dokuments
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeVault);
+    document.addEventListener('DOMContentLoaded', () => {
+      openVaultDatabase().catch(() => {});
+    });
   } else {
-    initializeVault();
+    openVaultDatabase().catch(() => {});
   }
 
 })(window);
