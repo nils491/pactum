@@ -4,11 +4,11 @@
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - 4 Top-Dimensionen: Tonalität (Temperament), Top-Lust (Agenda), Hauptmotiv (r1 >= 4), Keuschheits-Triage
- * - Dynamische DoF- & Restraint-Schnittmengenprüfung via ToyCombinatorics
+ * - 4 Top-Dimensionen: Tonalität (Temperament), Top-Lust (Agenda), Hauptmotiv (dynamisch aus allen 180 Bogen-Items), Keuschheits-Triage
+ * - Live-Schnittmengenprüfung via ToyCombinatorics: Erkennt funktionale Konflikte (z.B. Knebel blockiert Oralservice)
  * - RACK-Sicherheits-Checkpunkte (Glukose, Asthma, Wundkontrolle) aus dem medizinischen Pass
- * - Generative 4-Phasen-Drehbuch-Synthese via AIAdapter (Multi-KI) mit somatischem Fallback
- * - Übergang in die Live-Session (session_live.js)
+ * - Vollständige 7-Vektoren Prompt-Synthese an AIAdapter (Gemini, Claude, GPT, WebGPU)
+ * - Prozedurale Heuristik-Synthese moduliert Zitate & Phasen dynamisch nach Tonalität und Agenda
  * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
@@ -24,25 +24,25 @@
       id: 'sovereign_warm',
       label: 'Souverän & Warm (Standard)',
       desc: 'Ruhige, liebevolle Führung, Geborgenheit und verlässliche Erdung.',
-      badgeClass: 'bg-purple-950 text-purple-200 border-purple-700'
+      voiceStyle: 'warm, grounding, encouraging'
     },
     sovereign_cool: {
       id: 'sovereign_cool',
       label: 'Kühl & Unerbittlich',
-      desc: 'Wenig Worte, messerscharfe Distanz, diszipliniertes Protokoll.',
-      badgeClass: 'bg-indigo-950 text-indigo-200 border-indigo-700'
+      desc: 'Wenig Worte, messerscharfe Distanz, unnachgiebiges Protokoll.',
+      voiceStyle: 'curt, cold, precise'
     },
     raw_primal: {
       id: 'raw_primal',
       label: 'Rau & Primal',
       desc: 'Körperlich, zupackend, instinktiv, direkt auf den Punkt.',
-      badgeClass: 'bg-rose-950 text-rose-200 border-rose-700'
+      voiceStyle: 'primal, physical, direct'
     },
     playful: {
       id: 'playful',
       label: 'Verspielt & Spöttisch',
       desc: 'Sinnliches Teasing, erotische Herausforderung und subtiler Schalk.',
-      badgeClass: 'bg-amber-950 text-amber-200 border-amber-700'
+      voiceStyle: 'teasing, mocking, sensual'
     }
   };
 
@@ -76,8 +76,8 @@
   let stagingConfig = {
     tonality: 'sovereign_warm',
     topAgenda: 'focus_top',
-    motifId: 'oral_service',
-    chastityAction: 'remain_locked', // 'remain_locked' | 'tease_relock' | 'leave_unlocked' | 'relock_tonight'
+    motifId: null,
+    chastityAction: 'remain_locked',
     intensityLevel: 6,
     selectedEquipmentIds: [],
     customNotes: '',
@@ -132,7 +132,6 @@
       console.warn("[TACTUS Staging] Fehler beim Laden der Konfiguration:", e);
     }
 
-    // Standard-Ausrüstung vorselektieren aus HubToys falls Liste noch leer
     if (!Array.isArray(stagingConfig.selectedEquipmentIds) || stagingConfig.selectedEquipmentIds.length === 0) {
       if (window.HubToys && typeof window.HubToys.getOwnedIds === 'function') {
         stagingConfig.selectedEquipmentIds = window.HubToys.getOwnedIds().slice(0, 8);
@@ -158,7 +157,11 @@
     return myRole === khRole;
   }
 
-  function extractMotifCandidates() {
+  /**
+   * Scannt alle 36 Fragebogenkapitel (180 Items) dynamisch durch.
+   * Selektiert Vorlieben des Tops (r1 >= 4) und schließt Tabus des Bottoms (r2 === 1) aus.
+   */
+  function extractDynamicMotifCandidates() {
     let topRole = 'A';
     let bottomRole = 'B';
     if (window.HubContext && typeof window.HubContext.getRoles === 'function') {
@@ -176,51 +179,123 @@
     const ansTop = answers[topRole] || {};
     const ansSub = answers[bottomRole] || {};
 
-    const baseMotifs = [
-      {
-        id: 'oral_service',
-        title: 'Oralservice an mir',
-        desc: 'Hingebungsvolle Bedienung durch Mund und Zunge des Bottoms.',
-        targetZone: 'genital_vulva_clitoris',
-        scoreRef: ansTop['it_16_r1'] || ansTop['it_17_r1'] || 4,
-        isForbidden: (ansSub['it_16_r2'] === 1 || ansSub['it_17_r2'] === 1)
-      },
-      {
-        id: 'discipline_impact',
-        title: 'Zucht & Gesäß-Impact',
-        desc: 'Gezielte Schläge mit flacher Hand oder Lederwerkzeug inklusive lautem Mitzählen.',
-        targetZone: 'gluteal_pelvis',
-        scoreRef: ansTop['it_56_r1'] || ansTop['it_61_r1'] || ansTop['it_63_r1'] || 4,
-        isForbidden: (ansSub['it_56_r2'] === 1 && ansSub['it_61_r2'] === 1)
-      },
-      {
-        id: 'physical_submission',
-        title: 'Physische Demut & Thronsitz',
-        desc: 'Kniestand, Begrüßungsritual, Fußdienst oder Queening.',
-        targetZone: 'head_mouth',
-        scoreRef: ansTop['it_49_r1'] || ansTop['it_111_r1'] || ansTop['it_117_r1'] || 3,
-        isForbidden: (ansSub['it_49_r2'] === 1 && ansSub['it_111_r2'] === 1)
-      },
-      {
-        id: 'sensory_bondage',
-        title: 'Begrenzung & Sensorischer Entzug',
-        desc: 'Augenbinde, Fesselung der Gliedmaßen und Fokussierung auf taktile Reize.',
-        targetZone: 'limbs_wrists_hands',
-        scoreRef: ansTop['it_51_r1'] || ansTop['it_66_r1'] || 4,
-        isForbidden: (ansSub['it_51_r2'] === 1 && ansSub['it_66_r2'] === 1)
-      },
-      {
-        id: 'edging_torture',
-        title: 'Schwellen-Quälerei (Tease & Denial)',
-        desc: 'Heranführen an das Erregungsplateau mit kaltem Stopp und Verweigerung.',
-        targetZone: 'genital_penis',
-        scoreRef: ansTop['it_36_r1'] || ansTop['it_37_r1'] || 4,
-        isForbidden: (ansSub['it_36_r2'] === 1)
-      }
-    ];
+    const allChapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+    const candidateMotifs = [];
 
-    // Nur Motive anzeigen, die für den Bottom kein Tabu (Note 1) darstellen
-    return baseMotifs.filter(m => !m.isForbidden).sort((a, b) => (b.scoreRef || 0) - (a.scoreRef || 0));
+    allChapters.forEach(ch => {
+      (ch.items || []).forEach(it => {
+        const scoreTop = ansTop[`it_${it.id}_r1`];
+        const scoreBottom = ansSub[`it_${it.id}_r2`];
+
+        // Bottom-Tabu ausschließen
+        if (scoreBottom === 1) return;
+
+        // Top-Präferenz mindestens 4 (Gern oder Must-Have)
+        if (typeof scoreTop === 'number' && scoreTop >= 4) {
+          candidateMotifs.push({
+            id: `motif_item_${it.id}`,
+            itemId: it.id,
+            chapterTitle: ch.title,
+            title: it.title,
+            desc: it.desc,
+            scoreTop: scoreTop,
+            scoreBottom: scoreBottom || 3,
+            isDoubleFive: (scoreTop === 5 && scoreBottom === 5)
+          });
+        }
+      });
+    });
+
+    // Nach Doppel-5ern und Top-Score priorisieren
+    candidateMotifs.sort((a, b) => {
+      if (a.isDoubleFive && !b.isDoubleFive) return -1;
+      if (!a.isDoubleFive && b.isDoubleFive) return 1;
+      return (b.scoreTop + b.scoreBottom) - (a.scoreTop + a.scoreBottom);
+    });
+
+    // Wenn der Bogen noch nicht gefüllt ist, universelle Fallbacks bereitstellen
+    if (candidateMotifs.length === 0) {
+      return [
+        {
+          id: 'motif_fallback_oral',
+          itemId: 16,
+          chapterTitle: 'Kapitel 3: Orale Hingabe',
+          title: 'Hingebungsvoller Oralservice an mir',
+          desc: 'Bottom bedient den Top rückhaltlos mit Mund und Zunge.',
+          scoreTop: 5,
+          scoreBottom: 4,
+          isDoubleFive: false
+        },
+        {
+          id: 'motif_fallback_impact',
+          itemId: 56,
+          chapterTitle: 'Kapitel 11: Spanking & Zucht',
+          title: 'Gesäßzüchtigung mit lauter Zählung',
+          desc: 'Gezielte Schläge in Vorbeuge mit flacher Hand oder Lederwerkzeug.',
+          scoreTop: 4,
+          scoreBottom: 4,
+          isDoubleFive: false
+        },
+        {
+          id: 'motif_fallback_chastity',
+          itemId: 36,
+          chapterTitle: 'Kapitel 7: Orgasmuskontrolle',
+          title: 'Schwellen-Quälerei (Tease & Denial)',
+          desc: 'Heranführen an das Plateau mit kaltem Stopp und Verweigerung.',
+          scoreTop: 5,
+          scoreBottom: 3,
+          isDoubleFive: false
+        },
+        {
+          id: 'motif_fallback_bondage',
+          itemId: 51,
+          chapterTitle: 'Kapitel 10: Fesselung',
+          title: 'Arretierung der Hände & Sensorik',
+          desc: 'Hilflosigkeit durch Fesselung der Gliedmaßen und Augenbinde.',
+          scoreTop: 4,
+          scoreBottom: 4,
+          isDoubleFive: false
+        }
+      ];
+    }
+
+    return candidateMotifs.slice(0, 10);
+  }
+
+  /**
+   * Prüft mit ToyCombinatorics, ob das gewählte Motiv und die Ausrüstung harmonieren
+   */
+  function evaluateDynamicConflicts(motif, selectedEquipmentObjects, chastityAction, isLocked) {
+    if (!window.ToyCombinatorics || typeof window.ToyCombinatorics.calculateDegreesOfFreedom !== 'function') {
+      return { warnings: [], blocks: [] };
+    }
+
+    const dofResult = window.ToyCombinatorics.calculateDegreesOfFreedom(selectedEquipmentObjects);
+    const dof = dofResult.dof;
+    const warnings = [];
+    const blocks = [];
+
+    const motifTitleLower = (motif ? motif.title : '').toLowerCase();
+
+    // 1. Oralservice bei geschlossenem Knebel
+    const requiresTongue = motifTitleLower.includes('oral') || motifTitleLower.includes('cunnilingus') || motifTitleLower.includes('lecken');
+    if (requiresTongue && dof.tongue_mobility_external <= 0.05) {
+      blocks.push("Funktions-Konflikt: Dein gewähltes Motiv erfordert Zungenservice des Bottoms, doch die aktive Ausrüstung blockiert die Zunge vollständig.");
+    }
+
+    // 2. Mitzählen bei Sprachblockade
+    const requiresCounting = motifTitleLower.includes('zählung') || motifTitleLower.includes('spanking') || motifTitleLower.includes('zucht');
+    if (requiresCounting && dof.speech_articulation <= 0.05) {
+      warnings.push("Akustik-Hinweis: Geknebelter Bottom kann Schläge nicht laut zählen. Ersetze das Zählen durch Klopfsignale auf die Matratze.");
+    }
+
+    // 3. Keuschheitskonflikt: Schwellenreizung bei dauerhaft verriegeltem Käfig
+    const requiresPenileEdging = motifTitleLower.includes('schwellen') || motifTitleLower.includes('edging') || motifTitleLower.includes('denial');
+    if (requiresPenileEdging && isLocked && chastityAction === 'remain_locked') {
+      warnings.push("Verschluss-Hinweis: Direkte Schwellen-Quälerei am Schaft ist im Käfig unmöglich. Wähle 'Tease & Relock' zum temporären Lösen oder nutze Damm- und Vibrationsreize.");
+    }
+
+    return { warnings, blocks, dofResult };
   }
 
   function renderStagingCockpit() {
@@ -235,18 +310,23 @@
     const daysLocked = unifiedContext ? unifiedContext.v2_somatic.daysLocked : 1;
     const tension = unifiedContext ? unifiedContext.v2_somatic.tension : { archetype: { name: 'Gewöhnung' } };
     const healthGuards = unifiedContext ? unifiedContext.v5_biology.activeHealthGuards : [];
-    const motifs = extractMotifCandidates();
+    
+    // Motive dynamisch aus allen 180 Bogen-Items ermitteln
+    const dynamicMotifs = extractDynamicMotifCandidates();
 
-    // DoF-Berechnung für ausgewählte Ausrüstung
-    let dofAnalysis = { dof: {}, stack: {} };
+    if (!stagingConfig.motifId && dynamicMotifs.length > 0) {
+      stagingConfig.motifId = dynamicMotifs[0].id;
+    }
+
+    // Ausgewählte Ausrüstungs-Objekte laden
     let selectedItemsObjects = [];
     if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
       const allItems = window.EquipmentCatalog.getAll();
       selectedItemsObjects = allItems.filter(it => stagingConfig.selectedEquipmentIds.includes(it.id));
-      if (window.ToyCombinatorics && typeof window.ToyCombinatorics.calculateDegreesOfFreedom === 'function') {
-        dofAnalysis = window.ToyCombinatorics.calculateDegreesOfFreedom(selectedItemsObjects);
-      }
     }
+
+    const selectedMotif = dynamicMotifs.find(m => m.id === stagingConfig.motifId) || dynamicMotifs[0];
+    const conflictAnalysis = evaluateDynamicConflicts(selectedMotif, selectedItemsObjects, stagingConfig.chastityAction, isLocked);
 
     container.innerHTML = `
       <div class="space-y-4 max-w-3xl mx-auto text-xs">
@@ -255,7 +335,7 @@
         <div class="p-4 sm:p-5 rounded-3xl bg-slate-900/95 border border-purple-900/60 space-y-2 shadow-2xl">
           <div class="flex items-center justify-between border-b border-purple-900/40 pb-2.5">
             <div class="space-y-0.5">
-              <span class="text-[9.5px] font-mono uppercase tracking-wider text-purple-400 font-bold block">Session-Staging &amp; Regie-Pult</span>
+              <span class="text-[9.5px] font-mono uppercase tracking-wider text-purple-400 font-bold block">Schlafzimmer-Staging &amp; Regie-Pult</span>
               <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <span>Vorbereitung im Halbdunkel</span>
                 <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">Top-First</span>
@@ -267,18 +347,37 @@
             </div>
           </div>
           <p class="text-[10.5px] text-slate-300 leading-snug">
-            Stimme Haltung, eigene Lust und Hauptmotiv ab. Das System berechnet daraus ein 4-phasiges Live-Drehbuch ohne Widersprüche.
+            Kalibriere Haltung, eigene Lust und Hauptmotiv. Das System prüft physische Freiheitsgrade (DoF) und RACK-Schranken in Echtzeit.
           </p>
         </div>
 
-        <!-- BIOLOGISCHE RACK-SICHERHEITS-SCHRANKE (WENN GESUNDHEITSEINTRÄGE VORHANDEN) -->
+        <!-- KONFLIKT- & RACK-WARNUNGEN (LIVE DOF CHECK) -->
+        ${conflictAnalysis.blocks.length > 0 ? `
+          <div class="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-700 space-y-1.5 text-xs animate-pulse">
+            <div class="flex items-center gap-2 text-rose-300 font-bold">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+              <span>Physischer Konflikt erkannt (DoF-Blockade)</span>
+            </div>
+            <div class="space-y-1 text-[10.5px] text-rose-200 pl-6">
+              ${conflictAnalysis.blocks.map(b => `<p>• ${escapeHtml(b)}</p>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        ${conflictAnalysis.warnings.length > 0 ? `
+          <div class="p-3 rounded-2xl bg-amber-950/30 border border-amber-800 text-[10.5px] text-amber-200 space-y-1">
+            ${conflictAnalysis.warnings.map(w => `<p>• ${escapeHtml(w)}</p>`).join('')}
+          </div>
+        ` : ''}
+
+        <!-- BIOLOGISCHE RACK-SICHERHEITS-SCHRANKE -->
         ${healthGuards.length > 0 ? `
-          <div class="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-800/80 space-y-1.5 text-xs animate-fade-in">
+          <div class="p-3.5 rounded-2xl bg-amber-950/25 border border-amber-800/80 space-y-1 text-xs">
             <div class="flex items-center gap-2 text-amber-300 font-bold">
               <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
               <span>RACK-Gesundheitspass: Aktive Sicherheits-Garantien</span>
             </div>
-            <div class="space-y-1 text-[10.5px] text-amber-200/90 pl-6">
+            <div class="space-y-0.5 text-[10.5px] text-amber-200/90 pl-6">
               ${healthGuards.map(g => `<p>• ${escapeHtml(g.directive)}</p>`).join('')}
             </div>
           </div>
@@ -288,7 +387,7 @@
         <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-2.5 shadow-md">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <strong class="text-xs text-white block font-bold">1. Haltung &amp; Tonalität des Tops:</strong>
-            <span class="text-[10px] font-mono text-slate-400">Temperament</span>
+            <span class="text-[10px] font-mono text-purple-300">Temperament</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             ${Object.values(TONALITIES).map(ton => {
@@ -310,7 +409,7 @@
         <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-2.5 shadow-md">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <strong class="text-xs text-white block font-bold">2. Eigene Lust &amp; Höhepunkte des Tops:</strong>
-            <span class="text-[10px] font-mono text-purple-300">Agenda</span>
+            <span class="text-[10px] font-mono text-indigo-300">Agenda</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             ${Object.values(TOP_AGENDAS).map(ag => {
@@ -328,22 +427,31 @@
           </div>
         </div>
 
-        <!-- DIMENSION 3: HAUPTMOTIV (GEFILTERT NACH PSYCHOMETRIE) -->
+        <!-- DIMENSION 3: HAUPTMOTIV (DYNAMISCH AUS ALLEN 180 FRAGEN) -->
         <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-2.5 shadow-md">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <strong class="text-xs text-white block font-bold">3. Hauptmotiv des Abends:</strong>
-            <span class="text-[10px] font-mono text-indigo-300">Psychometrie (r1 ≥ 4)</span>
+            <div>
+              <strong class="text-xs text-white block font-bold">3. Hauptmotiv des Abends:</strong>
+              <span class="text-[10px] text-slate-400">Dynamisch extrahiert aus deinen Top-Vorlieben (r1 ≥ 4) ohne Tabus</span>
+            </div>
+            <span class="text-[10px] font-mono text-indigo-300 font-bold">${dynamicMotifs.length} Treffer</span>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            ${motifs.map(m => {
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+            ${dynamicMotifs.map(m => {
               const isSelected = (stagingConfig.motifId === m.id);
               return `
                 <button type="button" ${!isTop ? 'disabled' : ''} onclick="SessionStaging.selectMotif('${m.id}')" class="p-2.5 rounded-2xl border text-left transition-all touch-btn ${isSelected ? 'bg-indigo-950/70 border-indigo-500 text-white shadow-md' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
                   <div class="flex items-center justify-between">
-                    <strong class="text-xs block font-bold">${escapeHtml(m.title)}</strong>
-                    <span class="text-xs font-mono font-bold ${isSelected ? 'text-indigo-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
+                    <div class="min-w-0 pr-1">
+                      <span class="text-[8.5px] font-mono text-purple-400 block truncate">${escapeHtml(m.chapterTitle)}</span>
+                      <strong class="text-xs block font-bold truncate">${escapeHtml(m.title)}</strong>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      ${m.isDoubleFive ? '<span class="px-1.5 py-0.2 rounded text-[8.5px] bg-purple-900 text-purple-200 font-bold">5/5 Match</span>' : ''}
+                      <span class="text-xs font-mono font-bold ${isSelected ? 'text-indigo-300' : 'text-slate-600'}">${isSelected ? '✓' : '○'}</span>
+                    </div>
                   </div>
-                  <p class="text-[9.5px] text-slate-400 leading-snug mt-0.5">${escapeHtml(m.desc)}</p>
+                  <p class="text-[9.5px] text-slate-400 leading-snug mt-1 line-clamp-2">${escapeHtml(m.desc)}</p>
                 </button>
               `;
             }).join('')}
@@ -385,19 +493,19 @@
           </div>
         </div>
 
-        <!-- AUSRÜSTUNGSSCHRANK & DOF-SCHNITTMENGEN-PRÜFUNG -->
+        <!-- AUSRÜSTUNGSSCHRANK AM BETT -->
         <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-2.5 shadow-md">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <div>
-              <strong class="text-xs text-white block font-bold">Verfügbare Hardware am Bett:</strong>
-              <span class="text-[10px] text-slate-400">Ausgewählte Toys bestimmen verbleibende Freiheitsgrade (DoF)</span>
+              <strong class="text-xs text-white block font-bold">Hardware am Bett (Bereitgelegt):</strong>
+              <span class="text-[10px] text-slate-400">Verfügbare Toys bestimmen verbleibende Freiheitsgrade (DoF)</span>
             </div>
             <button type="button" onclick="HubToys.open()" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] touch-btn">
               Schrank öffnen ↗
             </button>
           </div>
 
-          <div id="staging-equipment-chips" class="flex flex-wrap gap-1.5 pt-1">
+          <div class="flex flex-wrap gap-1.5 pt-1">
             ${selectedItemsObjects.length === 0 ? `
               <span class="text-[10px] text-slate-500 italic py-1">Keine Ausrüstung vorselektiert. Klicke auf 'Schrank öffnen'.</span>
             ` : selectedItemsObjects.map(it => `
@@ -489,9 +597,12 @@
       bottomName = names[roles.bottomRole] || 'Bottom';
     }
 
+    const dynamicMotifs = extractDynamicMotifCandidates();
+    const activeMotif = dynamicMotifs.find(m => m.id === stagingConfig.motifId) || dynamicMotifs[0];
+
     let generatedScript = null;
 
-    // 1. Primärpfad: AIAdapter (Multi-KI Gateway)
+    // 1. Primärpfad: AIAdapter (Multi-KI Gateway mit vollständigem 7-Vektoren Briefing)
     if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
       try {
         let prompt = "";
@@ -499,7 +610,10 @@
           prompt = window.HubContext.createBedroomScriptPrompt({
             tonality: stagingConfig.tonality,
             intensityLevel: stagingConfig.intensityLevel,
-            focusMotif: stagingConfig.motifId
+            focusMotif: activeMotif.title,
+            topAgenda: stagingConfig.topAgenda,
+            chastityAction: stagingConfig.chastityAction,
+            selectedEquipmentIds: stagingConfig.selectedEquipmentIds
           });
         }
 
@@ -510,13 +624,13 @@
           returnJson: true
         });
       } catch (errAi) {
-        console.warn("[TACTUS Staging] KI-Generierung fehlgeschlagen, nutze somatische Heuristik:", errAi);
+        console.warn("[TACTUS Staging] KI-Generierung fehlgeschlagen, nutze dynamische Heuristik:", errAi);
       }
     }
 
-    // 2. Fallback: Prozedurale Heuristik
+    // 2. Fallback: Vollwertige prozedurale Heuristik
     if (!generatedScript || !Array.isArray(generatedScript.phases) || generatedScript.phases.length === 0) {
-      generatedScript = synthesizeProceduralScript(topName, bottomName);
+      generatedScript = synthesizeProceduralScript(topName, bottomName, activeMotif);
     }
 
     // Skript in sessionStorage hinterlegen für session_live.js
@@ -528,12 +642,10 @@
 
     showToast("✓ Live-Drehbuch berechnet. Starte Session...");
 
-    // Direkte Weiterleitung oder Umschaltung in Live-Ansicht
     setTimeout(() => {
       if (window.SessionLive && typeof window.SessionLive.startWithScript === 'function') {
         window.SessionLive.startWithScript(generatedScript);
       } else {
-        // Falls auf separater Seite, Umschaltung im DOM anstoßen
         const stagingEl = document.getElementById('view-session-staging');
         const liveEl = document.getElementById('view-session-live');
         if (stagingEl && liveEl) {
@@ -547,44 +659,74 @@
     }, 300);
   }
 
-  function synthesizeProceduralScript(topName, bottomName) {
+  function synthesizeProceduralScript(topName, bottomName, motif) {
     const ton = TONALITIES[stagingConfig.tonality] || TONALITIES.sovereign_warm;
+    const ag = TOP_AGENDAS[stagingConfig.topAgenda] || TOP_AGENDAS.focus_top;
     const isRelockTonight = stagingConfig.chastityAction === 'relock_tonight';
     const isTeaseRelock = stagingConfig.chastityAction === 'tease_relock';
 
+    // Dialog-Zitate modulieren nach Tonalität
+    let quotePhase1 = `„Atme tief aus. Lass den ganzen Alltag draußen vor der Tür. Heute zähle nur ich.“`;
+    let quotePhase2 = `„Du spürst jetzt ganz genau, wer hier führt. Halt still und zähl laut mit.“`;
+    let quotePhase3 = `„Konzentrier dich ganz auf mich. Kein Gedanke an deine eigene Befriedigung.“`;
+
+    if (stagingConfig.tonality === 'sovereign_cool') {
+      quotePhase1 = `„Blick nach unten. Schweigen. Du weißt, was jetzt von dir erwartet wird.“`;
+      quotePhase2 = `„Kein Laut außer der Zählung. Jeder Fehler wird verdoppelt.“`;
+      quotePhase3 = `„Bedien mich makellos. Wage es nicht, mich dabei anzusehen.“`;
+    } else if (stagingConfig.tonality === 'raw_primal') {
+      quotePhase1 = `„Auf die Knie, sofort. Du gehörst heute ganz mir.“`;
+      quotePhase2 = `„Spür meine Hand auf deiner Haut. Zappeln zwecklos.“`;
+      quotePhase3 = `„Gib alles für meine Lust. Heute nimmst du nichts mit.“`;
+    } else if (stagingConfig.tonality === 'playful') {
+      quotePhase1 = `„Komm her zu mir. Mal sehen, wie brav du heute wirklich sein kannst.“`;
+      quotePhase2 = `„Zuckst du schon? Das war doch erst der Anfang.“`;
+      quotePhase3 = `„Verwöhn mich, bis ich fertig bin – und dann sehen wir weiter.“`;
+    }
+
+    // Phase 3 Instruktion modulieren nach Top-Agenda
+    let phase3Instruction = `${bottomName} bedient ${topName} rückhaltlos. ${topName} nimmt sich alle Zeit für die eigene Entladung.`;
+    if (stagingConfig.topAgenda === 'multi_climax') {
+      phase3Instruction = `${bottomName} bedient ${topName} mehrfach hintereinander (z. B. Oralservice und Massage). Die Session wird erst nach wiederholter Entladung des Tops beendet.`;
+    } else if (stagingConfig.topAgenda === 'cool_distance') {
+      phase3Instruction = `${topName} verzichtet souverän auf eigene Entladung. Reine Zurschaustellung der Macht: ${bottomName} verharrt in Demut und empfängt die körperliche Begrenzung ohne jedes Entlastungsventil.`;
+      quotePhase3 = `„Ich brauche heute keine Berührung. Deine Unterwerfung genügt mir vollkommen.“`;
+    }
+
     return {
-      sessionTitle: `${ton.label} · ${stagingConfig.motifId.replace(/_/g, ' ')}`,
+      sessionTitle: `${ton.label} · ${motif.title}`,
       tonality: stagingConfig.tonality,
+      topAgenda: stagingConfig.topAgenda,
       intensity: stagingConfig.intensityLevel,
       phases: [
         {
           phaseIndex: 1,
           title: "Phase 1: Transition & Körperliche Erdung",
-          instruction: `${bottomName} kniet mit ruhigem Blickkontakt vor der Bettkante. Gemeinsame synchrone 4-7-8 Vagus-Atemzüge zur Entlastung des Nervensystems.`,
-          topDialogueQuote: `„Atme tief aus. Lass den ganzen Alltag draußen vor der Tür. Heute zähle nur ich.“`,
+          instruction: `${bottomName} begibt sich vor ${topName} in die Ruheposition. Gemeinsame 4-7-8 Vagus-Atemzüge zur Entlastung des Nervensystems.`,
+          topDialogueQuote: quotePhase1,
           somaticZone: "head_eyes",
           estimatedMinutes: 8
         },
         {
           phaseIndex: 2,
-          title: "Phase 2: Machtaufbau & Somatischer Reiz",
-          instruction: `Aufbau der Hierarchie. ${stagingConfig.motifId === 'discipline_impact' ? `15 Schläge mit der flachen Hand auf das Gesäß in 90-Grad-Vorbeuge. ${bottomName} zählt jeden Treffer laut mit.` : `${bottomName} legt die Handgelenke bereitwillig in die Manschetten und senkt den Blick.`}`,
-          topDialogueQuote: `„Du spürst jetzt ganz genau, wer hier führt. Halt still und zähl laut mit.“`,
+          title: `Phase 2: Machtaufbau & ${motif.title}`,
+          instruction: `Etablierung der Hierarchie. Umsetzung von „${motif.title}“: ${motif.desc}`,
+          topDialogueQuote: quotePhase2,
           somaticZone: "gluteal_pelvis",
           estimatedMinutes: 12
         },
         {
           phaseIndex: 3,
-          title: "Phase 3: Katharsis & Lust des Tops",
-          instruction: `${bottomName} bedient ${topName} rückhaltlos (Oralservice oder Fußmassage). ${topName} nimmt sich alle Zeit für die eigene Entladung.`,
-          topDialogueQuote: `„Konzentrier dich ganz auf mich. Kein Gedanke an deine eigene Befriedigung.“`,
+          title: `Phase 3: Katharsis (${ag.label})`,
+          instruction: phase3Instruction,
+          topDialogueQuote: quotePhase3,
           somaticZone: "genital_vulva_clitoris",
           estimatedMinutes: 15
         },
         {
           phaseIndex: 4,
           title: "Phase 4: Reverse Aftercare & Rüst-Pflege",
-          instruction: `${bottomName} reicht ${topName} Wasser, deckt sie zu und massiert sanft die Schultern. ${isRelockTonight || isTeaseRelock ? `Danach wird der Verschluss wieder angelegt und das Schloss verriegelt.` : `Anschließend diskrete Desinfektion der genutzten Ausrüstung.`}`,
+          instruction: `${bottomName} reicht ${topName} Wasser, deckt sie zu und massiert ermüdete Muskeln. ${isRelockTonight || isTeaseRelock ? `Danach wird der Verschluss wieder angelegt und das Schloss verriegelt.` : `Anschließend diskrete Desinfektion der genutzten Ausrüstung.`}`,
           topDialogueQuote: `„Guter Dienst. Jetzt Deckenruhe für uns beide.“`,
           somaticZone: "back_flanks",
           estimatedMinutes: 10
