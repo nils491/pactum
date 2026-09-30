@@ -1,13 +1,14 @@
 /**
  * data/questions_part1.js
- * TACTUS Erotik- & Somatik-Fragebogen (Teil 1: Kapitel 0 bis 17)
+ * TACTUS Erotik- & Somatik-Fragebogen (Teil 1: Kapitel 00 bis 17)
  * Offizielle Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Chronologisch geordnet von Kapitel 0 bis Kapitel 17
+ * - Chronologisch geordnet von Kapitel 00 bis Kapitel 17
+ * - Prolog-Schutzkapitel 00 (Items 901–905) für psychosomatische Sicherheit, Trauma & Trigger
  * - 100 % abwärtskompatible, feste Item-IDs für Rasch-IRT und bestehende Antworten
  * - Rollen-Differenzierung: r1 = Ausführen / Führen, r2 = Empfangen / Hingeben
- * - Psychometrische Skala: 0 (Entfällt), 1 (Tabu/Nein), 2 (Eher nicht), 3 (Neutral/Vielleicht), 4 (Gern), 5 (Sehr gern / Must-Have)
+ * - Fragetypen: 'choice' (Multi-/Single-Select) und 'scale' (Likert 0 bis 5)
  * - Scham-Marker (🙈) für verletzliche Fantasien
  */
 
@@ -15,6 +16,83 @@
   'use strict';
 
   const chaptersPart1 = [
+    {
+      id: "00",
+      title: "Kapitel 00: Psychosomatische Sicherheit, Trauma & Trigger",
+      desc: "Schutzraum-Präambel: Frühere Belastungen, körperliche Flashback-Trigger und Sofort-Interventionen.",
+      isProtectionChapter: true,
+      items: [
+        {
+          id: 901,
+          title: "Sexuelle & emotionale Vorerfahrungen",
+          desc: "Ehrliche Selbsteinschätzung früherer Belastungen, Grenzüberschreitungen oder Übergriffe.",
+          type: "choice",
+          question: "Gibt es frühere belastende Erfahrungen, die dich heute noch berühren können?",
+          options: [
+            { val: "none", label: "🌱 Keine belastenden Vorerfahrungen vorhanden" },
+            { val: "boundary", label: "⚡ Frühere unschöne Grenzüberschreitungen oder Enttäuschungen" },
+            { val: "trauma", label: "🛡️ Früheres sexuelles oder emotionales Trauma / Übergriff" },
+            { val: "private", label: "🔒 Möchte ich vorerst für mich behalten" }
+          ]
+        },
+        {
+          id: 902,
+          title: "Körperliche & seelische Flashback-Trigger",
+          desc: "Spezifische Sinnesreize, die Panik, Erstarrung oder Abwehr auslösen können.",
+          type: "choice",
+          question: "Welche Reize erfordern absolute Vorsicht oder sind strikt zu vermeiden?",
+          options: [
+            { val: "words", label: "Bestimmte Schimpfwörter oder verbale Erniedrigung" },
+            { val: "smell", label: "Bestimmte Gerüche, Düfte oder Parfüms" },
+            { val: "airway", label: "Enge, Ersticken oder Mund-/Nasenbedeckung" },
+            { val: "restraint", label: "Vollständige Fixierung ohne Bewegungsmöglichkeit" },
+            { val: "darkness", label: "Plötzliche, unangekündigte Dunkelheit" },
+            { val: "none", label: "Keine bekannten Flashback-Trigger" }
+          ]
+        },
+        {
+          id: 903,
+          title: "Reaktion bei Überforderung / Dissoziation",
+          desc: "Wie dein vegetatives Nervensystem reagiert, wenn eine Situation kippt.",
+          type: "choice",
+          question: "Wie äußert sich bei dir ein Zustand akuter emotionaler Überforderung?",
+          options: [
+            { val: "freeze", label: "Erstarren / Einfrieren (körperlich bewegungslos, innerlich abwesend)" },
+            { val: "tears", label: "Weinkrämpfe / Tränenstrom ohne Schmerzursache" },
+            { val: "flight", label: "Fluchtreflex / Drang, den Raum sofort zu verlassen" },
+            { val: "panic", label: "Panik / Herzrasen / flache Atemnot" },
+            { val: "silence", label: "Verstummen / Völlige Unfähigkeit zu sprechen" }
+          ]
+        },
+        {
+          id: 904,
+          title: "Gewünschte Intervention des Partners bei Trigger",
+          desc: "Welche konkrete Soforthandlung des Partners dir verlässlich hilft wieder zu landen.",
+          type: "choice",
+          question: "Was soll dein Partner unverzüglich tun, wenn du getriggert wirst?",
+          options: [
+            { val: "hug", label: "Feste, stumme Umarmung & Halten (Gewichtsdecken-Effekt)" },
+            { val: "distance", label: "Körperliche Berührung sofort einstellen & etwas Raum geben" },
+            { val: "grounding", label: "Licht anmachen, zudecken & ruhige Vagus-Atmung anleiten" },
+            { val: "water_tea", label: "Schluck warmen Tee oder Wasser reichen, ohne zu fragen" },
+            { val: "voice", label: "Mit leiser, ruhiger Stimme reden und Sicherheit zusprechen" }
+          ]
+        },
+        {
+          id: 905,
+          title: "Umgang mit Scham & Schutzraum",
+          desc: "Vereinbarter Verhaltenskodex bei verletzlichen, schambesetzten Wünschen.",
+          type: "choice",
+          question: "Welchen Rahmen benötigst du bei verletzlichen Fantasien (🙈)?",
+          options: [
+            { val: "strict_ban", label: "Absolutes Alltags-Spottverbot (niemals im Streit oder Alltag erwähnen)" },
+            { val: "gentle_pace", label: "Behutsames Herantasten im Halbdunkel ohne Erfolgsdruck" },
+            { val: "affirmation", label: "Ausdrückliche verbale Bestätigung durch den Partner ('Du bist sicher')" },
+            { val: "patience", label: "Zeit lassen: Erst nach mehrmaligem Reden vorsichtig ausprobieren" }
+          ]
+        }
+      ]
+    },
     {
       id: 0,
       title: "Kapitel 0: Anatomie & Körperliche Grundlagen",
