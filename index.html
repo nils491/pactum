@@ -688,7 +688,19 @@
         Biologische Schutzschranken fließen als harte System-Constraints in die KI-Regie und den Beziehungsvertrag ein.
       </p>
 
+      <!-- DYNAMISCHER TRAUMA- & SCHUTZHINWEIS (FALLS ITEM 901 GEWÄHLT WURDE) -->
+      <div id="pass-trauma-alert" class="hidden p-3 rounded-2xl bg-rose-950/60 border border-rose-700/80 text-rose-200 text-[10.5px] space-y-1">
+        <div class="flex items-center gap-1.5 font-bold text-rose-300">
+          <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+          <span>Psychosomatischer Trauma- &amp; Schutzraum-Hinweis:</span>
+        </div>
+        <p class="leading-snug">
+          In Kapitel 00 wurden frühere Belastungen oder Traumata angegeben. Bitte konkretisiere hier deine spezifischen Ängste und No-Gos, damit das System dich vor Flashbacks schützt.
+        </p>
+      </div>
+
       <div class="space-y-2 pt-1" id="medical-pass-checkboxes">
+        <strong class="text-[10.5px] font-mono text-slate-400 uppercase tracking-wider block">Biologische &amp; Somatische Indikationen:</strong>
         <label class="flex items-start gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
           <input type="checkbox" id="pass-chk-diabetes" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-purple-600" />
           <div class="min-w-0">
@@ -731,6 +743,54 @@
             <span class="text-[10px] text-slate-400 block">Schutz vor Überstreckung von Schultern und Knien</span>
           </div>
         </label>
+      </div>
+
+      <!-- SPEZIFISCHE ÄNGSTE & FLASHBACK-TRIGGER -->
+      <div class="pt-2 border-t border-rose-900/40 space-y-2">
+        <strong class="text-[10.5px] font-mono text-rose-300 uppercase tracking-wider block">Psychosomatische Ängste &amp; Flashback-Trigger:</strong>
+        <div class="space-y-1.5">
+          <label class="flex items-start gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <input type="checkbox" id="pass-chk-panic-airway" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-rose-600" />
+            <div class="min-w-0">
+              <strong class="text-xs text-white block">Enge &amp; Atemeinschränkung (Panik)</strong>
+              <span class="text-[10px] text-slate-400 block">Keine dichten Knebel, Mund-/Nasenbedeckung oder Thorax-Kompression</span>
+            </div>
+          </label>
+          <label class="flex items-start gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <input type="checkbox" id="pass-chk-fear-darkness" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-rose-600" />
+            <div class="min-w-0">
+              <strong class="text-xs text-white block">Plötzliche Dunkelheit &amp; Orientierungsverlust</strong>
+              <span class="text-[10px] text-slate-400 block">Keine unangekündigte Augenbinde; Raumbeleuchtung gedimmt halten</span>
+            </div>
+          </label>
+          <label class="flex items-start gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <input type="checkbox" id="pass-chk-fear-restraint" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-rose-600" />
+            <div class="min-w-0">
+              <strong class="text-xs text-white block">Vollständige Bewegungsunfähigkeit (Hilflosigkeits-Panik)</strong>
+              <span class="text-[10px] text-slate-400 block">Keine starre 4-Punkt-Arretierung ohne spürbare Restbeweglichkeit</span>
+            </div>
+          </label>
+          <label class="flex items-start gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <input type="checkbox" id="pass-chk-fear-degradation" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-rose-600" />
+            <div class="min-w-0">
+              <strong class="text-xs text-white block">Erniedrigende Schimpfwörter / Verbale Härte</strong>
+              <span class="text-[10px] text-slate-400 block">Kein herabwürdigender Dirty Talk; nur ruhige, souveräne Führung</span>
+            </div>
+          </label>
+          <label class="flex items-start gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer">
+            <input type="checkbox" id="pass-chk-fear-surprise" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-rose-600" />
+            <div class="min-w-0">
+              <strong class="text-xs text-white block">Unangekündigte Berührungen von hinten</strong>
+              <span class="text-[10px] text-slate-400 block">Berührungen nur nach vorheriger verbaler oder Blick-Ankündigung</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- FREITEXT: PERSÖNLICHE ÄNGSTE & AUSLÖSER -->
+      <div class="space-y-1 pt-1 border-t border-slate-800">
+        <label class="text-[10px] font-mono text-slate-400 uppercase block">Eigene Ängste, Traumagrenzen &amp; Auslöser (Freitext):</label>
+        <textarea id="pass-input-custom-triggers" rows="2" placeholder="z. B. Panik bei Festhalten der Handgelenke / Geruch von kaltem Rauch / ..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-600 focus:border-rose-600 focus:outline-none"></textarea>
       </div>
 
       <div class="flex justify-end pt-2 border-t border-slate-800">
@@ -1880,6 +1940,41 @@
           if (chkLatex) chkLatex.checked = !!pass.hasLatexAllergy;
           if (chkHyper) chkHyper.checked = !!pass.hasHypermobility;
 
+          const chkAirway = document.getElementById('pass-chk-panic-airway');
+          const chkDarkness = document.getElementById('pass-chk-fear-darkness');
+          const chkRestraint = document.getElementById('pass-chk-fear-restraint');
+          const chkDegradation = document.getElementById('pass-chk-fear-degradation');
+          const chkSurprise = document.getElementById('pass-chk-fear-surprise');
+          const txtTriggers = document.getElementById('pass-input-custom-triggers');
+
+          if (chkAirway) chkAirway.checked = !!pass.hasPanicAirway;
+          if (chkDarkness) chkDarkness.checked = !!pass.hasFearDarkness;
+          if (chkRestraint) chkRestraint.checked = !!pass.hasFearRestraint;
+          if (chkDegradation) chkDegradation.checked = !!pass.hasFearDegradation;
+          if (chkSurprise) chkSurprise.checked = !!pass.hasFearSurprise;
+          if (txtTriggers) txtTriggers.value = pass.customTriggers || pass.emergencyNotes || '';
+
+          // Prüfe, ob in Kapitel 00 (Item 901) ein Trauma oder eine Grenzüberschreitung gewählt wurde
+          let hasReportedTrauma = false;
+          try {
+            const rawAns = localStorage.getItem('kompass_answers');
+            if (rawAns) {
+              const ans = JSON.parse(rawAns) || {};
+              const myRole = AppProfile.getAssignedRole();
+              const myAns = ans[myRole] || {};
+              const choice901 = myAns['choice_901'];
+              if (choice901 === 'trauma' || choice901 === 'boundary') {
+                hasReportedTrauma = true;
+              }
+            }
+          } catch (e) {}
+
+          const alertBanner = document.getElementById('pass-trauma-alert');
+          if (alertBanner) {
+            if (hasReportedTrauma) alertBanner.classList.remove('hidden');
+            else alertBanner.classList.add('hidden');
+          }
+
           modal.style.display = 'flex';
         },
 
@@ -1891,6 +1986,13 @@
             hasBloodThinners: !!document.getElementById('pass-chk-blood')?.checked,
             hasLatexAllergy: !!document.getElementById('pass-chk-latex')?.checked,
             hasHypermobility: !!document.getElementById('pass-chk-hypermobility')?.checked,
+            hasPanicAirway: !!document.getElementById('pass-chk-panic-airway')?.checked,
+            hasFearDarkness: !!document.getElementById('pass-chk-fear-darkness')?.checked,
+            hasFearRestraint: !!document.getElementById('pass-chk-fear-restraint')?.checked,
+            hasFearDegradation: !!document.getElementById('pass-chk-fear-degradation')?.checked,
+            hasFearSurprise: !!document.getElementById('pass-chk-fear-surprise')?.checked,
+            customTriggers: document.getElementById('pass-input-custom-triggers')?.value.trim() || '',
+            emergencyNotes: document.getElementById('pass-input-custom-triggers')?.value.trim() || '',
             updatedAt: Date.now()
           };
 
@@ -1898,7 +2000,7 @@
           const modal = document.getElementById('modal-medical-pass');
           if (modal) modal.style.display = 'none';
 
-          showToast("RACK-Gesundheitspass gesichert ✓");
+          showToast("RACK-Pass & Schutzschranken gesichert ✓");
 
           if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
             window.CloudSync.trigger();
