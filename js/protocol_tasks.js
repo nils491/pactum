@@ -4,20 +4,13 @@
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Hyperdynamischer SomaticPostureSynthesizer: Kinetische Vektor-Kombinatorik
- *   über alle 3 Basislagen (Liegen, Stehen im Raum, Knien/Sitzen), Beckenkippung,
- *   Mobiliar-Kopplung und ritualisierte Demutsachsen
- * - Vollständige Integration des 7-Vektoren Paarkontextes (Namen, D/s-Hierarchie,
- *   Top-Mental-Load, RACK-Gesundheitspass, Keuschheits-Tragedauer, DoF-Blockaden)
- * - Multi-KI Haltungssynthese via AIAdapter mit autarkem kinetischem Fallback
- * - RACK-Sicherheitsradar: Echtzeit-Abgleich mit den Fragebogen-Noten des Subs (r2)
- *   • Note 1: Harter RACK-Veto-Schutzblock (Ausführung gesperrt)
- *   • Note 2: Drosselungs-Warnung (Sanfte Grenze, max. 5 Treffer)
- *   • Note 3: Erkundungs-Brücke (Behutsamer Probelauf)
- *   • Note 4 & 5: Einvernehmliche Freigabe (Volles Zuchtrepertoire)
- * - Transparente Einblendung persönlicher Sub-Notizen (note_${id}) zu Werkzeugen
- * - Interaktiver Button [Haltung neu berechnen / auswürfeln] im Zucht-Modal
- * - Begründetes Ablehnungs-Modal mit Feedback-Stream an den Paar-Chat
+ * - Klickbare Fragebogen-Deeplinks für jedes Zucht- und Disziplinaritem
+ * - Schrank- und Inventarprüfung gegen tactus_owned_equipment & EquipmentCatalog
+ * - Ungekürzte Einblendung der persönlichen Sub-Notizen (note_${id})
+ * - Hyperdynamischer SomaticPostureSynthesizer mit Re-Roll Button direkt im Modal
+ * - Begründetes Abweisen von Aufgaben mit Feedback-Übertragung in den Paar-Stream
+ * - Top-First Mental Load Umschaltung (exhausted, balanced, strict)
+ * - RACK-Schutzampel: Note 1 Veto-Blockade, Note 2 Sanfte Grenze, Note 3 Brücke, Note 4/5 Freigabe
  * - 100 % frei von infantilen System-Emojis in Datenstrukturen und UI
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
@@ -36,6 +29,7 @@
       title: "Spanking mit der flachen Hand",
       itemId: 56, // Kap. 11
       category: "manual_impact",
+      equipmentTag: null, // Immer verfügbar (Hand)
       defaultHits: 15,
       defaultPenalty: 20,
       zone: "gluteal_pelvis",
@@ -46,6 +40,7 @@
       title: "Züchtigung über das Knie gelegt (OTK)",
       itemId: 57, // Kap. 11
       category: "manual_impact",
+      equipmentTag: null, // Immer verfügbar (Schoß)
       defaultHits: 20,
       defaultPenalty: 25,
       zone: "gluteal_pelvis",
@@ -56,6 +51,7 @@
       title: "Schwerer Lederflogger (Fransenpeitsche)",
       itemId: 61, // Kap. 12
       category: "tool_impact",
+      equipmentTag: "flogger",
       defaultHits: 25,
       defaultPenalty: 30,
       zone: "gluteal_pelvis",
@@ -66,6 +62,7 @@
       title: "Breites Sattelleder-Paddle",
       itemId: 62, // Kap. 12
       category: "tool_impact",
+      equipmentTag: "paddle",
       defaultHits: 10,
       defaultPenalty: 35,
       zone: "gluteal_pelvis",
@@ -76,6 +73,7 @@
       title: "Schwerer Ledergürtel (doppelt gelegt)",
       itemId: 63, // Kap. 12
       category: "tool_impact",
+      equipmentTag: "leather_belt",
       defaultHits: 10,
       defaultPenalty: 40,
       zone: "gluteal_pelvis",
@@ -86,6 +84,7 @@
       title: "Schlanke Reitgerte (Crop)",
       itemId: 64, // Kap. 12
       category: "tool_impact",
+      equipmentTag: "crop",
       defaultHits: 8,
       defaultPenalty: 30,
       zone: "thighs_inner",
@@ -96,6 +95,7 @@
       title: "Rohrstock (Cane) / Intensive Zucht",
       itemId: 65, // Kap. 12
       category: "heavy_discipline",
+      equipmentTag: "cane",
       defaultHits: 5,
       defaultPenalty: 60,
       zone: "gluteal_pelvis",
@@ -106,6 +106,7 @@
       title: "Körperliche Ehrerbietung & Kniestand-Appell",
       itemId: 49, // Kap. 9
       category: "posture_penance",
+      equipmentTag: null,
       defaultHits: 15, // Steht für 15 Minuten
       defaultPenalty: 25,
       zone: "limbs_ankles_feet",
@@ -116,6 +117,7 @@
       title: "Eiswürfel-Sensibilisierung & Kälteschock",
       itemId: 68, // Kap. 13
       category: "thermal_shock",
+      equipmentTag: "ice",
       defaultHits: 10, // Steht für 10 Schmelz-Minuten
       defaultPenalty: 20,
       zone: "perineum_pelvic_floor",
@@ -126,6 +128,7 @@
       title: "Straf-Aufgaben im Haushalt / Zusatzdienst",
       itemId: 90, // Kap. 17
       category: "household_penance",
+      equipmentTag: null,
       defaultHits: 45, // Steht für 45 Minuten
       defaultPenalty: 30,
       zone: "full_body",
@@ -440,6 +443,30 @@
     }
   }
 
+  function isPracticeToolAvailable(equipmentTag) {
+    if (!equipmentTag) return { available: true, label: "Manuell verfügbar" };
+
+    let ownedIds = [];
+    try {
+      const raw = localStorage.getItem('tactus_owned_equipment') || localStorage.getItem('kompass_owned_equipment');
+      if (raw) ownedIds = JSON.parse(raw) || [];
+    } catch (e) {}
+
+    let catalog = [];
+    if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
+      catalog = window.EquipmentCatalog.getAll();
+    }
+
+    const matchingToy = catalog.find(item => 
+      ownedIds.includes(item.id) && (item.tags || []).includes(equipmentTag)
+    );
+
+    if (matchingToy) {
+      return { available: true, label: `Im Schrank vorhanden (${matchingToy.name})` };
+    }
+    return { available: false, label: "Nicht im Schrank hinterlegt" };
+  }
+
   function getSubPracticeInterpretation(itemId) {
     let answers = {};
     try {
@@ -499,18 +526,7 @@
     };
   }
 
-  /**
-   * Kinetischer SomaticPostureSynthesizer
-   * Generiert Haltungen vollkommen dynamisch aus den 5 somatischen Freiheitsgrad-Achsen:
-   * 1. Basislage (Horizontal/Liegen, Vertikal/Stehen im Raum/Wand, Bodennah/Knien/Nadu)
-   * 2. Becken- & Wirbelsäulen-Vektor (Lordose/Hohlkreuz, Torsion, Überhöhung)
-   * 3. Extremitäten-Arretierung (DoF-geprüft: berücksichtigt Bondage-Status)
-   * 4. Mobiliar & Umweltkopplung (Bettkante, Wand, Schreibtisch, Teppich, freier Raum)
-   * 5. Ritualisierte Demutsachsen (Gorean-Prinzipien, Blickachse, akustisches Klopfen bei Knebel)
-   * Nutzt bei vorhandenem API-Key den Multi-KI Adapter für maßgeschneiderte Unikate.
-   */
   const SomaticPostureSynthesizer = {
-    // Kinetische Vektor-Achsen für den autarken Offline-Kombinator
     kineticAxes: {
       horizontal_lying: [
         { base: "Flache Bauchlage im freien Raum auf dem Teppich", support: "Bodenkontakt", pelvis: "Becken flach, Fersen lückenlos zusammengepresst" },
@@ -564,13 +580,9 @@
       }
     },
 
-    /**
-     * Synthetisiert eine Haltungsanweisung unter Einbeziehung des gesamten Kontextes
-     */
     synthesize: async function(practiceId, customPreferences = {}) {
       const practice = SOMATIC_PRACTICE_REFERENCES.find(p => p.id === practiceId) || SOMATIC_PRACTICE_REFERENCES[0];
       
-      // 1. Kontext-Aggregation aus HubContext & lokalen Modulen
       let ctx = null;
       if (window.HubContext && typeof window.HubContext.getUnifiedState === 'function') {
         ctx = window.HubContext.getUnifiedState();
@@ -585,7 +597,6 @@
       const dof = ctx ? ctx.v7_hardware.remainingDegreesOfFreedom : { speech_articulation: 1.0, manual_manipulation: 1.0 };
       const subPrefs = getSubPracticeInterpretation(practice.itemId);
 
-      // 2. Primärpfad: Multi-KI Synthese via AIAdapter (falls Schlüssel vorliegt)
       if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
         try {
           const aiPrompt = `
@@ -618,7 +629,6 @@ ANFORDERUNGEN:
         }
       }
 
-      // 3. Autarker Kinetischer Fallback-Kombinator
       return this.synthesizeProcedural(practice, dof, topMentalLoad, healthGuards, subPrefs);
     },
 
@@ -626,7 +636,6 @@ ANFORDERUNGEN:
       const isHandsBound = (dof && dof.manual_manipulation <= 0.05);
       const isMouthGagged = (dof && dof.speech_articulation <= 0.05);
 
-      // Basislagen-Pool nach Praktik filtern
       let posturePool = [];
       if (practice.basePostureType === "otk_lap") {
         posturePool = this.kineticAxes.lap_otk;
@@ -640,12 +649,7 @@ ANFORDERUNGEN:
         posturePool = [...this.kineticAxes.horizontal_lying, ...this.kineticAxes.vertical_standing, ...this.kineticAxes.ground_kneeling];
       }
 
-      // Bei Hypermobilität extreme Dehnungen dämpfen
-      const hasHypermobility = healthGuards.some(g => g.type === 'joint_overextension_guard');
-
-      // Zufällige somatische Vektoren ziehen
       const baseObj = posturePool[Math.floor(Math.random() * posturePool.length)];
-      
       const armPool = isHandsBound ? this.limbDirectives.arms_bound : this.limbDirectives.arms_free;
       const armDirective = armPool[Math.floor(Math.random() * armPool.length)];
 
@@ -675,6 +679,7 @@ ANFORDERUNGEN:
 
     container.innerHTML = SOMATIC_PRACTICE_REFERENCES.map(item => {
       const interp = getSubPracticeInterpretation(item.itemId);
+      const inventory = isPracticeToolAvailable(item.equipmentTag);
 
       return `
         <div class="p-3.5 sm:p-4 rounded-2xl border transition-all space-y-2.5 ${interp.isVeto ? 'bg-rose-950/20 border-rose-900/60 opacity-80' : (interp.score >= 4 ? 'bg-purple-950/20 border-purple-900/60 shadow-sm' : 'bg-slate-900/70 border-slate-800')}">
@@ -687,7 +692,16 @@ ANFORDERUNGEN:
                 </span>
                 ${interp.isShame ? '<span class="px-1.5 py-0.2 rounded text-[8.5px] font-mono bg-pink-950 text-pink-300 border border-pink-800 font-bold">Scham-Schutzanker</span>' : ''}
               </div>
-              <span class="text-[9.5px] font-mono text-slate-500 block">Fragebogen Item #${item.itemId} · Zone: ${escapeHtml(item.zone)}</span>
+              <div class="flex items-center gap-2 text-[9.5px] font-mono text-slate-500 pt-0.5">
+                <a href="index.html#view=survey&item=${item.itemId}" target="_blank" class="text-purple-400 hover:text-purple-300 underline flex items-center gap-0.5" title="Zur Frage im Fragebogen springen">
+                  <span>Fragebogen Item #${item.itemId}</span>
+                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                </a>
+                <span>·</span>
+                <span>Zone: ${escapeHtml(item.zone)}</span>
+                <span>·</span>
+                <span class="${inventory.available ? 'text-emerald-400' : 'text-slate-500'} font-bold">${escapeHtml(inventory.label)}</span>
+              </div>
             </div>
 
             <div class="flex items-center gap-2 flex-shrink-0">
@@ -751,21 +765,22 @@ ANFORDERUNGEN:
       noteBox.innerHTML = `
         <div class="flex items-center justify-between text-[10px] font-mono">
           <span class="text-slate-400">Sub-Bewertung:</span>
-          <span class="${interp.badgeClass} px-2 py-0.5 rounded">${interp.badgeText}</span>
+          <div class="flex items-center gap-1.5">
+            <a href="index.html#view=survey&item=${item.itemId}" target="_blank" class="text-purple-400 hover:text-purple-300 underline" title="Fragebogen-Item ansehen">Item #${item.itemId} ↗</a>
+            <span class="${interp.badgeClass} px-2 py-0.5 rounded">${interp.badgeText}</span>
+          </div>
         </div>
         <p class="text-[10.5px] text-slate-300 leading-snug pt-0.5">${escapeHtml(interp.interpretation)}</p>
         ${interp.note ? `<p class="text-[10px] text-purple-300 italic pt-1 border-t border-slate-800">[Notiz des Subs]: „${escapeHtml(interp.note)}“</p>` : ''}
       `;
     }
 
-    // Haltungsanweisung über den SomaticPostureSynthesizer dynamisch generieren
     if (dirArea) {
       dirArea.value = "Kalkuliere somatische Haltungsdirektive...";
       const posture = await SomaticPostureSynthesizer.synthesize(item.id);
       dirArea.value = posture;
     }
 
-    // Button zum Neuauswürfeln / Neukalkulieren der Haltung einhängen falls noch nicht vorhanden
     let reGenBtn = document.getElementById('btn-regenerate-posture');
     if (!reGenBtn && dirArea && dirArea.parentElement) {
       const btnWrapper = document.createElement('div');
@@ -809,12 +824,10 @@ ANFORDERUNGEN:
     const item = SOMATIC_PRACTICE_REFERENCES.find(p => p.id === practiceId);
     const title = item ? item.title : 'Zuchtmaßnahme';
 
-    // Punkte im Protokoll abbuchen
     if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
       window.ProtocolCore.addTransaction(-penalty, `Zucht vollzogen: ${title} (${hits} Einheiten)`, 'top');
     }
 
-    // Ereignis in den Paar-Stream posten
     if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
       window.ChatApp.postSystemEvent(`Zucht angeordnet: ${title} (${hits} Einheiten, -${penalty} P). Haltung: „${directive}“.`);
     }
@@ -1311,7 +1324,6 @@ ANFORDERUNGEN:
   };
 
   window.ProtocolTasks = api;
-  // Abwärtskompatibler Alias
   window.HubTasks = api;
 
   if (document.readyState === 'loading') {
