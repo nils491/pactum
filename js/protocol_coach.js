@@ -1,17 +1,16 @@
 /**
  * js/protocol_coach.js
- * TACTUS Top-Führungsassistent, Berufs-Kontext & D/s-Coach Engine (V3.0 Hyper-Dynamisch)
+ * TACTUS Top-Führungsassistent, D/s-Coach, Arbeitsplatz-Ergonomie & Reibungs-Analytik (V3.0 Hyper-Dynamisch)
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - 7-Vektoren Kontext-Speisung aus HubContext (Psychometrie, Somatik, Historie, Energie, Biologie, Agenda, Hardware)
- * - Dynamische Spannungs-Hysterese (ChastityDatabase) statt starrer Kalendertage
- * - Multi-KI-Integration via AIAdapter (Gemini, Claude, GPT, WebGPU) mit prozeduralem Fallback
- * - Top-First Doktrin: Schutz vor Top Fatigue, Fokus auf Alltagsentlastung und klare Führung
- * - Anti-TftB Doktrin (§ 2 Abs. 3 Regieverbot & § 3 Abs. 4 Schweigepflicht über Lust)
- * - 5 Arbeitsplatz-Profile des Bottoms mit biomechanischer Belastungs-Matrix
- * - Mehrdimensionale Reibungs- und Muster-Analytik
- * - 100 % frei von infantilen System-Emojis in Buttons und Datenstrukturen
+ * - Strikte Top-First Doktrin: Schutz vor Top Fatigue (Erschöpfung durch unbezahlten Mental Load)
+ * - 5 Biomechanische Alltags- und Arbeitsplatzprofile für den Bottom
+ * - Dreiteilige alltagstaugliche Tages-Impulse (Morgen, Arbeitstag, Feierabend)
+ * - Multi-KI Anbindung via AIAdapter mit resilienter prozeduraler Offline-Heuristik
+ * - Reibungs- & Verhaltensmuster-Analytik mit klickbaren Deeplinks
+ * - Anti-TftB Durchsetzung (§ 2 Abs. 3 & § 3 Abs. 4 Beziehungsvertrag)
+ * - 100 % frei von infantilen System-Emojis in Datenstrukturen und Benutzeroberfläche
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
 
@@ -20,47 +19,8 @@
 
   const STORAGE_KEY_WORKPLACE = 'tactus_bottom_workplace';
   const STORAGE_KEY_WORKPLACE_LEGACY = 'kompass_bottom_workplace';
-  const STORAGE_KEY_DIRECTIVE = 'tactus_last_coach_directive';
-  const STORAGE_KEY_DIRECTIVE_LEGACY = 'kompass_last_coach_directive';
-
-  let currentWorkplace = 'desk_office';
-  let lastGeneratedDirective = null;
-
-  function loadCoachState() {
-    try {
-      const savedWp = localStorage.getItem(STORAGE_KEY_WORKPLACE) || localStorage.getItem(STORAGE_KEY_WORKPLACE_LEGACY);
-      if (savedWp) currentWorkplace = savedWp;
-
-      const rawDir = localStorage.getItem(STORAGE_KEY_DIRECTIVE) || localStorage.getItem(STORAGE_KEY_DIRECTIVE_LEGACY);
-      if (rawDir) {
-        const parsed = JSON.parse(rawDir);
-        if (parsed && typeof parsed === 'object') {
-          lastGeneratedDirective = parsed;
-        }
-      }
-    } catch (e) {
-      console.warn("[TACTUS Coach] Fehler beim Laden des States:", e);
-    }
-  }
-
-  function saveCoachState(skipSync) {
-    try {
-      localStorage.setItem(STORAGE_KEY_WORKPLACE, currentWorkplace);
-      localStorage.setItem(STORAGE_KEY_WORKPLACE_LEGACY, currentWorkplace);
-
-      if (lastGeneratedDirective) {
-        const serialized = JSON.stringify(lastGeneratedDirective);
-        localStorage.setItem(STORAGE_KEY_DIRECTIVE, serialized);
-        localStorage.setItem(STORAGE_KEY_DIRECTIVE_LEGACY, serialized);
-      }
-    } catch (e) {
-      console.warn("[TACTUS Coach] Fehler beim Sichern des States:", e);
-    }
-
-    if (!skipSync && window.CloudSync && typeof window.CloudSync.trigger === 'function') {
-      window.CloudSync.trigger();
-    }
-  }
+  const STORAGE_KEY_LAST_DIRECTIVE = 'tactus_last_coach_directive';
+  const STORAGE_KEY_TOP_LOAD = 'tactus_top_mental_load';
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -89,7 +49,6 @@
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(el);
-
     setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
     setTimeout(() => {
       el.classList.add('opacity-0');
@@ -101,72 +60,113 @@
     if (window.ProtocolCore && typeof window.ProtocolCore.isTop === 'function') {
       return window.ProtocolCore.isTop();
     }
+    const isPaired = localStorage.getItem('kompass_is_paired') === 'true';
+    if (!isPaired) return true;
     const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
-    const khRole = localStorage.getItem('kompass_keyholder_role') || 'A';
-    return myRole === khRole;
+    const kh = localStorage.getItem('kompass_keyholder_role') || 'A';
+    return myRole === kh;
   }
 
-  function setWorkplace(profileId) {
-    currentWorkplace = profileId || 'desk_office';
-    saveCoachState();
+  const WORKPLACE_METADATA = {
+    desk_office: {
+      id: 'desk_office',
+      label: 'Büro / Homeoffice',
+      fullTitle: 'Büro / Homeoffice (Dauersitzen & Bildschirmarbeit)',
+      posture: 'Sitzen auf Bürostuhl mit 90°-Hüftwinkel',
+      frictionRisk: 'Dauerdruck auf Schambein und Hodenansatz; venöse Stauung im Beckenboden',
+      spuelFenster: 'Mindestens alle 12 Stunden',
+      hint: 'Dauerdruck auf Schambein und Hodenansatz im Sitzen. Teasing: Kegel-Befehle oder diskreter Foto-Appell.',
+      defaultTeaser: '3x 20 Beckenboden-Kontraktionen (Kegel) während Meetings zur Entlastung des Schambeinbogens.'
+    },
+    craft_physical: {
+      id: 'craft_physical',
+      label: 'Handwerk / Baustelle',
+      fullTitle: 'Handwerk / Baustelle (Körperliche Belastung & Schwitzen)',
+      posture: 'Bücken, Heben, Treppensteigen, Knien auf harten Böden',
+      frictionRisk: 'Starker Schweiß, Staub und Reibung; erhöhtes Mazerationsrisiko',
+      spuelFenster: 'Alle 6 Stunden dringend empfohlen',
+      hint: 'Staub und Schweißbelastung. Priorität: Urologische Feierabend-Spülung (50ml Kochsalz) sofort nach Schichtende!',
+      defaultTeaser: 'Konzentrierter Gehorsam im Alltag. Feierabend-Spülung unter der Dusche sofort nach Heimkehr vorzeigen.'
+    },
+    medical_service: {
+      id: 'medical_service',
+      label: 'Pflege / Gastronomie',
+      fullTitle: 'Pflege / Gastronomie / Einzelhandel (Dauerhaftes Stehen & Gehen)',
+      posture: '8–12 Stunden aufrechtes Stehen und zügiges Gehen in engen Kasacks/Schuhen',
+      frictionRisk: 'Reibung an den Schenkelinnenseiten; Ermüdung der Lendenwirbelsäule',
+      spuelFenster: 'Alle 8 Stunden',
+      hint: 'Hohe körperliche Bein-Ermüdung. Disziplin: Kniestand-Appell erst nach kurzer Kreislauf-Entlastung; abends Fußdienst am Top.',
+      defaultTeaser: 'Jeder anstrengende Schritt erinnert an den Verschluss. Abends: Umfassende Fußmassage für den Top.'
+    },
+    driver_field: {
+      id: 'driver_field',
+      label: 'Fahrer / Außendienst',
+      fullTitle: 'Fahrer / Außendienst / Pendler (Autositz & Vibration)',
+      posture: 'Längeres Sitzen im Fahrzeugsitz mit Vibration und Beckenerschütterung',
+      frictionRisk: 'Reibung durch Sicherheitsgurt und Schaltsitz; Hitzeentwicklung im Lendenbereich',
+      spuelFenster: 'Alle 10 Stunden',
+      hint: 'Vibration und passive Erregung im Autositz. Teasing: Konzentrationsanker an jeder roten Ampel.',
+      defaultTeaser: 'An jeder roten Ampel: Hände fest am Lenkrad lassen, aufrecht hinsetzen und tief ausatmen.'
+    },
+    shift_variable: {
+      id: 'shift_variable',
+      label: 'Schichtdienst',
+      fullTitle: 'Schichtdienst / Wechselschicht (Verschobener Biorhythmus)',
+      posture: 'Unregelmäßige Tag-Nacht-Rhythmen, gestörte REM-Schlafphasen',
+      frictionRisk: 'Verschobene Testosteron-Peaks; erhöhte Cortisolausschüttung bei Schlafmangel',
+      spuelFenster: 'Spülzeiten flexibel an Schlafblöcke anpassen',
+      hint: 'Verschobener Biorhythmus. Schlafzimmer vor Tagesschlaf verdunkeln; Gewichtsdecke zur Vagus-Stabilisierung nutzen.',
+      defaultTeaser: 'Stille Konzentration in der Schicht. Kaffee ans Bett bringen, wenn der Top aufwacht.'
+    }
+  };
+
+  function getActiveWorkplaceProfile() {
+    const raw = localStorage.getItem(STORAGE_KEY_WORKPLACE) || localStorage.getItem(STORAGE_KEY_WORKPLACE_LEGACY) || 'desk_office';
+    return WORKPLACE_METADATA[raw] || WORKPLACE_METADATA.desk_office;
+  }
+
+  function setWorkplaceProfile(workplaceId) {
+    if (!WORKPLACE_METADATA[workplaceId]) return;
+    localStorage.setItem(STORAGE_KEY_WORKPLACE, workplaceId);
+    localStorage.setItem(STORAGE_KEY_WORKPLACE_LEGACY, workplaceId);
+
+    if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+      window.CloudSync.trigger();
+    }
+
     updateWorkplaceUI();
-    showToast("Berufsprofil des Bottoms aktualisiert ✓");
+    showToast(`✓ Berufs-Kontext aktualisiert: ${WORKPLACE_METADATA[workplaceId].label}`);
   }
 
   function updateWorkplaceUI() {
-    loadCoachState();
-    let profile = null;
-
-    if (window.ChastityDatabase && typeof window.ChastityDatabase.getWorkplaceProfile === 'function') {
-      profile = window.ChastityDatabase.getWorkplaceProfile(currentWorkplace);
-    }
-
-    const sel = document.getElementById('coach-workplace-select');
-    const lbl = document.getElementById('coach-workplace-label');
+    const profile = getActiveWorkplaceProfile();
+    const select = document.getElementById('coach-workplace-select');
+    const label = document.getElementById('coach-workplace-label');
     const hint = document.getElementById('coach-workplace-hint');
 
-    if (sel && sel.value !== currentWorkplace) sel.value = currentWorkplace;
-    if (lbl && profile) lbl.innerText = profile.label;
-
-    if (hint && profile) {
-      const ergo = profile.ergonomics || {};
-      hint.innerHTML = `
-        <div class="space-y-1">
-          <div class="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
-            <span>Haltung: <strong>${escapeHtml(ergo.primaryPosture || 'variabel')}</strong></span>
-            <span>·</span>
-            <span>Reibung: <strong class="${ergo.frictionRisk === 'very_high' ? 'text-rose-400' : 'text-slate-300'}">${escapeHtml(ergo.frictionRisk || 'mittel')}</strong></span>
-            <span>·</span>
-            <span>Spülfenster: <strong>alle ${profile.hygieneWindowHours || 4}h</strong></span>
-          </div>
-          <span class="text-[10px] text-slate-400 block">
-            <strong>Gelegenheiten für Alltags-Regie:</strong> ${(profile.teasingAffordanceVectors || []).map(v => v.replace(/_/g, ' ')).join(' · ')}
-          </span>
-        </div>
-      `;
-    }
+    if (select) select.value = profile.id;
+    if (label) label.innerText = profile.label;
+    if (hint) hint.innerText = `${profile.hint} (Spülung: ${profile.spuelFenster})`;
   }
 
   function getDynamicSomaticState() {
     let daysLocked = 1;
     let isLocked = false;
-    let hardwareId = 'penis_cherrykeeper';
+    let hardwareName = 'Keuschheitskäfig';
 
     if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
-      const pState = window.ProtocolCore.getState();
-      if (pState) {
-        isLocked = !!pState.isLocked;
-        hardwareId = pState.hardware || 'penis_cherrykeeper';
-        if (isLocked && pState.lockedSince) {
-          const diffMs = Math.max(0, Date.now() - pState.lockedSince);
-          daysLocked = Math.max(1, Math.floor(diffMs / (24 * 3600 * 1000)) + 1);
-        }
+      const state = window.ProtocolCore.getState();
+      isLocked = !!state.isLocked;
+      if (isLocked && state.lockedSince) {
+        const diffMs = Math.max(0, Date.now() - state.lockedSince);
+        daysLocked = Math.max(1, Math.floor(diffMs / (24 * 3600 * 1000)) + 1);
       }
+      hardwareName = state.hardware || 'Cherrykeeper Micro Stub';
     }
 
     let tensionData = {
       effectiveTensionIndex: daysLocked,
-      archetype: { id: 'adaptation', name: 'Phase 1: Gewöhnung & Antizipation', directiveObjective: 'Gewebeschutz & Führungsaufbau', topFocus: 'Kurze Kontrollen, klare Führung.' },
+      archetype: { id: 'adaptation', name: 'Phase 1: Gewöhnung & Antizipation', directiveObjective: 'Gewebeschutz & Führung' },
       pelvicSensitivityScore: 5
     };
 
@@ -174,282 +174,306 @@
       tensionData = window.ChastityDatabase.calculateDynamicTension({ daysLocked });
     }
 
+    let topMentalLoad = 'balanced';
+    if (window.ProtocolTasks && typeof window.ProtocolTasks.getMentalLoad === 'function') {
+      topMentalLoad = window.ProtocolTasks.getMentalLoad();
+    } else {
+      topMentalLoad = localStorage.getItem(STORAGE_KEY_TOP_LOAD) || 'balanced';
+    }
+
     return {
       isLocked,
       daysLocked,
-      hardwareId,
-      tension: tensionData
+      hardwareName,
+      tensionData,
+      topMentalLoad
     };
   }
 
-  async function generateDailyDirective() {
-    loadCoachState();
-    const container = document.getElementById('ai-coach-directive-content');
-    if (!container) return;
+  function synthesizeProceduralDirective(somatic, workplace, names) {
+    const top = names.top || 'Top';
+    const sub = names.sub || 'Bottom';
+    const load = somatic.topMentalLoad;
+    const days = somatic.daysLocked;
+    const isLocked = somatic.isLocked;
 
+    // 1. TOP IST ERSCHÖPFT: STRIKTER TOP-FATIGUE SCHUTZ
+    if (load === 'exhausted') {
+      return `
+<strong>1. Morgen-Impuls (Vollkommene Stille):</strong><br>
+${sub} verharrt vor dem Verlassen der Wohnung 30 Sekunden im aufrechten Kniestand mit gesenktem Blick vor deinen Knien. Kein Redebedarf, kein Frühstücks-Smalltalk. Ein stummer Kopfstreich genügt als Entlassung in den Tag.<br><br>
+<strong>2. Alltags-Teaser (${workplace.label}):</strong><br>
+Kein forderndes Erotik-Teasing heute. Führen ist ein Privileg der Freude, kein unbezahlter Verwaltungsjob. ${sub} konzentriert sich voll auf seine Arbeit und erledigt auf dem Heimweg unaufgefordert die Einkäufe.<br><br>
+<strong>3. Feierabend-Dienst (Haushaltsentlastung):</strong><br>
+Bevor du die Wohnung betrittst, hat die Küche makellos bereinigt zu sein. ${sub} nimmt dir an der Tür schweigend Mantel und Schuhe ab, reicht ein Glas Wasser oder Tee und bietet eine 20-minütige Nackenmassage im Halbdunkel ohne jede Gegenforderung an.
+      `.trim();
+    }
+
+    // 2. TOP IST STRENG: INSPEKTION & KÖRPERLICHE ZUCHT
+    if (load === 'strict') {
+      return `
+<strong>1. Morgen-Appell (Haltungskontrolle):</strong><br>
+Appell im Kniestand. ${isLocked ? `Vorzeigen des tadellosen Sitzes des ${somatic.hardwareName}. Trockener, ruhiger Blickkontakt für 60 Sekunden ohne Blinzeln.` : `Morgenprüfung der Haltung und klares Bekenntnis zum heutigen Gehorsam.`}<br><br>
+<strong>2. Alltags-Teaser (${workplace.label}):</strong><br>
+${workplace.defaultTeaser} Jedes Zögern oder Murren wird als Pflichtverletzung gewertet.<br><br>
+<strong>3. Feierabend-Dienst (Inspektion & Rapport):</strong><br>
+${isLocked ? `Urologische 50ml-Kochsalzspülung unter der Dusche durchführen und das reizfreie Hautbild vorzeigen. ` : ``}Danach 10 Schläge mit der flachen Hand auf das Gesäß zur Besinnung über den Gehorsam des Tages, quittiert durch lautes Mitzählen.
+      `.trim();
+    }
+
+    // 3. TOP IST AUSGEGLICHEN: SOUVERÄNE FÜHRUNG & HARMONISCHE NÄHE
+    return `
+<strong>1. Morgen-Impuls (Körperlicher Anker):</strong><br>
+Gemeinsamer Duftanker vor dem Verlassen der Wohnung: Ein Hauch deines Parfüms auf das Handgelenk von ${sub} als ständiger Begleiter während des Arbeitstages.<br><br>
+<strong>2. Alltags-Teaser (${workplace.label}):</strong><br>
+${workplace.defaultTeaser} ${isLocked ? `Tag ${days} im Verschluss fordert Achtsamkeit: Schwellkörperdruck bewusst wahrnehmen, ohne zu hadern.` : `Aufrechte Haltung am Arbeitsplatz einhalten.`}<br><br>
+<strong>3. Feierabend-Dienst (Dienstbare Entlastung):</strong><br>
+Empfang an der Tür. ${sub} schenkt dir seine volle Aufmerksamkeit, nimmt dir den mentalen Ballast des Tages ab und serviert das Abendessen in ruhiger, dienender Haltung.
+    `.trim();
+  }
+
+  async function generateDailyDirective() {
     if (!isUserTop()) {
       showToast("Der Führungsassistent ist ausschließlich für den Top bestimmt.");
       return;
     }
 
-    const somatic = getDynamicSomaticState();
-    const days = somatic.daysLocked;
-    const phaseInfo = somatic.tension.archetype;
+    const contentBox = document.getElementById('ai-coach-directive-content');
+    if (!contentBox) return;
 
-    let workplaceProfile = { label: "Büro / Homeoffice", teasingAffordanceVectors: ["pelvic_kegel_command"] };
-    if (window.ChastityDatabase && typeof window.ChastityDatabase.getWorkplaceProfile === 'function') {
-      workplaceProfile = window.ChastityDatabase.getWorkplaceProfile(currentWorkplace);
-    }
-
-    let topName = 'Top';
-    let bottomName = 'Bottom';
-    let topMentalLoad = 'balanced';
-
-    if (window.ProtocolTasks && typeof window.ProtocolTasks.getMentalLoad === 'function') {
-      topMentalLoad = window.ProtocolTasks.getMentalLoad();
-    } else {
-      topMentalLoad = localStorage.getItem('tactus_top_mental_load') || 'balanced';
-    }
-
-    if (window.HubContext && typeof window.HubContext.getNames === 'function') {
-      const names = window.HubContext.getNames();
-      const roles = window.HubContext.getRoles();
-      topName = names[roles.topRole] || 'Top';
-      bottomName = names[roles.bottomRole] || 'Bottom';
-    }
-
-    container.innerHTML = `
-      <div class="p-4 text-center space-y-2 animate-pulse">
+    contentBox.innerHTML = `
+      <div class="py-4 text-center space-y-2 animate-pulse">
         <div class="w-6 h-6 border-2 border-purple-500/20 border-t-purple-400 rounded-full animate-spin mx-auto"></div>
-        <span class="text-xs text-purple-300 font-bold block">TACTUS kalkuliert die Tages-Empfehlung...</span>
-        <span class="text-[10px] text-slate-400 block">Stimmt Führung auf Tag ${days}, Mental Load (${topMentalLoad}) und Entlastung ab.</span>
+        <span class="text-xs text-purple-300 font-mono block">Berechne situative Tages-Empfehlung...</span>
+        <span class="text-[10px] text-slate-500 block">Koppelt Führungszustand, Tragetage und Arbeitsplatz</span>
       </div>
     `;
 
-    let generatedText = null;
+    const somatic = getDynamicSomaticState();
+    const workplace = getActiveWorkplaceProfile();
+    let names = { top: 'Top', sub: 'Bottom' };
 
-    // 1. Primärpfad: AIAdapter (Multi-KI Gateway)
+    if (window.ProtocolContract && typeof window.ProtocolContract.getActiveContract === 'function') {
+      const contract = window.ProtocolContract.getActiveContract();
+      if (contract) {
+        // Namen über HubContext holen falls vorhanden
+      }
+    }
+    if (window.HubContext && typeof window.HubContext.getNames === 'function') {
+      const rawNames = window.HubContext.getNames();
+      const roles = window.HubContext.getRoles();
+      names.top = rawNames[roles.topRole] || 'Top';
+      names.sub = rawNames[roles.bottomRole] || 'Bottom';
+    }
+
+    let generatedHtml = "";
+
+    // 1. KI-Pfad via AIAdapter falls konfiguriert
     if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-      const prompt = `
-Du bist der erfahrene BDSM- und D/s-Führungsberater für ${topName} (Top/Keyholder) im Beziehungs-Betriebssystem TACTUS.
-Erstelle für den heutigen Tag eine prägnante, souveräne und alltagstaugliche Regie-Empfehlung zur Führung von ${bottomName} (Bottom).
+      try {
+        let systemPrompt = "Du bist der leitende Führungsassistent und D/s-Coach für den Top im Beziehungs-Betriebssystem TACTUS (tactus.digital).";
+        if (window.HubContext && typeof window.HubContext.getLanguageDoctrine === 'function') {
+          systemPrompt += "\n\n" + window.HubContext.getLanguageDoctrine();
+        }
 
-${window.HubContext && typeof window.HubContext.getLanguageDoctrine === 'function' ? window.HubContext.getLanguageDoctrine() : ''}
+        const userPrompt = `
+Erstelle für ${names.top} (Top) eine prägnante, alltagstaugliche Führungs-Empfehlung zur Begleitung von ${names.sub} (Bottom).
 
-KONTEXT DER SITUATION:
-- Führungszustand des Tops: ${topMentalLoad} (${topMentalLoad === 'exhausted' ? 'ERSCHÖPFT ──► Alle Aufgaben MÜSSEN den Top im Haushalt entlasten oder stillen Pflegedienst leisten!' : 'Führend & Ausgeglichen'})
-- Keuschheit: ${somatic.isLocked ? `Tag ${days} im Verschluss (${phaseInfo.name})` : 'Frei / Unverschlossen'}
-- Fokus der aktuellen Phase: ${phaseInfo.directiveObjective}
-- Beruf & Belastung von ${bottomName}: ${workplaceProfile.label}
+KONTEXT DES PAARES HEUTE:
+- Führender Partner: ${names.top} (Führungszustand / Mental Load: ${somatic.topMentalLoad.toUpperCase()})
+- Keuschheitsstatus: ${somatic.isLocked ? `Tag ${somatic.daysLocked} verriegelt im ${somatic.hardwareName} (${somatic.tensionData.archetype.name})` : 'Unverschlossen / Frei'}
+- Beruf & Alltags-Kontext des Bottoms: ${workplace.fullTitle}
+- Ergonomie-Risiko: ${workplace.frictionRisk}
+- Urologisches Spülfenster: ${workplace.spuelFenster}
 
-AUFTRAG:
-Erstelle 3 kurze, prägnante Impulse:
-1. Morgen-Impuls (z. B. 30s Kniestand-Blickkontakt vor dem Gehen, Duftanker)
-2. Alltags-Teaser (abgestimmt auf den Beruf von ${bottomName})
-3. Feierabend-Dienst (Haushaltsentlastung & Dienst am Top)
-
-Antworte direkt in 4 bis maximal 5 souveränen, erwachsenen Sätzen ohne Kitsch.
+WICHTIGE LEITPLANKEN:
+- Wenn der Top 'EXHAUSTED' ist: Verbiete fordernde Erotik! Wandle den Tag zwingend in stillen Entlastungsdienst durch den Sub um (Mental-Load Beseitigung, Fußmassage, Schuhe abnehmen).
+- Wenn der Top 'STRICT' ist: Fokus auf Haltungsprüfung, Kniestand und disziplinierte Sühne.
+- Wenn der Top 'BALANCED' ist: Harmonische Balance aus Führung, Alltagsentlastung und Nähe.
+- Formuliere exakt 3 nummerierte Absätze: 1. Morgen-Impuls, 2. Alltags-Teaser (${workplace.label}), 3. Feierabend-Dienst.
+- Direkt, erwachsen, souverän, frei von Kitsch. Antworte in wohlgeformtem HTML mit <strong> und <br>-Tags.
 `;
 
-      try {
-        generatedText = await window.AIAdapter.generateText({
-          systemPrompt: "Du bist der somatische Führungs-Coach für TACTUS. Antworte erwachsen, direkt, ohne Kitsch.",
-          userPrompt: prompt,
-          temperature: 0.6
+        const aiResponse = await window.AIAdapter.generateText({
+          systemPrompt: systemPrompt,
+          userPrompt: userPrompt,
+          temperature: 0.65
         });
-      } catch (err) {
-        console.warn("[TACTUS Coach] KI-Aufruf fehlgeschlagen, nutze prozedurale Heuristik:", err);
+
+        if (aiResponse && aiResponse.trim().length > 60) {
+          generatedHtml = aiResponse.trim();
+        }
+      } catch (errAi) {
+        console.debug("[TACTUS Coach] KI-Synthese fehlgeschlagen, nutze Heuristik:", errAi);
       }
     }
 
-    // 2. Fallback: Prozedurale somatische Heuristik
-    if (!generatedText || typeof generatedText !== 'string' || generatedText.trim().length < 20) {
-      generatedText = synthesizeProceduralDirective(days, phaseInfo, workplaceProfile, topMentalLoad, topName, bottomName);
+    // 2. Fallback auf prozedurale Heuristik
+    if (!generatedHtml) {
+      generatedHtml = synthesizeProceduralDirective(somatic, workplace, names);
     }
 
-    lastGeneratedDirective = {
-      text: generatedText.trim(),
-      generatedAt: Date.now(),
-      day: days,
-      topMentalLoad
-    };
+    try {
+      localStorage.setItem(STORAGE_KEY_LAST_DIRECTIVE, JSON.stringify({
+        html: generatedHtml,
+        timestamp: Date.now(),
+        workplaceId: workplace.id,
+        mentalLoad: somatic.topMentalLoad
+      }));
+    } catch (e) {}
 
-    saveCoachState();
-    renderDirectiveHtml(lastGeneratedDirective.text, days, phaseInfo, topMentalLoad);
-    showToast("Tages-Empfehlung berechnet ✓");
-  }
-
-  function synthesizeProceduralDirective(days, phase, workplace, topLoad, topName, bottomName) {
-    if (topLoad === 'exhausted') {
-      return `Tages-Plan für Tag ${days} im Verschluss (Fokus: Stille Entlastung des Tops):\n\n` +
-        `• Morgen: Kein Redebedarf. Ein stummer Blickkontakt von 20 Sekunden im aufrechten Stand vor dem Gehen genügt zur Bestätigung der Führung.\n` +
-        `• Alltag (${workplace.label}): Vollständige Konzentration auf den Beruf. Keine unnötigen Textnachrichten oder Bedürftigkeits-Pings an ${topName}.\n` +
-        `• Feierabend: ${bottomName} übernimmt sofort unaufgefordert die Küche und das Bereitstellen der Hausschuhe. Danach 20 Minuten schweigende Fußmassage für ${topName} im abgedunkelten Raum ohne Gegenleistung.`;
-    }
-
-    if (topLoad === 'strict') {
-      return `Tages-Plan für Tag ${days} (${phase.name} · Strikte Disziplin):\n\n` +
-        `• Morgen: 60 Sekunden strammer Kniestand vor dem Spiegel. Vorzeigen der Körperhaltung und ruhiges Danken für die Führung.\n` +
-        `• Alltag (${workplace.label}): Diskreter Appell: Durchführung von 3x 20 Beckenboden-Kontraktionen gegen das feste Gitter am Arbeitsplatz.\n` +
-        `• Feierabend: Formelle Inspektion des Verschlusses und des reizfreien Hautbilds. Bei kleinsten Versäumnissen oder Unpünktlichkeit werden 15 Schläge mit dem Ledergürtel im Zählrhythmus angesetzt.`;
-    }
-
-    // Standard: Ausgeglichen
-    return `Tages-Plan für Tag ${days} (${phase.name}):\n\n` +
-      `• Morgen: 30 Sekunden Kniestand mit klarem Blickkontakt vor der ersten Alltagsinteraktion als körperlicher Anker.\n` +
-      `• Alltag (${workplace.label}): Sende zur Mittagszeit eine kurze, unaufdringliche Erinnerung an die Schlüsselgewalt (z. B. 3 Sekunden Audio-Klimpern).\n` +
-      `• Feierabend: ${phase.topFocus || 'Hingebungsvoller Dienst'}. ${bottomName} entlastet dich im Haushalt, bevor du über eine Belohnung oder eine Schwellen-Quälerei entscheidest.`;
-  }
-
-  function renderDirectiveHtml(text, days, phase, topLoad) {
-    const container = document.getElementById('ai-coach-directive-content');
-    if (!container) return;
-
-    const loadBadgeMap = {
-      exhausted: '<span class="px-2 py-0.5 rounded text-[9px] font-mono bg-amber-950 text-amber-300 border border-amber-800">Entlastungs-Modus</span>',
-      balanced: '<span class="px-2 py-0.5 rounded text-[9px] font-mono bg-purple-950 text-purple-300 border border-purple-800">Ausgeglichen</span>',
-      strict: '<span class="px-2 py-0.5 rounded text-[9px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800">Strikte Disziplin</span>'
-    };
-
-    container.innerHTML = `
-      <div class="space-y-3 animate-fade-in">
-        <div class="flex items-center justify-between text-[10px] text-purple-300 font-mono border-b border-indigo-900/40 pb-2 flex-wrap gap-2">
-          <div class="flex items-center gap-2">
-            <span>Tag ${days} im Verschluss</span>
-            <span>·</span>
-            <span>${escapeHtml(phase.name || 'Phase')}</span>
-          </div>
-          <div>${loadBadgeMap[topLoad] || ''}</div>
-        </div>
-
-        <div class="text-[11px] text-slate-200 leading-relaxed whitespace-pre-line bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80">
-          ${escapeHtml(text)}
-        </div>
-
-        <div class="p-3 rounded-2xl bg-purple-950/30 border border-purple-900/50 text-[10.5px] text-purple-200 flex items-start gap-2.5">
-          <div class="text-purple-400 flex-shrink-0 mt-0.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="space-y-0.5 leading-snug">
-            <strong>Souveräne Führung:</strong>
-            <span class="text-slate-300 block">Führen ist ein Privileg der Freude, kein Verwaltungsjob. Bei Überforderung des Tops wandelt das System Pflichten sofort in stillen Dienst um (§ 6 Abs. 1).</span>
-          </div>
+    contentBox.innerHTML = `
+      <div class="space-y-2 text-[11px] text-slate-200 leading-relaxed font-sans">
+        ${generatedHtml}
+        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9.5px] font-mono text-slate-500">
+          <span>Kontext: ${escapeHtml(workplace.label)} · Load: ${escapeHtml(somatic.topMentalLoad)}</span>
+          <span>Berechnet um ${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
       </div>
     `;
+
+    showToast("✓ Tages-Empfehlung für den Top berechnet");
+  }
+
+  function loadCachedDirective() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_LAST_DIRECTIVE);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const contentBox = document.getElementById('ai-coach-directive-content');
+        if (contentBox && parsed.html) {
+          contentBox.innerHTML = `
+            <div class="space-y-2 text-[11px] text-slate-200 leading-relaxed font-sans">
+              ${parsed.html}
+              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9.5px] font-mono text-slate-500">
+                <span>Kontext: ${escapeHtml(parsed.workplaceId || '')}</span>
+                <span>Gespeichert vom Vortag</span>
+              </div>
+            </div>
+          `;
+        }
+      }
+    } catch (e) {}
   }
 
   function renderFrictionAnalytics() {
     const container = document.getElementById('ai-coach-friction-list');
     if (!container) return;
 
-    let contract = null;
-    if (window.ProtocolContract && typeof window.ProtocolContract.getActiveContract === 'function') {
-      contract = window.ProtocolContract.getActiveContract();
-    }
+    const frictionPoints = [];
 
-    const isContractActive = contract && contract.status === 'active';
-    let balance = 0;
-    if (window.ProtocolCore && typeof window.ProtocolCore.getBalance === 'function') {
-      balance = window.ProtocolCore.getBalance();
-    }
-
-    let tasks = [];
+    // 1. Überfällige Aufgaben aus ProtocolTasks prüfen
     if (window.ProtocolTasks && typeof window.ProtocolTasks.getTasks === 'function') {
-      tasks = window.ProtocolTasks.getTasks();
-    }
-    const overdueTasks = tasks.filter(t => t.isDueNow && t.status === 'pending');
-    const submittedTasks = tasks.filter(t => t.status === 'submitted');
+      const allTasks = window.ProtocolTasks.getTasks();
+      const overdueTasks = allTasks.filter(t => t.status === 'pending' && t.isDueNow);
+      const submittedTasks = allTasks.filter(t => t.status === 'submitted');
 
-    let ratioProgress = { topCount: 0, subCount: 0, target: 6, isTargetMet: false };
+      if (overdueTasks.length > 0) {
+        frictionPoints.push({
+          type: 'overdue_chores',
+          severity: 'high',
+          badge: `${overdueTasks.length} überfällige Pflichten`,
+          title: "Säumigkeit im Alltag (Disziplinarischer Anlass)",
+          desc: `${overdueTasks.length} vereinbarte Aufgaben sind fällig, wurden aber noch nicht vollzogen. Disziplinierung nach § 7 Beziehungsvertrag empfohlen.`,
+          actionHtml: `<a href="protocol.html#view=chores" class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-mono text-[9px] font-bold">Zucht anordnen ↗</a>`
+        });
+      }
+
+      if (submittedTasks.length > 0) {
+        frictionPoints.push({
+          type: 'submitted_awaiting_approval',
+          severity: 'medium',
+          badge: `${submittedTasks.length} in Prüfung`,
+          title: "Vollzugsmeldungen warten auf Quittierung",
+          desc: `Der Bottom hat Pflichten eingereicht. Zeitnahes Quittieren erhält den motivationalen Führungsfluss.`,
+          actionHtml: `<a href="protocol.html#view=chores" class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono text-[9px] font-bold">Prüfen ↗</a>`
+        });
+      }
+    }
+
+    // 2. Orgasmus-Ratio aus ProtocolRatio prüfen
     if (window.ProtocolRatio && typeof window.ProtocolRatio.getProgress === 'function') {
-      ratioProgress = window.ProtocolRatio.getProgress();
+      const ratioProgress = window.ProtocolRatio.getProgress();
+      if (!ratioProgress.isTargetMet) {
+        frictionPoints.push({
+          type: 'ratio_unmet',
+          severity: 'neutral',
+          badge: `Lust-Ratio ${ratioProgress.topCount}:${ratioProgress.subCount}`,
+          title: "Top-Höhepunkte haben strikte Priorität",
+          desc: `Die Zielquote (${ratioProgress.target}:1) ist noch nicht erreicht (${ratioProgress.remainingInCycle} Top-Höhepunkte verbleibend). Gemäß § 5 Abs. 3 gilt strikte Schweigepflicht des Subs über eigene Ejakulation.`,
+          actionHtml: `<a href="protocol.html#tab=dashboard" class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[9px] font-bold">Ratio einsehen ↗</a>`
+        });
+      }
     }
 
-    container.innerHTML = `
-      <div class="space-y-2.5">
-        <!-- Reibungs-Status 1: Pflichten & Prüfungen -->
-        <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5 text-xs">
-          <div class="flex items-center justify-between">
-            <strong class="text-white text-xs block font-bold">Pflichten-Dynamik &amp; Pünktlichkeit:</strong>
-            <span class="text-[9.5px] font-mono font-bold px-2 py-0.5 rounded ${overdueTasks.length > 0 ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-emerald-950 text-emerald-300 border border-emerald-800'}">
-              ${overdueTasks.length > 0 ? `${overdueTasks.length} überfällig` : 'Im Plan ✓'}
-            </span>
-          </div>
+    // 3. Vertrags-Ratifizierung prüfen
+    if (window.ProtocolContract && typeof window.ProtocolContract.getActiveContract === 'function') {
+      const contract = window.ProtocolContract.getActiveContract();
+      if (contract.status === 'draft' || !contract.signatureTop || !contract.signatureSub) {
+        frictionPoints.push({
+          type: 'contract_draft',
+          severity: 'medium',
+          badge: "Vertrag: Entwurf",
+          title: "Bündnisvertrag noch unratifiziert",
+          desc: "Der Beziehungsvertrag wurde noch nicht von beiden Partnern besiegelt. Eine feierliche Unterzeichnung schafft verbindliche Klarheit.",
+          actionHtml: `<a href="protocol.html#tab=contract" class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-mono text-[9px] font-bold">Ratifizieren ↗</a>`
+        });
+      }
+    }
+
+    // 4. Default wenn harmonisch
+    if (frictionPoints.length === 0) {
+      container.innerHTML = `
+        <div class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-800/50 space-y-1 text-xs">
+          <strong class="text-emerald-300 block font-bold flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Keine offenen Reibungspunkte</span>
+          </strong>
           <p class="text-[10.5px] text-slate-300 leading-snug">
-            ${overdueTasks.length > 0 
-              ? `Überfällige Pflichten bieten Anlass für Zucht nach § 7 (z. B. Punkteabzug oder Kniestand-Appell).` 
-              : `Alle Pflichten werden pünktlich eingereicht. ${submittedTasks.length > 0 ? `Es warten ${submittedTasks.length} Vollzugsmeldungen auf deine Prüfung.` : 'Aktuell keine offenen Prüfungen.'}`}
+            Die Dynamik läuft synchron: Alle Pflichten sind geregelt, die Ratio wird eingehalten und es bestehen keine akuten Schieflagen.
           </p>
         </div>
+      `;
+      return;
+    }
 
-        <!-- Reibungs-Status 2: Orgasmus-Ökonomie -->
-        <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5 text-xs">
-          <div class="flex items-center justify-between">
-            <strong class="text-white text-xs block font-bold">Lust-Asymmetrie (§ 5 Orgasmus-Ratio):</strong>
-            <span class="text-[9.5px] font-mono text-purple-300 font-bold">${ratioProgress.topCount} Top : ${ratioProgress.subCount} Bottom</span>
-          </div>
-          <p class="text-[10.5px] text-slate-300 leading-snug">
-            ${ratioProgress.isTargetMet 
-              ? `Die vereinbarte Quote (${ratioProgress.target}:1) ist rechnerisch erfüllt. Eine Freigabe für den Bottom ist möglich, begründet jedoch keinen Rechtsanspruch (§ 3 Abs. 4).`
-              : `Fokus liegt auf der Entladung des Tops. Dem Bottom ist jedes Quengeln über Freilassung untersagt.`}
-          </p>
+    container.innerHTML = frictionPoints.map(f => `
+      <div class="p-3 rounded-2xl border transition-all space-y-1.5 ${f.severity === 'high' ? 'bg-rose-950/20 border-rose-800/70' : (f.severity === 'medium' ? 'bg-amber-950/20 border-amber-800/70' : 'bg-slate-900/60 border-slate-800')}">
+        <div class="flex items-center justify-between">
+          <span class="text-[9.5px] font-mono px-2 py-0.5 rounded font-bold ${f.severity === 'high' ? 'bg-rose-950 text-rose-300 border border-rose-800' : (f.severity === 'medium' ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-purple-950 text-purple-300 border border-purple-800')}">
+            ${escapeHtml(f.badge)}
+          </span>
+          ${f.actionHtml}
         </div>
-
-        <!-- Reibungs-Status 3: Vertragskodex -->
-        <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
-          <div class="space-y-0.5">
-            <strong class="text-white block text-xs font-bold">Beziehungsvertrag:</strong>
-            <span class="text-[10px] text-slate-400 font-mono">
-              ${isContractActive ? 'Verbindlich ratifiziert ✓ (§ 2 Abs. 3 Regieverbot aktiv)' : 'Entwurf (noch nicht besiegelt)'}
-            </span>
-          </div>
-          <button type="button" onclick="ProtocolCore.switchTab('contract')" class="px-2.5 py-1.5 rounded-xl bg-purple-900/80 hover:bg-purple-800 text-purple-200 font-bold text-[10px] touch-btn flex items-center gap-1">
-            <span>Kodex prüfen</span>
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
-            </svg>
-          </button>
-        </div>
+        <strong class="text-xs text-white block font-bold">${escapeHtml(f.title)}</strong>
+        <p class="text-[10.5px] text-slate-300 leading-snug">${escapeHtml(f.desc)}</p>
       </div>
-    `;
-  }
-
-  function initCoach() {
-    loadCoachState();
-    updateWorkplaceUI();
-    renderFrictionAnalytics();
-
-    if (lastGeneratedDirective) {
-      const somatic = getDynamicSomaticState();
-      renderDirectiveHtml(
-        lastGeneratedDirective.text, 
-        lastGeneratedDirective.day || somatic.daysLocked, 
-        somatic.tension.archetype, 
-        lastGeneratedDirective.topMentalLoad || 'balanced'
-      );
-    }
+    `).join('');
   }
 
   const api = {
-    init: initCoach,
-    setWorkplace: setWorkplace,
+    init: function() {
+      updateWorkplaceUI();
+      loadCachedDirective();
+      renderFrictionAnalytics();
+    },
+    render: function() {
+      updateWorkplaceUI();
+      renderFrictionAnalytics();
+    },
+    setWorkplace: setWorkplaceProfile,
+    getWorkplace: getActiveWorkplaceProfile,
     generateDailyDirective: generateDailyDirective,
-    renderFrictionAnalytics: renderFrictionAnalytics,
-    getWorkplace: function() { loadCoachState(); return currentWorkplace; },
-    getLastDirective: function() { loadCoachState(); return lastGeneratedDirective; }
+    renderFriction: renderFrictionAnalytics
   };
 
   window.ProtocolCoach = api;
-  // Abwärtskompatibler Alias
-  window.LedgerCoach = api;
+  window.LedgerCoach = api; // Abwärtskompatibler Alias
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCoach);
+    document.addEventListener('DOMContentLoaded', api.init);
   } else {
-    initCoach();
+    api.init();
   }
 
 })(window);
