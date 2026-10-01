@@ -4,22 +4,15 @@
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien:
- * - 100 % OPTIONALES MODUL: Keuschheit, Zucht oder der gesamte Vertrag können
- *   vollständig deaktiviert werden (Stufe 0 = Klausel entfällt restlos)
- * - Gewichtete Psychometrie-Synthese:
- *   • Doppel-Spitzen (5/5): Voll integriert (Gewicht 1.0)
- *   • Hohe Synergien (5/4 & 4/5): Fester Bestandteil (Gewicht 0.85)
- *   • Erkundungs-Brücken (5/3 & 4/3): Einfließen als behutsame Probe-Klauseln (Gewicht 0.65)
- *   • Verletzliche Sehnsüchte (Scham-Marker 🙈 bei Score >= 3): Schutzraum-Klauseln mit Spottverbot
- *   • Tabu-Vetos (Score 1) & Sanfte Grenzen (Score 2): Automatische Sperren & Drosselung
- * - Psychosomatische Cross-Clause Resonanz:
- *   • Denial-Kompensation (Keuschheit >= 4 erzwingt Fürsorge >= 3 & Berührungsanker)
- *   • Top-Fatigue Schutz (Disziplin >= 4 erzwingt Haushaltsdienst zur Entlastung)
- * - Anti-TftB Doktrin (§ 2 Abs. 3 Regieverbot, § 3 Abs. 4 Schweigepflicht über Lust)
- * - Dualer Ratifizierungs-Export: Touch-Signatur im Browser ODER Blanko-Zeremonie
- *   für Füllfederhalter und Siegelwachs auf Büttenpapier (@media print)
- * - 1-Klick Redacted Contract Canvas Export (1080x1350) für diskreten Social Proof
- * - 100 % frei von infantilen System-Emojis in Buttons und Datenstrukturen
+ * - 8 Paragraphen mit Stufen 0 bis 5 (0 = Deaktiviert / Entfällt, 1 = Sanft, 3 = Ausgewogen, 5 = Strikt)
+ * - Psychosomatische Cross-Clause-Invarianten (Denial-Kompensation & Top-Fatigue-Schutz)
+ * - Verankerung von Kapitel 00 (Items 901-905) in § 8 (Trauma-Trigger & Notfall-Interventionen)
+ * - Scham-Schutzanker (🙈) & Alltags-Spottverbot in § 1 Abs. 2
+ * - Klickbare Fragebogen-Deeplinks auf alle referenzierten Items (index.html#view=survey&item=X)
+ * - Gehärtetes Druck-Design (@media print): Edle juristische Typografie, Siegelfelder, saubere Seitenumbrüche
+ * - Redacted Urkunden-Export: 1080x1350 px Canvas mit Goldrahmen und PACTUM-Siegel für Social Proof
+ * - Touch-Signaturpad mit High-DPI Skalierung für Top (violett) und Bottom (indigo)
+ * - 100 % frei von infantilen System-Emojis in Datenstrukturen und UI
  * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
  */
 
@@ -28,206 +21,106 @@
 
   const STORAGE_KEY_CONTRACT = 'tactus_contract_state';
   const STORAGE_KEY_LEGACY = 'kompass_contract_state';
+  const STORAGE_KEY_ANSWERS = 'kompass_answers';
+  const STORAGE_KEY_NAMES = 'kompass_names';
 
-  // Zuordnung der 36 Fragebogen-Kapitel zu den 8 Vertrags-Dimensionen für gewichtete Cluster-Berechnung
   const CHAPTER_CLUSTER_MAP = {
-    k1_preamble: [0, 1, 9],               // Anatomie, Romantik/Konsens, BDSM-Basics
-    k2_hierarchy: [9, 15, 17],            // BDSM-Basics, Scham/Nacktheit, Rollenspiele
-    k3_spheres: [5, 16],                  // Sexuelle Frequenz/Alltag, Diskrete Öffentlichkeit
-    k4_aftercare: [1, 14, 19, 34, 35],    // Romantik, Kitzeln/Schutz, Caregiver, Vagus, Drop-Prävention
-    k5_chastity: [7, 8],                  // Keuschheit/Orgasmuskontrolle, Hardware/Schlösser
-    k6_service: [3, 9, 23, 29, 31],       // Orale Hingabe, Rollen, Fuß-Service, Feminisierung, Finanzieller Dienst
-    k7_discipline: [10, 11, 12, 24, 25],  // Fesselung, Spanking, Impact Tools, Knebel/Atem, CBT
-    k8_safewords: [9, 24, 34, 35]         // BDSM-Basics (SSC/RACK), Atemgrenzen, Vagus, Nachsorge
+    k1_preamble: [0, 1, 9],
+    k2_hierarchy: [9, 15, 17],
+    k3_spheres: [5, 16],
+    k4_aftercare: [1, 14, 19, 34, 35],
+    k5_chastity: [7, 8],
+    k6_service: [3, 9, 23, 29, 31],
+    k7_discipline: [10, 11, 12, 24, 25],
+    k8_safety: [9, 24, 34, 35]
   };
 
-  const DUKTUS_TONALITIES = {
-    sovereign_warm: {
-      id: 'sovereign_warm',
-      label: 'Souverän & Warm (Standard)',
-      desc: 'Klare, erwachsene Führung, emotionale Verlässlichkeit und tiefe Geborgenheit',
-      badgeClass: 'bg-purple-950 text-purple-200 border-purple-700'
-    },
-    sovereign_cool: {
-      id: 'sovereign_cool',
-      label: 'Kühl & Unerbittlich',
-      desc: 'Wenig Worte, messerscharfe Distanz, unnachgiebige Disziplin',
-      badgeClass: 'bg-indigo-950 text-indigo-200 border-indigo-700'
-    },
-    raw_primal: {
-      id: 'raw_primal',
-      label: 'Rau & Primal',
-      desc: 'Körperlich, instinktiv, direkt auf den Punkt, ungeschliffen',
-      badgeClass: 'bg-rose-950 text-rose-200 border-rose-700'
-    },
-    playful: {
-      id: 'playful',
-      label: 'Verspielt & Spöttisch',
-      desc: 'Sinnliches Teasing, erotische Herausforderung und subtiler Schalk',
-      badgeClass: 'bg-amber-950 text-amber-200 border-amber-700'
-    }
-  };
-
-  const CONTRACT_DIMENSIONS = [
-    {
+  const DEFAULT_CONTRACT_CLAUSES = {
+    k1_preamble: {
       key: 'k1_preamble',
-      num: '§ 1',
-      title: 'Präambel & Einvernehmlichkeit (Konsens)',
-      canDisable: false,
-      levels: {
-        1: "Beide Partner treten aus freien Stücken in dieses Abkommen ein. Das Spiel mit Führung und Hingabe dient der Vertiefung gegenseitiger Nähe. Alle Handlungen folgen dem Prinzip unbedingter Absprache.",
-        3: "Beide Partner treten vollkommen freiwillig und im Vollbesitz ihrer geistigen Kräfte in dieses Abkommen ein. Das bewusste Spiel mit Macht, Disziplin und Hingabe folgt ausnahmslos den ethischen Prinzipien von Safe, Sane & Consensual (SSC) sowie RACK. Echte Bosheit, Alltagszorn oder Gefährdung der körperlichen Unversehrtheit sind ausgeschlossen.",
-        5: "Beide Partner weihen ihr Zusammensein einem unumstößlichen Bündnis. Der Bottom übergibt die Regie über Lust, Körper und Zeit im Rahmen unverletzlicher ethischer Grenzen ungeteilt an den Top. Das Bündnis ist ein geschützter Raum bedingungslosen Vertrauens."
-      }
+      title: '§ 1 Präambel, Vertrauensbasis & Scham-Schutzanker',
+      level: 3,
+      canDisable: true,
+      desc: 'Bündniszweck, emotionale Sicherheit, Konsens und das bedingungslose Spottverbot für verletzliche Sehnsüchte.',
+      clusterChapters: [0, 1, 9]
     },
-    {
+    k2_hierarchy: {
       key: 'k2_hierarchy',
-      num: '§ 2',
-      title: 'Rollen, Titel & Verbot der verdeckten Regie',
+      title: '§ 2 Führungsanspruch & Verbot verdeckter Regie (Anti-TftB)',
+      level: 3,
       canDisable: true,
-      levels: {
-        0: "Titel und formelle Hierarchien sind nicht Gegenstand dieses Abkommens. Beide Partner begegnen sich mit ihren gewohnten Vornamen auf Augenhöhe.",
-        1: "Die Führung obliegt im geschützten Raum dem Top. Im Alltag begegnen sich beide Partner mit gegenseitigem Respekt und gewohnten Namen.",
-        3: "Abs. 1: Die Leitung der Dynamik obliegt ungeteilt dem Top. Der Bottom erkennt diese Führung mit aufrichtiger Hingabe an.\nAbs. 2: Im Alltag und nach außen gilt das Stealth-Prinzip: Absolute Diskretion vor Dritten.\nAbs. 3 (Verbot der verdeckten Regie): Das bewusste oder unbewusste Diktieren von Handlungen, Strafen oder Belohnungen durch den Bottom gilt als subtiler Ungehorsam. Die Regie liegt unteilbar beim Top.",
-        5: "Abs. 1: Dem Top gebührt ungeteilte Autorität und ehrerbietige Anrede im privaten Raum. Der Bottom spricht nur nach Aufforderung.\nAbs. 2: Jede Form verdeckter Regieführung („Topping from the Bottom“) ist strikt untersagt. Jeder Verstoß zieht sofortige Disziplinierung nach sich."
-      }
+      desc: 'Klare Machtasymmetrie, Verbot von Regieführung von unten (Topping from the Bottom) und Entscheidungsbefugnis des Tops.',
+      clusterChapters: [9, 15, 17]
     },
-    {
+    k3_spheres: {
       key: 'k3_spheres',
-      num: '§ 3',
-      title: 'Sphärentrennung & Geltungsbereich',
-      canDisable: false,
-      levels: {
-        1: "Dieser Kodex gilt ausschließlich bei geschlossener Schlafzimmertür während verabredeter Spielzeiten.",
-        3: "Abs. 1: Die Bestimmungen dieses Bündnisses gelten im privaten häuslichen Raum sowie während vereinbarter Session-Zeiten.\nAbs. 2: Im Berufsleben, vor der Familie und im Freundeskreis sind beide Partner ein gleichberechtigtes Team auf Augenhöhe.",
-        5: "Die Hierarchie durchdringt das gesamte private Zusammenleben. Diskrete Anker und Berührungsverbote begleiten das Paar auch außerhalb des Hauses, ohne für Dritte sichtbar zu sein."
-      }
+      title: '§ 3 Geltungsbereiche & diskrete Öffentlichkeit',
+      level: 2,
+      canDisable: true,
+      desc: 'Räumliche und zeitliche Grenzen der Dynamik im Alltag, im Halbdunkel des Schlafzimmers und in Gegenwart Dritter.',
+      clusterChapters: [5, 16]
     },
-    {
+    k4_aftercare: {
       key: 'k4_aftercare',
-      num: '§ 4',
-      title: 'Fürsorge, Nervensystem & Reverse Aftercare',
+      title: '§ 4 Nachsorge, Vagus-Atmung & Reverse Aftercare',
+      level: 4,
       canDisable: false,
-      levels: {
-        1: "Nach jeder intensiven Phase halten beide Partner mindestens 10 Minuten gemeinsame Ruhe und versorgen sich mit Wasser und Nähe.",
-        3: "Abs. 1: Der Top garantiert nach jeder Session mindestens 15 Minuten ununterbrochene Aftercare: feste Umarmung, warme Decken und Vagus-Atmung zur Abwendung eines Subdrops.\nAbs. 2 (Reverse Aftercare & Top-Entlastung): Dem Bottom obliegt die Pflicht zur körperlichen Versorgung des Tops (Getränke reichen, Massage ermüdeter Muskeln, dezentquittierte Desinfektion und Aufräumen der Ausrüstung). Erst nach Erfüllung dieser Fürsorge darf der Bottom um eigene Ruhe bitten.",
-        5: "Abs. 1: Der Top wacht mit höchster Achtsamkeit über die vegetativ-seelische Verfassung des Bottoms (Gewichtsdecken-Erdung gegen Kältezittern, Glukosegabe).\nAbs. 2: Nach jeder Session bedient der Bottom den Top hingebungsvoll (Fußmassage, Entlastung) und hält die Deckenruhe bis zur vollständigen Stabilisierung des Nervensystems ein."
-      }
+      desc: 'Verbindliche Vagus-Beruhigung nach intensiven Reizen, 24h/48h-Subdrop-Prävention und Dienst des Subs am Top.',
+      clusterChapters: [1, 14, 19, 34, 35]
     },
-    {
+    k5_chastity: {
       key: 'k5_chastity',
-      num: '§ 5',
-      title: 'Orgasmus-Ökonomie, Keuschheit & Schweigepflicht',
+      title: '§ 5 Keuschheit, Triebaufschub & Schlüsselgewalt',
+      level: 3,
       canDisable: true,
-      levels: {
-        0: "Keuschheit und Orgasmus-Beschränkungen sind nicht Gegenstand dieses Bündnisses. Die Intimität beider Partner bleibt frei und unreglementiert.",
-        1: "Gelegentlicher Triebaufschub im Schlafzimmer dient der erotischen Vorfreude. Höhepunkte erfolgen im gegenseitigen Einvernehmen.",
-        3: "Abs. 1: Das Genital des Bottoms unterliegt der Schlüsselgewalt des Tops. Jeder Orgasmus ist ein seltenes Privileg und bedarf vorheriger Erlaubnis.\nAbs. 2: Die Orgasmus-Ratio richtet sich nach der Lust des Tops. Erreichte Quoten begründen keinen Rechtsanspruch des Bottoms.\nAbs. 3: Unerlaubtes Berühren des Verschlusses gilt als schwerer Vertrauensbruch. Dusch- und Pflegepausen erfolgen nach Zeitprotokoll.\nAbs. 4 (Schweigepflicht über Verschluss & Lust): Dem Bottom ist jedes unaufgeforderte Thematisieren, Nachfragen oder Jammern bezüglich Freilassung, Schlüsseln oder Orgasmen untersagt. Ein Bitten um Erlaubnis ist nur gestattet, wenn der Top dies ausdrücklich befiehlt.",
-        5: "Abs. 1: Dauerhafte Keuschheit im Verschluss. Der Bottom hat jeglichen Anspruch auf eigene Ejakulationen an den Top abgetreten.\nAbs. 2: Freigaben erfolgen extrem selten und nach freiem Ermessen der Herrin, vorzugsweise als Ruined Orgasm oder über Prostata.\nAbs. 3: Schweigepflicht über die eigene Lust ist absolut. Jedes Zuwiderhandeln verlängert die Tragedauer um mindestens 48 Stunden."
-      }
+      desc: 'Ausschließliche Verfügungsgewalt über die Lust, Tragepflicht der Verschluss-Hardware und Schweigepflicht des Subs.',
+      clusterChapters: [7, 8]
     },
-    {
+    k6_service: {
       key: 'k6_service',
-      num: '§ 6',
-      title: 'Dienste, Haushalt & Entlastung des Tops',
+      title: '§ 6 Alltagsdienst, Haushaltsentlastung & Ehrerbietung',
+      level: 3,
       canDisable: true,
-      levels: {
-        0: "Häusliche Dienste und Alltagsaufgaben sind nicht Gegenstand dieses Vertrags und werden partnerschaftlich geteilt.",
-        1: "Kleine Aufmerksamkeiten (Kaffeedienst, gelegentliche Massage) werden zur Freude des Partners gerne geleistet.",
-        3: "Abs. 1: Der Bottom erfüllt die im Protokoll vereinbarten Tages- und Wochenpflichten sorgfältig, um den Top vom Mental Load des Haushalts zu befreien.\nAbs. 2: Beim Eintreffen des Tops zuhause erfolgt auf Wunsch der Begrüßungs-Kniestand oder die Übergabe der Hausschuhe.\nAbs. 3: Pflege des Intimbereichs (Rasur) und Körperhygiene werden lückenlos aufrechterhalten.",
-        5: "Umfassende häusliche Dienstbarkeit: Der Bottom hält die Lebensräume des Tops makellos rein. Sämtliche Versorgungsdienste werden aufmerksam und ohne Aufforderung erbracht."
-      }
+      desc: 'Dienstbare Entlastung des Tops im Alltag, Kniestand-Appell und Fußpflege zur Beseitigung von Mental Load.',
+      clusterChapters: [3, 9, 23, 29, 31]
     },
-    {
+    k7_discipline: {
       key: 'k7_discipline',
-      num: '§ 7',
-      title: 'Disziplin, Sühne & Sanktionen',
+      title: '§ 7 Disziplinarordnung, Zucht & Sühne',
+      level: 3,
       canDisable: true,
-      levels: {
-        0: "Physische Zucht und formelle Bestrafungen sind nicht Gegenstand dieses Abkommens.",
-        1: "Milde Rügen, sportliche Ausgleichsübungen oder eine zusätzliche Massage dienen dem Ausgleich kleiner Versehen.",
-        3: "Abs. 1: Pflichtverletzungen und Unpünktlichkeit werden nach dem Strafenkatalog des Protokolls gesühnt (Punkteabzug oder Schläge mit dem Ledergürtel).\nAbs. 2: Zucht erfolgt mit ruhiger Hand und ohne Alltagszorn. Der Bottom zählt jeden Treffer laut mit.\nAbs. 3: Der Bottom darf um Verhandlung und Ablass durch Tributpunkte bitten; die Entscheidung obliegt allein dem Top.",
-        5: "Formelle, unnachgiebige Disziplinierung: Regelverstöße werden unmittelbar durch festgelegte Zuchtakte (Paddle, Gürtel, Stock) gesühnt. Schlichtung erfolgt erst nach vollständigem Vollzug."
-      }
+      desc: 'Körperliche Sühnemaßnahmen bei Pflichtverletzung, Mitzählpflicht und Einhaltung vereinbarter Haltungen.',
+      clusterChapters: [10, 11, 12, 24, 25]
     },
-    {
-      key: 'k8_safewords',
-      num: '§ 8',
-      title: 'Not-Aus, RACK-Sicherheit & Revision',
+    k8_safety: {
+      key: 'k8_safety',
+      title: '§ 8 Psychosomatische Not-Aus-Schranken, Safewords & RACK',
+      level: 5,
       canDisable: false,
-      levels: {
-        1: "Jederzeitiger formloser Abbruch einer Handlung durch klares Aussprechen des partnerschaftlichen Stoppworts.",
-        3: "Abs. 1: Das dreistufige Safeword-System (Grün = Bestätigung, Gelb = Drosseln, Rot = Sofortiger Stillstand) sowie das Klopfsignal bei Knebelung beenden jede Handlung unverzüglich und ausnahmslos.\nAbs. 2: Das Notfall-Öffnungsprotokoll (Break-Glass) steht dem Bottom bei medizinischen Notfällen oder Taubheitsgefühlen jederzeit zu.\nAbs. 3: Dieser Vertrag gilt für 30 Tage und wird danach in einer gemeinsamen Revisions-Zeremonie auf Augenhöhe ausgewertet.",
-        5: "Lückenloser Hochsicherheitsrahmen: Safewords und Break-Glass-Notfallrechte stehen über jeder Hierarchie. Biologische und medizinische Notwendigkeiten brechen jedes Protokoll. Ein monatliches Schlichtungsgespräch prüft das beiderseitige seelische Wohlbefinden."
-      }
+      desc: 'Unantastbarkeit der Safewords (Rot/Gelb), Verankerung der Kapitel-00-Interventionen und Break-Glass-Notfallcode.',
+      clusterChapters: [9, 24, 34, 35]
     }
-  ];
-
-  let contractState = null;
-  let signingRole = 'top';
-  let signaturePad = {
-    canvas: null,
-    ctx: null,
-    drawing: false,
-    hasSignature: false
   };
 
-  function getDefaultContractState() {
-    return {
-      version: "1.0 Entwurf",
-      status: "draft",
-      duktus: 'sovereign_warm',
-      chapters: CONTRACT_DIMENSIONS.map(dim => ({
-        key: dim.key,
-        num: dim.num,
-        title: dim.title,
-        canDisable: dim.canDisable,
-        level: (dim.key === 'k5_chastity') ? 0 : 3,
-        customText: null
-      })),
-      signatureTop: null,
-      signatureSub: null,
-      signedAt: null,
-      healthGuardsApplied: [],
-      psychometricInsights: null,
-      updatedAt: Date.now()
-    };
-  }
+  let contractState = {
+    version: '1.0',
+    status: 'draft',
+    signedAt: null,
+    signatureTop: null,
+    signatureSub: null,
+    clauses: Object.assign({}, DEFAULT_CONTRACT_CLAUSES),
+    customTexts: {},
+    psychometricsSummary: {
+      doubleFivesCount: 0,
+      bridgesCount: 0,
+      shameAnchorCount: 0,
+      tabooCount: 0
+    },
+    updatedAt: Date.now()
+  };
 
-  function loadContractState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY_CONTRACT) || localStorage.getItem(STORAGE_KEY_LEGACY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
-          contractState = parsed;
-          if (!Array.isArray(contractState.chapters) || contractState.chapters.length === 0) {
-            contractState.chapters = getDefaultContractState().chapters;
-          }
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn("[TACTUS Contract] Fehler beim Laden des States:", e);
-    }
-    contractState = getDefaultContractState();
-  }
-
-  function saveContractState(skipSync) {
-    if (!contractState) return;
-    try {
-      contractState.updatedAt = Date.now();
-      const serialized = JSON.stringify(contractState);
-      localStorage.setItem(STORAGE_KEY_CONTRACT, serialized);
-      localStorage.setItem(STORAGE_KEY_LEGACY, serialized);
-    } catch (e) {
-      console.warn("[TACTUS Contract] Konnte State nicht sichern:", e);
-    }
-
-    if (!skipSync && window.CloudSync && typeof window.CloudSync.trigger === 'function') {
-      window.CloudSync.trigger();
-    }
-  }
+  let activeSignModalRole = 'top';
+  let isDrawingSignature = false;
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -256,7 +149,6 @@
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(el);
-
     setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
     setTimeout(() => {
       el.classList.add('opacity-0');
@@ -264,618 +156,621 @@
     }, 2800);
   }
 
+  function loadContractState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_CONTRACT) || localStorage.getItem(STORAGE_KEY_LEGACY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          contractState = Object.assign({}, contractState, parsed);
+          contractState.clauses = Object.assign({}, DEFAULT_CONTRACT_CLAUSES, parsed.clauses || {});
+          contractState.customTexts = parsed.customTexts || {};
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[TACTUS Contract] Fehler beim Laden des States:", e);
+    }
+    saveContractState(true);
+  }
+
+  function saveContractState(skipSync) {
+    try {
+      contractState.updatedAt = Date.now();
+      const serialized = JSON.stringify(contractState);
+      localStorage.setItem(STORAGE_KEY_CONTRACT, serialized);
+      localStorage.setItem(STORAGE_KEY_LEGACY, serialized);
+    } catch (e) {
+      console.warn("[TACTUS Contract] Konnte State nicht sichern:", e);
+    }
+    if (!skipSync && window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+      window.CloudSync.trigger();
+    }
+  }
+
   function isUserTop() {
     if (window.ProtocolCore && typeof window.ProtocolCore.isTop === 'function') {
       return window.ProtocolCore.isTop();
     }
     const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
-    const khRole = localStorage.getItem('kompass_keyholder_role') || 'A';
-    return myRole === khRole;
+    const kh = localStorage.getItem('kompass_keyholder_role') || 'A';
+    return myRole === kh;
   }
 
-  function validatePsychosomaticHarmony() {
-    loadContractState();
-    const chMap = {};
-    contractState.chapters.forEach(ch => { chMap[ch.key] = ch.level; });
-
-    const warnings = [];
-
-    // 1. Denial-Kompensation: Wenn Keuschheit hoch, MUSS Fürsorge & Schutz hoch sein
-    if (chMap['k5_chastity'] >= 4 && chMap['k4_aftercare'] < 3) {
-      warnings.push({
-        severity: 'high',
-        text: 'Hoher Triebaufschub (§ 5) ohne proportionale Fürsorge (§ 4) erzeugt Frust und Unruhe. Empfehlung: Hebe § 4 auf Stufe 3 oder höher.'
-      });
-    }
-
-    // 2. Top-Fatigue Schutz: Wenn Disziplin hoch, MUSS Dienst & Entlastung hoch sein
-    if (chMap['k7_discipline'] >= 4 && chMap['k6_service'] < 3) {
-      warnings.push({
-        severity: 'medium',
-        text: 'Strenge Disziplin (§ 7) ohne Haushaltsentlastung (§ 6) führt zur Erschöpfung des Tops. Der Bottom sollte den Top im Alltag aktiv entlasten.'
-      });
-    }
-
-    // 3. Stufe 0 Konsistenzprüfung
-    const isChastityDisabled = chMap['k5_chastity'] === 0;
-
+  function getPairNames() {
+    let names = { A: 'Partner 1', B: 'Partner 2' };
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_NAMES);
+      if (raw) names = Object.assign({}, names, JSON.parse(raw));
+    } catch (e) {}
+    const topRole = localStorage.getItem('kompass_keyholder_role') || 'A';
+    const subRole = (topRole === 'A') ? 'B' : 'A';
     return {
-      score: Math.max(65, 100 - (warnings.length * 15)),
-      warnings: warnings,
-      isChastityDisabled: isChastityDisabled
+      top: names[topRole] || 'Top',
+      sub: names[subRole] || 'Bottom',
+      topRole: topRole,
+      subRole: subRole
     };
   }
 
-  /**
-   * Berechnet eine mehrstufig gewichtete psychometrische Resonanz-Matrix aus allen 36 Fragebogen-Kapiteln.
-   * Berücksichtigt nicht nur Doppel-5er, sondern gewichtet:
-   * - 5/5: Doppel-Spitzen (Gewicht 1.0)
-   * - 5/4 & 4/5: Hohe Synergien (Gewicht 0.85)
-   * - 5/3 & 4/3: Erkundungs-Brücken (Gewicht 0.65)
-   * - Scham-Marker 🙈 bei Score >= 3: Verletzliche Sehnsüchte mit Spottverbot
-   * - Score 1 (Tabu) & Score 2 (Sanfte Grenze): Drosselungs- und Veto-Schranken
-   */
-  function analyzeWeightedPsychometrics(topRole = 'A', bottomRole = 'B') {
-    let rawAnswers = {};
+  function analyzeWeightedPsychometrics(topRole, subRole) {
+    let answers = {};
     try {
-      const stored = localStorage.getItem('kompass_answers');
-      if (stored) rawAnswers = JSON.parse(stored);
+      const raw = localStorage.getItem(STORAGE_KEY_ANSWERS);
+      if (raw) answers = JSON.parse(raw) || {};
     } catch (e) {}
 
-    const ansTop = rawAnswers[topRole] || {};
-    const ansBottom = rawAnswers[bottomRole] || {};
-
-    const chapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
-    const itemMap = new Map();
-    chapters.forEach(ch => {
-      (ch.items || []).forEach(it => {
-        itemMap.set(it.id, { id: it.id, title: it.title, desc: it.desc, chapterId: ch.id, chapterTitle: ch.title });
-      });
-    });
+    const ansTop = answers[topRole] || {};
+    const ansSub = answers[subRole] || {};
 
     const doubleFives = [];
     const highSynergies = [];
-    const explorationBridges = [];
-    const bottomTaboos = [];
-    const softBoundaries = [];
-    const vulnerableShameItems = [];
+    const bridges = [];
+    const shameAnchors = [];
+    const taboos = [];
 
-    // Cluster-Akkumulatoren für die 8 Vertrags-Dimensionen
-    const dimensionScores = {
-      k1_preamble: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
-      k2_hierarchy: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
-      k3_spheres: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
-      k4_aftercare: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
-      k5_chastity: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
-      k6_service: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
-      k7_discipline: { totalWeight: 0, sumScore: 0, itemsCount: 0 },
-      k8_safewords: { totalWeight: 0, sumScore: 0, itemsCount: 0 }
-    };
+    const allChapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+    const itemMap = new Map();
+    allChapters.forEach(ch => {
+      (ch.items || []).forEach(it => {
+        itemMap.set(it.id, { id: it.id, title: it.title, chapterId: ch.id, chapterTitle: ch.title });
+      });
+    });
 
     itemMap.forEach((meta, itemId) => {
-      const sTop = ansTop[`it_${itemId}_r1`];      // Top führt aus / bestimmt
-      const sBottom = ansBottom[`it_${itemId}_r2`]; // Bottom empfängt / gibt sich hin
-      const isShame = ansBottom[`shame_${itemId}`] === true;
+      const sTop = ansTop[`it_${itemId}_r1`];
+      const sSub = ansSub[`it_${itemId}_r2`];
+      const isShame = ansSub[`shame_${itemId}`] === true;
 
-      if (typeof sTop !== 'number' || typeof sBottom !== 'number') return;
-      if (sTop === 0 && sBottom === 0) return; // Beidseitig entfallen
+      if (typeof sTop !== 'number' && typeof sSub !== 'number') return;
+      const topVal = (typeof sTop === 'number') ? sTop : 0;
+      const subVal = (typeof sSub === 'number') ? sSub : 0;
 
-      // 1. Tabu- und Grenz-Erkennung
-      if (sBottom === 1) {
-        bottomTaboos.push({ id: itemId, title: meta.title, reason: 'Tabu des Bottoms (Note 1)' });
-      } else if (sBottom === 2) {
-        softBoundaries.push({ id: itemId, title: meta.title, reason: 'Sanfte Grenze des Bottoms (Note 2)' });
+      if (isShame && subVal >= 3) {
+        shameAnchors.push(meta);
       }
-
-      // 2. Scham- und Schutzraum-Erkennung (🙈)
-      if (isShame && sBottom >= 3) {
-        vulnerableShameItems.push({
-          id: itemId,
-          title: meta.title,
-          bottomScore: sBottom,
-          topScore: sTop,
-          chapterTitle: meta.chapterTitle
-        });
+      if (subVal === 1) {
+        taboos.push(meta);
       }
-
-      // 3. Mehrstufige Resonanz-Klassifizierung
-      let weight = 0;
-      let resonanceType = null;
-
-      if (sTop === 5 && sBottom === 5) {
-        weight = 1.0;
-        resonanceType = 'double_five';
-        doubleFives.push({ id: itemId, title: meta.title, chapterTitle: meta.chapterTitle, score: '5/5' });
-      } else if ((sTop === 5 && sBottom === 4) || (sTop === 4 && sBottom === 5)) {
-        weight = 0.85;
-        resonanceType = 'high_synergy';
-        highSynergies.push({ id: itemId, title: meta.title, chapterTitle: meta.chapterTitle, score: `${sTop}/${sBottom}` });
-      } else if ((sTop >= 4 && sBottom === 3) || (sTop === 3 && sBottom >= 4)) {
-        weight = 0.65;
-        resonanceType = 'bridge';
-        explorationBridges.push({
-          id: itemId,
-          title: meta.title,
-          chapterTitle: meta.chapterTitle,
-          topLead: sTop >= 4,
-          score: `${sTop}/${sBottom}`
-        });
-      }
-
-      // 4. Zuordnung zu Vertrags-Dimensionen
-      for (const [dimKey, clusterChIds] of Object.entries(CHAPTER_CLUSTER_MAP)) {
-        if (clusterChIds.includes(meta.chapterId)) {
-          const dimAcc = dimensionScores[dimKey];
-          // Harmonischer Mittelwert zwischen Top-Wille und Bottom-Hingabe
-          const combinedIntensity = (sTop * 0.6) + (sBottom * 0.4);
-          dimAcc.sumScore += combinedIntensity;
-          dimAcc.totalWeight += (sBottom === 1) ? 0 : 1; // Tabus drücken das Gewicht
-          dimAcc.itemsCount++;
-        }
+      if (topVal === 5 && subVal === 5) {
+        doubleFives.push(meta);
+      } else if ((topVal >= 4 && subVal >= 4)) {
+        highSynergies.push(meta);
+      } else if ((topVal >= 4 && subVal === 3) || (topVal === 3 && subVal >= 4)) {
+        bridges.push(meta);
       }
     });
 
-    // Berechne empfohlene Stufen (0, 1, 3, 5) für jede Dimension
-    const recommendedLevels = {};
-    for (const [dimKey, acc] of Object.entries(dimensionScores)) {
-      if (acc.itemsCount === 0 || acc.totalWeight === 0) {
-        recommendedLevels[dimKey] = (dimKey === 'k5_chastity' || dimKey === 'k7_discipline') ? 0 : 3;
-        continue;
-      }
-      const meanScore = acc.sumScore / acc.itemsCount;
-      if (meanScore < 1.8) {
-        recommendedLevels[dimKey] = 0; // Zu geringe Relevanz oder viele Tabus
-      } else if (meanScore < 2.8) {
-        recommendedLevels[dimKey] = 1; // Mild / Behutsam
-      } else if (meanScore < 4.2) {
-        recommendedLevels[dimKey] = 3; // Klassisch / D/s-Standard
-      } else {
-        recommendedLevels[dimKey] = 5; // Strikte Hingabe / Zenit
-      }
+    let chapter00Intervention = "Feste, stumme Umarmung & Halten (Gewichtsdecken-Effekt)";
+    let chapter00Triggers = "Keine bekannten Auslöser";
+    if (ansSub['choice_904']) {
+      const intMap = {
+        hug: "Feste, stumme Umarmung & Halten (Gewichtsdecken-Effekt)",
+        distance: "Körperliche Berührung sofort einstellen & Raum gewähren",
+        grounding: "Licht anmachen, zudecken & synchrone 4-7-8 Vagus-Atmung",
+        water_tea: "Schluck warmen Tee oder Wasser reichen, ohne zu fragen",
+        voice: "Mit leiser, ruhiger Stimme reden und Sicherheit zusprechen"
+      };
+      chapter00Intervention = intMap[ansSub['choice_904']] || chapter00Intervention;
+    }
+    if (ansSub['choice_902']) {
+      const trigMap = {
+        words: "Schimpfwörter oder verbale Erniedrigung",
+        smell: "Bestimmte Gerüche oder Parfüms",
+        airway: "Enge, Ersticken oder Mund-/Nasenbedeckung",
+        restraint: "Vollständige Fixierung ohne Restbeweglichkeit",
+        darkness: "Plötzliche unangekündigte Dunkelheit",
+        none: "Keine spezifischen Flashback-Trigger"
+      };
+      chapter00Triggers = trigMap[ansSub['choice_902']] || chapter00Triggers;
+    }
+
+    const clusterAverages = {};
+    for (const cKey in CHAPTER_CLUSTER_MAP) {
+      const chIds = CHAPTER_CLUSTER_MAP[cKey];
+      let sum = 0;
+      let count = 0;
+      chIds.forEach(id => {
+        const tVal = ansTop[`it_${id}_r1`];
+        const sVal = ansSub[`it_${id}_r2`];
+        if (typeof tVal === 'number' || typeof sVal === 'number') {
+          sum += ((tVal || 0) * 0.6) + ((sVal || 0) * 0.4);
+          count++;
+        }
+      });
+      clusterAverages[cKey] = count > 0 ? (sum / count) : 3.0;
     }
 
     return {
       doubleFives,
       highSynergies,
-      explorationBridges,
-      bottomTaboos,
-      softBoundaries,
-      vulnerableShameItems,
-      recommendedLevels
+      bridges,
+      shameAnchors,
+      taboos,
+      chapter00Intervention,
+      chapter00Triggers,
+      clusterAverages
     };
   }
 
-  async function generateFromContext() {
+  function synthesizeClauseWording(clauseKey, level, pData, names) {
+    if (level === 0) {
+      return "Diese Klausel ist einvernehmlich deaktiviert und begründet für beide Partner keinerlei rechtliche oder disziplinarische Pflichten.";
+    }
+
+    const top = names.top;
+    const sub = names.sub;
+
+    switch (clauseKey) {
+      case 'k1_preamble': {
+        const shameList = pData.shameAnchors.length > 0 
+          ? pData.shameAnchors.slice(0, 3).map(it => `„${it.title}“ (Item #${it.id})`).join(', ') 
+          : 'besondere verletzliche Sehnsüchte';
+        return `(1) Dieser Vertrag begründet ein einvernehmliches Macht- und Führungsbündnis zwischen ${top} (Top) und ${sub} (Bottom). Er dient der Vertiefung gegenseitiger Intimität, der Entlastung von Alltags-Stress und dem geschützten Raum für authentische Hingabe.\n\n(2) STRIKTES ALLTAGS-SPOTTVERBOT: Die vom Sub mit dem Schutzanker versehenen sensiblen Themen (${shameList}) dürfen niemals im Streit, im Alltag oder abwertend erwähnt werden. Annäherung erfolgt ausschließlich im geschützten Halbdunkel ohne Leistungsdruck.\n\n(3) Beide Partner bekräftigen ihre seelische Zurechnungsfähigkeit. Alle Handlungen stehen unter dem Vorbehalt des RACK-Prinzips (Risk-Aware Consensual Kink).`;
+      }
+
+      case 'k2_hierarchy': {
+        const intensityText = level >= 4 
+          ? `${top} führt mit unbedingter Autorität. Anweisungen zu Haltung, Kleidung und Benehmen sind ohne Verzug auszuführen.` 
+          : `${top} übernimmt die achtsame Leitung intimer Sessions und alläglicher D/s-Rituale.`;
+        return `(1) Die Parteien vereinbaren eine asymmetrische D/s-Hierarchie. ${intensityText}\n\n(2) VERBOT VERDECKTER REGIEFÜHRUNG (ANTI-TFTB): ${sub} verpflichtet sich, ${top} nicht manipulativ durch Schmollen, Trotzen oder erzwungene Strafaufforderungen von unten zu steuern (Topping from the Bottom). Die Initiative obliegt allein der freien Lust des Tops.\n\n(3) Entscheidungen über Beginn, Intensität und Ende von Strafen oder Zuchtmaßnahmen stehen allein im Ermessen des Tops.`;
+      }
+
+      case 'k3_spheres': {
+        const isPublicAllowed = level >= 3;
+        return `(1) Die Ausübung der Dynamik erstreckt sich primär auf die private Wohnung und das Schlafzimmer.\n\n(2) DISKRETE ÖFFENTLICHKEIT: ${isPublicAllowed ? `Das diskrete Tragen von Ausrüstung (z. B. Peniskäfig, Halsband unter dem Kragen) in der Öffentlichkeit ist nach Ankündigung gestattet, sofern Dritte nicht unwillentlich einbezogen werden.` : `Außerhalb der privaten Räumlichkeiten ruhen alle sichtbaren Machtgesten; Dritte werden niemals konfrontiert.`}\n\n(3) Diskretion nach außen: Intime Details über Verschluss, Strafen oder Rollen bleiben strikt zwischen den Partnern.`;
+      }
+
+      case 'k4_aftercare': {
+        return `(1) Nach intensiven Reizen, Fesselungen oder Schmerzphasen gilt eine verbindliche Fürsorgephase von mindestens 15 Minuten. ${top} begleitet ${sub} durch synchrone 4-7-8 Vagus-Atmung und das Auflegen der Gewichtsdecke zur Vermeidung von Kältezittern.\n\n(2) REVERSE AFTERCARE: ${sub} verpflichtet sich, ${top} unaufgefordert zu entlasten (Reichen von warmem Tee oder Wasser, schweigende Nackenmassage, Beseitigung und Desinfektion aller genutzten Ausrüstungsgegenstände).\n\n(3) 24h/48h-DROP-WÄCHTER: Das Auftreten eines hormonellen Subdrops (Leere, Weinen, Antriebslosigkeit) wird als normaler biochemischer Opiat-Entzug anerkannt und mit Geborgenheit aufgefangen.`;
+      }
+
+      case 'k5_chastity': {
+        const cageText = level >= 4 
+          ? `Permanente Verriegelung des Genitals im Peniskäfig. Schlüsselgewalt liegt im kSafe oder bei ${top}. Freigaben erfolgen selten und ausschließlich als Gunst.` 
+          : `Geregelter Triebaufschub zur Steigerung der Achtsamkeit. ${top} bestimmt den Rhythmus von Öffnungen und Hygiene.`;
+        return `(1) ${sub} unterstellt die eigene sexuelle Erregung und Ejakulationsfähigkeit der ausschließlichen Verfügungsgewalt von ${top}.\n\n(2) VERSCHLUSS-REGIE: ${cageText}\n\n(3) SCHWEIGEPFLICHT ÜBER LUST: ${sub} verzichtet auf quengelndes Nachfragen nach Freigabe oder Ejakulation. Jedes Betteln ohne Aufforderung gilt als Pflichtverletzung.\n\n(4) Urologische Hygiene: Tägliche 50ml-Spülung mit Kochsalzlösung zur Balanitis-Prävention ist einzuhalten.`;
+      }
+
+      case 'k6_service': {
+        const choreText = level >= 4 
+          ? `Umfassender Haushalts- und Entlastungsdienst vor Eintreffen des Tops. Schuhe abnehmen, Küche makellos bereinigen, Frühstücksservice auf Knien am Wochenende.` 
+          : `Feste Übernahme definierter Alltagsaufgaben zur Entlastung des mentalen Arbeitsloads des Tops.`;
+        return `(1) Dienen wird als Geschenk der Alltagsentlastung verstanden, um ${top} den Kopf für freudige Führung frei zu halten.\n\n(2) DIENSTPFLICHTEN: ${choreText}\n\n(3) Ehrerbietung: Begrüßung und Übergabe von Getränken erfolgen in ruhiger Haltung mit gesenktem Blick.`;
+      }
+
+      case 'k7_discipline': {
+        const discText = level >= 4 
+          ? `Körperliche Sühnemaßnahmen mit Lederflogger, Sattelleder-Paddle oder Gürtel bei Versäumnissen. Mitzählen jedes Treffers.` 
+          : `Gedrosselte Züchtigung mit der flachen Hand (max. 15 Schläge) oder Straf-Zusatzdienste im Haushalt.`;
+        return `(1) Verstöße gegen Pflichten, Unpünktlichkeit oder respektloses Auftreten werden disziplinarisch geahndet.\n\n(2) STRAFMASS: ${discText}\n\n(3) RACK-Grenze: Keine Schläge auf Nieren, Wirbelsäule oder Gelenke. Erkundungs-Brücken werden vorab in 10-Minuten-Probeläufen erprobt.`;
+      }
+
+      case 'k8_safety': {
+        return `(1) SAFEWORD-AMPEL: Die Codewörter GRÜN (Alles in Ordnung), GELB (Intensität drosseln) und ROT (Sofortiger Handlungsstillstand) sind unantastbar und dulden keine Diskussion.\n\n(2) NOTFALL-INTERVENTION BEI TRIGGERN: Bei akuter Dissoziation oder Flashbacks verpflichtet sich ${top} zur unverzüglichen Einleitung der vereinbarten Maßnahme: ${pData.chapter00Intervention}.\n\n(3) BEKANNTE TRIGGER: Auf folgende Reize wird strikt verzichtet: ${pData.chapter00Triggers}.\n\n(4) BREAK-GLASS-NOTFALLÖFFNUNG: Bei Schwellungen, Taubheitsgefühl oder Panik greift die 60-Sekunden-Notfall-PIN ohne Vorwürfe.`;
+      }
+
+      default:
+        return "Individuelle Vereinbarung der Partner.";
+    }
+  }
+
+  function validatePsychosomaticHarmony() {
+    loadContractState();
+    const clauses = contractState.clauses || {};
+
+    const lvlChastity = clauses.k5_chastity ? clauses.k5_chastity.level : 0;
+    const lvlAftercare = clauses.k4_aftercare ? clauses.k4_aftercare.level : 0;
+    const lvlDiscipline = clauses.k7_discipline ? clauses.k7_discipline.level : 0;
+    const lvlService = clauses.k6_service ? clauses.k6_service.level : 0;
+
+    const warnings = [];
+
+    if (lvlChastity >= 4 && lvlAftercare < 3) {
+      warnings.push({
+        type: 'denial_overload',
+        text: 'Keuschheit ist strikt (Stufe 4/5), aber Fürsorge ist zu schwach (Stufe < 3). Gefahr von Reizüberlastung ohne emotionalen Ausgleich!'
+      });
+    }
+
+    if (lvlDiscipline >= 4 && lvlService < 3) {
+      warnings.push({
+        type: 'top_fatigue_risk',
+        text: 'Disziplin ist hoch (Stufe 4/5), aber Dienst/Entlastung ist gering. Risiko von Top Fatigue (Leiten wird zur unbezahlten Last)!'
+      });
+    }
+
+    const baseScore = 100 - (warnings.length * 15);
+    return {
+      score: Math.max(55, baseScore),
+      warnings: warnings,
+      isBalanced: warnings.length === 0
+    };
+  }
+
+  function generateContractFromContext() {
     if (!isUserTop()) {
-      showToast("Nur der Top kann den Vertrags-Entwurf kalibrieren.");
+      showToast("Nur der Top kann den Vertrag neu aus dem Fragebogen synthetisieren.");
       return;
     }
 
     loadContractState();
-    showToast("Synthetisiere Bündnis aus gewichteter Psychometrie, RACK-Pass & Somatik...");
+    const names = getPairNames();
+    const pData = analyzeWeightedPsychometrics(names.topRole, names.subRole);
 
-    let ctx = null;
-    if (window.HubContext && typeof window.HubContext.getUnifiedState === 'function') {
-      ctx = window.HubContext.getUnifiedState();
+    for (const cKey in contractState.clauses) {
+      const clause = contractState.clauses[cKey];
+      const avg = pData.clusterAverages[cKey] || 3.0;
+
+      let targetLevel = 3;
+      if (avg >= 4.3) targetLevel = 5;
+      else if (avg >= 3.6) targetLevel = 4;
+      else if (avg >= 2.6) targetLevel = 3;
+      else if (avg >= 1.8) targetLevel = 2;
+      else targetLevel = 1;
+
+      if (cKey === 'k8_safety') targetLevel = 5;
+      if (cKey === 'k4_aftercare') targetLevel = Math.max(3, targetLevel);
+
+      clause.level = targetLevel;
+      contractState.customTexts[cKey] = synthesizeClauseWording(cKey, targetLevel, pData, names);
     }
 
-    const topRole = ctx ? ctx.metadata.roles.topRole : 'A';
-    const bottomRole = ctx ? ctx.metadata.roles.bottomRole : 'B';
-    const hasCage = ctx ? ctx.v2_somatic.isLocked : false;
-    const healthGuards = (ctx && ctx.v5_biology) ? ctx.v5_biology.activeHealthGuards : [];
+    contractState.psychometricsSummary = {
+      doubleFivesCount: pData.doubleFives.length,
+      bridgesCount: pData.bridges.length,
+      shameAnchorCount: pData.shameAnchors.length,
+      tabooCount: pData.taboos.length
+    };
 
-    // Gewichtete Psychometrie-Matrix berechnen
-    const insights = analyzeWeightedPsychometrics(topRole, bottomRole);
-
-    const newChapters = CONTRACT_DIMENSIONS.map(dim => {
-      let lvl = insights.recommendedLevels[dim.key] !== undefined ? insights.recommendedLevels[dim.key] : 3;
-
-      // Zusätzliche somatische Schutz-Bedingungen:
-      if (dim.key === 'k5_chastity' && !hasCage && lvl > 0) {
-        // Falls kein physischer Käfig vorhanden, Keuschheit maximal auf Stufe 1 (mentaler Triebaufschub) drosseln
-        lvl = Math.min(1, lvl);
-      }
-
-      return {
-        key: dim.key,
-        num: dim.num,
-        title: dim.title,
-        canDisable: dim.canDisable,
-        level: lvl,
-        customText: null
-      };
-    });
-
-    // Detaillierte Anhänge & Schutz-Klauseln synthetisieren
-    const k8 = newChapters.find(c => c.key === 'k8_safewords');
-    const k7 = newChapters.find(c => c.key === 'k7_discipline');
-    const k1 = newChapters.find(c => c.key === 'k1_preamble');
-
-    let safetyAddendum = "";
-
-    // 1. Biologische RACK-Sicherheitsgrenzen
-    if (healthGuards.length > 0) {
-      safetyAddendum += "\n\nBiologische RACK-Sicherheitsgrenzen (Unantastbar):\n" +
-        healthGuards.map(g => `• ${g.directive}`).join("\n");
-    }
-
-    // 2. Harte Tabu-Vetos (Note 1)
-    if (insights.bottomTaboos.length > 0) {
-      safetyAddendum += "\n\nUnantastbare Tabu-Schranken des Bottoms (Ausschluss):\n" +
-        insights.bottomTaboos.slice(0, 6).map(t => `• ${t.title} (${t.reason})`).join("\n");
-    }
-
-    // 3. Sanfte Grenzen (Note 2)
-    if (insights.softBoundaries.length > 0) {
-      safetyAddendum += "\n\nSanfte Grenzen (Besondere Achtsamkeit & Drosselung):\n" +
-        insights.softBoundaries.slice(0, 4).map(b => `• ${b.title}`).join("\n");
-    }
-
-    if (safetyAddendum.length > 0 && k8) {
-      const baseText = CONTRACT_DIMENSIONS.find(d => d.key === 'k8_safewords').levels[k8.level || 3];
-      k8.customText = baseText + safetyAddendum;
-    }
-
-    // 4. Geschützte verletzliche Sehnsüchte (Scham-Marker 🙈) in § 1 einweben
-    if (insights.vulnerableShameItems.length > 0 && k1) {
-      const shameAddendum = "\n\nBesonderer Schutzraum für sensible Sehnsüchte (§ 1 Abs. 2):\n" +
-        "Beide Partner anerkennen, dass geteilte verletzliche Fantasien (" +
-        insights.vulnerableShameItems.slice(0, 3).map(s => `„${s.title}“`).join(', ') +
-        ") im Rahmen dieses Bündnisses unter absolutem Spottverbot stehen und nur in einer Atmosphäre bedingungsloser Geborgenheit erkundet werden dürfen.";
-      const baseText1 = CONTRACT_DIMENSIONS.find(d => d.key === 'k1_preamble').levels[k1.level || 3];
-      k1.customText = baseText1 + shameAddendum;
-    }
-
-    // 5. Erkundungs-Brücken (5/3 & 4/3 Matches) in § 7 (Disziplin) oder § 6 (Dienst) einweben
-    if (insights.explorationBridges.length > 0 && k7 && k7.level > 0) {
-      const bridgeItems = insights.explorationBridges.slice(0, 3).map(b => `• ${b.title} (Brücke: ${b.topLead ? 'Top leitet an' : 'Bottom wünscht behutsame Führung'})`).join("\n");
-      const bridgeAddendum = "\n\nVereinbarte Erkundungs-Brücken (Protokollierte Probe-Phasen):\n" + bridgeItems;
-      const baseText7 = CONTRACT_DIMENSIONS.find(d => d.key === 'k7_discipline').levels[k7.level || 3];
-      k7.customText = baseText7 + bridgeAddendum;
-    }
-
-    contractState.chapters = newChapters;
-    contractState.status = "draft";
-    contractState.version = `1.0 Gewichteter Entwurf (${new Date().toLocaleDateString('de-DE')})`;
+    contractState.version = `${parseFloat(contractState.version || '1.0') + 0.1}`.substring(0, 3);
+    contractState.status = 'draft';
     contractState.signatureTop = null;
     contractState.signatureSub = null;
-    contractState.healthGuardsApplied = healthGuards.map(g => g.type);
-    contractState.psychometricInsights = {
-      doubleFivesCount: insights.doubleFives.length,
-      synergiesCount: insights.highSynergies.length,
-      bridgesCount: insights.explorationBridges.length,
-      shameCount: insights.vulnerableShameItems.length,
-      taboosCount: insights.bottomTaboos.length
-    };
+    contractState.signedAt = null;
 
     saveContractState();
     renderContractDashboard();
-    showToast(`✓ Bündnis gewichtet generiert (${insights.doubleFives.length} Spitzen, ${insights.explorationBridges.length} Brücken)`);
+    showToast(`✓ Vertrag aus 185 Fragen synthetisiert (Version ${contractState.version})`);
 
     if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Neuer Beziehungsvertrag gewichtet kalibriert (${insights.doubleFives.length} Doppel-5er, ${insights.explorationBridges.length} Brücken, ${insights.vulnerableShameItems.length} Scham-Schutzanker). Bereit zur Prüfung.`);
+      window.ChatApp.postSystemEvent(`Beziehungsvertrag neu synthetisiert (Version ${contractState.version}). Ratifizierung durch beide Partner erbeten.`);
     }
   }
 
   function renderContractDashboard() {
-    const container = document.getElementById('contract-clauses-container');
-    if (!container) return;
-
     loadContractState();
+    const container = document.getElementById('contract-clauses-container');
+    const statusLabel = document.getElementById('contract-status-label');
+    const versionLabel = document.getElementById('contract-version-label');
+    const harmonyBanner = document.getElementById('contract-harmony-banner');
     const isTop = isUserTop();
-    const isDraft = (contractState.status === 'draft');
+    const names = getPairNames();
     const harmony = validatePsychosomaticHarmony();
 
-    const statusLbl = document.getElementById('contract-status-label');
-    const verLbl = document.getElementById('contract-version-label');
-
-    if (statusLbl) {
-      if (contractState.status === 'active') {
-        statusLbl.innerText = "Status: Verbindlich besiegelt ✓";
-        statusLbl.className = "text-emerald-400 font-bold font-mono text-xs";
-      } else if (contractState.status === 'paused_break_glass') {
-        statusLbl.innerText = "Status: Pausiert zur Schlichtung ⚠️ (Notfall-Öffnung)";
-        statusLbl.className = "text-rose-400 font-bold font-mono text-xs";
-      } else {
-        statusLbl.innerText = "Status: Entwurf (Editierbar)";
-        statusLbl.className = "text-amber-400 font-bold font-mono text-xs";
-      }
+    if (statusLabel) {
+      const isSigned = contractState.status === 'active' && contractState.signatureTop && contractState.signatureSub;
+      statusLabel.innerText = isSigned 
+        ? `Status: Ratifiziert & Gültig (${new Date(contractState.signedAt || Date.now()).toLocaleDateString('de-DE')})` 
+        : 'Status: Entwurf (Verhandlung aktiv)';
+      statusLabel.className = isSigned ? 'text-emerald-400 font-bold font-mono' : 'text-amber-400 font-bold font-mono';
     }
-    if (verLbl) verLbl.innerText = contractState.version || "Version 1.0";
 
-    // Psychosomatisches Harmonie- & Psychometrie-Banner
-    const harmonyContainer = document.getElementById('contract-harmony-banner');
-    if (harmonyContainer) {
-      const insights = contractState.psychometricInsights;
-      harmonyContainer.innerHTML = `
-        <div class="p-3.5 rounded-2xl border transition-all text-xs space-y-2 ${harmony.warnings.length === 0 ? 'bg-emerald-950/20 border-emerald-800/60 text-emerald-200' : 'bg-amber-950/30 border-amber-800/80 text-amber-200'}">
+    if (versionLabel) {
+      versionLabel.innerText = `Version ${contractState.version} · Stufe 0–5`;
+    }
+
+    if (harmonyBanner) {
+      harmonyBanner.innerHTML = `
+        <div class="p-3 rounded-2xl border text-xs ${harmony.isBalanced ? 'bg-emerald-950/20 border-emerald-800/60 text-emerald-200' : 'bg-amber-950/30 border-amber-800/80 text-amber-200'} space-y-1.5">
           <div class="flex items-center justify-between">
-            <span class="font-bold flex items-center gap-1.5">
-              <span>${harmony.warnings.length === 0 ? '✓' : '⚠️'}</span>
-              <span>Systemische Balance: ${harmony.score}% Harmonie</span>
-            </span>
-            <span class="text-[10px] font-mono text-slate-400">${harmony.warnings.length === 0 ? 'Ausbalanciert' : 'Resonanz-Warnung'}</span>
+            <strong class="font-bold flex items-center gap-1.5">
+              <span>Psychosomatische Balance: ${harmony.score}%</span>
+              ${harmony.isBalanced ? '<span class="text-emerald-400 font-mono text-[10px]">Harmonisch ✓</span>' : '<span class="text-amber-400 font-mono text-[10px]">Nachjustierung empfohlen</span>'}
+            </strong>
+            <span class="text-[9.5px] font-mono text-slate-400">Doppel-5er: ${contractState.psychometricsSummary.doubleFivesCount} · Schutzanker: ${contractState.psychometricsSummary.shameAnchorCount}</span>
           </div>
-          ${harmony.warnings.map(w => `<p class="text-[10.5px] leading-relaxed text-amber-300/90">• ${escapeHtml(w.text)}</p>`).join('')}
-
-          ${insights ? `
-            <div class="pt-1.5 border-t border-slate-800/60 flex items-center gap-3 text-[10px] font-mono text-slate-400 flex-wrap">
-              <span class="text-purple-300">★ ${insights.doubleFivesCount} Doppel-Spitzen</span>
-              <span class="text-indigo-300">⇄ ${insights.bridgesCount} Erkundungs-Brücken</span>
-              <span class="text-pink-300">🛡️ ${insights.shameCount} Schutzanker (🙈)</span>
-              <span class="text-rose-300">🚫 ${insights.taboosCount} Tabu-Vetos</span>
-            </div>
-          ` : ''}
+          ${harmony.warnings.map(w => `<p class="text-[10px] text-amber-300 leading-snug font-mono">• ${escapeHtml(w.text)}</p>`).join('')}
         </div>
       `;
     }
 
-    container.innerHTML = contractState.chapters.map(ch => {
-      const dimDef = CONTRACT_DIMENSIONS.find(d => d.key === ch.key) || {};
-      const isDisabled = (ch.level === 0);
-      let activeText = ch.customText;
+    if (!container) return;
 
-      if (!activeText) {
-        if (isDisabled) {
-          activeText = (dimDef.levels && dimDef.levels[0]) || 'Nicht Gegenstand dieses Bündnisses.';
-        } else {
-          const lKey = (ch.level >= 4) ? 5 : ((ch.level >= 2) ? 3 : 1);
-          activeText = (dimDef.levels && dimDef.levels[lKey]) || '';
-        }
-      }
+    const clauseKeys = Object.keys(DEFAULT_CONTRACT_CLAUSES);
+    const pData = analyzeWeightedPsychometrics(names.topRole, names.subRole);
+
+    container.innerHTML = clauseKeys.map(key => {
+      const clause = contractState.clauses[key] || DEFAULT_CONTRACT_CLAUSES[key];
+      const level = clause.level !== undefined ? clause.level : 3;
+      const text = contractState.customTexts[key] || synthesizeClauseWording(key, level, pData, names);
+
+      const clusterChapters = CHAPTER_CLUSTER_MAP[key] || [];
+      const linksHtml = clusterChapters.map(chId => {
+        return `<a href="index.html#view=survey&chapter=${chId}" target="_blank" class="text-purple-400 hover:text-purple-300 underline font-mono text-[9.5px]">Kap. ${chId} ↗</a>`;
+      }).join(' ');
 
       return `
-        <div class="rounded-3xl border transition-all p-4 sm:p-5 space-y-2.5 ${isDisabled ? 'bg-slate-950/40 border-slate-900 opacity-60' : 'bg-slate-900/90 border-slate-800 shadow-md'}" id="chapter-card-${ch.key}">
+        <div class="p-4 sm:p-5 rounded-3xl theme-card border transition-all space-y-3 ${level === 0 ? 'opacity-40 border-slate-800 bg-slate-950/40' : (level >= 4 ? 'border-purple-800/80 bg-purple-950/15 shadow-md' : 'border-slate-800')}">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${isDisabled ? 'bg-slate-900 text-slate-500 border border-slate-800' : 'bg-amber-950 text-amber-300 border border-amber-800'}">${escapeHtml(ch.num)}</span>
-              <strong class="text-xs text-white truncate font-bold">${escapeHtml(ch.title)}</strong>
+            <div class="space-y-0.5 min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <strong class="text-xs sm:text-sm text-white font-bold block">${escapeHtml(clause.title)}</strong>
+                <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold ${level === 0 ? 'bg-slate-900 text-slate-500' : (level >= 4 ? 'bg-purple-950 text-purple-200 border border-purple-700' : 'bg-slate-900 text-slate-300 border border-slate-700')}">
+                  ${level === 0 ? 'Deaktiviert (Stufe 0)' : `Stufe ${level}/5`}
+                </span>
+              </div>
+              <p class="text-[10px] text-slate-400 leading-snug break-words">${escapeHtml(clause.desc)}</p>
+              <div class="flex items-center gap-1 pt-0.5 text-[9.5px] text-slate-500 font-mono">
+                <span>Quellen:</span>
+                ${linksHtml}
+              </div>
             </div>
 
-            ${isDraft && isTop ? `
-              <!-- Härtegrad-Stufenregler 0 bis 5 -->
-              <div class="flex items-center gap-1">
-                ${ch.canDisable ? `
-                  <button type="button" onclick="ProtocolContract.setLevel('${ch.key}', 0)" title="Klausel deaktivieren" class="px-2 py-1 rounded-lg text-[9.5px] font-mono font-bold transition-all ${ch.level === 0 ? 'bg-rose-950 text-rose-300 border border-rose-800 shadow-xs' : 'bg-slate-950 text-slate-500 border border-slate-800 hover:text-white'}">
-                    0: Aus
+            <!-- Stufen-Tasten (Nur Top) -->
+            ${isTop ? `
+              <div class="flex items-center gap-1 font-mono text-xs flex-shrink-0">
+                ${[0, 1, 2, 3, 4, 5].map(lvl => `
+                  <button type="button" onclick="ProtocolContract.setLevel('${key}', ${lvl})" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg font-bold flex items-center justify-center transition-all touch-btn ${level === lvl ? 'bg-purple-700 text-white shadow-sm' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'}">
+                    ${lvl}
                   </button>
-                ` : ''}
-                <button type="button" onclick="ProtocolContract.setLevel('${ch.key}', 1)" title="Mild" class="px-2 py-1 rounded-lg text-[9.5px] font-mono font-bold transition-all ${ch.level === 1 ? 'bg-purple-900 text-white border border-purple-600 shadow-xs' : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'}">
-                  1
-                </button>
-                <button type="button" onclick="ProtocolContract.setLevel('${ch.key}', 3)" title="Klassisch D/s" class="px-2 py-1 rounded-lg text-[9.5px] font-mono font-bold transition-all ${ch.level === 3 ? 'bg-purple-700 text-white border border-purple-500 shadow-xs' : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'}">
-                  3
-                </button>
-                <button type="button" onclick="ProtocolContract.setLevel('${ch.key}', 5)" title="Strikte Hingabe" class="px-2 py-1 rounded-lg text-[9.5px] font-mono font-bold transition-all ${ch.level === 5 ? 'bg-amber-700 text-white border border-amber-500 shadow-xs' : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'}">
-                  5
-                </button>
-                <button type="button" onclick="ProtocolContract.editClause('${ch.key}')" title="Wortlaut anpassen" class="p-1 rounded-lg text-slate-400 hover:text-white ml-1 touch-btn">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                `).join('')}
+              </div>
+            ` : `
+              <span class="text-[10px] font-mono text-slate-500 italic">Top-Regie</span>
+            `}
+          </div>
+
+          <!-- Wortlaut mit Editier-Option -->
+          <div class="space-y-2">
+            <div id="clause-text-display-${key}" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 text-[11px] leading-relaxed text-slate-200 whitespace-pre-wrap font-sans">
+              ${escapeHtml(text)}
+            </div>
+
+            ${isTop ? `
+              <div class="flex justify-end gap-1.5 pt-1">
+                <button type="button" onclick="ProtocolContract.editClause('${key}')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-mono text-[10px] font-medium touch-btn flex items-center gap-1">
+                  <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                  <span>Wortlaut anpassen</span>
                 </button>
               </div>
             ` : ''}
-          </div>
-
-          <div id="chapter-body-${ch.key}" class="text-[11px] leading-relaxed whitespace-pre-line ${isDisabled ? 'text-slate-500 italic' : 'text-slate-300'}">
-            ${escapeHtml(activeText)}
           </div>
         </div>
       `;
     }).join('');
 
-    renderSignatureBoxes();
+    renderSignaturesBlock();
   }
 
-  function renderSignatureBoxes() {
-    const boxTop = document.getElementById('sig-box-top');
-    const boxSub = document.getElementById('sig-box-sub');
+  function renderSignaturesBlock() {
+    const names = getPairNames();
+    const sigBoxTop = document.getElementById('sig-box-top');
+    const sigBoxSub = document.getElementById('sig-box-sub');
+    const labelTop = document.getElementById('sig-label-top');
+    const labelSub = document.getElementById('sig-label-sub');
 
-    if (boxTop) {
+    if (labelTop) labelTop.innerText = `Signatur Top (${names.top})`;
+    if (labelSub) labelSub.innerText = `Signatur Bottom (${names.sub})`;
+
+    if (sigBoxTop) {
       if (contractState.signatureTop) {
-        boxTop.innerHTML = `<img src="${contractState.signatureTop}" alt="Signatur Top" class="max-h-16 mx-auto object-contain" />`;
-        boxTop.className = "h-20 rounded-2xl border border-purple-700 bg-purple-950/20 flex items-center justify-center p-2 shadow-inner";
+        sigBoxTop.innerHTML = `<img src="${contractState.signatureTop}" alt="Signatur Top" class="max-h-16 mx-auto object-contain" />`;
       } else {
-        boxTop.innerHTML = `<span class="text-slate-500 font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
-        boxTop.className = "h-20 rounded-2xl border border-dashed border-slate-700 flex items-center justify-center";
+        sigBoxTop.innerHTML = `<span class="text-slate-500 font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
       }
     }
 
-    if (boxSub) {
+    if (sigBoxSub) {
       if (contractState.signatureSub) {
-        boxSub.innerHTML = `<img src="${contractState.signatureSub}" alt="Signatur Bottom" class="max-h-16 mx-auto object-contain" />`;
-        boxSub.className = "h-20 rounded-2xl border border-indigo-700 bg-indigo-950/20 flex items-center justify-center p-2 shadow-inner";
+        sigBoxSub.innerHTML = `<img src="${contractState.signatureSub}" alt="Signatur Bottom" class="max-h-16 mx-auto object-contain" />`;
       } else {
-        boxSub.innerHTML = `<span class="text-slate-500 font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
-        boxSub.className = "h-20 rounded-2xl border border-dashed border-slate-700 flex items-center justify-center";
+        sigBoxSub.innerHTML = `<span class="text-slate-500 font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
       }
     }
   }
 
-  function setChapterLevel(chapterKey, levelNum) {
+  function setClauseLevel(clauseKey, level) {
     if (!isUserTop()) return;
     loadContractState();
-    const ch = contractState.chapters.find(c => c.key === chapterKey);
-    if (!ch) return;
+    if (!contractState.clauses[clauseKey]) return;
 
-    ch.level = levelNum;
-    ch.customText = null;
+    contractState.clauses[clauseKey].level = level;
+    const names = getPairNames();
+    const pData = analyzeWeightedPsychometrics(names.topRole, names.subRole);
+    contractState.customTexts[clauseKey] = synthesizeClauseWording(clauseKey, level, pData, names);
+
     saveContractState();
     renderContractDashboard();
-    showToast(`${ch.num} auf Stufe ${levelNum} kalibriert ✓`);
+    showToast(`§ ${clauseKey.replace('k', '')} auf Stufe ${level} gesetzt`);
   }
 
-  function editClause(chapterKey) {
+  function editClause(clauseKey) {
+    if (!isUserTop()) return;
+    const box = document.getElementById(`clause-text-display-${clauseKey}`);
+    if (!box) return;
+
     loadContractState();
-    const ch = contractState.chapters.find(c => c.key === chapterKey);
-    if (!ch) return;
+    const currentText = contractState.customTexts[clauseKey] || box.innerText;
 
-    const bodyEl = document.getElementById(`chapter-body-${chapterKey}`);
-    if (!bodyEl) return;
-
-    const dimDef = CONTRACT_DIMENSIONS.find(d => d.key === ch.key) || {};
-    let currentText = ch.customText;
-    if (!currentText) {
-      const lKey = (ch.level === 0) ? 0 : ((ch.level >= 4) ? 5 : ((ch.level >= 2) ? 3 : 1));
-      currentText = (dimDef.levels && dimDef.levels[lKey]) || '';
-    }
-
-    bodyEl.innerHTML = `
-      <div class="space-y-2 pt-1">
-        <textarea id="edit-textarea-${ch.key}" class="w-full text-xs p-2.5 bg-slate-950 border border-purple-600 rounded-xl text-white font-sans focus:outline-none" rows="4">${escapeHtml(currentText)}</textarea>
+    box.innerHTML = `
+      <div class="space-y-2">
+        <textarea id="input-edit-clause-${clauseKey}" rows="6" class="w-full p-2.5 bg-slate-900 border border-purple-600 rounded-xl text-white text-[11px] font-sans focus:outline-none leading-relaxed">${escapeHtml(currentText)}</textarea>
         <div class="flex justify-end gap-1.5">
-          <button type="button" onclick="ProtocolContract.renderContract()" class="px-3 py-1.5 bg-slate-800 rounded-xl text-slate-300 font-bold text-xs touch-btn">Abbrechen</button>
-          <button type="button" onclick="ProtocolContract.saveClauseText('${ch.key}')" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Wortlaut sichern ✓</button>
+          <button type="button" onclick="ProtocolContract.render()" class="px-3 py-1 bg-slate-800 text-slate-300 font-bold rounded-lg text-xs touch-btn">Abbrechen</button>
+          <button type="button" onclick="ProtocolContract.saveClauseText('${clauseKey}')" class="px-3 py-1 bg-purple-700 text-white font-bold rounded-lg text-xs touch-btn shadow-md">Wortlaut sichern ✓</button>
         </div>
       </div>
     `;
   }
 
-  function saveClauseText(chapterKey) {
+  function saveClauseText(clauseKey) {
+    if (!isUserTop()) return;
+    const textarea = document.getElementById(`input-edit-clause-${clauseKey}`);
+    if (!textarea) return;
+
     loadContractState();
-    const ch = contractState.chapters.find(c => c.key === chapterKey);
-    const area = document.getElementById(`edit-textarea-${chapterKey}`);
-    if (ch && area) {
-      ch.customText = area.value.trim();
-      saveContractState();
-      renderContractDashboard();
-      showToast(`${ch.num} Wortlaut gesichert ✓`);
-    }
+    contractState.customTexts[clauseKey] = textarea.value.trim();
+    saveContractState();
+    renderContractDashboard();
+    showToast("Wortlaut erfolgreich gesichert ✓");
   }
 
-  function openSignatureModal(role = 'top') {
-    signingRole = role;
+  function openSignatureModal(role) {
+    activeSignModalRole = role;
     let modal = document.getElementById('modal-contract-signature');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-contract-signature';
-      modal.className = "fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4";
+      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
       document.body.appendChild(modal);
     }
 
-    const isTopRole = (role === 'top');
+    const names = getPairNames();
+    const signerName = (role === 'top') ? names.top : names.sub;
 
     modal.innerHTML = `
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-2xl text-xs">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs text-white">
+        <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
           <div>
-            <h3 class="text-sm font-bold text-white">${isTopRole ? 'Als Top ratifizieren' : 'Als Bottom ratifizieren'}</h3>
-            <span class="text-[10px] text-slate-400">Zeichne mit dem Finger deine Signatur</span>
+            <h3 class="text-sm font-bold text-white">Ratifizierung: ${escapeHtml(signerName)}</h3>
+            <span class="text-[10px] text-slate-400">Zeichne deinen Namenszug oder dein Siegel</span>
           </div>
-          <button type="button" onclick="document.getElementById('modal-contract-signature').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
+          <button type="button" onclick="document.getElementById('modal-contract-signature').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">✕</button>
         </div>
 
-        <div class="w-full h-40 bg-slate-950 rounded-2xl border border-slate-700 relative overflow-hidden">
-          <canvas id="signature-canvas" class="w-full h-full cursor-crosshair touch-none"></canvas>
+        <div class="space-y-1.5">
+          <div class="h-44 w-full rounded-2xl bg-slate-950 border border-slate-800 relative overflow-hidden flex items-center justify-center">
+            <canvas id="signature-pad-canvas" class="w-full h-full cursor-crosshair touch-none"></canvas>
+            <span id="signature-placeholder" class="absolute pointer-events-none text-slate-600 font-serif italic text-xs">Hier mit Finger oder Stift zeichnen...</span>
+          </div>
+          <div class="flex justify-between items-center text-[10px] font-mono">
+            <button type="button" onclick="ProtocolContract.clearSignatureCanvas()" class="text-slate-400 hover:text-rose-300">Löschen / Neu</button>
+            <span class="text-purple-300 font-bold">Unwiderruflicher Ratifizierungs-Akt</span>
+          </div>
         </div>
 
-        <div class="flex justify-between items-center pt-2 border-t border-slate-800">
-          <button type="button" onclick="ProtocolContract.clearSignatureCanvas()" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs touch-btn">
-            Löschen
-          </button>
-          <button type="button" onclick="ProtocolContract.saveSignature()" class="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs touch-btn shadow-md">
-            Signatur besiegeln ✓
-          </button>
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="document.getElementById('modal-contract-signature').style.display='none'" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+          <button type="button" onclick="ProtocolContract.saveSignature()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Signatur besiegeln ✓</button>
         </div>
       </div>
     `;
 
     modal.style.display = 'flex';
-    setTimeout(initSignatureCanvas, 60);
+    initSignatureCanvas();
   }
 
   function initSignatureCanvas() {
-    const canvas = document.getElementById('signature-canvas');
+    const canvas = document.getElementById('signature-pad-canvas');
     if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * (window.devicePixelRatio || 1);
-    canvas.height = rect.height * (window.devicePixelRatio || 1);
-
     const ctx = canvas.getContext('2d');
-    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
-    ctx.lineWidth = 2.2;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    ctx.strokeStyle = activeSignModalRole === 'top' ? '#c084fc' : '#818cf8';
+    ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = (signingRole === 'top') ? '#c084fc' : '#818cf8';
 
-    signaturePad.canvas = canvas;
-    signaturePad.ctx = ctx;
-    signaturePad.drawing = false;
-    signaturePad.hasSignature = false;
+    isDrawingSignature = false;
 
     function getCoords(e) {
-      const r = canvas.getBoundingClientRect();
+      const cRect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { x: clientX - r.left, y: clientY - r.top };
+      return {
+        x: clientX - cRect.left,
+        y: clientY - cRect.top
+      };
     }
 
-    function startDraw(e) {
-      e.preventDefault();
-      signaturePad.drawing = true;
-      signaturePad.hasSignature = true;
-      const p = getCoords(e);
+    function start(e) {
+      isDrawingSignature = true;
+      const ph = document.getElementById('signature-placeholder');
+      if (ph) ph.style.display = 'none';
+      const c = getCoords(e);
       ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
+      ctx.moveTo(c.x, c.y);
+      if (e.cancelable) e.preventDefault();
     }
 
-    function moveDraw(e) {
-      if (!signaturePad.drawing) return;
-      e.preventDefault();
-      const p = getCoords(e);
-      ctx.lineTo(p.x, p.y);
+    function move(e) {
+      if (!isDrawingSignature) return;
+      const c = getCoords(e);
+      ctx.lineTo(c.x, c.y);
       ctx.stroke();
+      if (e.cancelable) e.preventDefault();
     }
 
-    function endDraw(e) {
-      if (!signaturePad.drawing) return;
-      e.preventDefault();
-      signaturePad.drawing = false;
+    function end() {
+      isDrawingSignature = false;
     }
 
-    canvas.onmousedown = startDraw;
-    canvas.onmousemove = moveDraw;
-    window.onmouseup = endDraw;
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
 
-    canvas.ontouchstart = startDraw;
-    canvas.ontouchmove = moveDraw;
-    canvas.ontouchend = endDraw;
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', end);
   }
 
   function clearSignatureCanvas() {
-    if (!signaturePad.ctx || !signaturePad.canvas) return;
-    signaturePad.ctx.clearRect(0, 0, signaturePad.canvas.width, signaturePad.canvas.height);
-    signaturePad.hasSignature = false;
+    const canvas = document.getElementById('signature-pad-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const ph = document.getElementById('signature-placeholder');
+    if (ph) ph.style.display = 'block';
   }
 
   function saveSignature() {
-    if (!signaturePad.hasSignature || !signaturePad.canvas) {
-      showToast("Bitte zuerst mit dem Finger unterschreiben.");
-      return;
-    }
+    const canvas = document.getElementById('signature-pad-canvas');
+    if (!canvas) return;
 
-    const dataUrl = signaturePad.canvas.toDataURL('image/png');
+    const dataUrl = canvas.toDataURL('image/png');
     loadContractState();
 
-    if (signingRole === 'top') {
+    if (activeSignModalRole === 'top') {
       contractState.signatureTop = dataUrl;
     } else {
       contractState.signatureSub = dataUrl;
     }
 
     if (contractState.signatureTop && contractState.signatureSub) {
-      contractState.status = "active";
+      contractState.status = 'active';
       contractState.signedAt = Date.now();
-      contractState.version = `1.0 Besiegelt (${new Date().toLocaleDateString('de-DE')})`;
-      showToast("TACTUS Bündnis von beiden Partnern ratifiziert & besiegelt! ✓");
-
+      showToast("✓ Beide Signaturen besiegelt: Der Beziehungsvertrag ist ratifiziert!");
       if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-        window.ChatApp.postSystemEvent("Der Beziehungsvertrag wurde von beiden Partnern ratifiziert und besiegelt.");
+        window.ChatApp.postSystemEvent(`Beziehungsvertrag vollständig ratifiziert und gültig besiegelt (Version ${contractState.version}).`);
       }
     } else {
-      showToast("✓ Unterschrift gespeichert. Zweite Signatur steht noch aus.");
+      showToast(`Signatur für ${activeSignModalRole.toUpperCase()} besiegelt. Partner-Signatur noch ausstehend.`);
     }
 
     saveContractState();
@@ -886,85 +781,112 @@
 
   function exportRedactedContract() {
     loadContractState();
-    const dateStr = contractState.signedAt ? new Date(contractState.signedAt).toLocaleDateString('de-DE') : new Date().toLocaleDateString('de-DE');
-
+    const names = getPairNames();
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
     canvas.height = 1350;
     const ctx = canvas.getContext('2d');
 
-    // Tiefschwarzer OLED-Hintergrund
-    ctx.fillStyle = '#05070c';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Hintergrund OLED-Noir
+    ctx.fillStyle = "#05070c";
+    ctx.fillRect(0, 0, 1080, 1350);
 
-    // Zarter Champagner-Goldrahmen
-    ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
-
-    ctx.strokeStyle = '#334155';
+    // Feiner Doppelrahmen in Champagner-Gold
+    ctx.strokeStyle = "#d4af37";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(40, 40, 1000, 1270);
     ctx.lineWidth = 1;
-    ctx.strokeRect(55, 55, canvas.width - 110, canvas.height - 110);
+    ctx.strokeRect(48, 48, 984, 1254);
 
-    // Titel
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px "Playfair Display", Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('T A C T U S   I N T I M U M', canvas.width / 2, 130);
-
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '19px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('VEREINBARTER KODEX DER BEZIEHUNGSDYNAMIK', canvas.width / 2, 175);
-
-    ctx.fillStyle = '#d4af37';
-    ctx.font = '17px monospace';
-    ctx.fillText(`RATIFIZIERT AM ${dateStr} · STATUS: BESIEGELT`, canvas.width / 2, 215);
-
-    // Geschwärzte Textbalken
-    let y = 290;
-    const activeChapters = contractState.chapters.filter(c => c.level > 0).slice(0, 7);
-
-    activeChapters.forEach(ch => {
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
-      ctx.fillText(`${ch.num}  ${ch.title}`, 100, y);
-
-      ctx.fillStyle = '#1e293b';
-      ctx.fillRect(100, y + 15, 880, 18);
-      ctx.fillRect(100, y + 42, 750, 18);
-      ctx.fillRect(100, y + 69, 820, 18);
-
-      ctx.fillStyle = '#475569';
-      ctx.font = 'bold 12px monospace';
-      ctx.fillText('[ VERTRAULICH · PRIVATSPHÄRE GESCHÜTZT ]', 560, y + 55);
-
-      y += 120;
+    // Zier-Ecken
+    ctx.fillStyle = "#d4af37";
+    const corners = [[40, 40], [1040, 40], [40, 1310], [1040, 1310]];
+    corners.forEach(([cx, cy]) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
+      ctx.fill();
     });
 
-    // Fußbereich mit Siegel
-    ctx.fillStyle = '#d4af37';
+    // Titel-Typografie
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 32px 'Playfair Display', Georgia, serif";
+    ctx.fillText("TACTUS INTIMUM", 540, 120);
+
+    ctx.fillStyle = "#d4af37";
+    ctx.font = "600 16px 'Plus Jakarta Sans', sans-serif";
+    ctx.fillText("BEZIEHUNGSVERTRAG & D/S-KODEX", 540, 155);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "13px monospace";
+    ctx.fillText(`RATIFIZIERT DURCH BEIDE PARTEIEN · VERSION ${contractState.version}`, 540, 185);
+
+    // Trennlinie
+    ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
     ctx.beginPath();
-    ctx.arc(canvas.width / 2, 1180, 50, 0, Math.PI * 2);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = '#d4af37';
+    ctx.moveTo(140, 210);
+    ctx.lineTo(940, 210);
     ctx.stroke();
 
-    ctx.fillStyle = '#d4af37';
-    ctx.font = 'bold 26px "Playfair Display", serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('T', canvas.width / 2, 1189);
+    // 8 Paragraphen als geschwärzte Urkunde
+    ctx.textAlign = "left";
+    let y = 250;
+    const clauseKeys = Object.keys(DEFAULT_CONTRACT_CLAUSES);
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = '15px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('TACTUS DIGITAL · ZERO-KNOWLEDGE ENCRYPTED PROTOCOL', canvas.width / 2, 1275);
+    clauseKeys.forEach((key, idx) => {
+      const clause = contractState.clauses[key] || DEFAULT_CONTRACT_CLAUSES[key];
+      const level = clause.level !== undefined ? clause.level : 3;
 
-    const link = document.createElement('a');
-    link.download = `tactus_urkunde_geschwaerzt_${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 15px 'Plus Jakarta Sans', sans-serif";
+      ctx.fillText(`§ ${idx + 1} ${clause.title.split(' ')[1] || 'Klausel'} [Stufe ${level}/5]`, 90, y);
 
-    showToast("✓ Geschwärzte Urkunde exportiert");
+      // Geschwärzte Textbalken
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(90, y + 12, 800, 12);
+      ctx.fillRect(90, y + 30, 680, 12);
+      ctx.fillRect(90, y + 48, 740, 12);
+
+      // Dezent eingeprägtes Siegel-Wasserzeichen über den Balken
+      ctx.fillStyle = "rgba(212, 175, 55, 0.45)";
+      ctx.font = "bold 9.5px monospace";
+      ctx.fillText("[ VERTRAULICH · PRIVATSPHÄRE GESCHÜTZT ]", 100, y + 39);
+
+      y += 85;
+    });
+
+    // Goldenes PACTUM-Siegel unten zentriert
+    ctx.save();
+    ctx.translate(540, y + 65);
+    ctx.strokeStyle = "#d4af37";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 52, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, 46, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    ctx.fillStyle = "#d4af37";
+    ctx.textAlign = "center";
+    ctx.font = "bold 12px monospace";
+    ctx.fillText("TACTUS", 0, -6);
+    ctx.font = "8.5px monospace";
+    ctx.fillText("SEAL OF TRUST", 0, 12);
+    ctx.restore();
+
+    // Footer
+    ctx.fillStyle = "#475569";
+    ctx.font = "11px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Offizielle Urkunde · Verifiziert via E2EE Zero-Knowledge Protocol · tactus.digital", 540, 1290);
+
+    const a = document.createElement('a');
+    a.download = `tactus_beziehungsvertrag_redacted_${Date.now()}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    showToast("✓ Geschwärzte Urkunde für Foren & Social Media exportiert");
   }
 
   function openPrintDialog() {
@@ -972,32 +894,35 @@
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-contract-print-choice';
-      modal.className = "fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4";
+      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
       document.body.appendChild(modal);
     }
 
     modal.innerHTML = `
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl text-xs">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div class="space-y-0.5">
-            <h3 class="text-sm font-bold text-white">Urkunde drucken / PDF-Export</h3>
-            <span class="text-[10px] text-slate-400">Wähle das gewünschte Format</span>
-          </div>
-          <button type="button" onclick="document.getElementById('modal-contract-print-choice').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs text-white">
+        <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
+          <h3 class="text-sm font-bold text-white">Druckbare Urkunde & Zeremonie</h3>
+          <button type="button" onclick="document.getElementById('modal-contract-print-choice').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">✕</button>
+        </div>
+
+        <p class="text-[10.5px] text-slate-300 leading-snug">
+          Wähle das Format für den Ausdruck auf hochwertigem Papier oder Pergament:
+        </p>
+
+        <div class="space-y-2">
+          <button type="button" onclick="ProtocolContract.executePrint(true)" class="w-full p-3 rounded-2xl bg-purple-950/60 hover:bg-purple-900 border border-purple-700 text-left space-y-1 touch-btn shadow-md">
+            <strong class="text-xs text-white block">1. Ausdruck mit digitalen Signaturen</strong>
+            <span class="text-[10px] text-slate-300 block">Druckt den vollständigen Vertrag inklusive der im Browser gezeichneten Unterschriften.</span>
+          </button>
+
+          <button type="button" onclick="ProtocolContract.executePrint(false)" class="w-full p-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left space-y-1 touch-btn">
+            <strong class="text-xs text-white block">2. Blanko-Druck für analoge Zeremonie</strong>
+            <span class="text-[10px] text-slate-300 block">Lässt die Siegelfelder frei für die feierliche handschriftliche Unterzeichnung mit Füllfederhalter und Siegelwachs.</span>
           </button>
         </div>
 
-        <div class="space-y-2.5">
-          <button type="button" onclick="ProtocolContract.executePrint(true)" class="w-full p-3.5 rounded-2xl border bg-slate-950 hover:bg-slate-900 border-slate-800 hover:border-purple-600 text-left transition-all space-y-1 touch-btn">
-            <strong class="text-xs text-white block">Mit digitalen Touch-Signaturen drucken</strong>
-            <span class="text-[10.5px] text-slate-400 block">Druckt das Dokument inklusive der auf dem Smartphone gezeichneten Unterschriften und Zeitstempel.</span>
-          </button>
-
-          <button type="button" onclick="ProtocolContract.executePrint(false)" class="w-full p-3.5 rounded-2xl border bg-slate-950 hover:bg-slate-900 border-slate-800 hover:border-amber-600 text-left transition-all space-y-1 touch-btn">
-            <strong class="text-xs text-amber-300 block">Blanko für handschriftliche Ratifizierung (Zeremonie)</strong>
-            <span class="text-[10.5px] text-slate-400 block">Lässt die Felder frei für Füllfederhalter und Wachssiegel auf Büttenpapier.</span>
-          </button>
+        <div class="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onclick="document.getElementById('modal-contract-print-choice').style.display='none'" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
         </div>
       </div>
     `;
@@ -1009,50 +934,179 @@
     const modal = document.getElementById('modal-contract-print-choice');
     if (modal) modal.style.display = 'none';
 
-    if (!includeDigitalSignatures) {
-      document.body.classList.add('print-blank-signatures');
-    } else {
+    ensurePrintStyles();
+
+    if (includeDigitalSignatures) {
       document.body.classList.remove('print-blank-signatures');
+    } else {
+      document.body.classList.add('print-blank-signatures');
+    }
+
+    if (window.ProtocolCore && typeof window.ProtocolCore.switchTab === 'function') {
+      window.ProtocolCore.switchTab('contract');
     }
 
     setTimeout(() => {
       window.print();
-    }, 150);
+    }, 250);
+  }
+
+  function ensurePrintStyles() {
+    let styleEl = document.getElementById('tactus-contract-print-styles');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'tactus-contract-print-styles';
+      document.head.appendChild(styleEl);
+    }
+
+    styleEl.innerHTML = `
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 18mm 15mm 18mm 15mm;
+        }
+
+        body, html {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+          font-size: 10pt !important;
+          line-height: 1.5 !important;
+        }
+
+        header, nav, #bottom-readonly-banner, .no-print,
+        #modal-contract-signature, #modal-contract-print-choice,
+        #modal-reject-task, #modal-execute-discipline,
+        #modal-break-glass, #modal-ledger-role-config,
+        #view-ledger-dashboard, #view-ledger-chores, #view-ledger-ai_coach,
+        #toast-container, button {
+          display: none !important;
+        }
+
+        #view-ledger-contract {
+          display: block !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        .theme-card {
+          background: #ffffff !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin-bottom: 6mm !important;
+        }
+
+        /* Edler Druck-Header mit Doppel-Linie */
+        #view-ledger-contract > .theme-card:first-child {
+          border-bottom: 2pt solid #0f172a !important;
+          padding-bottom: 4mm !important;
+          margin-bottom: 6mm !important;
+        }
+
+        h2.font-serif-title {
+          font-family: 'Playfair Display', Georgia, serif !important;
+          font-size: 18pt !important;
+          font-weight: bold !important;
+          color: #000000 !important;
+          margin: 0 0 2mm 0 !important;
+        }
+
+        #contract-clauses-container > div {
+          background: #ffffff !important;
+          border: 1px solid #cbd5e1 !important;
+          border-left: 3pt solid #334155 !important;
+          border-radius: 4pt !important;
+          padding: 4mm !important;
+          margin-bottom: 4mm !important;
+          page-break-inside: avoid !important;
+        }
+
+        #contract-clauses-container strong {
+          font-size: 11pt !important;
+          color: #0f172a !important;
+        }
+
+        [id^="clause-text-display-"] {
+          background: transparent !important;
+          border: none !important;
+          padding: 0 !important;
+          color: #1e293b !important;
+          font-size: 9.5pt !important;
+          white-space: pre-wrap !important;
+        }
+
+        /* Siegelfelder für Füllfederhalter und Siegelwachs */
+        .theme-card:has(#sig-box-top) {
+          border-top: 1.5pt solid #334155 !important;
+          margin-top: 8mm !important;
+          padding-top: 6mm !important;
+          page-break-inside: avoid !important;
+        }
+
+        #sig-box-top, #sig-box-sub {
+          border: 1pt dashed #94a3b8 !important;
+          background: #f8fafc !important;
+          min-height: 28mm !important;
+        }
+
+        body.print-blank-signatures #sig-box-top img,
+        body.print-blank-signatures #sig-box-sub img {
+          display: none !important;
+        }
+
+        body.print-blank-signatures #sig-box-top,
+        body.print-blank-signatures #sig-box-sub {
+          position: relative;
+        }
+
+        body.print-blank-signatures #sig-box-top::after,
+        body.print-blank-signatures #sig-box-sub::after {
+          content: "L. S. (Siegel / Namenszug)";
+          position: absolute;
+          bottom: 2mm;
+          right: 3mm;
+          font-family: monospace;
+          font-size: 8pt;
+          color: #94a3b8;
+        }
+      }
+    `;
   }
 
   const api = {
     init: function() {
       loadContractState();
       renderContractDashboard();
+      ensurePrintStyles();
     },
-    renderContract: renderContractDashboard,
-    generateFromSurvey: generateFromContext,
-    generateFromContext: generateFromContext,
-    setLevel: setChapterLevel,
+    render: renderContractDashboard,
+    generateFromContext: generateContractFromContext,
+    setLevel: setClauseLevel,
     editClause: editClause,
     saveClauseText: saveClauseText,
     openSignatureModal: openSignatureModal,
+    initSignatureCanvas: initSignatureCanvas,
     clearSignatureCanvas: clearSignatureCanvas,
     saveSignature: saveSignature,
     exportRedacted: exportRedactedContract,
     openPrintDialog: openPrintDialog,
     executePrint: executePrint,
     validateHarmony: validatePsychosomaticHarmony,
-    analyzeWeightedPsychometrics: analyzeWeightedPsychometrics,
-    getActiveContract: function() { loadContractState(); return contractState; }
+    getActiveContract: function() {
+      loadContractState();
+      return Object.assign({}, contractState);
+    }
   };
 
   window.ProtocolContract = api;
-  // Abwärtskompatibler Alias
   window.LedgerContract = api;
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      loadContractState();
-      renderContractDashboard();
-    });
+    document.addEventListener('DOMContentLoaded', api.init);
   } else {
-    loadContractState();
+    api.init();
   }
 
 })(window);
