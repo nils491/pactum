@@ -1,18 +1,19 @@
 /**
  * js/session_edging.js
  * TACTUS Schwellen-, Plateau- & JOI-Cockpit (V3.0 Hyper-Dynamisch)
- * Offizielle Web-Präsenz: tactus.digital
+ * Offizielle Web-Praesenz: tactus.digital
  * 
  * Standards & Garantien:
- * - Grafisch animierter kreisförmiger SVG-Countdown (Circular Progress Arc)
- * - Synchrone Sprach-Zählung (Voice-Paced Countdown) gekoppelt an SessionVoice & Ducking
+ * - Grafisch animierter kreisfoermiger SVG-Countdown (Circular Progress Arc)
+ * - Synchrone Sprach-Zaehlung (Voice-Paced Countdown) gekoppelt an SessionVoice & Ducking
  * - Konsequent szene-authentische Sprache: 100 % frei von "Kante" / Denglisch-Floskeln
- * - Transparenz über Sub-Noten: Liest Item 36 (Denial) & Item 38 (Ruined) aus kompass_answers
+ * - Transparenz ueber Sub-Noten: Liest Item 36 (Denial) & Item 38 (Ruined) aus kompass_answers mit Klick-Deeplinks
  * - Plateau-Zeit-Tracking im Erregungszenit (Arousal >= 8) mit optischer Halte-Welle
- * - Tonalitäts-modulierte Sofort-Befehle für Kaltstopp, Atemführung und Plateau-Halten
- * - Blind im Halbdunkel treffbare Touch-Ziele (min. 48px) mit Haptik-Impulsen
- * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
+ * - Keuschheits- & Hardware-Awareness: Erkennt verriegelte Kaefige und adaptiert Reizanweisungen
+ * - Tonalitaets-modulierte Sofort-Befehle fuer Kaltstopp, Atemfuehrung und Plateau-Halten
+ * - Blind im Halbdunkel treffbare Touch-Ziele (min. 48-56px) mit Haptik-Impulsen
+ * - 100 % frei von infantilen System-Emojis in Datenstrukturen und UI
+ * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umstaenden
  */
 
 (function(window) {
@@ -76,7 +77,7 @@
       try {
         navigator.vibrate(pattern);
       } catch (e) {
-        console.debug("[TACTUS Edging] Haptik-Vibration nicht verfügbar:", e);
+        console.debug("[TACTUS Edging] Haptik-Vibration nicht verfuegbar:", e);
       }
     }
   }
@@ -109,6 +110,48 @@
     } catch (e) {}
   }
 
+  function loadPersistedState() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY_EDGING_LOGS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          edgingSession = Object.assign({}, edgingSession, parsed);
+        }
+      }
+    } catch (e) {}
+
+    // Synchronisation mit SessionLive falls aktiv
+    if (window.SessionLive && typeof window.SessionLive.getMetrics === 'function') {
+      const m = window.SessionLive.getMetrics();
+      if (m && typeof m.edgesCounted === 'number' && m.edgesCounted > edgingSession.totalThresholds) {
+        edgingSession.totalThresholds = m.edgesCounted;
+      }
+    }
+  }
+
+  function persistState() {
+    try {
+      const payload = {
+        totalThresholds: edgingSession.totalThresholds,
+        currentArousal: edgingSession.currentArousal,
+        plateauDurationSeconds: edgingSession.plateauDurationSeconds,
+        joiDuration: edgingSession.joiDuration,
+        lastDirective: edgingSession.lastDirective,
+        thresholdTimestamps: edgingSession.thresholdTimestamps.slice(-50)
+      };
+      sessionStorage.setItem(STORAGE_KEY_EDGING_LOGS, JSON.stringify(payload));
+    } catch (e) {}
+  }
+
+  function isBottomLocked() {
+    if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
+      const p = window.ProtocolCore.getState();
+      return !!p.isLocked;
+    }
+    return false;
+  }
+
   function getSubPreferences() {
     let bottomRole = 'B';
     if (window.HubContext && typeof window.HubContext.getRoles === 'function') {
@@ -122,20 +165,22 @@
     } catch (e) {}
 
     const subAns = answers[bottomRole] || {};
-    const scaleLabels = ["Entfällt", "Tabu", "Eher nicht", "Neutral", "Gern", "Must-Have"];
+    const scaleLabels = ["Entfaellt", "Tabu", "Eher nicht", "Neutral", "Gern", "Must-Have"];
 
     const denialScore = subAns['it_36_r2']; // Item 36: Orgasmusverweigerung
     const ruinedScore = subAns['it_38_r2']; // Item 38: Ruined Orgasm
-    const denialNote = subAns['note_36'] || '';
-    const ruinedNote = subAns['note_38'] || '';
+    const denialNote = (subAns['note_36'] || '').trim();
+    const ruinedNote = (subAns['note_38'] || '').trim();
 
     return {
       denial: {
+        itemId: 36,
         score: denialScore !== undefined ? denialScore : null,
         label: denialScore !== undefined ? scaleLabels[denialScore] : 'Offen',
         note: denialNote
       },
       ruined: {
+        itemId: 38,
         score: ruinedScore !== undefined ? ruinedScore : null,
         label: ruinedScore !== undefined ? scaleLabels[ruinedScore] : 'Offen',
         note: ruinedNote
@@ -151,6 +196,7 @@
     const descEl = document.getElementById('edging-arousal-desc');
     const barEl = document.getElementById('edging-arousal-bar');
     const plateauBox = document.getElementById('edging-plateau-box');
+    const locked = isBottomLocked();
 
     if (valEl) valEl.innerText = `${val} / 10`;
     if (barEl) {
@@ -164,7 +210,7 @@
       }
     }
 
-    // Plateau-Tracker aktivieren bei Schwellkörperdruck >= 8
+    // Plateau-Tracker aktivieren bei Schwellkoerperdruck >= 8
     if (val >= 8) {
       startPlateauTracker();
       if (plateauBox) plateauBox.classList.remove('hidden');
@@ -174,10 +220,14 @@
 
     if (descEl) {
       if (val >= 9) {
-        descEl.innerText = "Kritische Schwelle: Unmittelbar vor dem Point-of-No-Return. Höchste Wachsamkeit!";
+        descEl.innerText = locked
+          ? "Kritische Schwelle: Maximaler Beckenbodendruck am Kaefiggitter. Reiz sofort unterbrechen!"
+          : "Kritische Schwelle: Unmittelbar vor dem Point-of-No-Return. Hoechste Wachsamkeit!";
         descEl.className = "text-[10.5px] text-rose-300 font-bold leading-snug";
       } else if (val >= 7) {
-        descEl.innerText = "Hochexplosives Plateau: Puls rast, Atembeschleunigung, starker Schwellkörperdruck.";
+        descEl.innerText = locked
+          ? "Hochexplosives Plateau: Puls rast, Atembeschleunigung, P-Spot/Kaefig voll unter Spannung."
+          : "Hochexplosives Plateau: Puls rast, Atembeschleunigung, starker Schwellkoerperdruck.";
         descEl.className = "text-[10.5px] text-amber-300 font-medium leading-snug";
       } else if (val >= 4) {
         descEl.innerText = "Stabile Erregung: Gekonnter Reizaufbau ohne unkontrollierte Spitzen.";
@@ -188,6 +238,7 @@
       }
     }
 
+    persistState();
     triggerHapticPulse(val >= 9 ? [50, 40, 50] : [25]);
   }
 
@@ -223,36 +274,52 @@
       if (cfg && cfg.tonality) tonality = cfg.tonality;
     }
 
-    let directive = "Halt! Hände weg. Ausatmen und stillhalten.";
-    if (tonality === 'sovereign_cool') {
-      directive = "Kalter Stopp. Sofort die Hände wegnehmen, Blick nach unten senken. Kein Laut.";
-    } else if (tonality === 'raw_primal') {
-      directive = "Stopp! Bleib genau so liegen. Wag es nicht, dich ohne meine Erlaubnis zu bewegen.";
-    } else if (tonality === 'playful') {
-      directive = "Fast zu weit gegangen? Reiz sofort entziehen und spöttisch lächeln. Tief durchatmen.";
+    const locked = isBottomLocked();
+    let directive = "Halt! Haende weg. Ausatmen und stillhalten.";
+
+    if (locked) {
+      if (tonality === 'sovereign_cool') {
+        directive = "Kalter Stopp! Vibration sofort wegnehmen. Stillstehen vor mir. Kein Millimeter Bewegung im Kaefig.";
+      } else if (tonality === 'raw_primal') {
+        directive = "Stopp! Haende weg vom Gitter. Du bleibst genau so verriegelt liegen und spuerst den Druck.";
+      } else if (tonality === 'playful') {
+        directive = "Fast zu nah am Kaefiggitter gezuckt? Reiz sofort entziehen und tief durchatmen.";
+      } else {
+        directive = "Kalter Stopp. Reiz vom Kaefig nehmen. Atme tief in den Bauch und beruhige deinen Puls.";
+      }
     } else {
-      directive = "Kalter Stopp. Ruhe bewahren, tief in den Bauch atmen und die Hitze aushalten.";
+      if (tonality === 'sovereign_cool') {
+        directive = "Kalter Stopp. Sofort die Haende wegnehmen, Blick nach unten senken. Kein Laut.";
+      } else if (tonality === 'raw_primal') {
+        directive = "Stopp! Bleib genau so liegen. Wag es nicht, dich ohne meine Erlaubnis zu bewegen.";
+      } else if (tonality === 'playful') {
+        directive = "Fast zu weit gegangen? Reiz sofort entziehen und spoettisch laecheln. Tief durchatmen.";
+      } else {
+        directive = "Kalter Stopp. Ruhe bewahren, tief in den Bauch atmen und die Hitze aushalten.";
+      }
     }
+
     edgingSession.lastDirective = directive;
 
-    // Gesprochene Kaltstopp-Anweisung über SessionVoice im Raum
+    // Gesprochene Kaltstopp-Anweisung ueber SessionVoice
     if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
       window.SessionVoice.speak(directive, { tonality: tonality, phase: 2, arousal: 9 });
     }
 
-    // Rückkopplung an session_live.js
+    // Rueckkopplung an session_live.js
     if (window.SessionLive && typeof window.SessionLive.adaptPhase === 'function') {
       window.SessionLive.adaptPhase('edge_too_fast');
     }
 
-    // Rückkopplung an ProtocolCore Punkte-Buchung
+    // Rueckkopplung an ProtocolCore Punkte-Buchung (+15 Tribut-Punkte)
     if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
-      window.ProtocolCore.addTransaction(15, `Schwellen-Führung: Schwelle #${edgingSession.totalThresholds} diszipliniert gehalten`, 'top');
+      window.ProtocolCore.addTransaction(15, `Schwellen-Fuehrung: Schwelle #${edgingSession.totalThresholds} diszipliniert gehalten`, 'top');
     }
 
     triggerHapticPulse([100, 60, 100, 60, 140]);
     playAudioClick(880, 120);
 
+    persistState();
     updateEdgingDisplay();
     showToast(`✓ Schwelle #${edgingSession.totalThresholds} erfasst: Kalter Stopp!`);
   }
@@ -264,6 +331,7 @@
     const label = document.getElementById('edging-joi-duration-label');
     if (label) label.innerText = `${edgingSession.joiDuration}s`;
     updateCountdownSvgArc(edgingSession.joiDuration, edgingSession.joiDuration);
+    persistState();
     triggerHapticPulse([20]);
   }
 
@@ -332,8 +400,7 @@
       playAudioClick(isUrgent ? 660 : 330, isUrgent ? 80 : 40);
       triggerHapticPulse(isUrgent ? [60] : [25]);
 
-      // Synchrone Sprach-Zählung der Zahlen im Raum
-      // Spricht bei markanten Schwellen: bei Start, bei 10s, und die letzten 5 Sekunden einzeln
+      // Synchrone Sprach-Zaehlung der Zahlen im Raum
       if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
         if (s <= 5 && s > 0) {
           window.SessionVoice.speak(String(s), { tonality: 'sovereign_cool', phase: 2 });
@@ -373,7 +440,9 @@
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    loadPersistedState();
     const subPrefs = getSubPreferences();
+    const locked = isBottomLocked();
 
     container.innerHTML = `
       <div class="space-y-4 max-w-xl mx-auto text-xs animate-fade-in">
@@ -384,7 +453,7 @@
             <div class="space-y-0.5 min-w-0 flex-1 pr-2">
               <span class="text-[9px] font-mono uppercase tracking-wider text-purple-400 font-bold block truncate">Schwellen- &amp; Plateau-Regie</span>
               <h2 class="text-sm sm:text-base font-bold text-white truncate font-serif">
-                Plateau-Führung &amp; Schwellen-Zähler
+                ${locked ? 'Plateau-Fuehrung am Kaefig (Keuschheit aktiv)' : 'Plateau-Fuehrung &amp; Schwellen-Zaehler'}
               </h2>
             </div>
             <div class="flex items-center gap-1.5 font-mono text-[10px] text-purple-300">
@@ -394,25 +463,45 @@
             </div>
           </div>
           <p class="text-[10.5px] text-slate-300 leading-snug">
-            Führe den Körper an die Schwelle, halte das Plateau ohne Entlastung und bremse mit kaltem Stopp vor dem Point-of-No-Return.
+            ${locked 
+              ? 'Fuehre den Schwellkoerperdruck im Kaefig an die Schwelle, halte das Plateau ohne Ejakulation und stoppe den Reiz vor der Entladung.' 
+              : 'Fuehre den Koerper an die Schwelle, halte das Plateau ohne Entlastung und bremse mit kaltem Stopp vor dem Point-of-No-Return.'}
           </p>
 
-          <!-- SUB-NOTEN TRANSPARENZ AUS DEM FRAGEBOGEN -->
+          <!-- SUB-NOTEN TRANSPARENZ AUS DEM FRAGEBOGEN MIT KLICKBAREN DEEPLINKS -->
           <div class="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[10px]">
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-0.5">
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
               <div class="flex items-center justify-between">
                 <span class="text-slate-400">Verweigerung (Denial):</span>
-                <span class="font-bold text-purple-300 font-mono">${escapeHtml(subPrefs.denial.label)}</span>
+                <a href="index.html#view=survey&item=36" target="_blank" class="font-bold text-purple-400 hover:text-purple-300 underline font-mono text-[9.5px]">Item #36 ↗</a>
               </div>
-              ${subPrefs.denial.note ? `<p class="text-[9px] text-slate-500 italic truncate" title="${escapeHtml(subPrefs.denial.note)}">📝 „${escapeHtml(subPrefs.denial.note)}“</p>` : ''}
+              <div class="flex items-center justify-between text-[9.5px] font-mono">
+                <span class="text-slate-500">Sub-Bewertung:</span>
+                <span class="font-bold text-purple-300">${escapeHtml(subPrefs.denial.label)}</span>
+              </div>
+              ${subPrefs.denial.note ? `
+                <div class="pt-1 border-t border-slate-800/60 text-[9px] text-purple-200/90 italic flex items-start gap-1">
+                  <span class="not-italic text-purple-400 font-mono font-bold flex-shrink-0">[Notiz]:</span>
+                  <span class="break-words">„${escapeHtml(subPrefs.denial.note)}“</span>
+                </div>
+              ` : ''}
             </div>
 
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-0.5">
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
               <div class="flex items-center justify-between">
                 <span class="text-slate-400">Ruined Orgasm:</span>
-                <span class="font-bold text-rose-300 font-mono">${escapeHtml(subPrefs.ruined.label)}</span>
+                <a href="index.html#view=survey&item=38" target="_blank" class="font-bold text-rose-400 hover:text-rose-300 underline font-mono text-[9.5px]">Item #38 ↗</a>
               </div>
-              ${subPrefs.ruined.note ? `<p class="text-[9px] text-slate-500 italic truncate" title="${escapeHtml(subPrefs.ruined.note)}">📝 „${escapeHtml(subPrefs.ruined.note)}“</p>` : ''}
+              <div class="flex items-center justify-between text-[9.5px] font-mono">
+                <span class="text-slate-500">Sub-Bewertung:</span>
+                <span class="font-bold text-rose-300">${escapeHtml(subPrefs.ruined.label)}</span>
+              </div>
+              ${subPrefs.ruined.note ? `
+                <div class="pt-1 border-t border-slate-800/60 text-[9px] text-rose-200/90 italic flex items-start gap-1">
+                  <span class="not-italic text-rose-400 font-mono font-bold flex-shrink-0">[Notiz]:</span>
+                  <span class="break-words">„${escapeHtml(subPrefs.ruined.note)}“</span>
+                </div>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -443,7 +532,7 @@
                 <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
                 <span>Plateau-Haltezeit (Zenit):</span>
               </strong>
-              <span class="text-[10px] text-slate-400">Zeitdauer unter Schwellkörperdruck (+Punkte)</span>
+              <span class="text-[10px] text-slate-400">Zeitdauer unter Schwellkoerperdruck (+Punkte)</span>
             </div>
             <span id="edging-plateau-seconds" class="font-mono text-base font-black text-amber-300">
               ${edgingSession.plateauDurationSeconds}s
@@ -456,7 +545,7 @@
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <div>
               <strong class="text-xs text-white block font-bold text-left">JOI Rhythmus-Taktgeber</strong>
-              <span class="text-[9.5px] text-slate-400 block text-left">Sprachgeführter Countdown bis zum Kaltstopp</span>
+              <span class="text-[9.5px] text-slate-400 block text-left">Sprachgefuehrter Countdown bis zum Kaltstopp</span>
             </div>
             <div class="flex items-center gap-1 font-mono text-[10px]">
               <button type="button" onclick="SessionEdging.adjustJoiDuration(-5)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center touch-btn">-5s</button>
@@ -465,7 +554,7 @@
             </div>
           </div>
 
-          <!-- KREISFÖRMIGE SVG BÜHNE -->
+          <!-- KREISFOERMIGE SVG BUEHNE -->
           <div class="py-2 flex flex-col items-center justify-center">
             <div class="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center">
               <svg class="w-full h-full transform -rotate-90 pointer-events-none" viewBox="0 0 120 120">
@@ -488,9 +577,9 @@
           </button>
         </div>
 
-        <!-- GROSSER SCHWELLEN-BUTTON (BLIND IM HALBDUNKEL TREFFBAR) -->
+        <!-- GROSSER SCHWELLEN-BUTTON (BLIND IM HALBDUNKEL TREFFBAR, 56PX MINDESTHOEHE) -->
         <div class="pt-1">
-          <button type="button" onclick="SessionEdging.registerThreshold()" class="w-full py-4 px-4 rounded-3xl bg-gradient-to-r from-amber-600 via-rose-700 to-purple-800 hover:from-amber-500 hover:to-purple-700 text-white font-black text-sm sm:text-base tracking-wider uppercase touch-btn shadow-2xl flex items-center justify-center gap-2 transform active:scale-95 transition-transform">
+          <button type="button" onclick="SessionEdging.registerThreshold()" class="w-full py-4 px-4 min-h-[56px] rounded-3xl bg-gradient-to-r from-amber-600 via-rose-700 to-purple-800 hover:from-amber-500 hover:to-purple-700 text-white font-black text-sm sm:text-base tracking-wider uppercase touch-btn shadow-2xl flex items-center justify-center gap-2 transform active:scale-95 transition-transform">
             <svg class="w-5 h-5 text-amber-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/>
             </svg>
@@ -518,7 +607,7 @@
     render: renderEdgingCockpit,
     setArousal: setArousalLevel,
     registerThreshold: registerThreshold,
-    registerEdge: registerThreshold, // Abwärtskompatibler Alias
+    registerEdge: registerThreshold, // Abwaertskompatibler Alias
     adjustJoiDuration: adjustJoiDuration,
     toggleJoiCountdown: startJoiCountdown,
     getSessionMetrics: function() {
