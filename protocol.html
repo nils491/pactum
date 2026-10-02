@@ -135,11 +135,11 @@
           <span id="header-balance-display">0 P</span>
         </div>
 
-        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung -->
-        <button type="button" onclick="ProtocolCore.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Rollenwechsel (Top / Bottom)">
+        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung bzw. Arretierung bei FLR -->
+        <button type="button" onclick="ProtocolRuntime.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Rollenwechsel (Top / Bottom)">
           <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
           <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
-          <span class="text-[9px] text-[#94a3b8]/60">⇄ Switch</span>
+          <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
         </button>
 
         <!-- Ausrüstungsschrank Button -->
@@ -769,6 +769,115 @@
     (function(window) {
       'use strict';
 
+      let currentRoleState = 'top';
+
+      function showToast(message) {
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification(message);
+          return;
+        }
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const el = document.createElement('div');
+        el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
+        el.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
+          <span>${String(message).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+        `;
+        container.appendChild(el);
+
+        setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
+        setTimeout(() => {
+          el.classList.add('opacity-0');
+          setTimeout(() => el.remove(), 300);
+        }, 2800);
+      }
+
+      function initRoleDisplay() {
+        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+        const roleText = document.getElementById('active-role-text');
+        const roleDot = document.getElementById('role-indicator-dot');
+        const roleSubline = document.getElementById('role-switch-subline');
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isTop = (assignedRole === keyholder);
+
+        if (mode === 'flr_24_7') {
+          currentRoleState = isTop ? 'top' : 'bottom';
+          if (roleText) roleText.innerText = isTop ? 'Top (FLR)' : 'Bottom (FLR)';
+          if (roleDot) roleDot.className = isTop ? 'w-1.5 h-1.5 rounded-full bg-[#c5a880]' : 'w-1.5 h-1.5 rounded-full bg-[#b3734a]';
+          if (roleSubline) roleSubline.innerText = '🔒 Fest';
+        } else {
+          currentRoleState = isTop ? 'top' : 'bottom';
+          if (roleText) roleText.innerText = isTop ? 'Top' : 'Bottom';
+          if (roleDot) roleDot.className = isTop ? 'w-1.5 h-1.5 rounded-full bg-[#c5a880]' : 'w-1.5 h-1.5 rounded-full bg-[#b3734a]';
+          if (roleSubline) roleSubline.innerText = '⇄ Switch';
+        }
+      }
+
+      function toggleActiveRole() {
+        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isTop = (assignedRole === keyholder);
+
+        // Schutz im Modus flr_24_7: Kein eigenmächtiger 1-Tap Wechsel
+        if (mode === 'flr_24_7') {
+          if (!isTop) {
+            showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe erfordert formellen Antrag im Paar-Stream (chat.html).");
+          } else {
+            showToast("Führung ist fest arretiert (FLR 24/7). Übergabe nur über feierliche Zeremonie im Paar-Stream möglich.");
+          }
+          return;
+        }
+
+        // Casual- & Switch-Modus: Freier Rollenwechsel
+        const roleText = document.getElementById('active-role-text');
+        const roleDot = document.getElementById('role-indicator-dot');
+        if (currentRoleState === 'top') {
+          currentRoleState = 'bottom';
+          if (roleText) roleText.innerText = "Bottom";
+          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#b3734a]";
+          showToast("Perspektive gewechselt: Bottom (Hingabe)");
+        } else if (currentRoleState === 'bottom') {
+          currentRoleState = 'switch';
+          if (roleText) roleText.innerText = "Switch";
+          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#d4af37]";
+          showToast("Perspektive gewechselt: Switch (Flexibel)");
+        } else {
+          currentRoleState = 'top';
+          if (roleText) roleText.innerText = "Top";
+          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#c5a880]";
+          showToast("Perspektive gewechselt: Top (Führung)");
+        }
+      }
+
+      function initModuleVisibility() {
+        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+        let activeModules = { chores: true, contract: true, coach: true };
+        try {
+          const rawMod = localStorage.getItem('tactus_active_modules');
+          if (rawMod) activeModules = Object.assign({}, activeModules, JSON.parse(rawMod));
+        } catch (e) {}
+
+        const choresTab = document.getElementById('tab-btn-chores');
+        const contractTab = document.getElementById('tab-btn-contract');
+        const coachTab = document.getElementById('tab-btn-ai_coach');
+
+        // Für Gelegenheits-Paare (casual_bedroom) diskrete Markierung als optional
+        if (mode === 'casual_bedroom' || activeModules.chores === false) {
+          if (choresTab) {
+            choresTab.innerHTML = `<span>Pflichten</span> <span class="text-[9px] text-[#94a3b8]/60 font-mono">(Optional)</span>`;
+          }
+        }
+        if (mode === 'casual_bedroom' || activeModules.contract === false) {
+          if (contractTab) {
+            contractTab.innerHTML = `<span>Vertrag</span> <span class="text-[9px] text-[#94a3b8]/60 font-mono">(Optional)</span>`;
+          }
+        }
+      }
+
       function handleHashRouting() {
         var hash = window.location.hash || '';
         
@@ -837,9 +946,20 @@
         }
       };
 
+      window.ProtocolRuntime = {
+        initRoleDisplay: initRoleDisplay,
+        toggleActiveRole: toggleActiveRole,
+        initModuleVisibility: initModuleVisibility,
+        init: function() {
+          handleHashRouting();
+          initRoleDisplay();
+          initModuleVisibility();
+          window.addEventListener('hashchange', handleHashRouting);
+        }
+      };
+
       document.addEventListener('DOMContentLoaded', function() {
-        handleHashRouting();
-        window.addEventListener('hashchange', handleHashRouting);
+        window.ProtocolRuntime.init();
       });
 
     })(window);
