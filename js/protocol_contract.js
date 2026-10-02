@@ -1,19 +1,20 @@
 /**
  * js/protocol_contract.js
- * TACTUS Dynamisches Bündnis- & Vertrags-Studio (V3.0 Hyper-Dynamisch)
+ * TACTUS Dynamisches Bündnis- & Vertrags-Studio (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
- * Standards & Garantien:
- * - 8 Paragraphen mit Stufen 0 bis 5 (0 = Deaktiviert / Entfällt, 1 = Sanft, 3 = Ausgewogen, 5 = Strikt)
+ * Standards & Garantien nach Master-Roadbook:
+ * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
+ * - Haute-Horlogerie Palette: OLED-Schwarz, Graphit, Champagner-Gold, Feingold, Malachit, Cognac & Bordeaux
+ * - 8 Paragraphen mit Stufen 0 bis 5 (0 = Deaktiviert, 1 = Sanft, 3 = Ausgewogen, 5 = Strikt)
  * - Psychosomatische Cross-Clause-Invarianten (Denial-Kompensation & Top-Fatigue-Schutz)
- * - Verankerung von Kapitel 00 (Items 901-905) in § 8 (Trauma-Trigger & Notfall-Interventionen)
+ * - Verankerung von Kapitel 00 (Items 901–905) in § 8 (Trauma-Trigger & Notfall-Interventionen)
  * - Scham-Schutzanker (🙈) & Alltags-Spottverbot in § 1 Abs. 2
- * - Klickbare Fragebogen-Deeplinks auf alle referenzierten Items (index.html#view=survey&item=X)
- * - Gehärtetes Druck-Design (@media print): Edle juristische Typografie, Siegelfelder, saubere Seitenumbrüche
- * - Redacted Urkunden-Export: 1080x1350 px Canvas mit Goldrahmen und PACTUM-Siegel für Social Proof
- * - Touch-Signaturpad mit High-DPI Skalierung für Top (violett) und Bottom (indigo)
- * - 100 % frei von infantilen System-Emojis in Datenstrukturen und UI
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
+ * - Klickbare Fragebogen-Deeplinks auf alle referenzierten Items (index.html#view=survey&chapter=X)
+ * - Gehärtetes Druck-Design (@media print): Edle juristische Typografie, Siegelfelder, saubere Umbrüche
+ * - Redacted Urkunden-Export: 1080x1350 px Canvas mit Goldrahmen und TACTUS-Siegel für Social Proof
+ * - Touch-Signaturpad mit High-DPI Skalierung für Top (Gold/Titan) und Bottom (Cognac)
+ * - 100 % frei von infantilen System-Emojis, keine window.alert() / confirm() Aufrufe
  */
 
 (function(window) {
@@ -141,11 +142,9 @@
     if (!container) return;
 
     const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
+    el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
     el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-      </svg>
+      <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(el);
@@ -192,6 +191,8 @@
     if (window.ProtocolCore && typeof window.ProtocolCore.isTop === 'function') {
       return window.ProtocolCore.isTop();
     }
+    const isPaired = localStorage.getItem('kompass_is_paired') === 'true';
+    if (!isPaired) return true;
     const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
     const kh = localStorage.getItem('kompass_keyholder_role') || 'A';
     return myRole === kh;
@@ -254,7 +255,7 @@
       }
       if (topVal === 5 && subVal === 5) {
         doubleFives.push(meta);
-      } else if ((topVal >= 4 && subVal >= 4)) {
+      } else if (topVal >= 4 && subVal >= 4) {
         highSynergies.push(meta);
       } else if ((topVal >= 4 && subVal === 3) || (topVal === 3 && subVal >= 4)) {
         bridges.push(meta);
@@ -332,7 +333,7 @@
       case 'k2_hierarchy': {
         const intensityText = level >= 4 
           ? `${top} führt mit unbedingter Autorität. Anweisungen zu Haltung, Kleidung und Benehmen sind ohne Verzug auszuführen.` 
-          : `${top} übernimmt die achtsame Leitung intimer Sessions und alläglicher D/s-Rituale.`;
+          : `${top} übernimmt die achtsame Leitung intimer Sessions und alltäglicher D/s-Rituale.`;
         return `(1) Die Parteien vereinbaren eine asymmetrische D/s-Hierarchie. ${intensityText}\n\n(2) VERBOT VERDECKTER REGIEFÜHRUNG (ANTI-TFTB): ${sub} verpflichtet sich, ${top} nicht manipulativ durch Schmollen, Trotzen oder erzwungene Strafaufforderungen von unten zu steuern (Topping from the Bottom). Die Initiative obliegt allein der freien Lust des Tops.\n\n(3) Entscheidungen über Beginn, Intensität und Ende von Strafen oder Zuchtmaßnahmen stehen allein im Ermessen des Tops.`;
       }
 
@@ -473,7 +474,7 @@
       statusLabel.innerText = isSigned 
         ? `Status: Ratifiziert & Gültig (${new Date(contractState.signedAt || Date.now()).toLocaleDateString('de-DE')})` 
         : 'Status: Entwurf (Verhandlung aktiv)';
-      statusLabel.className = isSigned ? 'text-emerald-400 font-bold font-mono' : 'text-amber-400 font-bold font-mono';
+      statusLabel.className = isSigned ? 'text-[#2e5746] font-bold font-mono' : 'text-[#b3734a] font-bold font-mono';
     }
 
     if (versionLabel) {
@@ -482,15 +483,15 @@
 
     if (harmonyBanner) {
       harmonyBanner.innerHTML = `
-        <div class="p-3 rounded-2xl border text-xs ${harmony.isBalanced ? 'bg-emerald-950/20 border-emerald-800/60 text-emerald-200' : 'bg-amber-950/30 border-amber-800/80 text-amber-200'} space-y-1.5">
+        <div class="p-3.5 rounded-2xl border text-xs ${harmony.isBalanced ? 'bg-[#142b24]/40 border-[#2e5746] text-[#f8fafc]' : 'bg-[#4a2818]/50 border-[#8a5232] text-[#f8fafc]'} space-y-1.5 shadow-sm">
           <div class="flex items-center justify-between">
             <strong class="font-bold flex items-center gap-1.5">
               <span>Psychosomatische Balance: ${harmony.score}%</span>
-              ${harmony.isBalanced ? '<span class="text-emerald-400 font-mono text-[10px]">Harmonisch ✓</span>' : '<span class="text-amber-400 font-mono text-[10px]">Nachjustierung empfohlen</span>'}
+              ${harmony.isBalanced ? '<span class="text-[#2e5746] font-mono text-[10px] font-bold">Harmonisch ✓</span>' : '<span class="text-[#b3734a] font-mono text-[10px] font-bold">Nachjustierung empfohlen</span>'}
             </strong>
-            <span class="text-[9.5px] font-mono text-slate-400">Doppel-5er: ${contractState.psychometricsSummary.doubleFivesCount} · Schutzanker: ${contractState.psychometricsSummary.shameAnchorCount}</span>
+            <span class="text-[9.5px] font-mono text-[#94a3b8]">Doppel-5er: ${contractState.psychometricsSummary.doubleFivesCount} · Schutzanker: ${contractState.psychometricsSummary.shameAnchorCount}</span>
           </div>
-          ${harmony.warnings.map(w => `<p class="text-[10px] text-amber-300 leading-snug font-mono">• ${escapeHtml(w.text)}</p>`).join('')}
+          ${harmony.warnings.map(w => `<p class="text-[10px] text-[#dfcaa9] leading-snug font-mono">• ${escapeHtml(w.text)}</p>`).join('')}
         </div>
       `;
     }
@@ -507,21 +508,21 @@
 
       const clusterChapters = CHAPTER_CLUSTER_MAP[key] || [];
       const linksHtml = clusterChapters.map(chId => {
-        return `<a href="index.html#view=survey&chapter=${chId}" target="_blank" class="text-purple-400 hover:text-purple-300 underline font-mono text-[9.5px]">Kap. ${chId} ↗</a>`;
+        return `<a href="index.html#view=survey&chapter=${chId}" target="_blank" class="text-[#c5a880] hover:underline font-mono text-[9.5px]">Kap. ${chId} ↗</a>`;
       }).join(' ');
 
       return `
-        <div class="p-4 sm:p-5 rounded-3xl theme-card border transition-all space-y-3 ${level === 0 ? 'opacity-40 border-slate-800 bg-slate-950/40' : (level >= 4 ? 'border-purple-800/80 bg-purple-950/15 shadow-md' : 'border-slate-800')}">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
+        <div class="p-4 sm:p-5 rounded-3xl border transition-all space-y-3 ${level === 0 ? 'opacity-40 border-[#1e2638] bg-[#000000]' : (level >= 4 ? 'border-[#c5a880]/80 bg-[#090d14] shadow-md' : 'border-[#1e2638] bg-[#090d14]')}">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-2">
             <div class="space-y-0.5 min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <strong class="text-xs sm:text-sm text-white font-bold block">${escapeHtml(clause.title)}</strong>
-                <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold ${level === 0 ? 'bg-slate-900 text-slate-500' : (level >= 4 ? 'bg-purple-950 text-purple-200 border border-purple-700' : 'bg-slate-900 text-slate-300 border border-slate-700')}">
+                <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold ${level === 0 ? 'bg-[#000000] text-[#94a3b8]' : (level >= 4 ? 'bg-[#000000] text-[#c5a880] border border-[#c5a880]/60' : 'bg-[#000000] text-[#94a3b8] border border-[#1e2638]')}">
                   ${level === 0 ? 'Deaktiviert (Stufe 0)' : `Stufe ${level}/5`}
                 </span>
               </div>
-              <p class="text-[10px] text-slate-400 leading-snug break-words">${escapeHtml(clause.desc)}</p>
-              <div class="flex items-center gap-1 pt-0.5 text-[9.5px] text-slate-500 font-mono">
+              <p class="text-[10px] text-[#94a3b8] leading-snug break-words">${escapeHtml(clause.desc)}</p>
+              <div class="flex items-center gap-1 pt-0.5 text-[9.5px] text-[#94a3b8]/80 font-mono">
                 <span>Quellen:</span>
                 ${linksHtml}
               </div>
@@ -531,26 +532,26 @@
             ${isTop ? `
               <div class="flex items-center gap-1 font-mono text-xs flex-shrink-0">
                 ${[0, 1, 2, 3, 4, 5].map(lvl => `
-                  <button type="button" onclick="ProtocolContract.setLevel('${key}', ${lvl})" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg font-bold flex items-center justify-center transition-all touch-btn ${level === lvl ? 'bg-purple-700 text-white shadow-sm' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'}">
+                  <button type="button" onclick="ProtocolContract.setLevel('${key}', ${lvl})" class="w-6 h-6 sm:w-7 sm:h-7 rounded-xl font-bold flex items-center justify-center transition-all touch-btn ${level === lvl ? 'bg-[#c5a880] text-black shadow-sm' : 'bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white'}">
                     ${lvl}
                   </button>
                 `).join('')}
               </div>
             ` : `
-              <span class="text-[10px] font-mono text-slate-500 italic">Top-Regie</span>
+              <span class="text-[10px] font-mono text-[#94a3b8] italic">Top-Regie</span>
             `}
           </div>
 
           <!-- Wortlaut mit Editier-Option -->
           <div class="space-y-2">
-            <div id="clause-text-display-${key}" class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 text-[11px] leading-relaxed text-slate-200 whitespace-pre-wrap font-sans">
+            <div id="clause-text-display-${key}" class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] text-[11px] leading-relaxed text-[#f8fafc] whitespace-pre-wrap font-sans">
               ${escapeHtml(text)}
             </div>
 
             ${isTop ? `
               <div class="flex justify-end gap-1.5 pt-1">
-                <button type="button" onclick="ProtocolContract.editClause('${key}')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-mono text-[10px] font-medium touch-btn flex items-center gap-1">
-                  <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                <button type="button" onclick="ProtocolContract.editClause('${key}')" class="px-2.5 py-1 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-[#c5a880] font-mono text-[10px] font-bold touch-btn flex items-center gap-1">
+                  <svg class="w-3 h-3 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                   <span>Wortlaut anpassen</span>
                 </button>
               </div>
@@ -575,17 +576,17 @@
 
     if (sigBoxTop) {
       if (contractState.signatureTop) {
-        sigBoxTop.innerHTML = `<img src="${contractState.signatureTop}" alt="Signatur Top" class="max-h-16 mx-auto object-contain" />`;
+        sigBoxTop.innerHTML = `<img src="${contractState.signatureTop}" alt="Signatur Top" class="max-h-16 mx-auto object-contain filter invert contrast-200" />`;
       } else {
-        sigBoxTop.innerHTML = `<span class="text-slate-500 font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
+        sigBoxTop.innerHTML = `<span class="text-[#94a3b8] font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
       }
     }
 
     if (sigBoxSub) {
       if (contractState.signatureSub) {
-        sigBoxSub.innerHTML = `<img src="${contractState.signatureSub}" alt="Signatur Bottom" class="max-h-16 mx-auto object-contain" />`;
+        sigBoxSub.innerHTML = `<img src="${contractState.signatureSub}" alt="Signatur Bottom" class="max-h-16 mx-auto object-contain filter invert contrast-200" />`;
       } else {
-        sigBoxSub.innerHTML = `<span class="text-slate-500 font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
+        sigBoxSub.innerHTML = `<span class="text-[#94a3b8] font-serif italic text-xs">Noch nicht unterzeichnet</span>`;
       }
     }
   }
@@ -615,10 +616,10 @@
 
     box.innerHTML = `
       <div class="space-y-2">
-        <textarea id="input-edit-clause-${clauseKey}" rows="6" class="w-full p-2.5 bg-slate-900 border border-purple-600 rounded-xl text-white text-[11px] font-sans focus:outline-none leading-relaxed">${escapeHtml(currentText)}</textarea>
+        <textarea id="input-edit-clause-${clauseKey}" rows="6" class="w-full p-2.5 bg-[#000000] border border-[#c5a880] rounded-xl text-white text-[11px] font-sans focus:outline-none leading-relaxed">${escapeHtml(currentText)}</textarea>
         <div class="flex justify-end gap-1.5">
-          <button type="button" onclick="ProtocolContract.render()" class="px-3 py-1 bg-slate-800 text-slate-300 font-bold rounded-lg text-xs touch-btn">Abbrechen</button>
-          <button type="button" onclick="ProtocolContract.saveClauseText('${clauseKey}')" class="px-3 py-1 bg-purple-700 text-white font-bold rounded-lg text-xs touch-btn shadow-md">Wortlaut sichern ✓</button>
+          <button type="button" onclick="ProtocolContract.render()" class="px-3 py-1 bg-[#090d14] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+          <button type="button" onclick="ProtocolContract.saveClauseText('${clauseKey}')" class="px-3 py-1 bg-[#c5a880] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Wortlaut sichern ✓</button>
         </div>
       </div>
     `;
@@ -642,7 +643,7 @@
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-contract-signature';
-      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
+      modal.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
       document.body.appendChild(modal);
     }
 
@@ -650,29 +651,29 @@
     const signerName = (role === 'top') ? names.top : names.sub;
 
     modal.innerHTML = `
-      <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs text-white">
-        <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
+      <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc]">
+        <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
           <div>
-            <h3 class="text-sm font-bold text-white">Ratifizierung: ${escapeHtml(signerName)}</h3>
-            <span class="text-[10px] text-slate-400">Zeichne deinen Namenszug oder dein Siegel</span>
+            <h3 class="text-sm font-bold text-white font-serif">Ratifizierung: ${escapeHtml(signerName)}</h3>
+            <span class="text-[10px] text-[#94a3b8] font-mono">Zeichne deinen Namenszug oder dein Siegel</span>
           </div>
-          <button type="button" onclick="document.getElementById('modal-contract-signature').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">✕</button>
+          <button type="button" onclick="document.getElementById('modal-contract-signature').style.display='none'" class="p-1.5 text-[#94a3b8] hover:text-white">✕</button>
         </div>
 
         <div class="space-y-1.5">
-          <div class="h-44 w-full rounded-2xl bg-slate-950 border border-slate-800 relative overflow-hidden flex items-center justify-center">
+          <div class="h-44 w-full rounded-2xl bg-[#000000] border border-[#1e2638] relative overflow-hidden flex items-center justify-center">
             <canvas id="signature-pad-canvas" class="w-full h-full cursor-crosshair touch-none"></canvas>
-            <span id="signature-placeholder" class="absolute pointer-events-none text-slate-600 font-serif italic text-xs">Hier mit Finger oder Stift zeichnen...</span>
+            <span id="signature-placeholder" class="absolute pointer-events-none text-[#94a3b8]/50 font-serif italic text-xs">Hier mit Finger oder Stift zeichnen...</span>
           </div>
           <div class="flex justify-between items-center text-[10px] font-mono">
-            <button type="button" onclick="ProtocolContract.clearSignatureCanvas()" class="text-slate-400 hover:text-rose-300">Löschen / Neu</button>
-            <span class="text-purple-300 font-bold">Unwiderruflicher Ratifizierungs-Akt</span>
+            <button type="button" onclick="ProtocolContract.clearSignatureCanvas()" class="text-[#94a3b8] hover:text-[#c5a880]">Löschen / Neu</button>
+            <span class="text-[#c5a880] font-bold">Unwiderruflicher Ratifizierungs-Akt</span>
           </div>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-          <button type="button" onclick="document.getElementById('modal-contract-signature').style.display='none'" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-          <button type="button" onclick="ProtocolContract.saveSignature()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Signatur besiegeln ✓</button>
+        <div class="flex justify-end gap-2 pt-2 border-t border-[#1e2638]">
+          <button type="button" onclick="document.getElementById('modal-contract-signature').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+          <button type="button" onclick="ProtocolContract.saveSignature()" class="px-5 py-2 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Signatur besiegeln ✓</button>
         </div>
       </div>
     `;
@@ -692,7 +693,7 @@
     canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
 
-    ctx.strokeStyle = activeSignModalRole === 'top' ? '#c084fc' : '#818cf8';
+    ctx.strokeStyle = activeSignModalRole === 'top' ? '#d4af37' : '#c5a880';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -787,11 +788,11 @@
     canvas.height = 1350;
     const ctx = canvas.getContext('2d');
 
-    // Hintergrund OLED-Noir
-    ctx.fillStyle = "#05070c";
+    // Hintergrund OLED-Schwarz
+    ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, 1080, 1350);
 
-    // Feiner Doppelrahmen in Champagner-Gold
+    // Feiner Doppelrahmen in Urkunden-Feingold
     ctx.strokeStyle = "#d4af37";
     ctx.lineWidth = 3;
     ctx.strokeRect(40, 40, 1000, 1270);
@@ -807,18 +808,18 @@
       ctx.fill();
     });
 
-    // Titel-Typografie
+    // Titel-Typografie Haute Horlogerie
     ctx.textAlign = "center";
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 32px 'Playfair Display', Georgia, serif";
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "bold 34px 'Cormorant Garamond', Georgia, serif";
     ctx.fillText("TACTUS INTIMUM", 540, 120);
 
-    ctx.fillStyle = "#d4af37";
+    ctx.fillStyle = "#c5a880";
     ctx.font = "600 16px 'Plus Jakarta Sans', sans-serif";
     ctx.fillText("BEZIEHUNGSVERTRAG & D/S-KODEX", 540, 155);
 
-    ctx.fillStyle = "#64748b";
-    ctx.font = "13px monospace";
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "13px 'JetBrains Mono', monospace";
     ctx.fillText(`RATIFIZIERT DURCH BEIDE PARTEIEN · VERSION ${contractState.version}`, 540, 185);
 
     // Trennlinie
@@ -837,25 +838,25 @@
       const clause = contractState.clauses[key] || DEFAULT_CONTRACT_CLAUSES[key];
       const level = clause.level !== undefined ? clause.level : 3;
 
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = "#f8fafc";
       ctx.font = "bold 15px 'Plus Jakarta Sans', sans-serif";
       ctx.fillText(`§ ${idx + 1} ${clause.title.split(' ')[1] || 'Klausel'} [Stufe ${level}/5]`, 90, y);
 
       // Geschwärzte Textbalken
-      ctx.fillStyle = "#1e293b";
+      ctx.fillStyle = "#1e2638";
       ctx.fillRect(90, y + 12, 800, 12);
       ctx.fillRect(90, y + 30, 680, 12);
       ctx.fillRect(90, y + 48, 740, 12);
 
-      // Dezent eingeprägtes Siegel-Wasserzeichen über den Balken
-      ctx.fillStyle = "rgba(212, 175, 55, 0.45)";
-      ctx.font = "bold 9.5px monospace";
+      // Dezent eingeprägtes Wasserzeichen
+      ctx.fillStyle = "rgba(197, 168, 128, 0.35)";
+      ctx.font = "bold 9.5px 'JetBrains Mono', monospace";
       ctx.fillText("[ VERTRAULICH · PRIVATSPHÄRE GESCHÜTZT ]", 100, y + 39);
 
       y += 85;
     });
 
-    // Goldenes PACTUM-Siegel unten zentriert
+    // Goldenes TACTUS-Wachssiegel unten zentriert
     ctx.save();
     ctx.translate(540, y + 65);
     ctx.strokeStyle = "#d4af37";
@@ -870,15 +871,15 @@
 
     ctx.fillStyle = "#d4af37";
     ctx.textAlign = "center";
-    ctx.font = "bold 12px monospace";
+    ctx.font = "bold 13px 'Cormorant Garamond', serif";
     ctx.fillText("TACTUS", 0, -6);
-    ctx.font = "8.5px monospace";
+    ctx.font = "9px 'JetBrains Mono', monospace";
     ctx.fillText("SEAL OF TRUST", 0, 12);
     ctx.restore();
 
     // Footer
-    ctx.fillStyle = "#475569";
-    ctx.font = "11px monospace";
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "11px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
     ctx.fillText("Offizielle Urkunde · Verifiziert via E2EE Zero-Knowledge Protocol · tactus.digital", 540, 1290);
 
@@ -894,35 +895,35 @@
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-contract-print-choice';
-      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
+      modal.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
       document.body.appendChild(modal);
     }
 
     modal.innerHTML = `
-      <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs text-white">
-        <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
-          <h3 class="text-sm font-bold text-white">Druckbare Urkunde & Zeremonie</h3>
-          <button type="button" onclick="document.getElementById('modal-contract-print-choice').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">✕</button>
+      <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc]">
+        <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
+          <h3 class="text-sm font-bold text-white font-serif">Druckbare Urkunde &amp; Zeremonie</h3>
+          <button type="button" onclick="document.getElementById('modal-contract-print-choice').style.display='none'" class="p-1.5 text-[#94a3b8] hover:text-white">✕</button>
         </div>
 
-        <p class="text-[10.5px] text-slate-300 leading-snug">
+        <p class="text-[10.5px] text-[#94a3b8] leading-snug">
           Wähle das Format für den Ausdruck auf hochwertigem Papier oder Pergament:
         </p>
 
         <div class="space-y-2">
-          <button type="button" onclick="ProtocolContract.executePrint(true)" class="w-full p-3 rounded-2xl bg-purple-950/60 hover:bg-purple-900 border border-purple-700 text-left space-y-1 touch-btn shadow-md">
-            <strong class="text-xs text-white block">1. Ausdruck mit digitalen Signaturen</strong>
-            <span class="text-[10px] text-slate-300 block">Druckt den vollständigen Vertrag inklusive der im Browser gezeichneten Unterschriften.</span>
+          <button type="button" onclick="ProtocolContract.executePrint(true)" class="w-full p-3 rounded-2xl bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/60 text-left space-y-1 touch-btn shadow-md">
+            <strong class="text-xs text-[#c5a880] block font-bold">1. Ausdruck mit digitalen Signaturen</strong>
+            <span class="text-[10px] text-[#94a3b8] block">Druckt den vollständigen Vertrag inklusive der im Browser gezeichneten Unterschriften.</span>
           </button>
 
-          <button type="button" onclick="ProtocolContract.executePrint(false)" class="w-full p-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left space-y-1 touch-btn">
-            <strong class="text-xs text-white block">2. Blanko-Druck für analoge Zeremonie</strong>
-            <span class="text-[10px] text-slate-300 block">Lässt die Siegelfelder frei für die feierliche handschriftliche Unterzeichnung mit Füllfederhalter und Siegelwachs.</span>
+          <button type="button" onclick="ProtocolContract.executePrint(false)" class="w-full p-3 rounded-2xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-left space-y-1 touch-btn">
+            <strong class="text-xs text-white block font-bold">2. Blanko-Druck für analoge Zeremonie</strong>
+            <span class="text-[10px] text-[#94a3b8] block">Lässt die Siegelfelder frei für die feierliche handschriftliche Unterzeichnung mit Füllfederhalter und Siegelwachs.</span>
           </button>
         </div>
 
-        <div class="pt-2 border-t border-slate-800 flex justify-end">
-          <button type="button" onclick="document.getElementById('modal-contract-print-choice').style.display='none'" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <div class="pt-2 border-t border-[#1e2638] flex justify-end">
+          <button type="button" onclick="document.getElementById('modal-contract-print-choice').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
         </div>
       </div>
     `;
@@ -968,7 +969,7 @@
 
         body, html {
           background: #ffffff !important;
-          color: #0f172a !important;
+          color: #000000 !important;
           font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
           font-size: 10pt !important;
           line-height: 1.5 !important;
@@ -998,15 +999,14 @@
           margin-bottom: 6mm !important;
         }
 
-        /* Edler Druck-Header mit Doppel-Linie */
-        #view-ledger-contract > .theme-card:first-child {
-          border-bottom: 2pt solid #0f172a !important;
+        #view-ledger-contract > div:first-child {
+          border-bottom: 2pt solid #000000 !important;
           padding-bottom: 4mm !important;
           margin-bottom: 6mm !important;
         }
 
-        h2.font-serif-title {
-          font-family: 'Playfair Display', Georgia, serif !important;
+        h2 {
+          font-family: 'Cormorant Garamond', Georgia, serif !important;
           font-size: 18pt !important;
           font-weight: bold !important;
           color: #000000 !important;
@@ -1016,7 +1016,7 @@
         #contract-clauses-container > div {
           background: #ffffff !important;
           border: 1px solid #cbd5e1 !important;
-          border-left: 3pt solid #334155 !important;
+          border-left: 3pt solid #000000 !important;
           border-radius: 4pt !important;
           padding: 4mm !important;
           margin-bottom: 4mm !important;
@@ -1025,7 +1025,7 @@
 
         #contract-clauses-container strong {
           font-size: 11pt !important;
-          color: #0f172a !important;
+          color: #000000 !important;
         }
 
         [id^="clause-text-display-"] {
@@ -1037,9 +1037,8 @@
           white-space: pre-wrap !important;
         }
 
-        /* Siegelfelder für Füllfederhalter und Siegelwachs */
         .theme-card:has(#sig-box-top) {
-          border-top: 1.5pt solid #334155 !important;
+          border-top: 1.5pt solid #000000 !important;
           margin-top: 8mm !important;
           padding-top: 6mm !important;
           page-break-inside: avoid !important;
@@ -1063,7 +1062,7 @@
 
         body.print-blank-signatures #sig-box-top::after,
         body.print-blank-signatures #sig-box-sub::after {
-          content: "L. S. (Siegel / Namenszug)";
+          content: "L. S. (Locus Sigilli / Siegelwachs)";
           position: absolute;
           bottom: 2mm;
           right: 3mm;
