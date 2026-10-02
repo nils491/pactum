@@ -1,275 +1,277 @@
 /**
  * data/questions_part2.js
- * TACTUS Erotik- & Somatik-Fragebogen (Teil 2: Kapitel 18 bis 35)
- * Offizielle Präsenz: tactus.digital
+ * TACTUS Psychometrischer Konsens-Katalog · Teil 2 (Kapitel 18 bis 35)
+ * Offizielle Web-Präsenz: tactus.digital
  * 
- * Standards & Garantien:
- * - Chronologisch geordnet von Kapitel 18 bis Kapitel 35
- * - Lückenlose Primärschlüssel-IDs 91 bis 180 (exakt 90 Items in Teil 2)
- * - Hyperdynamische somatische Metadaten:
- *   • somaticZone: Präzise anatomische Primärzone für den SomaticPostureSynthesizer
- *   • equipmentTags: Semantische Tags für automatisches Matching von Custom- & KI-Toys
- *   • anatomyGuard: Schutz vor anatomisch unpassenden Zuweisungen (z. B. penis, vulva, prostate)
- * - Asymmetrische Rollen-Differenzierung: r1 (Führen/Bestimmen) vs. r2 (Empfangen/Hingeben)
- * - 100 % frei von infantilen System-Emojis in Datenstrukturen
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
+ * Standards & Garantien nach Master-Roadbook:
+ * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
+ * - Exakte Primärschlüssel-Invarianz: Items 91 bis 180 linear und unantastbar
+ * - Typisierung: 'scale' (Likert 0–5) für alle Items zur Doppelbewertung (Top r1 & Bottom r2)
+ * - Kinetische & somatische Metadaten (somaticZone, equipmentTags, restraintLayer) für DoF & Staging
+ * - Globale Bereitstellung an window.surveyChaptersPart2 sowie CommonJS-Export
  */
 
 (function(window) {
   'use strict';
 
-  const chaptersPart2 = [
-    {
-      id: 18,
-      title: "Kapitel 18: Primal Play, Raufen & Instinkte",
-      desc: "Körperkraft, spielerisches Kräftemessen und das Freisetzen instinktiver Triebe.",
-      items: [
-        { id: 91, title: "Spielerisches Ringen um die Oberhand", desc: "Körperliches Raufen auf dem Bett oder Teppich, bis einer aufgibt.", type: "scale", somaticZone: "full_body", equipmentTags: ["mats"] },
-        { id: 92, title: "Fixieren am Boden mit reinem Körpergewicht", desc: "Den Partner mit Brust, Knien und Händen bewegungslos auf die Matratze pressen.", type: "scale", somaticZone: "full_body", equipmentTags: [] },
-        { id: 93, title: "Knurren, Fauchen & Instinktlaute", desc: "Ursprüngliche akustische Lautäußerungen während des Liebesspiels.", type: "scale", somaticZone: "head_mouth", equipmentTags: [] },
-        { id: 94, title: "Zupackendes Festhalten am Genick / Hals", desc: "Ein fester, besitzergreifender Griff in den Nacken zur Führung des Kopfes.", type: "scale", somaticZone: "neck_cervical", equipmentTags: ["collar"] },
-        { id: 95, title: "Sich kraftvoll unterwerfen lassen", desc: "Die Erleichterung, die eigene Gegenwehr gegen überlegene Kraft aufzugeben.", type: "scale", somaticZone: "full_body", equipmentTags: [] }
-      ]
-    },
-
+  const surveyChaptersPart2 = [
     {
       id: 19,
-      title: "Kapitel 19: Caregiver, Little Space & Beschützer-Instinkte",
-      desc: "Zärtliche Fürsorge, Geborgenheit und das vollständige Abgeben aller Erwachsenen-Sorgen.",
+      slug: 'chapter_18_caregiver',
+      title: 'Kapitel 18: Caregiver, Aftercare & Emotionale Fürsorge',
+      desc: 'Behutsames Auffangen, Vagus-Erdung, sensorischer Tiefendruck und die biochemische Nachsorge.',
       items: [
-        { id: 96, title: "Zärtliches Füttern & Trinken reichen", desc: "Bissen für Bissen oder Schluck für Schluck vom Partner gereicht bekommen.", type: "scale", somaticZone: "head_mouth", equipmentTags: [] },
-        { id: 97, title: "Einkuscheln in Decken & Beschütztwerden", desc: "Fest eingewickelt werden, während der Partner wacht und Halt gibt.", type: "scale", somaticZone: "full_body", equipmentTags: ["weighted_blanket"] },
-        { id: 98, title: "Kämmen, Bürsten & Haarpflege", desc: "Langsames, beruhigendes Bürsten der Haare durch den führenden Partner.", type: "scale", somaticZone: "head_face", equipmentTags: ["brush"] },
-        { id: 99, title: "Lob & sanfte Bestätigung bei Verunsicherung", desc: "Liebevolle Worte ('Du machst das so gut, mein Liebling') im Moment der Schwäche.", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 100, title: "Schlaflieder summen oder Vorlesen", desc: "In den Schlaf begleitet werden durch die ruhige Stimme des Partners.", type: "scale", somaticZone: "head_ears", equipmentTags: [] }
+        { id: 91, type: 'scale', title: 'Festes Einwickeln in eine schwere Decke', desc: 'Nach der Session fest in eine weiche Decke wickeln (Burrito-Style) für tiefen sensorischen Druck.', somaticZone: 'full_body', equipmentTags: ['blanket'], restraintLayer: 0 },
+        { id: 92, type: 'scale', title: 'Haare sanft kämmen & Kopf streicheln', desc: 'Mit ruhigen Strichen die Haare entwirren, den Scheitel küssen und leise Sicherheit zusprechen.', somaticZone: 'head_neck', equipmentTags: [], restraintLayer: 0 },
+        { id: 93, type: 'scale', title: 'Warmes Getränk & Traubenzucker reichen', desc: 'Tee oder Wasser mit Traubenzucker oder Schokolade reichen, um den Blutzuckerspiegel zu heben.', somaticZone: 'head_mouth', equipmentTags: [], restraintLayer: 0 },
+        { id: 94, type: 'scale', title: 'Langes Halten in Stille (Holding)', desc: 'Mindestens 20 Minuten eng umschlungen daliegen, ohne Worte, und dem Herzschlag lauschen.', somaticZone: 'full_body', equipmentTags: ['blanket'], restraintLayer: 0 },
+        { id: 95, type: 'scale', title: 'Sanftes Abwaschen mit warmem Waschlappen', desc: 'Schweiß, Tränen oder Gleitgel behutsam mit einem feuchten Tuch von Gesicht und Körper waschen.', somaticZone: 'torso_skin', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 20,
-      title: "Kapitel 20: Analerotik & Rektale Erkundungen",
-      desc: "Sensible Dehnung, Vorbereitung und rektale Tiefenstimulation.",
+      slug: 'chapter_19_spanking_drama',
+      title: 'Kapitel 19: Spanking-Dramaturgie & Vorbeuge-Positionen',
+      desc: 'Bettkanten-Haltung, Kniestand-Appell, Warmklopfen, Mitzähl-Disziplin und Reizwechsel.',
       items: [
-        { id: 101, title: "Analmassage & sanftes Umkreisen mit Finger/Öl", desc: "Behutsame Vorbereitung des Schließmuskels mit viel Gleitmittel.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["lube", "gloves"] },
-        { id: 102, title: "Tragen eines Analplugs im Schlafzimmer", desc: "Ausfüllendes Gefühl durch Silikon- oder Metallplugs während der Intimität.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["butt_plug", "lube"] },
-        { id: 103, title: "Gezielte Stimulation der Prostata (P-Spot)", desc: "Tiefe innere Massage zur Auslösung von Ejakulationen ohne Schaftberührung.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["prostate_massager", "lube"], anatomyGuard: "prostate" },
-        { id: 104, title: "Rektale Penetration mit Dildo", desc: "Gefühlvolles bis forderndes Einführen von Toys verschiedener Größen.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["dildo", "lube"] },
-        { id: 105, title: "Ausdauernder Analsex", desc: "Vollständige anale Vereinigung mit Ausdauer und tiefem Rhythmus.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["lube", "condom"] }
+        { id: 96, type: 'scale', title: 'Vorbeuge über die Bettkante', desc: 'Das Becken an der Matratzenkante, die Füße fest am Boden; das Gesäß exponiert.', somaticZone: 'gluteal_pelvis', equipmentTags: [], restraintLayer: 0 },
+        { id: 97, type: 'scale', title: 'Aufrechte Kniestand-Haltung (Nadu)', desc: 'Aufrecht kniend, Hände im Nacken oder am Rücken verschränkt; vollkommene Auslieferung.', somaticZone: 'gluteal_pelvis', equipmentTags: [], restraintLayer: 0 },
+        { id: 98, type: 'scale', title: 'Warmklopfen mit flacher Handfläche', desc: 'Zu Beginn mit sanften Klapsen die Durchblutung anregen, bis ein wohliger Hitzeschleier entsteht.', somaticZone: 'gluteal_pelvis', equipmentTags: [], restraintLayer: 0 },
+        { id: 99, type: 'scale', title: 'Mitzählen mit verbalem Danke', desc: 'Nach jedem Treffer laut vernehmbar: „Eins, danke Herrin/Sir“, „Zwei, danke...“.', somaticZone: 'head_mouth', equipmentTags: [], restraintLayer: 0 },
+        { id: 100, type: 'scale', title: 'Streicheln & Kühlen zwischen den Hieben', desc: 'Nach harten Treffern die kühle Hand tröstend auf die brennende Haut legen zur Beruhigung.', somaticZone: 'gluteal_pelvis', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 21,
-      title: "Kapitel 21: Pegging & Weibliche Penetration",
-      desc: "Die Umkehrung der klassischen Penetrationsrolle durch den Strap-On.",
+      slug: 'chapter_20_ds_basics',
+      title: 'Kapitel 20: Dominanz & Unterwerfung (D/s Grundlagen)',
+      desc: 'Demutsblick, Begrüßungs-Kniestand, Anrede mit Titeln, Erlaubnis-Bitten und Schlafzimmer-Kodex.',
       items: [
-        { id: 106, title: "Umschnall-Dildo (Strap-On) vorführen", desc: "Das visuelle Zelebrieren des Umschnallens vor den Augen des Partners.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["strap_on", "harness"] },
-        { id: 107, title: "Sie dringt anal in den knienden Partner ein", desc: "Kraftvolle Führung der Frau von hinten in den hingegebenen Mann.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["strap_on", "lube"] },
-        { id: 108, title: "Takt & Tiefe der Penetration vollkommen bestimmen", desc: "Die Frau kontrolliert jeden Stoß, ohne dass der Mann Einfluss nehmen kann.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["strap_on", "lube"] },
-        { id: 109, title: "Bottom bittet um die Aufnahme des Strapons", desc: "Verbale Unterwerfung: Auf Knien um das Einführen bitten müssen.", type: "scale", somaticZone: "head_mouth", equipmentTags: ["strap_on"] },
-        { id: 110, title: "Orgasmus des Bottoms rein durch Pegging", desc: "Höhepunkt des Mannes ausschließlich durch rektale Stimulation der Partnerin.", type: "scale", somaticZone: "rectum_prostate", equipmentTags: ["strap_on", "lube"] }
+        { id: 101, type: 'scale', title: 'Blickführung & Augensenken', desc: 'Den Blick nur heben dürfen, wenn der Top es befiehlt; ansonsten Demutsblick nach unten.', somaticZone: 'head_eyes', equipmentTags: [], restraintLayer: 0 },
+        { id: 102, type: 'scale', title: 'Auf die Knie sinken zur Begrüßung', desc: 'Sobald der Partner nach Hause kommt oder das Schlafzimmer betritt, vor ihm niederknien.', somaticZone: 'limbs_knees', equipmentTags: [], restraintLayer: 0 },
+        { id: 103, type: 'scale', title: 'Anrede mit Titeln (Herrin / Sir / Meister)', desc: 'Verbindliche Ansprache mit respektvollen Titeln während des Spiels und im Schutzraum.', somaticZone: 'head_mouth', equipmentTags: [], restraintLayer: 0 },
+        { id: 104, type: 'scale', title: 'Erlaubnis für Grundbedürfnisse erbitten', desc: 'Fragen müssen: „Darf ich trinken?“, „Darf ich aufstehen?“ oder „Darf ich mich setzen?“.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 105, type: 'scale', title: 'Feste Regeln & Kodex im Schlafzimmer', desc: 'Ein verbindlicher Katalog von festen Verhaltensregeln zur emotionalen Entlastung des Bottoms.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 22,
-      title: "Kapitel 22: Facesitting & Queening / Thronsitz",
-      desc: "Orale Hingabe unter dem Gewicht und der Dominanz der Partnerin.",
+      slug: 'chapter_21_daily_ds',
+      title: 'Kapitel 21: D/s im Alltag, Protokolle & Bescheidenheit',
+      desc: 'Diskrete Berührungsanker, Tragen von Zeichen, Unterwäsche-Wahl und feste Sitzordnungen.',
       items: [
-        { id: 111, title: "Thronsitz auf dem Gesicht (Queening)", desc: "Die Partnerin nimmt auf Mund und Nase des liegenden Partners Platz.", type: "scale", somaticZone: "head_face", equipmentTags: [] },
-        { id: 112, title: "Ausgiebiges Lecken von unten während des Sitzens", desc: "Rückhaltlose orale Bedienung von Klitoris und Schamlippen unter Vollgewicht.", type: "scale", somaticZone: "head_mouth", equipmentTags: [], anatomyGuard: "vulva" },
-        { id: 113, title: "Thronsitz beim Fernsehen / Entspannen im Alltag", desc: "Sie nutzt sein Gesicht als Sitzgelegenheit beim Serien-Schauen oder Lesen.", type: "scale", somaticZone: "head_face", equipmentTags: [] },
-        { id: 114, title: "Gezielte Begrenzung der Atmung durch das Gesäß", desc: "Dosiertes Zuteilen von Atemfenstern durch Heben und Senken des Beckens.", type: "scale", somaticZone: "respiratory_airway", equipmentTags: [] },
-        { id: 115, title: "Küssen der Schenkel während sie oben sitzt", desc: "Ergebenes Küssen von Oberschenkelinnenseiten und Hüfte von unten.", type: "scale", somaticZone: "thighs_inner", equipmentTags: [] }
+        { id: 106, type: 'scale', title: 'Hand auf dem Oberschenkel als Ruhe-Signal', desc: 'In Gesellschaft legt der Top die Hand auf den Schenkel des Bottoms als stumme Erinnerung.', somaticZone: 'thighs_inner', equipmentTags: [], restraintLayer: 0 },
+        { id: 107, type: 'scale', title: 'Diskretes Tragen eines Symbols im Alltag', desc: 'Ein unauffälliger Ring, Armband oder Kette als geheimes Zeichen der Verbundenheit.', somaticZone: 'torso_skin', equipmentTags: [], restraintLayer: 0 },
+        { id: 108, type: 'scale', title: 'Unterwäsche-Auswahl durch den Top', desc: 'Morgens legt der Top fest, welche Dessous oder welcher Slip den Tag über getragen wird.', somaticZone: 'genital_pelvis', equipmentTags: [], restraintLayer: 0 },
+        { id: 109, type: 'scale', title: 'Stummer Gehorsam bei bestimmten Blicken', desc: 'Ein bestimmter Blick des Tops im Raum genügt, damit der Bottom verstummt oder Haltung annimmt.', somaticZone: 'head_eyes', equipmentTags: [], restraintLayer: 0 },
+        { id: 110, type: 'scale', title: 'Feste Sitzordnung zu Hause (zu Füßen des Tops)', desc: 'Der Bottom sitzt auf einem Hocker oder Kissen zu Füßen des Tops vor dem Sofa.', somaticZone: 'limbs_knees', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 23,
-      title: "Kapitel 23: Fuß-Erotik, Küsse & Podophilie",
-      desc: "Die Verehrung der Füße als Inbegriff von Dienst, Hingabe und Erotik.",
+      slug: 'chapter_22_domestic_discipline',
+      title: 'Kapitel 22: Häusliche Zucht & Formelle Strafen (Domestic Discipline)',
+      desc: 'Strafgespräche, Line Writing, Besinnungsecken, angekündigte Zucht und Versöhnung.',
       items: [
-        { id: 116, title: "Küssen & Massieren der Füße", desc: "Ausgiebiges Verwöhnen von Zehen, Spann und Fersen nach einem langen Tag.", type: "scale", somaticZone: "limbs_ankles_feet", equipmentTags: ["massage_oil"] },
-        { id: 117, title: "Lecken der Zehen & Fußsohlen", desc: "Intensive orale Erkundung der hochsensiblen Hautpartien der Fußsohle.", type: "scale", somaticZone: "limbs_ankles_feet", equipmentTags: [] },
-        { id: 118, title: "Fuß auf der Brust oder Wange als Dominanzgeste", desc: "Die Herrin legt ihren Fuß herrisch auf das Gesicht oder den Brustkorb.", type: "scale", somaticZone: "head_face", equipmentTags: [] },
-        { id: 119, title: "Fußabdrücke & Trampling (sanftes Begehen)", desc: "Mit dem Körpergewicht sanft über Rücken oder Brust des Bottoms laufen.", type: "scale", somaticZone: "back_flanks", equipmentTags: [] },
-        { id: 120, title: "Eincremen & Nagellackieren der Füße", desc: "Hingebungsvolle Pflege-Dienste geleistet im Kniestand zu ihren Füßen.", type: "scale", somaticZone: "limbs_ankles_feet", equipmentTags: ["lotion"] }
+        { id: 111, type: 'scale', title: 'Formelles Straf-Gespräch vor der Zucht', desc: 'Ruhiges, sachliches Benennen des Regelverstoßes; kein Schreien, reine unaufgeregte Autorität.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 112, type: 'scale', title: 'Strafzeilen schreiben (Line Writing)', desc: '100-mal mit Füller schreiben: „Ich werde pünktlich sein“ oder „Ich folge der Führung“.', somaticZone: 'limbs_hands_wrists', equipmentTags: [], restraintLayer: 0 },
+        { id: 113, type: 'scale', title: 'Besinnungs-Ecke (Corner Time)', desc: '15 Minuten mit der Nase zur Wand in der Ecke stehen und still über das Verhalten nachdenken.', somaticZone: 'limbs_knees', equipmentTags: [], restraintLayer: 0 },
+        { id: 114, type: 'scale', title: 'Geplante Zucht mit Vorlaufzeit', desc: 'Morgens ankündigen: „Heute Abend nach dem Essen klären wir dein Versäumnis über den Knien“.', somaticZone: 'gluteal_pelvis', equipmentTags: ['leather_belt'], restraintLayer: 0 },
+        { id: 115, type: 'scale', title: 'Versöhnung & vollständiger Erlass nach Zucht', desc: 'Direkt nach der Strafe: Feste Umarmung, Kuss – das Thema ist damit ein für alle Mal bereinigt.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 24,
-      title: "Kapitel 24: Knebel, Atemkontrolle & Begrenzung",
-      desc: "Das Verstummen der Sprache, Mündungskontrolle und kontrollierte Reizdichte.",
+      slug: 'chapter_23_struggle',
+      title: 'Kapitel 23: Erotischer Kampf, Niederringen & Fluchtspiele (Struggle)',
+      desc: 'Armdrücken mit sexueller Wette, Ausbruchstests, Kitzeln und Handgelenks-Arretierung.',
       items: [
-        { id: 121, title: "Silikon-Ballknebel (Ball Gag)", desc: "Klassischer Kugelverschluss; blockiert die Sprache und erzwingt Speichelfluss.", type: "scale", somaticZone: "head_mouth", equipmentTags: ["ball_gag", "gag"] },
-        { id: 122, title: "Offener Ringknebel für freie Zungenbedienung", desc: "Erzwingt weites Öffnen des Mundes bei erhaltener Zungenbeweglichkeit.", type: "scale", somaticZone: "head_mouth", equipmentTags: ["ring_gag", "gag"] },
-        { id: 123, title: "Leder-Maulkorbknebel (Muzzle Gag)", desc: "Umfassender Schildverschluss mit Zungendämpfung für absolute Hilflosigkeit.", type: "scale", somaticZone: "head_mouth", equipmentTags: ["muzzle_gag", "gag"] },
-        { id: 124, title: "Sanfte Drosselung am Hals (Breath Play / Choking)", desc: "Leichter, kontrollierter Handgriff an den seitlichen Halsschlagadern (nur RACK-erfahren!).", type: "scale", somaticZone: "neck_cervical", equipmentTags: [] },
-        { id: 125, title: "Nonverbale Klopfsignale als Not-Aus", desc: "Verlässliche Gesten mit den Fingern oder Händen bei blockierter Sprache.", type: "scale", somaticZone: "limbs_wrists_hands", equipmentTags: [] }
+        { id: 116, type: 'scale', title: 'Armdrücken mit sexueller Wette', desc: 'Kräftemessen am Tisch; der Verlierer muss sich nackt ausziehen oder dem Sieger dienen.', somaticZone: 'limbs_hands_wrists', equipmentTags: [], restraintLayer: 0 },
+        { id: 117, type: 'scale', title: 'Ausbruchs-Test aus festem Griff (60 Sekunden)', desc: 'Der Bottom hat 60 Sekunden Zeit, sich aus einer Umklammerung am Boden zu befreien.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 1 },
+        { id: 118, type: 'scale', title: 'Kitzeln bis zum Hecheln', desc: 'Gezieltes Kitzeln an empfindlichen Flanken, während die Gliedmaßen am Boden gehalten werden.', somaticZone: 'torso_flanks', equipmentTags: [], restraintLayer: 0 },
+        { id: 119, type: 'scale', title: 'Fluchtversuch durch die Wohnung', desc: 'Weglaufen und versuchen, die Zimmertür zu erreichen, bevor man von hinten gepackt wird.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 0 },
+        { id: 120, type: 'scale', title: 'Fixieren beider Handgelenke über dem Kopf', desc: 'Mit einer Hand beide Arme am Kopfteil festhalten; die andere Hand erkundet den Körper.', somaticZone: 'limbs_hands_wrists', equipmentTags: ['cuffs'], restraintLayer: 1 }
       ]
     },
 
     {
       id: 25,
-      title: "Kapitel 25: CBT, Hoden- & Schamlippen-Reize",
-      desc: "Gezielte Schmerz- und Zugreize auf die empfindlichsten Intimpartien.",
+      slug: 'chapter_24_mind_games',
+      title: 'Kapitel 24: Psychologische Dominanz, Mind Games & Suggestion',
+      desc: 'Gedankenleere, widersprüchliche Befehle, Lobentzug, Einflüstern und Körpersprache lesen.',
       items: [
-        { id: 126, title: "Sanftes Kneten & Ziehen am Skrotum/Schamlippen", desc: "Gesteigerter Druck auf die empfindlichen Hüllen des Intimbereichs.", type: "scale", somaticZone: "genital_scrotum", equipmentTags: [], anatomyGuard: "penis" },
-        { id: 127, title: "Krokodilklemmen an Brustwarzen oder Genital", desc: "Federnde Klemmen mit feinem Druckschmerz bei Zug und Entlastung.", type: "scale", somaticZone: "chest_nipples", equipmentTags: ["clamps"] },
-        { id: 128, title: "Hoden-Fallschirm / Ball Stretcher", desc: "Schwere Gewichte oder Lederriemen zur Dehnung des Hodensacks nach unten.", type: "scale", somaticZone: "genital_scrotum", equipmentTags: ["ball_stretcher", "weights"], anatomyGuard: "penis" },
-        { id: 129, title: "Leichte Schläge mit Leder auf Hoden oder Vulva", desc: "Punktgenaue Klapse mit Riemen oder Flogger auf den Schwellkörper.", type: "scale", somaticZone: "genital_scrotum", equipmentTags: ["leather_paddle", "flogger"] },
-        { id: 130, title: "Eis-Kältebehandlung des Genitals", desc: "Prickelnder Schock durch Eiswürfel auf Hoden, Penisschaft oder Schamlippen.", type: "scale", somaticZone: "perineum_pelvic_floor", equipmentTags: ["ice"] }
+        { id: 121, type: 'scale', title: 'Befehl zur totalen Gedankenleere', desc: 'Mit ruhiger Stimme befehlen: „Kein eigener Gedanke mehr – du hörst nur noch meine Atmung“.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 122, type: 'scale', title: 'Widersprüchliche Befehle (Mind Games)', desc: '„Komm her – bleib stehen. Fass mich an – nimm die Hände weg.“ Lustvolle Reiz-Verwirrung.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 123, type: 'scale', title: 'Lobentzug & plötzliche Bestätigung', desc: 'Erst kühl und fordernd bleiben, dann überraschend zärtlich über die Wange streichen.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 124, type: 'scale', title: 'Suggestives Flüstern bei Erschöpfung', desc: 'Wenn der Partner müde ist, ihm leise ins Ohr flüstern, welchen Dienst er morgen leisten wird.', somaticZone: 'head_ears', equipmentTags: [], restraintLayer: 0 },
+        { id: 125, type: 'scale', title: 'Körpersprache laut lesen & spiegeln', desc: 'Laut aussprechen, was man an der Atmung, den Brustwarzen oder dem Puls des Partners sieht.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 26,
-      title: "Kapitel 26: Latex, Leder, Gummi & Material-Fetisch",
-      desc: "Die sinnliche Faszination glänzender, enger und duftender Oberflächen.",
+      slug: 'chapter_25_roleplay_fictional',
+      title: 'Kapitel 25: Rollenspiele, Fiktion & Fremdheits-Reize',
+      desc: 'Fremde in Hotelbar, Chef und Angestellter, Nachsitzen, Masken und Einbrecher-Fiktion (CNC).',
       items: [
-        { id: 131, title: "Tragen von Glattleder-Outfits", desc: "Schwere Lederjacken, Korsetts, Hosen oder Röcke im intimen Raum.", type: "scale", somaticZone: "cutaneous_skin", equipmentTags: ["leather_gear"] },
-        { id: 132, title: "Glänzendes Latex / Catsuit", desc: "Vollständige Einhüllung in geöltes Latex wie eine zweite Haut.", type: "scale", somaticZone: "full_body", equipmentTags: ["latex_suit", "silicone_oil"] },
-        { id: 133, title: "Geruch von warmem Leder & Gummi", desc: "Das Einatmen der unverwechselbaren Materialdüfte zur Erregung.", type: "scale", somaticZone: "head_face", equipmentTags: ["leather_gear", "mask"] },
-        { id: 134, title: "Leder-Kopfmaske / Haube", desc: "Vollständige Verhüllung des Kopfes mit Augen- oder Mundöffnungen.", type: "scale", somaticZone: "head_face", equipmentTags: ["mask", "hood"] },
-        { id: 135, title: "Hohe Lack- oder Lederstiefel", desc: "Oberschenkelhohe Stiefel mit Absätzen als Symbol der Dominanz.", type: "scale", somaticZone: "limbs_ankles_feet", equipmentTags: ["boots"] }
+        { id: 126, type: 'scale', title: 'Als Fremde in einer Hotelbar verabreden', desc: 'Getrennt eintreffen, sich an die Bar setzen und so tun, als kenne man sich noch gar nicht.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 127, type: 'scale', title: 'Strenger Vorgesetzter & Angestellter (Rapport)', desc: 'Im Arbeitszimmer zum Rapport bitten; Überstunden-Gehorsam und Verhandlung von Pflichten.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 128, type: 'scale', title: 'Lehrer & ungezogener Schüler (Nachsitzen)', desc: 'Nachsitzen nach dem Unterricht; Vokabeln abfragen mit Hieben bei Fehlern.', somaticZone: 'psyche_mind', equipmentTags: ['crop', 'paddle'], restraintLayer: 0 },
+        { id: 129, type: 'scale', title: 'Erotisches Maskenspiel (Venetian Mask)', desc: 'Edle Masken tragen, die die Mimik verändern und distanzierte Erotik schaffen.', somaticZone: 'head_face', equipmentTags: ['mask'], restraintLayer: 1 },
+        { id: 130, type: 'scale', title: 'Fiktiver Einbrecher im Haus (Konsensuales CNC)', desc: 'Vorab vereinbartes Szenario: Überraschung beim Nachhausekommen im Halbdunkel.', somaticZone: 'full_body', equipmentTags: ['blindfold', 'rope'], restraintLayer: 1 }
       ]
     },
 
     {
       id: 27,
-      title: "Kapitel 27: Schmutz, Speichel & Erotische Erniedrigung",
-      desc: "Das bewusste Überschreiten gesellschaftlicher Reinheits- und Würdeschranken.",
+      slug: 'chapter_26_anal_pegging',
+      title: 'Kapitel 26: Analerotik, Butt-Plugs & Pegging',
+      desc: 'Umkreisen des Afters, Edelstahl-Plugs, diskretes Tragen unterwegs, Pegging und Prostata.',
       items: [
-        { id: 136, title: "Spucken in den Mund oder auf den Körper", desc: "Feuchte, degradierende Geste als Zeichen absolutem Besitzanspruchs.", type: "scale", somaticZone: "head_mouth", equipmentTags: [] },
-        { id: 137, title: "Ablecken von Schweiß oder Körperflüssigkeiten", desc: "Säuberung des Körpers des Tops mit der Zunge nach Anstrengung.", type: "scale", somaticZone: "cutaneous_skin", equipmentTags: [] },
-        { id: 138, title: "Asymmetrisches Speisen (Essen vom Teller des Tops)", desc: "Reste essen müssen oder Bissen direkt vom Besteck des Partners empfangen.", type: "scale", somaticZone: "head_mouth", equipmentTags: [] },
-        { id: 139, title: "Erniedrigender Dirty Talk als Triebverstärker", desc: "Deutliche Beschimpfungen ('Schlampe', 'Hündchen') im erregten Zustand.", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 140, title: "Reinigen des Bodens auf Knien vor dem Top", desc: "Putzen mit Bürste und Tuch zu den Füßen des angezogenen Partners.", type: "scale", somaticZone: "limbs_ankles_feet", equipmentTags: ["chores_gear"] }
+        { id: 131, type: 'scale', title: 'Sanftes Umkreisen & Massieren des Afters', desc: 'Mit reichlich warmem Öl den Schließmuskel entspannen, ohne direkt einzudringen.', somaticZone: 'anal_perineum', equipmentTags: ['oil'], restraintLayer: 0 },
+        { id: 132, type: 'scale', title: 'Kühler Edelstahl-Butt-Plug', desc: 'Ein glatter Metallplug, der kühl eingesetzt wird und mit seinem Gewicht spürbar ausfüllt.', somaticZone: 'anal_perineum', equipmentTags: ['butt_plug'], restraintLayer: 1 },
+        { id: 133, type: 'scale', title: 'Plug tragen beim Spaziergang oder Einkaufen', desc: 'Den Plug diskret unter normaler Kleidung tragen, während man draußen unterwegs ist.', somaticZone: 'anal_perineum', equipmentTags: ['butt_plug'], restraintLayer: 1 },
+        { id: 134, type: 'scale', title: 'Pegging (Sie penetriert ihn mit Strap-on)', desc: 'Die Partnerin trägt ein Gurt-Geschirr mit Dildo und nimmt den Partner von hinten.', somaticZone: 'anal_perineum', equipmentTags: ['strap_on'], restraintLayer: 1 },
+        { id: 135, type: 'scale', title: 'Prostata-Massage mit gekrümmtem Toy', desc: 'Gezielter Druck von innen auf die Prostata des Mannes zur somatischen Luststeigerung.', somaticZone: 'anal_perineum', equipmentTags: ['prostate_massager'], restraintLayer: 1 }
       ]
     },
 
     {
       id: 28,
-      title: "Kapitel 28: Urolagnie, Wasserspiele & Natursekt",
-      desc: "Das intime Überschreiten der Urinschranke im privaten Schutzraum.",
+      slug: 'chapter_27_public_exhibitionism',
+      title: 'Kapitel 27: Öffentliche Erotik, Voyeurismus & Exhibitionismus',
+      desc: 'Ohne Slip ins Restaurant, Fenster-Intimität bei Nacht, Waldspaziergang und privates Shooting.',
       items: [
-        { id: 141, title: "Zusehen beim Urinieren im Badezimmer", desc: "Das Aufheben der Schamschwelle bei alltäglicher Erleichterung.", type: "scale", somaticZone: "head_eyes", equipmentTags: [] },
-        { id: 142, title: "Urinieren auf den Körper des Partners in der Dusche", desc: "Warmer Strahl auf Brust, Rücken oder Gesäß unter fließendem Wasser.", type: "scale", somaticZone: "cutaneous_skin", equipmentTags: [] },
-        { id: 143, title: "Urinieren in den Mund des Partners", desc: "Direkte orale Aufnahme des warmen Strahls als ultimativer Dienst.", type: "scale", somaticZone: "head_mouth", equipmentTags: [] },
-        { id: 144, title: "Tragen nasser Kleidung / Windel-Spiele", desc: "Das Gefühl nasser Wärme und Hilflosigkeit im Unterbereich.", type: "scale", somaticZone: "gluteal_pelvis", equipmentTags: ["diaper"] },
-        { id: 145, title: "Blasen-Kontrolle (Urinieren nur nach Erlaubnis)", desc: "Das Einhalten müssen, bis der führende Partner den Toilettengang freigibt.", type: "scale", somaticZone: "perineum_pelvic_floor", equipmentTags: [] }
+        { id: 136, type: 'scale', title: 'Ohne Unterwäsche ins Restaurant gehen', desc: 'Kleid oder Hose ohne Slip tragen; der Partner weiß Bescheid und greift unter den Tisch.', somaticZone: 'genital_pelvis', equipmentTags: [], restraintLayer: 0 },
+        { id: 137, type: 'scale', title: 'Intimität am offenen Fenster bei Nacht', desc: 'Im dunklen Zimmer direkt an der Fensterscheibe stehen und sich vereinen.', somaticZone: 'torso_skin', equipmentTags: [], restraintLayer: 0 },
+        { id: 138, type: 'scale', title: 'Spaziergang auf einsamem Waldweg unbedeckt', desc: 'Im Wald kurz alle Kleider ablegen und unbedeckt an den Händen geführt werden.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 0 },
+        { id: 139, type: 'scale', title: 'Heimliches Küssen & Fummeln im Kino', desc: 'In der letzten Reihe im Dunkeln fordernd die Hand in die Hose des Partners schieben.', somaticZone: 'genital_pelvis', equipmentTags: [], restraintLayer: 0 },
+        { id: 140, type: 'scale', title: 'Privates Fotoshooting im geschützten Raum', desc: 'Ästhetische, intime Bilder voneinander machen für den verschlüsselten 1:1 Foto-Tresor.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 29,
-      title: "Kapitel 29: Feminisierung, Sissy & Gender-Bending",
-      desc: "Die erotische Verwandlung des Mannes in eine zarte, dienende Gestalt.",
+      slug: 'chapter_28_humiliation',
+      title: 'Kapitel 28: Erotische Demütigung & Scham-Entlastung (Humiliation)',
+      desc: 'Dienst am Boden, Fußbank, verbale Degradation, CFNM-Nacktheit und Facesitting.',
       items: [
-        { id: 146, title: "Tragen von zarter Spitzenunterwäsche", desc: "Seidene Slips, Spitzen-BHs oder Strümpfe unter der Männerkleidung.", type: "scale", somaticZone: "gluteal_pelvis", equipmentTags: ["lingerie"] },
-        { id: 147, title: "Schminken & Lippenstift durch die Partnerin", desc: "Betonen von Augen und Lippen vor dem Spiegel durch ihre Hand.", type: "scale", somaticZone: "head_face", equipmentTags: ["makeup"] },
-        { id: 148, title: "High Heels & femininer Gang", desc: "Laufen auf Absätzen im privaten Heim zur Schulung der Haltung.", type: "scale", somaticZone: "limbs_ankles_feet", equipmentTags: ["heels"] },
-        { id: 149, title: "Weibliche Kosenamen im Schlafzimmer", desc: "Angesprochen werden als Mädchen, Zofe oder mit femininem Pseudonym.", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 150, title: "Dienen als Zofe im kurzen Kleid", desc: "Haushaltsdienst und Servieren in Schürze und verspieltem Kleidchen.", type: "scale", somaticZone: "full_body", equipmentTags: ["chores_gear", "dress"] }
+        { id: 141, type: 'scale', title: 'Auf allen Vieren eine Geste am Boden leisten', desc: 'Symbolische Geste der Unterordnung: Einen Wassertropfen vom Boden lecken.', somaticZone: 'head_face', equipmentTags: [], restraintLayer: 0 },
+        { id: 142, type: 'scale', title: 'Als Fußbank oder Kissen dienen', desc: 'Flach auf den Bauch legen; der Top legt seine nackten Füße auf den Rücken des Partners.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 0 },
+        { id: 143, type: 'scale', title: 'Verbale Herabsetzung im Rausch (Degradation)', desc: 'Worte wie „Luder“, „Knecht“ oder „Stück Fleisch“ fordernd und erregend aussprechen.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 144, type: 'scale', title: 'Nackt vor bekleidetem Partner knien (CFNM)', desc: 'Der Bottom vollkommen nackt, der Top im eleganten Ausgeh-Outfit daneben.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 0 },
+        { id: 145, type: 'scale', title: 'Körperlich als Sitzgelegenheit dienen (Facesitting)', desc: 'Die Partnerin setzt sich mit ihrem Becken direkt auf das Gesicht des liegenden Partners.', somaticZone: 'head_face', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 30,
-      title: "Kapitel 30: Voyeurismus, Cuckoldry & Dritte im Raum",
-      desc: "Die erotische Dreiecksspannung und der Reiz des heimlichen Zuschauens.",
+      slug: 'chapter_29_trance_subspace',
+      title: 'Kapitel 29: Trance, Hypnose & Subspace-Induktion',
+      desc: 'Sprachgeführte Trance, Trigger-Wörter, Pendel-Fixierung, Endorphin-Fokus und Suggestion.',
       items: [
-        { id: 151, title: "Erotisches Zusehen beim Ausziehen vor Fenstern", desc: "Die Erregung, vom Partner beim Entkleiden im Halbdunkel beobachtet zu werden.", type: "scale", somaticZone: "head_eyes", equipmentTags: [] },
-        { id: 152, title: "Erzählen von Fantasien über fremde Liebhaber", desc: "Kopfkino: Schildern, wie die Partnerin von einem anderen berührt wird.", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 153, title: "Cuckoldry (Partnerin verführt Dritten, Sub sieht zu)", desc: "Reale erotische Begegnung der Frau mit einem Dritten vor den Augen des Mannes.", type: "scale", somaticZone: "head_eyes", equipmentTags: [] },
-        { id: 154, title: "Keuschheit während die Partnerin flirtet", desc: "Im Käfig verriegelt sein, während sie attraktiv ausgeht oder Nachrichten schreibt.", type: "scale", somaticZone: "genital_pelvis", equipmentTags: ["chastity_cage"] },
-        { id: 155, title: "Dreier / Ménage à trois im Einvernehmen", desc: "Gemeinsames Erleben von Lust mit einer dritten Person im Raum.", type: "scale", somaticZone: "full_body", equipmentTags: [] }
+        { id: 146, type: 'scale', title: 'Geführte Trance-Induktion mit Sprache', desc: 'Mit langsamer, tiefer Stimme von 10 bis 1 zählen und schwere Entspannung herbeiführen.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 147, type: 'scale', title: 'Trigger-Wort für sofortige Entspannung', desc: 'Ein vereinbartes Codewort (z. B. „Fall“ oder „Schlaf“), bei dem alle Muskeln erschlaffen.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 148, type: 'scale', title: 'Pendel oder Lichtpunkt mit Augen fixieren', desc: 'Einem schwingenden Kristall mit den Augen folgen, bis die Lider schwer werden.', somaticZone: 'head_eyes', equipmentTags: [], restraintLayer: 0 },
+        { id: 149, type: 'scale', title: 'Endorphin-Rausch im Subspace halten', desc: 'Den schwebenden Zustand nach Reizen behutsam und wortlos im Arm des Tops bewachen.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 150, type: 'scale', title: 'Posthypnotische Suggestion für den Tag', desc: 'Einen Gedanken verankern: „Immer wenn du heute den Schlüssel berührst, lächelst du“.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 31,
-      title: "Kapitel 31: Finanzieller Tribut & Findom",
-      desc: "Machtausübung über materielle Ressourcen und bedingungsloses Schenken.",
+      slug: 'chapter_30_temperature_nuru',
+      title: 'Kapitel 30: Temperaturspiele, Wachs & Nuru-Massagen',
+      desc: 'Niedrigtemperatur-Tropfkerzen, Wachs-Abkratzen, Eis-Wachs-Kontrast und Nuru-Gelee.',
       items: [
-        { id: 156, title: "Tribut-Zahlungen als Zeichen der Unterwerfung", desc: "Überweisung vereinbarter Beträge auf das persönliche Konto der Herrin.", type: "scale", somaticZone: "nervous_system", equipmentTags: [] },
-        { id: 157, title: "Finanzierung von Luxus & Geschenken für den Top", desc: "Parfüm, Handtaschen, Wellness oder Kleidung ohne Gegenforderung bezahlen.", type: "scale", somaticZone: "nervous_system", equipmentTags: [] },
-        { id: 158, title: "Rechnungen & Shopping vom Sub begleichen lassen", desc: "Die Kreditkarte der Herrin aushändigen und die Abrechnung schweigend tragen.", type: "scale", somaticZone: "nervous_system", equipmentTags: [] },
-        { id: 159, title: "Geldübergabe auf den Knien", desc: "Bargeld formal im Kniestand auf einem Silbertablett oder Umschlag darreichen.", type: "scale", somaticZone: "limbs_ankles_feet", equipmentTags: [] },
-        { id: 160, title: "Budget-Kontrolle durch den führenden Partner", desc: "Sie bestimmt das wöchentliche Taschengeld für seine privaten Ausgaben.", type: "scale", somaticZone: "nervous_system", equipmentTags: [] }
+        { id: 151, type: 'scale', title: 'Niedrigtemperatur-Tropfkerzen (Sojawachs ~48°C)', desc: 'Spezielles BDSM-Wachs auf Schultern, Rücken oder Gesäß tropfen lassen.', somaticZone: 'torso_skin', equipmentTags: ['wax_candle'], restraintLayer: 0 },
+        { id: 152, type: 'scale', title: 'Wachs mit einer Kante abkratzen', desc: 'Das erstarrte Wachs mit einer Plastikkarte mit spürbarem Reiz von der Haut schaben.', somaticZone: 'torso_skin', equipmentTags: [], restraintLayer: 0 },
+        { id: 153, type: 'scale', title: 'Wechselbad aus Eis und heißem Wachs', desc: 'Erst ein Eiswürfel, dann direkt ein Tropfen warmes Wachs auf dieselbe Hautstelle.', somaticZone: 'torso_skin', equipmentTags: ['wax_candle', 'ice'], restraintLayer: 0 },
+        { id: 154, type: 'scale', title: 'Echte Nuru-Massage auf Plastikplane', desc: 'Plane ausbreiten, warmes Algen-Gel verteilen und nackt Körper an Körper gleiten.', somaticZone: 'full_body', equipmentTags: ['oil'], restraintLayer: 0 },
+        { id: 155, type: 'scale', title: 'Wärmender Minz-Balsam auf Intimzonen', desc: 'Spezielle Lotionen, die ein kribbelndes Hitzegefühl auf Schwellkörpern erzeugen.', somaticZone: 'genital_core', equipmentTags: ['oil'], restraintLayer: 0 }
       ]
     },
 
     {
       id: 32,
-      title: "Kapitel 32: Nadeln, Wachs & Somatische Grenzreize",
-      desc: "Extreme sensorische Hitze-, Kälte- und Durchdringungsreize.",
+      slug: 'chapter_31_heavy_restraints',
+      title: 'Kapitel 31: Schwere Fesseln, Vakuumbett & Totalfixierung',
+      desc: 'Starrer Haltungskragen, Monohandschuh, Vakuumbett, Mummification und Nachtfesselung.',
       items: [
-        { id: 161, title: "Heißes Wachs auf empfindliche Zonen", desc: "Brennendes Sojawachs auf Brust, Bauch oder Schwellkörper tropfen lassen.", type: "scale", somaticZone: "cutaneous_skin", equipmentTags: ["bdsm_wax"] },
-        { id: 162, title: "Wartenberg-Rad über Oberschenkel & Flanken", desc: "Fokussiertes metallisches Stechen über gespannten Hautarealen.", type: "scale", somaticZone: "back_flanks", equipmentTags: ["wartenberg_wheel"] },
-        { id: 163, title: "Sterile Akupunktur-Nadeln in Hautfalten", desc: "Medizinisches Piercing von Hautfalten ohne dauerhaften Schmuck (nur Fachkundige!).", type: "scale", somaticZone: "cutaneous_skin", equipmentTags: ["needles", "disinfection"] },
-        { id: 164, title: "Reizstrom / E-Stim an Muskelgruppen", desc: "Elektrische Impulse über Klebepads oder TENS-Geräte auf Gesäß und Oberschenkel.", type: "scale", somaticZone: "gluteal_pelvis", equipmentTags: ["estim_box", "electrodes"] },
-        { id: 165, title: "Schmerz-Endorphin-Meditation im Rausch", desc: "Das bewusste Durchtauchen extremer Reize zur Erreichung tiefer Trance.", type: "scale", somaticZone: "nervous_system", equipmentTags: [] }
+        { id: 156, type: 'scale', title: 'Starrer Haltungskragen (Posture Collar)', desc: 'Ein hoher Kragen, der das Beugen des Halses verhindert und stolze Haltung erzwingt.', somaticZone: 'head_neck', equipmentTags: ['posture_collar'], restraintLayer: 2 },
+        { id: 157, type: 'scale', title: 'Leder-Monohandschuh (Arme am Rücken geschnürt)', desc: 'Beide Arme in eine feste Schnürhülle hinter den Rücken sperren; vollkommen armlos sein.', somaticZone: 'limbs_hands_wrists', equipmentTags: ['cuffs'], restraintLayer: 2 },
+        { id: 158, type: 'scale', title: 'Latex-Vakuumbett mit Atemschlauch', desc: 'In einen Gummisack steigen, die Luft absaugen; totale unbewegliche Kompression.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 2 },
+        { id: 159, type: 'scale', title: 'Eingewickelt in Folie (Mummification)', desc: 'Den gesamten Körper von Kopf bis Fuß in transparente Folie wickeln; feste Enge.', somaticZone: 'full_body', equipmentTags: [], restraintLayer: 2 },
+        { id: 160, type: 'scale', title: 'Gefesselt im Bett schlafen (Nachtfesselung)', desc: 'Beide Hände mit gepolsterten Fesseln am Bettrahmen gesichert über Nacht schlafen.', somaticZone: 'limbs_hands_wrists', equipmentTags: ['cuffs', 'bed_straps'], restraintLayer: 2 }
       ]
     },
 
     {
       id: 33,
-      title: "Kapitel 33: Hypnose, Trance & Erotische Konditionierung",
-      desc: "Psychische Trancezustände, Suggestionen und konditionierte Anker.",
+      slug: 'chapter_32_pet_play',
+      title: 'Kapitel 32: Pet Play (Puppy Play, Pony Play & Bändigung)',
+      desc: 'Puppymaske, Apportieren, Pony-Zaumzeug mit Gebissknebel, Hundekörbchen und Kraulen.',
       items: [
-        { id: 166, title: "Hypnotische Induktion mit ruhiger Stimme", desc: "Gezieltes Herunterfahren des Wachbewusstseins durch getaktete Worte.", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 167, title: "Trigger-Codewörter für sofortige Entspannung", desc: "Worte wie 'Schlaf' oder 'Freeze', die augenblickliche Erstarrung auslösen.", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 168, title: "Trance-Führung im Halbdunkel", desc: "Vollkommene Gedankenleere: Nur noch der Stimme des führenden Partners folgen.", type: "scale", somaticZone: "head_eyes", equipmentTags: [] },
-        { id: 169, title: "Posthypnotische Befehle für den Alltag", desc: "Verabredete Gesten, die im Büro oder Alltag automatisch Haltung erzwingen.", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 170, title: "Fixieren eines Pendels oder Lichtpunkts", desc: "Fokussierter Blick zur Abschaltung aller ablenkenden Außenreize.", type: "scale", somaticZone: "head_eyes", equipmentTags: ["pendulum"] }
+        { id: 161, type: 'scale', title: 'Leder-Puppymaske mit Ohren tragen', desc: 'Eine weiche Maske mit Hundeohren aufsetzen; Mimik erlischt, nur noch Hecheln und Bellen.', somaticZone: 'head_face', equipmentTags: ['mask'], restraintLayer: 1 },
+        { id: 162, type: 'scale', title: 'Bällchen apportieren mit dem Mund', desc: 'Einen weichen Ball werfen; der Partner holt ihn auf allen Vieren mit den Zähnen zurück.', somaticZone: 'head_mouth', equipmentTags: [], restraintLayer: 0 },
+        { id: 163, type: 'scale', title: 'Pony-Zaumzeug mit Gebissknebel', desc: 'Eine Trense um den Kopf schnallen; Führung an Zügeln im Trab durch den Raum.', somaticZone: 'head_face', equipmentTags: ['gag'], restraintLayer: 1 },
+        { id: 164, type: 'scale', title: 'Hunde-Körbchen als Schlafplatz', desc: 'Eine weiche Matte mit Decken auf dem Boden, auf der der Partner schlafen darf.', somaticZone: 'full_body', equipmentTags: ['blanket'], restraintLayer: 0 },
+        { id: 165, type: 'scale', title: 'Fellkraulen & Streicheln hinter den Ohren', desc: 'Den Kopf des Partners lange liebkosen als Belohnung für gezeigten Gehorsam.', somaticZone: 'head_neck', equipmentTags: [], restraintLayer: 0 }
       ]
     },
 
     {
       id: 34,
-      title: "Kapitel 34: Vagus-Atmung, Beruhigung & Somatische Erdung",
-      desc: "Die bewusste Aktivierung des Parasympathikus nach intensiven Phasen.",
+      slug: 'chapter_33_medical_play',
+      title: 'Kapitel 33: Medical Play, Klinische Zucht & E-Stim',
+      desc: 'Stethoskop, Blutdruckmanschette, TENS-Reizstrom, Violet Wand und Plastik-Spülspritzen.',
       items: [
-        { id: 171, title: "Synchrone 4-7-8 Atemführung im Arm", desc: "4s einatmen, 7s halten, 8s ausatmen zur sofortigen Pulssenkung.", type: "scale", somaticZone: "respiratory_airway", equipmentTags: [] },
-        { id: 172, title: "Feste Handfläche auf Kreuzbein / Sternum", desc: "Warme, schwere Hand zur Beruhigung des vegetativen Nervensystems.", type: "scale", somaticZone: "back_flanks", equipmentTags: [] },
-        { id: 173, title: "Schwere Gewichtsdecke nach intensiver Session", desc: "Propriozeptiver Druck gegen Kältezittern und Schockzustände.", type: "scale", somaticZone: "full_body", equipmentTags: ["weighted_blanket"] },
-        { id: 174, title: "Warmes Wasser oder Tee schweigend reichen", desc: "Flüssigkeit und Glukose zur Kreislaufstabilisierung ohne Redebedarf.", type: "scale", somaticZone: "head_mouth", equipmentTags: [] },
-        { id: 175, title: "Sanfte Vagus-Kompression am Nacken", desc: "Leichte Dehnung und Streichung entlang des Nervus vagus hinter den Ohren.", type: "scale", somaticZone: "neck_cervical", equipmentTags: [] }
+        { id: 166, type: 'scale', title: 'Kühles Stethoskop auf nackter Haut', desc: 'Herzschlag, Lunge und Bauch mit einem Stethoskop abhören; klinische Distanz spüren.', somaticZone: 'torso_skin', equipmentTags: [], restraintLayer: 0 },
+        { id: 167, type: 'scale', title: 'Blutdruckmanschette stramm aufpumpen', desc: 'Die Manschette am Oberarm aufpumpen, um ein intensives Stauungsgefühl zu erzeugen.', somaticZone: 'limbs_hands_wrists', equipmentTags: [], restraintLayer: 0 },
+        { id: 168, type: 'scale', title: 'E-Stim (TENS-Reizstromgerät mit Pads)', desc: 'Elektroden auf Gesäß oder Schenkel kleben; pulsierende Ströme spannen Muskeln an.', somaticZone: 'gluteal_pelvis', equipmentTags: ['tens_unit'], restraintLayer: 0 },
+        { id: 169, type: 'scale', title: 'Violet Wand (Hochfrequenz-Funken)', desc: 'Ein Glaskolben sprüht winzige violette Funken auf die Haut; nadelspitzes Prickeln.', somaticZone: 'torso_skin', equipmentTags: ['violet_wand'], restraintLayer: 0 },
+        { id: 170, type: 'scale', title: 'Formschöne Einweg-Spritzen ohne Nadel zur Spülung', desc: 'Warmes Wasser oder Gleitgel mit einer Plastikspritze rektal oder urologisch instillieren.', somaticZone: 'perineum_pelvic_floor', equipmentTags: ['syringe'], restraintLayer: 0 }
       ]
     },
 
     {
       id: 35,
-      title: "Kapitel 35: Nachsorge, Drop-Prävention & Tiefe Bindung",
-      desc: "Das Auffangen der Seele und der Schutz vor dem 24h/48h-Subdrop.",
+      slug: 'chapter_34_femdom_worship',
+      title: 'Kapitel 34: Femdom, Mistress-Kult & Foot Worship',
+      desc: 'Stiefel-Worship auf Knien, Stiletto-Absatz, Handkuss-Protokoll, Findom und Trampling.',
       items: [
-        { id: 176, title: "Langes stummes Liegen im Arm nach der Session", desc: "Mindestens 20 Minuten ununterbrochene körperliche Nähe ohne Worte.", type: "scale", somaticZone: "full_body", equipmentTags: ["weighted_blanket"] },
-        { id: 177, title: "Sanftes Ausstreichen beanspruchter Hautpartien", desc: "Pflegendes Eincremen geröteter Gesäß- oder Handgelenkszonen mit Balsam.", type: "scale", somaticZone: "cutaneous_skin", equipmentTags: ["lotion"] },
-        { id: 178, title: "Verbales Check-in nach 24 Stunden (Drop-Check)", desc: "Aufmerksame Nachfrage am Folgetag: 'Wie geht es deinem Körper und deiner Seele?'", type: "scale", somaticZone: "head_ears", equipmentTags: [] },
-        { id: 179, title: "Trösten bei weinenden Endorphin-Abstürzen", desc: "Bedingungsloses Halten ohne Ratschläge, wenn nach 48h plötzlich Tränen fließen.", type: "scale", somaticZone: "full_body", equipmentTags: [] },
-        { id: 180, title: "Dankbarkeits-Bekenntnis für das geschenkte Vertrauen", desc: "Worte tiefer Würdigung des Tops für die Hingabe und den Gehorsam des Subs.", type: "scale", somaticZone: "head_ears", equipmentTags: [] }
+        { id: 171, type: 'scale', title: 'Stiefel-Worship auf Knien (Boot Polish)', desc: 'Ihre hohen Lederstiefel andächtig mit Lippen, Zunge und Tuch auf Hochglanz bringen.', somaticZone: 'limbs_ankles_feet', equipmentTags: ['boots'], restraintLayer: 0 },
+        { id: 172, type: 'scale', title: 'Stiletto-Absatz auf Brust oder Gesäß spüren', desc: 'Den spitzen Absatz eines High Heels dosiert in die Muskulatur drücken.', somaticZone: 'gluteal_pelvis', equipmentTags: ['boots'], restraintLayer: 0 },
+        { id: 173, type: 'scale', title: 'Handkuss-Protokoll bei jeder Begegnung', desc: 'Vor jedem Gespräch ihre Hand ergreifen, den Kopf senken und den Handrücken küssen.', somaticZone: 'limbs_hands_wrists', equipmentTags: [], restraintLayer: 0 },
+        { id: 174, type: 'scale', title: 'Vollkommene materielle Verwöhnung (Findom-Geste)', desc: 'Ihr spontan ein wertvolles Geschenk oder eine Überweisung darbringen als Tribut.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 175, type: 'scale', title: 'Trampling (Barfuß über den Rücken laufen)', desc: 'Mit nackten Füßen über den Rücken des liegenden Partners gehen; Druck und Macht.', somaticZone: 'torso_skin', equipmentTags: [], restraintLayer: 0 }
+      ]
+    },
+
+    {
+      id: 36,
+      slug: 'chapter_35_female_sovereignty',
+      title: 'Kapitel 35: Weibliche Allmacht, Cuckolding & Vollendung',
+      desc: 'Dauerhafte Keuschheit, Fußsohlen-Massage, Begierden-Überwachung, Straf-Tribut und Verschmelzung.',
+      items: [
+        { id: 176, type: 'scale', title: 'Strikte Keuschheit unter weiblicher Schlüsselgewalt', desc: 'Dauerhafter Verschluss im Käfig; Schlüsselgewalt liegt ausschließlich in ihrer Hand.', somaticZone: 'genital_penile', equipmentTags: ['chastity_cage', 'safe'], restraintLayer: 1 },
+        { id: 177, type: 'scale', title: 'Demütige Zehen- und Fußsohlenmassage', desc: 'Ausdauernde, andächtige Pflege ihrer Füße nach einem langen Tag auf den Knien.', somaticZone: 'limbs_ankles_feet', equipmentTags: ['oil'], restraintLayer: 0 },
+        { id: 178, type: 'scale', title: 'Totale Alltagsüberwachung des Verlangens', desc: 'Vollkommene Transparenz: Keine Ejakulation, keine Masturbation ohne ausdrückliche Erlaubnis.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 },
+        { id: 179, type: 'scale', title: 'Keuschheits-Tribut bei Ungehorsam', desc: 'Jedes Versäumnis verlängert die Tragezeit automatisch um 24 Stunden oder kostet Punkte.', somaticZone: 'psyche_mind', equipmentTags: ['timer'], restraintLayer: 0 },
+        { id: 180, type: 'scale', title: 'Vollkommene seelische Verschmelzung im D/s-Bündnis', desc: 'Das Loslassen aller Ego-Grenzen und das bedingungslose Aufgehen in der weiblichen Führung.', somaticZone: 'psyche_mind', equipmentTags: [], restraintLayer: 0 }
       ]
     }
   ];
 
-  window.surveyChaptersPart2 = chaptersPart2;
+  window.surveyChaptersPart2 = surveyChaptersPart2;
 
-  // Idempotente Zusammenführung zur Vermeidung doppelter Kapitel bei Reloads
-  const existingChapters = Array.isArray(window.surveyChapters) ? window.surveyChapters : [];
-  const part2Map = new Map();
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = surveyChaptersPart2;
+  }
 
-  // Erst bestehende Kapitel aufnehmen
-  existingChapters.forEach(ch => {
-    if (ch && ch.id !== undefined) part2Map.set(String(ch.id), ch);
-  });
-
-  // Teil 2 sauber einsetzen / überschreiben
-  chaptersPart2.forEach(ch => {
-    part2Map.set(String(ch.id), ch);
-  });
-
-  window.surveyChapters = Array.from(part2Map.values());
-
-})(window);
+})(typeof window !== 'undefined' ? window : this);
