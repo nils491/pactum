@@ -6,12 +6,12 @@
  * Standards & Garantien nach Master-Roadbook:
  * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
  * - Haute-Horlogerie Palette: OLED-Schwarz, Graphit, Champagner-Gold, Malachit, Cognac & Bordeaux
- * - Echte Hyperdynamik: Keine starren Standardlisten – situative Aufgaben-Synthese
+ * - Echte Hyperdynamik: Situativer Kombinatorik-Generator statt starrer Vorlagen
  * - Kinetischer SomaticPostureSynthesizer mit DoF-Prüfung & Re-Roll Button
  * - RACK-Schutzampel: Note 1 (Veto gesperrt), Note 2 (Sanfte Grenze), Note 3 (Brücke), Note 4/5 (Freigabe)
  * - Begründetes Abweisen von Aufgaben mit Feedback-Übertragung in den Paar-Stream
  * - Schrankprüfung gegen EquipmentCatalog und tactus_owned_equipment
- * - Vollständig ungekürzte Partner-Notizen mit klickbaren Fragebogen-Deeplinks
+ * - Vollständig ungekürzte Partner-Notizen mit klickbaren Fragebogen-Deeplinks (#view=survey&item=X)
  * - 100 % frei von infantilen System-Emojis, keine window.alert() / confirm() Aufrufe
  */
 
@@ -247,6 +247,273 @@
     return (kh === 'A') ? 'B' : 'A';
   }
 
+  // Hyperdynamische Kombinatorik-Bausteine (Keine statischen Listen mehr)
+  const TASK_COMBINATORIAL_POOLS = {
+    // 1. Entlastungsdienste bei Top-Erschöpfung (Mental-Load Beseitigung)
+    relief_exhausted: [
+      {
+        title: "Stiller Empfang & Entlastung an der Wohnungstür",
+        category: "relief_service",
+        times: ["18:30", "18:45", "19:00"],
+        points: 30,
+        postures: [
+          "Im aufrechten Kniestand mit gesenktem Blick vor der Wohnungstür verharren.",
+          "Im ruhigen Fersensitz mit bereitgestellten Hausschuhen auf der Schwelle warten."
+        ],
+        actions: [
+          "Schuhe und Mantel schweigend abnehmen, ein Glas lauwarmes Wasser oder Tee reichen, kein Redebedarf.",
+          "Taschen abnehmen, Jacke aufhängen und für vollkommene Ruhe im Flur sorgen ohne jede Frage."
+        ]
+      },
+      {
+        title: "Küche vor Eintreffen des Tops makellos bereinigen",
+        category: "household",
+        times: ["18:00", "18:15", "18:30"],
+        points: 25,
+        postures: [
+          "Unaufgefordert vor dem Betreten der Wohnung durch den Top vollziehen.",
+          "Zügige und geräuschlose Durchführung, damit kein Mental Load sichtbar bleibt."
+        ],
+        actions: [
+          "Geschirrspüler komplett ausräumen, alle Oberflächen spiegelblank abwischen und Müll entsorgen.",
+          "Kaffeemaschine auffüllen, frisches Wasser bereitstellen und Spüle trocken polieren."
+        ]
+      },
+      {
+        title: "Dienstbare Massage der beanspruchten Nackenpartie",
+        category: "relief_service",
+        times: ["20:45", "21:00", "21:15"],
+        points: 35,
+        postures: [
+          "Im Kniestand hinter dem Sessel des Tops im Halbdunkel.",
+          "Auf einem Kissen sitzend zu Füßen des Tops, ohne Blickkontakt einzufordern."
+        ],
+        actions: [
+          "20 Minuten feste Knetung von Trapezius und Schulterblättern mit warmem Lavendelöl ohne Worte.",
+          "Schweigendes Lösen der Muskelverspannungen ohne jede Gegenforderung an Nähe oder Intimität."
+        ]
+      },
+      {
+        title: "Fußbad & Fußbalsam-Dienst zur Erdung des Tops",
+        category: "relief_service",
+        times: ["20:15", "20:30", "20:45"],
+        points: 30,
+        postures: [
+          "Auf Knien vor dem Sofa mit gesenktem Blick.",
+          "Im Fersensitz mit bereitgelegtem Handtuch auf den Knien."
+        ],
+        actions: [
+          "Warmes Fußbad vorbereiten, Füße des Tops vorsichtig abtrocknen und mit pflegendem Balsam einreiben.",
+          "Sanfte Akupressur der Fußreflexzonen zur Beruhigung des vegetativen Nervensystems des Tops."
+        ]
+      },
+      {
+        title: "Schlafraum-Konditionierung & Deckenbereitung",
+        category: "household",
+        times: ["21:30", "21:45", "22:00"],
+        points: 20,
+        postures: [
+          "Diskrete Vorbereitung 30 Minuten vor dem Schlafengehen.",
+          "Vollkommene Ruhe im Schlaftrakt sicherstellen."
+        ],
+        actions: [
+          "Schlafzimmer gründlich lüften, Kissen aufschütteln, Decke bereitlegen und Wasserglas am Bett auffüllen.",
+          "Licht auf 15% dimmen, störende Geräte entfernen und die Deckenkante exakt umschlagen."
+        ]
+      }
+    ],
+
+    // 2. Disziplin- & Haltungsprüfungen bei Top-Strenge
+    discipline_strict: [
+      {
+        title: "Morgenprüfung der Haltung im Kniestand",
+        category: "discipline",
+        times: ["07:15", "07:30", "07:45"],
+        points: 25,
+        postures: [
+          "Aufrechter Kniestand vor den Knien des Tops mit durchgestreckter Hüfte.",
+          "Fersensitz auf harter Unterlage mit hinter dem Rücken verschränkten Händen."
+        ],
+        actions: [
+          "60 Sekunden starrer Blickkontakt ohne Blinzeln und klares Bekenntnis zum heutigen Gehorsam.",
+          "Vorzeigen des tadellosen Sitzes des Verschlusses und Meldung der gestrigen Pflichterfüllung."
+        ]
+      },
+      {
+        title: "Grooming & lückenlose Intimrasur-Inspektion",
+        category: "discipline",
+        times: ["19:00", "19:30", "20:00"],
+        points: 30,
+        postures: [
+          "Vor dem Spiegel im Badezimmer unter hellem Licht vor dem Top.",
+          "Rückenlage auf dem Bett mit angewinkelten und gespreizten Beinen."
+        ],
+        actions: [
+          "Vollkommene Glattrasur von Schambereich, Damm und Hodenansatz vorzeigen. Keine Stoppeln geduldet.",
+          "Prüfung der Hautpflege mit antiseptischem Balsam und Vorzeigen der sauberen Rasierschnitt-Freiheit."
+        ]
+      },
+      {
+        title: "Abendlicher Rapport im Fersensitz (15 Minuten)",
+        category: "discipline",
+        times: ["21:15", "21:30", "21:45"],
+        points: 25,
+        postures: [
+          "Klassischer Fersensitz (Gorean Nadu) vor dem Bett des Tops.",
+          "Bewegungsloses Verharren auf den Fersen mit Händen flach auf den Oberschenkeln."
+        ],
+        actions: [
+          "Stummer Rapport über alle erledigten Aufgaben des Tages; jedes Murren unterbricht die Zeit.",
+          "Rechenschaft über Gedanken und Gehorsam des Tages ablegen; Quittierung durch den Top abwarten."
+        ]
+      },
+      {
+        title: "Standvorbeuge zur Haltungsdisziplin (10 Minuten)",
+        category: "discipline",
+        times: ["20:00", "20:15", "20:30"],
+        points: 25,
+        postures: [
+          "90-Grad-Standvorbeuge an der Türzarge mit Stirn am Holz.",
+          "Vorbeuge über die Schreibtischkante mit Händen flach auf der Platte."
+        ],
+        actions: [
+          "Absolutes Stillstehen ohne Gewichtsverlagerung. Der Top kontrolliert die gleichmäßige Atmung.",
+          "Gesäß exponiert halten zur Vorbereitung auf abendliche Sühnemaßnahmen."
+        ]
+      }
+    ],
+
+    // 3. Ausgewogene D/s-Routinen bei Balance
+    balanced_micro: [
+      {
+        title: "Morgenappell im Kniestand (45 Sekunden)",
+        category: "micro_ds",
+        times: ["07:30", "07:45", "08:00"],
+        points: 20,
+        postures: [
+          "Aufrechter Kniestand vor dem Verlassen des Schlafzimmers.",
+          "Ruhiger Blickkontakt auf Augenhöhe des sitzenden Tops."
+        ],
+        actions: [
+          "45 Sekunden bewusste Atemzentrierung und Dank für die Leitung des kommenden Tages.",
+          "Stummer Kopfstreich des Tops als Entlassung in den Alltag."
+        ]
+      },
+      {
+        title: "Duftanker & Haltungspflege vor dem Gehen",
+        category: "micro_ds",
+        times: ["08:00", "08:15", "08:30"],
+        points: 15,
+        postures: [
+          "Aufrecht stehend an der Wohnungstür mit dargebotenen Handgelenken.",
+          "Im leichten Bückling zur Entgegennahme des Duftankers."
+        ],
+        actions: [
+          "Ein Hauch des Parfüms des Tops auf das Handgelenk als ständiger Begleiter während der Arbeit.",
+          "Tiefes Einatmen des Dufts und Festigung des inneren Fokus auf den Partner."
+        ]
+      },
+      {
+        title: "Wochenend-Frühstücksservice auf Knien",
+        category: "service",
+        times: ["09:00", "09:30", "10:00"],
+        points: 30,
+        postures: [
+          "Servieren auf den Knien am Bett oder Esstisch.",
+          "Tablett mit beiden Händen ruhig darreichen mit gesenktem Blick."
+        ],
+        actions: [
+          "Kaffee, Tee und Frühstück frisch anrichten und schweigend servieren.",
+          "Warten, bis der Top die erste Kostprobe genommen und Wohlwollen signalisiert hat."
+        ]
+      },
+      {
+        title: "Abendliche Fuß- und Wadenentlastung",
+        category: "service",
+        times: ["20:30", "21:00", "21:30"],
+        points: 25,
+        postures: [
+          "Zu Füßen des Tops auf einem weichen Kissen sitzend.",
+          "Im Fersensitz vor dem Sofa."
+        ],
+        actions: [
+          "15 Minuten achtsame Massage der Fußgewölbe zur Vertiefung der Nähe nach dem Alltag.",
+          "Sanftes Ausstreichen der Waden mit duftendem Pflegeöl."
+        ]
+      }
+    ],
+
+    // 4. Berufs- und Ergonomie-Adaptionen
+    workplace_adaptations: {
+      desk_office: [
+        {
+          title: "3x 20 Beckenboden-Kontraktionen am Schreibtisch",
+          category: "micro_ds",
+          dueTime: "14:00",
+          points: 15,
+          desc: "Diskretes Anspannen des Beckenbodens gegen den Verschluss zur Vermeidung venöser Stauung beim Dauersitzen."
+        },
+        {
+          title: "Ergonomische Hüftstreckung & Schambein-Entlastung",
+          category: "micro_ds",
+          dueTime: "16:00",
+          points: 15,
+          desc: "5 Minuten aufrechtes Stehen im Homeoffice mit Durchdrücken des Beckens zur Entlastung des Schambeinbogens."
+        }
+      ],
+      craft_physical: [
+        {
+          title: "Urologische Feierabend-Spülung nach Baustelle",
+          category: "discipline",
+          dueTime: "17:45",
+          points: 20,
+          desc: "Sofortige Reinigung der Eichelkammer mit 50ml Kochsalzlösung zur Vorbeugung von Balanitis nach Staub- und Schweißarbeit."
+        },
+        {
+          title: "Damm-Inspektion & Follikulitis-Schutzbalsam",
+          category: "discipline",
+          dueTime: "18:15",
+          points: 15,
+          desc: "Auftragen von Zinksalbe auf beanspruchte Reibestellen an den Hodenrändern nach körperlicher Belastung."
+        }
+      ],
+      medical_service: [
+        {
+          title: "Umfassender Fußdienst nach langem Stehen",
+          category: "relief_service",
+          dueTime: "20:30",
+          points: 25,
+          desc: "Einmassieren von pflegendem Balsam in die beanspruchten Füße des Tops nach der anstrengenden Schicht."
+        },
+        {
+          title: "Entlastungshochlagerung der Beine vor dem Appell",
+          category: "micro_ds",
+          dueTime: "19:30",
+          points: 15,
+          desc: "10 Minuten Beine an der Wand hochlagern zur venösen Entstauung, bevor der Abenddienst angetreten wird."
+        }
+      ],
+      driver_field: [
+        {
+          title: "Ampel-Fokus & Haltungsanker im Verkehr",
+          category: "micro_ds",
+          dueTime: "17:00",
+          points: 15,
+          desc: "An jeder roten Ampel: Hände fest am Lenkrad lassen, aufrecht hinsetzen, ausatmen und an die Führung des Tops denken."
+        }
+      ],
+      shift_variable: [
+        {
+          title: "Tagesschlaf-Verdunkelung & Vagus-Beruhigung",
+          category: "relief_service",
+          dueTime: "08:30",
+          points: 20,
+          desc: "Schlafzimmer vor dem Tagesschlaf vollkommen verdunkeln; 4-7-8 Vagus-Atmung zur Biorhythmus-Stabilisierung."
+        }
+      ]
+    }
+  };
+
   function synthesizeProceduralTasks(mentalLoad = 'balanced', forceReset = false) {
     const now = Date.now();
 
@@ -270,138 +537,65 @@
       }
     }
 
-    // 2. Hyperdynamische Kombinatorik für Pflichten
-    const dynamicTasks = [];
-
+    // 2. Kombinatorischer Aufgaben-Pool wählen
+    let candidatePool = [];
     if (mentalLoad === 'exhausted') {
-      // Top ist erschöpft: Strikt Entlastung & Stille (Mental Load Beseitigung)
-      dynamicTasks.push({
-        id: `task_relief_arrival_${now}`,
-        title: "Stiller Empfang an der Wohnungstür",
-        category: "relief_service",
-        interval: "daily",
-        dueTime: "18:45",
-        points: 30,
-        desc: "Schuhe und Mantel des Tops schweigend abnehmen, warmen Tee oder Wasser reichen und für vollkommene Ruhe sorgen."
-      });
-      dynamicTasks.push({
-        id: `task_relief_kitchen_${now}`,
-        title: "Küche vor Eintreffen makellos bereinigen",
-        category: "household",
-        interval: "daily",
-        dueTime: "18:15",
-        points: 25,
-        desc: "Müll leeren, Geschirrspüler ausräumen, Oberflächen abwischen. Der Top darf auf keinen offenen Mental Load stoßen."
-      });
-      dynamicTasks.push({
-        id: `task_relief_massage_${now}`,
-        title: "20-Minuten Nacken- oder Fußmassage im Halbdunkel",
-        category: "relief_service",
-        interval: "daily",
-        dueTime: "21:00",
-        points: 35,
-        desc: "Dienstbare Massage der verspannten Muskulatur ohne Redebedarf und ohne jede Gegenforderung an Nähe oder Intimität."
-      });
+      candidatePool = TASK_COMBINATORIAL_POOLS.relief_exhausted;
     } else if (mentalLoad === 'strict') {
-      // Top ist streng: Haltungskontrolle, Kniestand und disziplinierte Sühne
-      dynamicTasks.push({
-        id: `task_strict_inspection_${now}`,
-        title: isLocked ? "Verschluss-Inspektion & Kniestand-Appell" : "Morgenprüfung der Haltung im Kniestand",
-        category: "discipline",
-        interval: "daily",
-        dueTime: "07:30",
-        points: 25,
-        desc: isLocked
-          ? "Vorzeigen des tadellosen Sitzes der Verschluss-Hardware. 60 Sekunden starrer Blickkontakt ohne Blinzeln."
-          : "Aufrechter Kniestand vor den Knien des Tops. Ruhiger Blickkontakt und klares Bekenntnis zum heutigen Gehorsam."
-      });
-      dynamicTasks.push({
-        id: `task_strict_grooming_${now}`,
-        title: "Grooming & Intimrasur-Inspektion",
-        category: "discipline",
-        interval: "weekly",
-        dayOfWeek: 5,
-        dueTime: "19:00",
-        points: 30,
-        desc: "Lückenlose Glattrasur des Intimbereichs und Vorzeigen zur Haltungsprüfung vor dem Wochenende. Keine Stoppeln geduldet."
-      });
-      dynamicTasks.push({
-        id: `task_strict_rapport_${now}`,
-        title: "Abendlicher Rapport im Fersensitz (10 Min.)",
-        category: "discipline",
-        interval: "daily",
-        dueTime: "21:30",
-        points: 25,
-        desc: "Stummes Verharren auf den Fersen vor dem Bett zur Rechenschaft über den heutigen Gehorsam."
-      });
+      candidatePool = TASK_COMBINATORIAL_POOLS.discipline_strict;
     } else {
-      // Top ist ausgeglichen: Harmonische D/s-Balance
-      dynamicTasks.push({
-        id: `task_balanced_morning_${now}`,
-        title: "Morgenappell im Kniestand (30 Sek.)",
-        category: "micro_ds",
-        interval: "daily",
-        dueTime: "07:45",
-        points: 20,
-        desc: "30 Sekunden aufrechter Kniestand mit ruhigem Blickkontakt vor der ersten Alltagsinteraktion als körperlicher Anker."
-      });
-      dynamicTasks.push({
-        id: `task_balanced_scent_${now}`,
-        title: "Duftanker & Haltungspflege vor dem Gehen",
-        category: "micro_ds",
-        interval: "daily",
-        dueTime: "08:15",
-        points: 15,
-        desc: "Auflegen des vom Top ausgewählten Duftankers auf das Handgelenk und bewusste Atemzentrierung vor dem Verlassen der Wohnung."
-      });
-      dynamicTasks.push({
-        id: `task_balanced_weekend_${now}`,
-        title: "Wochenend-Frühstücksdienst auf Knien",
-        category: "service",
-        interval: "weekly",
-        dayOfWeek: 6,
-        dueTime: "09:30",
-        points: 30,
-        desc: "Kaffee und Frühstück für den Top servieren; dabei aufrechte Haltung und Danken für die Mahlzeit."
-      });
+      candidatePool = TASK_COMBINATORIAL_POOLS.balanced_micro;
     }
 
+    // Aus dem Pool zufällig 3 unterschiedliche Bausteine mischen
+    const shuffled = [...candidatePool].sort(() => 0.5 - Math.random());
+    const selectedBlueprints = shuffled.slice(0, 3);
+
+    const dynamicTasks = [];
+
+    selectedBlueprints.forEach((bp, index) => {
+      const randomTime = bp.times[Math.floor(Math.random() * bp.times.length)];
+      const randomPosture = bp.postures[Math.floor(Math.random() * bp.postures.length)];
+      const randomAction = bp.actions[Math.floor(Math.random() * bp.actions.length)];
+
+      dynamicTasks.push({
+        id: `task_${mentalLoad}_${index}_${now}`,
+        title: bp.title,
+        category: bp.category,
+        interval: "daily",
+        dueTime: randomTime,
+        points: bp.points,
+        desc: `${randomPosture} ${randomAction}`,
+        status: "pending",
+        lastSubmittedAt: null,
+        lastApprovedAt: null,
+        createdAt: now
+      });
+    });
+
     // 3. Ergonomie- & Arbeitsplatz-Adaption einsteuern
-    if (workplaceStressor === 'craft_physical') {
+    const workplaceList = TASK_COMBINATORIAL_POOLS.workplace_adaptations[workplaceStressor] || TASK_COMBINATORIAL_POOLS.workplace_adaptations.desk_office;
+    if (workplaceList && workplaceList.length > 0) {
+      const chosenWorkplaceTask = workplaceList[Math.floor(Math.random() * workplaceList.length)];
       dynamicTasks.push({
-        id: `task_workplace_craft_${now}`,
-        title: "Urologische Feierabend-Spülung nach Baustelle",
-        category: "discipline",
+        id: `task_wp_${workplaceStressor}_${now}`,
+        title: chosenWorkplaceTask.title,
+        category: chosenWorkplaceTask.category,
         interval: "daily",
-        dueTime: "18:00",
-        points: 20,
-        desc: "Sofortige Reinigung der Eichelkammer mit 50ml Kochsalzlösung zur Vorbeugung von Balanitis nach staubiger und schweißtreibender Arbeit."
-      });
-    } else if (workplaceStressor === 'desk_office') {
-      dynamicTasks.push({
-        id: `task_workplace_desk_${now}`,
-        title: "3x 20 Beckenboden-Kontraktionen am Schreibtisch",
-        category: "micro_ds",
-        interval: "daily",
-        dueTime: "14:00",
-        points: 15,
-        desc: "Diskrete Anspannung des Beckenbodens gegen das verriegelte Gitter zur Vermeidung venöser Stauung beim Dauersitzen."
-      });
-    } else if (workplaceStressor === 'medical_service') {
-      dynamicTasks.push({
-        id: `task_workplace_care_${now}`,
-        title: "Umfassender Fußdienst nach langem Stehen",
-        category: "relief_service",
-        interval: "daily",
-        dueTime: "20:30",
-        points: 25,
-        desc: "Einmassieren von pflegendem Balsam in die beanspruchten Füße des Tops nach der Schicht."
+        dueTime: chosenWorkplaceTask.dueTime,
+        points: chosenWorkplaceTask.points,
+        desc: isLocked ? `${chosenWorkplaceTask.desc} Tag ${daysLocked} im Verschluss fordert Achtsamkeit.` : chosenWorkplaceTask.desc,
+        status: "pending",
+        lastSubmittedAt: null,
+        lastApprovedAt: null,
+        createdAt: now
       });
     }
 
     if (forceReset) {
       tasksState.tasks = dynamicTasks;
     } else {
+      // In Prüfung befindliche Aufgaben erhalten
       const inReview = tasksState.tasks.filter(t => t.status === 'submitted');
       tasksState.tasks = [...inReview, ...dynamicTasks];
     }
