@@ -1,19 +1,18 @@
 /**
  * js/session_edging.js
- * TACTUS Schwellen-, Plateau- & JOI-Cockpit (V3.0 Haute-Horlogerie)
+ * TACTUS Schwellen-, Plateau- & Hyperdynamisches JOI-Cockpit (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien nach Master-Roadbook:
  * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
  * - Haute-Horlogerie Palette: Reines OLED-Schwarz, Graphit, Champagner-Gold, Malachit, Cognac & Bordeaux
+ * - Echte Hyperdynamik: Situativer JOI-Sprachgenerator (KI-Pfad via AIAdapter + anatomiescharfe Kombinatorik)
+ * - Vollständige Anatomie-Awareness: Vulva/Klitoris, Penisschaft unverschlossen & Peniskäfig verriegelt
+ * - 3-Wege Zielentscheid des Tops: Kante halten (Kaltstopp), Volle Freigabe (Climax) & Ruined Orgasm
  * - Schlafzimmer-Senior-UX: 75% Viewport Circular Countdown, 72px Glanzziffer, 0,2s Glanceability
- * - Blind-Touch Kaltstopp: Großflächige 72px Schlagfläche im unteren Bereich mit Haptik-Schockimpuls
- * - Dynamische JOI-Taktung (Jerk Off Instruction): Anspruchsvolle, erwachsene Ansagen über lange Zeiträume
- * - Audio-Ziffern-Synchronität: Sprach-Countdown bei 10s & synchron die letzten 5 Sekunden ('5','4','3','2','1','Halt!')
- * - WebAudio-Metronom: Taktende Klicks (330Hz -> 660Hz -> 880Hz)
- * - Plateau-Haltezeit-Tracker: Exakte Erfassung der Sekunden im Erregungszenit (Arousal >= 8) mit Punkte-Buchung
- * - Keuschheits- & Hardware-Awareness: Automatische Adaption auf Käfiggitter-Vibration & P-Spot bei Verschluss
- * - Sub-Noten-Transparenz: Klickbare Deeplinks zu Item #36 (Denial) & Item #38 (Ruined Orgasm)
+ * - Blind-Touch Not-Aus: 72–80px Schlagfläche im unteren Bereich mit differenzierter Haptik
+ * - Reine Stimme & Soundscape: Keine störenden Percussion-Klicks, automatisches Ducking der Musik
+ * - Plateau-Haltezeit-Tracker mit Punkte-Buchung im Protokoll (§ 5 & § 7 Beziehungsvertrag)
  * - 100 % frei von infantilen System-Emojis, keine window.alert() / confirm() Aufrufe
  */
 
@@ -32,13 +31,14 @@
     plateauDurationSeconds: 0,
     plateauTimerInterval: null,
     thresholdTimestamps: [],
-    joiDuration: 25,
-    joiSecondsRemaining: 25,
+    joiDuration: 30,
+    joiSecondsRemaining: 30,
     joiInterval: null,
     isCountingDown: false,
-    isAudioReady: true,
-    lastDirective: "",
-    currentPacingTechnique: "slow_strokes"
+    targetOutcome: 'hold', // 'hold' (Kaltstopp) | 'release' (Kommen) | 'ruined' (Ruined Orgasm)
+    spokenCheckpoints: {},
+    lastDirective: '',
+    currentPacingTechnique: 'slow_pace'
   };
 
   function escapeHtml(str) {
@@ -84,76 +84,42 @@
     }
   }
 
-  function playWebAudioTick(frequency = 440, durationMs = 50) {
-    if (window.SessionAudio && typeof window.SessionAudio.playPercussionClick === 'function') {
-      window.SessionAudio.playPercussionClick(frequency, durationMs);
-      return;
+  function getBottomAnatomy() {
+    let isLocked = false;
+    if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
+      const state = window.ProtocolCore.getState();
+      isLocked = !!state.isLocked;
     }
+
+    if (isLocked) return 'penis_locked';
+
+    let bottomRole = 'B';
+    if (window.HubContext && typeof window.HubContext.getRoles === 'function') {
+      bottomRole = window.HubContext.getRoles().bottomRole;
+    }
+
+    let answers = {};
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      if (!window._tactusAudioCtx) {
-        window._tactusAudioCtx = new AudioCtx();
-      }
-      const ctx = window._tactusAudioCtx;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (durationMs / 1000));
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + (durationMs / 1000));
+      const raw = localStorage.getItem('kompass_answers');
+      if (raw) answers = JSON.parse(raw) || {};
     } catch (e) {}
-  }
 
-  function loadPersistedState() {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY_EDGING_LOGS);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
-          edgingState = Object.assign({}, edgingState, parsed);
-        }
-      }
-    } catch (e) {
-      console.warn("[TACTUS Edging] Fehler beim Laden des Zustands:", e);
+    const subAns = answers[bottomRole] || {};
+    const cunnilingusScore = subAns['it_16_r2']; // r2 = Empfangen
+    const fellatioScore = subAns['it_17_r2'];
+
+    if (typeof cunnilingusScore === 'number' && cunnilingusScore >= 2 && (!fellatioScore || fellatioScore < 2)) {
+      return 'vulva';
     }
 
-    if (window.SessionLive && typeof window.SessionLive.getMetrics === 'function') {
-      const liveMetrics = window.SessionLive.getMetrics();
-      if (liveMetrics && typeof liveMetrics.edgesCounted === 'number' && liveMetrics.edgesCounted > edgingState.totalThresholds) {
-        edgingState.totalThresholds = liveMetrics.edgesCounted;
-      }
-    }
-  }
+    const savedHardware = localStorage.getItem('kompass_hardware') || '';
+    if (savedHardware.includes('female')) return 'vulva';
 
-  function persistState() {
-    try {
-      const payload = {
-        totalThresholds: edgingState.totalThresholds,
-        currentArousal: edgingState.currentArousal,
-        plateauDurationSeconds: edgingState.plateauDurationSeconds,
-        joiDuration: edgingState.joiDuration,
-        lastDirective: edgingState.lastDirective,
-        currentPacingTechnique: edgingState.currentPacingTechnique,
-        thresholdTimestamps: edgingState.thresholdTimestamps.slice(-50)
-      };
-      sessionStorage.setItem(STORAGE_KEY_EDGING_LOGS, JSON.stringify(payload));
-    } catch (e) {}
+    return 'penis_free';
   }
 
   function isBottomLocked() {
-    if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
-      const state = window.ProtocolCore.getState();
-      return !!state.isLocked;
-    }
-    return false;
+    return getBottomAnatomy() === 'penis_locked';
   }
 
   function getSubSurveyPreferences() {
@@ -192,178 +158,103 @@
     };
   }
 
-  const JOI_PACING_TECHNIQUES = {
-    slow_strokes: {
-      id: "slow_strokes",
-      label: "Langsame Streichungen",
-      instruction: "Umschließe den Schaft mit Daumen und Zeigefinger. Ganz langsame, quälende Aufwärtsbewegungen. Zwei Sekunden pro Streichung.",
-      lockedInstruction: "Lege zwei Finger flach auf das Gitter des Käfigs. Erzeuge minimalen, kreisenden Druck direkt über der Eichelfurche."
+  const JOI_COMBINATORIAL_POOLS = {
+    // 1. ANATOMIE: VULVA / KLITORIS
+    vulva: {
+      slow_pace: [
+        "Fingerspitzen anfeuchten. Ganz langsame, flache Kreise über der Klitorisperle ziehen. Zwei Sekunden pro Umlauf.",
+        "Den Auflege-Vibrator auf niedrigste Schwingung stellen. Nur mit halbem Druck anlegen, die Wärme gleichmäßig ansteigen lassen.",
+        "Sanfter, flächiger Druck mit zwei Fingern über dem Schambein. Die Schwellung der Schamlippen bewusst wahrnehmen."
+      ],
+      escalate: [
+        "Jetzt festen Druck auf den oberen Klitorisschenkel ausüben. Takt verdoppeln, aber keinen Millimeter abrutschen.",
+        "Vibrator auf die mittlere Stufe schalten. Konzentrier dich vollkommen auf das Brennen der Schwellkörper.",
+        "Rhythmisches Ziehen und Kneten. Den Atem ruhig halten, egal wie heiß die Welle wird."
+      ],
+      zenith: [
+        "Exakt auf dieser Kante verharren. Nicht nachlassen, nicht beschleunigen. Du bleibst genau auf der Schwelle.",
+        "Maximale Intensität halten. Blick unverwandt auf mich richten, die Erregung aushalten ohne nachzugeben.",
+        "Jede Faser anspannen. Der Höhepunkt steht direkt davor. Halt still."
+      ]
     },
-    shaft_tightening: {
-      id: "shaft_tightening",
-      label: "Spannungsgriff an der Basis",
-      instruction: "Fester Ringgriff an der Schaftbasis. Drücke das Blut in die Schwellkörper, ohne die Hände auf und ab zu bewegen. Halte diesen Druck.",
-      lockedInstruction: "Spanne den Beckenboden maximal an. Presse das Genital von innen gegen die Ringbegrenzung. Ruhig weiteratmen."
-    },
-    glans_focus: {
-      id: "glans_focus",
-      label: "Fokus auf das Frenulum",
-      instruction: "Nur die Fingerspitzen leicht anfeuchten. Sanftes, kreisendes Reiben ausschließlich am Bändchen. Kein voller Griff.",
-      lockedInstruction: "Setze den Vibrator auf niedrigster Stufe punktuell an das untere Fenster des Käfigs. Nicht bewegen."
-    },
-    rhythmic_speedup: {
-      id: "rhythmic_speedup",
-      label: "Rhythmische Taktsteigerung",
-      instruction: "Fester Griff. Erhöhe das Tempo synchron mit dem Zähltakt. Bei der Zahl 5 frierst du augenblicklich ein.",
-      lockedInstruction: "Vibrator auf maximale Schwingung bringen. Intensiver Dauerkontakt am Gitter bis zum Zählstopp."
+
+    // 2. ANATOMIE: PENIS FREI / UNVERSCHLOSSEN
+    penis_free: [
+      {
+        slow_pace: [
+          "Umschließe den Schaft mit Daumen und Zeigefinger. Ganz langsame, feste Aufwärtsbewegungen. Zwei Sekunden pro Streichung.",
+          "Fester Ringgriff knapp unterhalb der Eichelfurche. Reibe nur mit den Fingerkuppen über das Frenulum ohne vollen Griff.",
+          "Langsame, gleichmäßige Züge von der Basis aufwärts. Das Blut bewusst in die Schwellkörper streichen."
+        ],
+        escalate: [
+          "Festerer Griff an der Schaftbasis. Erhöhe das Tempo synchron mit meiner Stimme, ohne den Druck zu lockern.",
+          "Jetzt die ganze Hand schließen. Feste, fordernde Auf- und Abzüge. Spüre die Hitze im Schwellkörper pulsieren.",
+          "Takt anziehen. Kurze, harte Streichungen direkt an der Eichelkante. Die Atmung tief in den Bauch lenken."
+        ],
+        zenith: [
+          "Exakt auf dieser Kante halten. Zähne zusammenbeißen. Wag es nicht, vor meinem Befehl zu zucken.",
+          "Harter Griff an der Basis. Halte den Schwellkörperdruck auf dem absoluten Zenit. Halt still.",
+          "Maximale Spannung. Das Pochen aushalten. Kein Millimeter Bewegung mehr ohne Erlaubnis."
+        ]
+      }
+    ],
+
+    // 3. ANATOMIE: PENISKÄFIG VERRIEGELT
+    penis_locked: {
+      slow_pace: [
+        "Zwei Finger flach auf das Gitter des Käfigs legen. Minimaler, kreisender Druck direkt über der Eichelkammer.",
+        "Beckenboden sanft anspannen. Das Genital von innen gegen die vordere Begrenzung des Käfigs drücken.",
+        "Den Vibrator auf sanfter Stufe von außen an den Basisring halten. Die Schwingung in die Tiefe leiten."
+      ],
+      escalate: [
+        "Vibration auf die mittlere Stufe bringen. Fest an das untere Fenster pressen, den Druck im Dammbereich halten.",
+        "Kraftvolle Beckenboden-Kontraktionen (Kegel). Halte die Anspannung für 5 Sekunden gegen den Ring.",
+        "Vibrator direkt an die Eichelfurche des Käfigs drücken. Den Drang nach Ausdehnung bewusst aushalten."
+      ],
+      zenith: [
+        "Maximale Schwingung am Gitter. Der Käfig begrenzt jeden Impuls. Spüre die Hilflosigkeit und halt still.",
+        "Beckenboden vollkommen anspannen. Halte den Druck gegen das Metall. Du bleibst verriegelt.",
+        "Vibration fest anpressen. Atme tief durch die Nase ein. Kein Fluchtversuch."
+      ]
     }
   };
 
-  function setArousalLevel(level) {
-    const val = Math.max(1, Math.min(10, parseInt(level, 10) || 5));
-    edgingState.currentArousal = val;
+  async function synthesizeDynamicJoiDirective(checkpointKey, anatomy, outcome, tonality) {
+    const pool = (anatomy === 'vulva') 
+      ? JOI_COMBINATORIAL_POOLS.vulva 
+      : (anatomy === 'penis_locked' ? JOI_COMBINATORIAL_POOLS.penis_locked : JOI_COMBINATORIAL_POOLS.penis_free[0]);
 
-    const valEl = document.getElementById('edging-arousal-display');
-    const descEl = document.getElementById('edging-arousal-desc');
-    const barEl = document.getElementById('edging-arousal-bar');
-    const plateauBox = document.getElementById('edging-plateau-box');
-    const locked = isBottomLocked();
+    let candidateList = pool.slow_pace;
+    if (checkpointKey === 'escalate') candidateList = pool.escalate;
+    if (checkpointKey === 'zenith') candidateList = pool.zenith;
 
-    if (valEl) valEl.innerText = `${val} / 10`;
+    const proceduralText = candidateList[Math.floor(Math.random() * candidateList.length)];
 
-    if (barEl) {
-      barEl.style.width = `${val * 10}%`;
-      if (val >= 9) {
-        barEl.className = "h-full rounded-full transition-all duration-300 bg-[#991b1b] red-glow animate-pulse";
-      } else if (val >= 7) {
-        barEl.className = "h-full rounded-full transition-all duration-300 bg-[#c5a880] gold-glow";
-      } else {
-        barEl.className = "h-full rounded-full transition-all duration-300 bg-[#2e5746]";
+    // Wenn KI-Adapter bereitsteht, optional situativ modulieren
+    if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
+      try {
+        const prompt = `Formuliere einen prägnanten, erwachsenen und dominanten JOI-Befehl (exakt 1 Satz, maximal 14 Wörter) im Schlafzimmer.
+Anatomie: ${anatomy === 'vulva' ? 'Vulva/Klitoris' : (anatomy === 'penis_locked' ? 'Peniskäfig verriegelt' : 'Penisschaft frei')}.
+Stufe: ${checkpointKey} (Phase der Schwellen-Quälerei).
+Tonalität: ${tonality}.
+Ziel nach Ablauf: ${outcome === 'release' ? 'Erlaubnis zum Kommen' : (outcome === 'ruined' ? 'Ruined Orgasm' : 'Kaltstopp/Verweigerung')}.
+Regeln: Kein Kitsch, keine Schwulst, direkt und autoritär.`;
+
+        const aiResponse = await window.AIAdapter.generateText({
+          systemPrompt: "Du bist die leitende Stimme für somatisches Edging und JOI.",
+          userPrompt: prompt,
+          temperature: 0.7
+        });
+
+        if (aiResponse && aiResponse.trim().length > 10 && aiResponse.trim().length < 120) {
+          return aiResponse.trim().replace(/^["„']|["“']$/g, '');
+        }
+      } catch (e) {
+        console.debug("[TACTUS Edging] KI-Synthese fehlgeschlagen, nutze Kombinator:", e);
       }
     }
 
-    if (val >= 8) {
-      startPlateauTracker();
-      if (plateauBox) plateauBox.classList.remove('hidden');
-    } else {
-      pausePlateauTracker();
-    }
-
-    if (descEl) {
-      if (val >= 9) {
-        descEl.innerText = locked
-          ? "Kritische Schwelle: Maximaler Beckenbodendruck am Käfiggitter. Reiz sofort unterbrechen!"
-          : "Kritische Schwelle: Unmittelbar vor dem Point-of-No-Return. Höchste Wachsamkeit!";
-        descEl.className = "text-[11px] text-[#f8fafc] font-bold leading-snug";
-      } else if (val >= 7) {
-        descEl.innerText = locked
-          ? "Hochexplosives Plateau: Puls rast, Atembeschleunigung, P-Spot und Käfig voll unter Spannung."
-          : "Hochexplosives Plateau: Puls rast, Atembeschleunigung, starker Schwellkörperdruck.";
-        descEl.className = "text-[11px] text-[#c5a880] font-medium leading-snug";
-      } else if (val >= 4) {
-        descEl.innerText = "Stabile Erregung: Gekonnter Reizaufbau ohne unkontrollierte Spitzen.";
-        descEl.className = "text-[11px] text-[#94a3b8] leading-snug";
-      } else {
-        descEl.innerText = "Ruhezustand bis sanfte Vorbereitung: Das vegetative Nervensystem ist zentriert.";
-        descEl.className = "text-[11px] text-[#94a3b8]/70 leading-snug";
-      }
-    }
-
-    persistState();
-    triggerHaptic(val >= 9 ? [60, 40, 60] : [25]);
-  }
-
-  function startPlateauTracker() {
-    if (edgingState.plateauTimerInterval) return;
-    edgingState.plateauTimerInterval = setInterval(() => {
-      edgingState.plateauDurationSeconds++;
-      const disp = document.getElementById('edging-plateau-seconds');
-      if (disp) {
-        const m = Math.floor(edgingState.plateauDurationSeconds / 60);
-        const s = edgingState.plateauDurationSeconds % 60;
-        disp.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
-      }
-    }, 1000);
-  }
-
-  function pausePlateauTracker() {
-    if (edgingState.plateauTimerInterval) {
-      clearInterval(edgingState.plateauTimerInterval);
-      edgingState.plateauTimerInterval = null;
-    }
-  }
-
-  function registerThreshold() {
-    if (edgingState.isCountingDown) {
-      stopJoiCountdown();
-    }
-
-    const now = Date.now();
-    edgingState.totalThresholds++;
-    edgingState.thresholdTimestamps.push(now);
-    edgingState.currentArousal = 9;
-
-    let tonality = 'sovereign_warm';
-    if (window.SessionStaging && typeof window.SessionStaging.getConfig === 'function') {
-      const cfg = window.SessionStaging.getConfig();
-      if (cfg && cfg.tonality) tonality = cfg.tonality;
-    }
-
-    const locked = isBottomLocked();
-    let directive = "Halt! Hände weg. Ausatmen und stillhalten.";
-
-    if (locked) {
-      if (tonality === 'sovereign_cool') {
-        directive = "Kalter Stopp! Vibration sofort wegnehmen. Stillstehen vor mir. Kein Millimeter Bewegung im Käfig.";
-      } else if (tonality === 'raw_primal') {
-        directive = "Stopp! Hände weg vom Gitter. Du bleibst genau so verriegelt liegen und spürst den Druck.";
-      } else if (tonality === 'playful') {
-        directive = "Fast zu nah am Käfiggitter gezuckt? Reiz sofort entziehen und tief durchatmen.";
-      } else {
-        directive = "Kalter Stopp. Reiz vom Käfig nehmen. Atme tief in den Bauch und beruhige deinen Puls.";
-      }
-    } else {
-      if (tonality === 'sovereign_cool') {
-        directive = "Kalter Stopp. Hände sofort wegnehmen, Blick nach unten senken. Du rührst dich nicht.";
-      } else if (tonality === 'raw_primal') {
-        directive = "Stopp! Bleib genau so liegen. Wag es nicht, dich ohne meine Erlaubnis zu bewegen.";
-      } else if (tonality === 'playful') {
-        directive = "Zu gierig geworden? Reiz sofort entziehen und tief durchatmen. Ich bestimme das Ende.";
-      } else {
-        directive = "Kalter Stopp. Hände ruhig vom Körper nehmen. Tief in den Bauch atmen und die Hitze aushalten.";
-      }
-    }
-
-    edgingState.lastDirective = directive;
-
-    if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-      window.SessionVoice.speak(directive, { tonality: tonality, phase: 2, arousal: 9 });
-    }
-
-    if (window.SessionLive && typeof window.SessionLive.adaptPhase === 'function') {
-      window.SessionLive.adaptPhase('edge_too_fast');
-    }
-
-    if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
-      window.ProtocolCore.addTransaction(15, `Schwellen-Führung: Schwelle #${edgingState.totalThresholds} diszipliniert gehalten`, 'top');
-    }
-
-    triggerHaptic([100, 60, 100, 60, 140]);
-    playWebAudioTick(880, 120);
-
-    persistState();
-    updateEdgingDisplay();
-    showToast(`✓ Kaltstopp registriert! Schwelle #${edgingState.totalThresholds} verbucht`);
-  }
-
-  function adjustJoiDuration(deltaSeconds) {
-    if (edgingState.isCountingDown) return;
-    edgingState.joiDuration = Math.max(5, Math.min(180, edgingState.joiDuration + deltaSeconds));
-    edgingState.joiSecondsRemaining = edgingState.joiDuration;
-    updateCountdownSvgArc(edgingState.joiDuration, edgingState.joiDuration);
-    persistState();
-    triggerHaptic([20]);
-    playWebAudioTick(550, 40);
+    return proceduralText;
   }
 
   function updateCountdownSvgArc(secondsLeft, totalDuration) {
@@ -408,50 +299,141 @@
     }
   }
 
-  function startJoiCountdown() {
+  async function startJoiCountdown() {
     stopJoiCountdown();
     edgingState.isCountingDown = true;
     edgingState.joiSecondsRemaining = edgingState.joiDuration;
+    edgingState.spokenCheckpoints = {};
 
     const btn = document.getElementById('btn-joi-toggle');
     if (btn) {
       btn.innerText = "PAUSIEREN";
-      btn.className = "flex-1 py-3 rounded-2xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold font-mono text-xs touch-pad transition shadow-sm";
+      btn.className = "flex-1 py-3.5 rounded-2xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold font-mono text-xs touch-pad transition shadow-sm";
     }
 
-    showToast(`JOI Taktung gestartet (${edgingState.joiDuration}s)`);
+    const anatomy = getBottomAnatomy();
+    const outcome = edgingState.targetOutcome;
+    let tonality = 'sovereign_warm';
+    if (window.SessionStaging && typeof window.SessionStaging.getConfig === 'function') {
+      tonality = window.SessionStaging.getConfig().tonality || 'sovereign_warm';
+    }
+
+    showToast(`JOI Taktung aktiv (${edgingState.joiDuration}s) · Ziel: ${outcome.toUpperCase()}`);
     triggerHaptic([60, 40, 60]);
 
-    if (window.SessionAudio && typeof window.SessionAudio.duck === 'function') {
-      window.SessionAudio.duck(0.5);
+    // Initialer Eröffnungsbefehl (100% Zeit)
+    const openingDirective = await synthesizeDynamicJoiDirective('slow_pace', anatomy, outcome, tonality);
+    edgingState.lastDirective = openingDirective;
+    updateDirectiveDisplay(openingDirective);
+
+    if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+      window.SessionVoice.speak(openingDirective, { tonality, phase: 2, arousal: edgingState.currentArousal });
     }
 
-    function tick() {
+    const total = edgingState.joiDuration;
+    const cpEscalate = Math.round(total * 0.60);
+    const cpZenith = Math.round(total * 0.30);
+
+    async function tick() {
       const s = edgingState.joiSecondsRemaining;
-      updateCountdownSvgArc(s, edgingState.joiDuration);
+      updateCountdownSvgArc(s, total);
 
-      const isUrgent = s <= 5;
-      playWebAudioTick(isUrgent ? (s === 1 ? 880 : 660) : 330, isUrgent ? 70 : 40);
-      triggerHaptic(isUrgent ? [50] : [20]);
+      // Zwischen-Impuls 1: Steigerung
+      if (s === cpEscalate && !edgingState.spokenCheckpoints.escalate && s > 12) {
+        edgingState.spokenCheckpoints.escalate = true;
+        const escCmd = await synthesizeDynamicJoiDirective('escalate', anatomy, outcome, tonality);
+        edgingState.lastDirective = escCmd;
+        updateDirectiveDisplay(escCmd);
+        if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+          window.SessionVoice.speak(escCmd, { tonality, phase: 2 });
+        }
+        triggerHaptic([40, 40]);
+      }
 
+      // Zwischen-Impuls 2: Zenit vor dem Finale
+      if (s === cpZenith && !edgingState.spokenCheckpoints.zenith && s > 12) {
+        edgingState.spokenCheckpoints.zenith = true;
+        const zenCmd = await synthesizeDynamicJoiDirective('zenith', anatomy, outcome, tonality);
+        edgingState.lastDirective = zenCmd;
+        updateDirectiveDisplay(zenCmd);
+        if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+          window.SessionVoice.speak(zenCmd, { tonality, phase: 2 });
+        }
+        triggerHaptic([60, 60]);
+      }
+
+      // Die letzten 10 Sekunden: Ankündigung & synchrones Zählen
       if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-        if (s <= 5 && s > 0) {
-          window.SessionVoice.speak(String(s), { tonality: 'sovereign_cool', phase: 2 });
-        } else if (s === 10) {
-          window.SessionVoice.speak("Noch zehn Sekunden", { tonality: 'sovereign_cool', phase: 2 });
+        if (s === 10) {
+          window.SessionVoice.speak("Noch zehn Sekunden.", { tonality });
+        } else if (s <= 5 && s > 0) {
+          window.SessionVoice.speak(String(s), { tonality });
+          triggerHaptic([40]);
         }
       }
 
       edgingState.joiSecondsRemaining--;
 
+      // Finale bei Erreichen von 0 Sekunden
       if (s <= 0) {
         stopJoiCountdown();
-        registerThreshold();
+        executeCountdownOutcome(outcome, tonality);
       }
     }
 
     tick();
     edgingState.joiInterval = setInterval(tick, 1000);
+  }
+
+  function executeCountdownOutcome(outcome, tonality) {
+    if (outcome === 'release') {
+      // 1. VOLLE FREIGABE ZUM KOMMEN
+      const releaseCmd = "Null. Jetzt! Lass es vollkommen laufen. Komm für mich!";
+      edgingState.lastDirective = releaseCmd;
+      updateDirectiveDisplay(releaseCmd);
+
+      if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+        window.SessionVoice.speak(releaseCmd, { tonality, phase: 3 });
+      }
+
+      if (window.ProtocolRatio && typeof window.ProtocolRatio.record === 'function') {
+        window.ProtocolRatio.record({
+          beneficiary: 'sub',
+          type: 'full',
+          note: `JOI-Freigabe nach ${edgingState.joiDuration}s Taktung`,
+          source: 'session_edging'
+        });
+      }
+
+      triggerHaptic([120, 80, 150, 80, 200]);
+      showToast("✓ Orgasmus freigegeben & in Lust-Ratio gebucht!");
+
+    } else if (outcome === 'ruined') {
+      // 2. RUINED ORGASM
+      const ruinedCmd = "Null. Jetzt kommen – aber Hände sofort weg! Keinen Millimeter mehr berühren!";
+      edgingState.lastDirective = ruinedCmd;
+      updateDirectiveDisplay(ruinedCmd);
+
+      if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+        window.SessionVoice.speak(ruinedCmd, { tonality, phase: 3 });
+      }
+
+      if (window.ProtocolRatio && typeof window.ProtocolRatio.record === 'function') {
+        window.ProtocolRatio.record({
+          beneficiary: 'sub',
+          type: 'ruined',
+          note: `Ruined Orgasm nach ${edgingState.joiDuration}s Taktung`,
+          source: 'session_edging'
+        });
+      }
+
+      triggerHaptic([100, 60, 100, 60, 140]);
+      showToast("✓ Ruined Orgasm vollzogen & protokolliert!");
+
+    } else {
+      // 3. KANTE HALTEN (KALTSTOPP)
+      registerThreshold();
+    }
   }
 
   function stopJoiCountdown() {
@@ -464,7 +446,7 @@
     const btn = document.getElementById('btn-joi-toggle');
     if (btn) {
       btn.innerText = "TAKTUNG STARTEN";
-      btn.className = "flex-1 py-3 rounded-2xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-pad transition shadow-md";
+      btn.className = "flex-1 py-3.5 rounded-2xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-pad transition shadow-md";
     }
 
     if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
@@ -474,32 +456,202 @@
     updateCountdownSvgArc(edgingState.joiDuration, edgingState.joiDuration);
   }
 
-  function selectPacingTechnique(techId) {
-    if (!JOI_PACING_TECHNIQUES[techId]) return;
-    edgingState.currentPacingTechnique = techId;
-    persistState();
-
-    const tech = JOI_PACING_TECHNIQUES[techId];
-    const locked = isBottomLocked();
-    const instructionText = locked ? tech.lockedInstruction : tech.instruction;
-
+  function updateDirectiveDisplay(text) {
     const textEl = document.getElementById('edging-technique-instruction');
     if (textEl) {
-      textEl.innerText = instructionText;
+      textEl.innerText = text;
+    }
+  }
+
+  function registerThreshold() {
+    if (edgingState.isCountingDown) {
+      stopJoiCountdown();
     }
 
-    const techButtons = document.querySelectorAll('[data-edging-tech]');
-    techButtons.forEach(btn => {
-      const bId = btn.getAttribute('data-edging-tech');
-      if (bId === techId) {
-        btn.className = "p-2.5 rounded-xl border text-left font-bold text-xs bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-sm touch-pad transition";
+    const now = Date.now();
+    edgingState.totalThresholds++;
+    edgingState.thresholdTimestamps.push(now);
+    edgingState.currentArousal = 9;
+
+    let tonality = 'sovereign_warm';
+    if (window.SessionStaging && typeof window.SessionStaging.getConfig === 'function') {
+      tonality = window.SessionStaging.getConfig().tonality || 'sovereign_warm';
+    }
+
+    const anatomy = getBottomAnatomy();
+    let directive = "Halt! Hände weg. Ausatmen und stillhalten.";
+
+    if (anatomy === 'penis_locked') {
+      directive = (tonality === 'sovereign_cool')
+        ? "Kalter Stopp! Vibration sofort wegnehmen. Stillstehen vor mir. Kein Millimeter Bewegung im Käfig."
+        : "Kalter Stopp. Reiz vom Käfig nehmen. Atme tief in den Bauch und beruhige deinen Puls.";
+    } else if (anatomy === 'vulva') {
+      directive = (tonality === 'sovereign_cool')
+        ? "Kalter Stopp! Berührung sofort abbrechen. Stillhalten und den Herzschlag spüren."
+        : "Kalter Stopp. Hände ruhig vom Körper nehmen. Tief ausatmen und die Hitze aushalten.";
+    } else {
+      directive = (tonality === 'sovereign_cool')
+        ? "Kalter Stopp. Hände sofort wegnehmen, Blick nach unten senken. Du rührst dich nicht."
+        : "Kalter Stopp. Hände ruhig vom Körper nehmen. Tief in den Bauch atmen und die Hitze aushalten.";
+    }
+
+    edgingState.lastDirective = directive;
+    updateDirectiveDisplay(directive);
+
+    if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
+      window.SessionVoice.speak(directive, { tonality, phase: 2, arousal: 9 });
+    }
+
+    if (window.SessionLive && typeof window.SessionLive.adaptPhase === 'function') {
+      window.SessionLive.adaptPhase('edge_too_fast');
+    }
+
+    if (window.ProtocolCore && typeof window.ProtocolCore.addTransaction === 'function') {
+      window.ProtocolCore.addTransaction(15, `Schwellen-Führung: Schwelle #${edgingState.totalThresholds} diszipliniert gehalten`, 'top');
+    }
+
+    triggerHaptic([100, 60, 100, 60, 140]);
+    persistState();
+    updateEdgingDisplay();
+    showToast(`✓ Kaltstopp registriert! Schwelle #${edgingState.totalThresholds} verbucht (+15 P)`);
+  }
+
+  function adjustJoiDuration(deltaSeconds) {
+    if (edgingState.isCountingDown) return;
+    edgingState.joiDuration = Math.max(10, Math.min(300, edgingState.joiDuration + deltaSeconds));
+    edgingState.joiSecondsRemaining = edgingState.joiDuration;
+    updateCountdownSvgArc(edgingState.joiDuration, edgingState.joiDuration);
+    persistState();
+    triggerHaptic([25]);
+  }
+
+  function setTargetOutcome(outcomeKey) {
+    edgingState.targetOutcome = outcomeKey;
+    persistState();
+
+    const buttons = document.querySelectorAll('[data-target-outcome]');
+    buttons.forEach(btn => {
+      const bKey = btn.getAttribute('data-target-outcome');
+      if (bKey === outcomeKey) {
+        btn.className = "py-2 px-3 rounded-xl border text-center font-bold text-xs bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-sm touch-pad transition";
       } else {
-        btn.className = "p-2.5 rounded-xl border text-left font-bold text-xs bg-[#090d14] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-pad transition";
+        btn.className = "py-2 px-3 rounded-xl border text-center font-bold text-xs bg-[#090d14] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-pad transition";
       }
     });
 
-    showToast(`Technik gewechselt: ${tech.label}`);
+    const labels = { hold: "Kante halten (Stopp)", release: "Volle Freigabe (Kommen!)", ruined: "Ruined Orgasm" };
+    showToast(`Ziel nach Ablauf: ${labels[outcomeKey] || outcomeKey}`);
     triggerHaptic([30]);
+  }
+
+  function setArousalLevel(level) {
+    const val = Math.max(1, Math.min(10, parseInt(level, 10) || 5));
+    edgingState.currentArousal = val;
+
+    const valEl = document.getElementById('edging-arousal-display');
+    const descEl = document.getElementById('edging-arousal-desc');
+    const barEl = document.getElementById('edging-arousal-bar');
+    const plateauBox = document.getElementById('edging-plateau-box');
+    const anatomy = getBottomAnatomy();
+
+    if (valEl) valEl.innerText = `${val} / 10`;
+
+    if (barEl) {
+      barEl.style.width = `${val * 10}%`;
+      if (val >= 9) {
+        barEl.className = "h-full rounded-full transition-all duration-300 bg-[#991b1b] red-glow animate-pulse";
+      } else if (val >= 7) {
+        barEl.className = "h-full rounded-full transition-all duration-300 bg-[#c5a880] gold-glow";
+      } else {
+        barEl.className = "h-full rounded-full transition-all duration-300 bg-[#2e5746]";
+      }
+    }
+
+    if (val >= 8) {
+      startPlateauTracker();
+      if (plateauBox) plateauBox.classList.remove('hidden');
+    } else {
+      pausePlateauTracker();
+    }
+
+    if (descEl) {
+      if (val >= 9) {
+        descEl.innerText = (anatomy === 'penis_locked')
+          ? "Kritische Schwelle: Maximaler Beckenbodendruck am Käfiggitter. Reiz sofort unterbrechen!"
+          : "Kritische Schwelle: Unmittelbar vor dem Point-of-No-Return. Höchste Wachsamkeit!";
+        descEl.className = "text-[11px] text-[#f8fafc] font-bold leading-snug";
+      } else if (val >= 7) {
+        descEl.innerText = (anatomy === 'penis_locked')
+          ? "Hochexplosives Plateau: Puls rast, Atembeschleunigung, P-Spot und Käfig voll unter Spannung."
+          : "Hochexplosives Plateau: Puls rast, Atembeschleunigung, starker Schwellkörperdruck.";
+        descEl.className = "text-[11px] text-[#c5a880] font-medium leading-snug";
+      } else if (val >= 4) {
+        descEl.innerText = "Stabile Erregung: Gekonnter Reizaufbau ohne unkontrollierte Spitzen.";
+        descEl.className = "text-[11px] text-[#94a3b8] leading-snug";
+      } else {
+        descEl.innerText = "Ruhezustand bis sanfte Vorbereitung: Das vegetative Nervensystem ist zentriert.";
+        descEl.className = "text-[11px] text-[#94a3b8]/70 leading-snug";
+      }
+    }
+
+    persistState();
+    triggerHaptic(val >= 9 ? [60, 40, 60] : [25]);
+  }
+
+  function startPlateauTracker() {
+    if (edgingState.plateauTimerInterval) return;
+    edgingState.plateauTimerInterval = setInterval(() => {
+      edgingState.plateauDurationSeconds++;
+      const disp = document.getElementById('edging-plateau-seconds');
+      if (disp) {
+        const m = Math.floor(edgingState.plateauDurationSeconds / 60);
+        const s = edgingState.plateauDurationSeconds % 60;
+        disp.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+      }
+    }, 1000);
+  }
+
+  function pausePlateauTracker() {
+    if (edgingState.plateauTimerInterval) {
+      clearInterval(edgingState.plateauTimerInterval);
+      edgingState.plateauTimerInterval = null;
+    }
+  }
+
+  function loadPersistedState() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY_EDGING_LOGS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          edgingState = Object.assign({}, edgingState, parsed);
+        }
+      }
+    } catch (e) {
+      console.warn("[TACTUS Edging] Fehler beim Laden des Zustands:", e);
+    }
+
+    if (window.SessionLive && typeof window.SessionLive.getMetrics === 'function') {
+      const liveMetrics = window.SessionLive.getMetrics();
+      if (liveMetrics && typeof liveMetrics.edgesCounted === 'number' && liveMetrics.edgesCounted > edgingState.totalThresholds) {
+        edgingState.totalThresholds = liveMetrics.edgesCounted;
+      }
+    }
+  }
+
+  function persistState() {
+    try {
+      const payload = {
+        totalThresholds: edgingState.totalThresholds,
+        currentArousal: edgingState.currentArousal,
+        plateauDurationSeconds: edgingState.plateauDurationSeconds,
+        joiDuration: edgingState.joiDuration,
+        targetOutcome: edgingState.targetOutcome,
+        lastDirective: edgingState.lastDirective,
+        thresholdTimestamps: edgingState.thresholdTimestamps.slice(-50)
+      };
+      sessionStorage.setItem(STORAGE_KEY_EDGING_LOGS, JSON.stringify(payload));
+    } catch (e) {}
   }
 
   function renderEdgingCockpit(containerId = 'edging-cockpit-container') {
@@ -508,9 +660,9 @@
 
     loadPersistedState();
     const subPrefs = getSubSurveyPreferences();
-    const locked = isBottomLocked();
-    const currentTech = JOI_PACING_TECHNIQUES[edgingState.currentPacingTechnique] || JOI_PACING_TECHNIQUES.slow_strokes;
-    const currentTechInstruction = locked ? currentTech.lockedInstruction : currentTech.instruction;
+    const anatomy = getBottomAnatomy();
+    const isLocked = (anatomy === 'penis_locked');
+    const isVulva = (anatomy === 'vulva');
 
     container.innerHTML = `
       <div class="space-y-4 max-w-2xl mx-auto text-xs animate-fade-in font-sans">
@@ -520,10 +672,10 @@
           <div class="flex items-center justify-between border-b border-[#1e2638]/60 pb-3 gap-2">
             <div class="space-y-0.5 min-w-0 flex-1 pr-2">
               <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block truncate">
-                ${locked ? 'Keuschheits-Regie · Plateau am Käfig' : 'Schwellen- &amp; Plateau-Regie'}
+                ${isLocked ? 'Keuschheits-Regie · Plateau am Käfig' : (isVulva ? 'Schwellen-Regie · Klitorales Plateau' : 'Schwellen- &amp; Plateau-Regie')}
               </span>
               <h2 class="text-base sm:text-lg font-serif text-[#f8fafc] font-normal truncate">
-                ${locked ? 'Schwellkörperdruck &amp; P-Spot Führung' : 'Gezielte Schwellen-Quälerei (Edging)'}
+                ${isLocked ? 'Schwellkörperdruck &amp; P-Spot Führung' : (isVulva ? 'Gezielte Schwellen-Quälerei (Klitoral)' : 'Gezielte Schwellen-Quälerei (Edging)')}
               </h2>
             </div>
             
@@ -535,9 +687,11 @@
           </div>
 
           <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-            ${locked 
-              ? 'Führe den Druck am Käfiggitter kontrolliert an die Grenze, halte das Plateau ohne Ejakulation und friere Reize vor dem Point-of-No-Return augenblicklich ein.' 
-              : 'Führe den Körper an die Schwelle, dehne das Plateau ohne Entlastung und bremse mit blindem Kaltstopp vor der Entladung.'}
+            ${isLocked 
+              ? 'Führe den Druck am Käfiggitter kontrolliert an die Grenze, dehne das Plateau ohne Ejakulation und friere Reize vor dem Point-of-No-Return augenblicklich ein.' 
+              : (isVulva 
+                  ? 'Führe den Körper an die Schwelle, halte das klitorale Plateau mit feinsten Taktwechseln und bestimme das Finale souverän.'
+                  : 'Führe den Körper an die Schwelle, dehne das Plateau ohne Entlastung und bremse mit blindem Kaltstopp vor der Entladung.')}
           </p>
 
           <!-- SUB-NOTEN AUS DEM FRAGEBOGEN MIT KLICKBAREN DEEPLINKS -->
@@ -580,18 +734,52 @@
           </div>
         </div>
 
+        <!-- ZIEL-ENTSCHEID DES TOPS VOR DEM COUNTDOWN (1-TAP SCHALTER) -->
+        <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#1e2638] space-y-2.5 shadow-xl">
+          <div class="flex items-center justify-between border-b border-[#1e2638]/60 pb-2">
+            <strong class="text-xs text-[#f8fafc] block font-bold">Zielentscheid nach Ablauf des Countdowns:</strong>
+            <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Top-Regie</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
+            <button 
+              type="button" 
+              data-target-outcome="hold"
+              onclick="SessionEdging.setOutcome('hold')"
+              class="py-2.5 px-2 rounded-xl border text-center font-bold text-xs transition touch-pad ${edgingState.targetOutcome === 'hold' ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}"
+            >
+              1. Kante halten (Stopp)
+            </button>
+            <button 
+              type="button" 
+              data-target-outcome="release"
+              onclick="SessionEdging.setOutcome('release')"
+              class="py-2.5 px-2 rounded-xl border text-center font-bold text-xs transition touch-pad ${edgingState.targetOutcome === 'release' ? 'bg-[#142b24] border-[#2e5746] text-[#2e5746] shadow-sm' : 'bg-[#090d14] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}"
+            >
+              2. Freigabe (Kommen!)
+            </button>
+            <button 
+              type="button" 
+              data-target-outcome="ruined"
+              onclick="SessionEdging.setOutcome('ruined')"
+              class="py-2.5 px-2 rounded-xl border text-center font-bold text-xs transition touch-pad ${edgingState.targetOutcome === 'ruined' ? 'bg-[#450a0a] border-[#991b1b] text-white shadow-sm' : 'bg-[#090d14] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}"
+            >
+              3. Ruined Orgasm
+            </button>
+          </div>
+        </div>
+
         <!-- 75% CIRCULAR COUNTDOWN ARC & GLANCEABILITY STAGE (0,2s AUS 2M DISTANZ) -->
         <div class="p-5 sm:p-6 rounded-3xl bg-[#090d14] border border-[#1e2638] space-y-4 shadow-xl text-center">
           
           <div class="flex items-center justify-between border-b border-[#1e2638]/60 pb-2">
             <div class="text-left space-y-0.5">
-              <strong class="text-xs text-[#f8fafc] block font-bold tracking-wide">JOI Countdown &amp; Taktgeber</strong>
-              <span class="text-[9.5px] text-[#94a3b8] font-mono block">Sprachgeführter Countdown bis zum Kaltstopp</span>
+              <strong class="text-xs text-[#f8fafc] block font-bold tracking-wide">JOI Countdown &amp; Sprach-Taktung</strong>
+              <span class="text-[9.5px] text-[#94a3b8] font-mono block">Begleitete Ansagen über die gesamte Zeitdauer</span>
             </div>
             
             <div class="flex items-center gap-1 font-mono text-[10px]">
-              <button type="button" onclick="SessionEdging.adjustDuration(-5)" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] font-bold flex items-center justify-center touch-pad">-5s</button>
-              <button type="button" onclick="SessionEdging.adjustDuration(5)" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] font-bold flex items-center justify-center touch-pad">+5s</button>
+              <button type="button" onclick="SessionEdging.adjustDuration(-10)" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] font-bold flex items-center justify-center touch-pad">-10s</button>
+              <button type="button" onclick="SessionEdging.adjustDuration(15)" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] font-bold flex items-center justify-center touch-pad">+15s</button>
             </div>
           </div>
 
@@ -627,36 +815,23 @@
 
           <!-- COUNTDOWN CONTROLS -->
           <div class="flex items-center gap-2 pt-1 border-t border-[#1e2638]/60 max-w-sm mx-auto">
-            <button type="button" id="btn-joi-toggle" onclick="SessionEdging.toggleCountdown()" class="flex-1 py-3 rounded-2xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-pad transition shadow-md">
+            <button type="button" id="btn-joi-toggle" onclick="SessionEdging.toggleCountdown()" class="flex-1 py-3.5 rounded-2xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-pad transition shadow-md">
               TAKTUNG STARTEN
             </button>
           </div>
         </div>
 
-        <!-- TELEPROMPTER DIRECTIVE & JOI-TECHNIKEN -->
+        <!-- TELEPROMPTER DIRECTIVE & DYNAMISCHE ANSAGEN -->
         <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#1e2638] space-y-3 shadow-xl">
           <div class="flex items-center justify-between border-b border-[#1e2638]/60 pb-2">
-            <strong class="text-xs text-[#f8fafc] block font-bold">JOI-Reiztechnik (Teleprompter):</strong>
-            <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Synchron mit Zählung</span>
+            <strong class="text-xs text-[#f8fafc] block font-bold">Wörtliche Führung (Teleprompter):</strong>
+            <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Laut im Raum gesprochen</span>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono text-[10px]">
-            ${Object.values(JOI_PACING_TECHNIQUES).map(tech => `
-              <button 
-                type="button" 
-                data-edging-tech="${tech.id}"
-                onclick="SessionEdging.selectTechnique('${tech.id}')"
-                class="p-2.5 rounded-xl border text-left font-bold text-xs transition touch-pad ${edgingState.currentPacingTechnique === tech.id ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}"
-              >
-                ${escapeHtml(tech.label)}
-              </button>
-            `).join('')}
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/30 space-y-1">
-            <span class="text-[9px] font-mono uppercase tracking-widest text-[#c5a880] font-bold block">Wörtliche Führung des Tops:</span>
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#c5a880]/30 space-y-1">
+            <span class="text-[9px] font-mono uppercase tracking-widest text-[#c5a880] font-bold block">Aktueller Regie-Befehl:</span>
             <blockquote id="edging-technique-instruction" class="font-serif text-base sm:text-lg text-[#f8fafc] italic leading-snug pt-0.5">
-              ${escapeHtml(currentTechInstruction)}
+              ${escapeHtml(edgingState.lastDirective || (isLocked ? 'Zwei Finger flach auf das Käfiggitter legen. Minimaler Druck.' : (isVulva ? 'Fingerspitzen anfeuchten. Langsame, flache Kreise über der Klitorisperle ziehen.' : 'Umschließe den Schaft mit Daumen und Zeigefinger. Ganz langsame, feste Züge.')))}
             </blockquote>
           </div>
         </div>
@@ -739,7 +914,8 @@
     registerEdge: registerThreshold,
     adjustDuration: adjustJoiDuration,
     toggleCountdown: toggleJoiCountdown,
-    selectTechnique: selectPacingTechnique,
+    setOutcome: setTargetOutcome,
+    getAnatomy: getBottomAnatomy,
     getSessionMetrics: function() {
       return Object.assign({}, edgingState);
     }
