@@ -1,17 +1,18 @@
 /**
  * js/protocol_coach.js
- * TACTUS Top-Führungsassistent, D/s-Coach, Arbeitsplatz-Ergonomie & Reibungs-Analytik (V3.0 Hyper-Dynamisch)
+ * TACTUS Top-Führungsassistent, D/s-Coach, Arbeitsplatz-Ergonomie & Reibungs-Analytik (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
- * Standards & Garantien:
+ * Standards & Garantien nach Master-Roadbook:
+ * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
+ * - Haute-Horlogerie Palette: OLED-Schwarz, Graphit, Champagner-Gold, Malachit, Cognac & Bordeaux
  * - Strikte Top-First Doktrin: Schutz vor Top Fatigue (Erschöpfung durch unbezahlten Mental Load)
  * - 5 Biomechanische Alltags- und Arbeitsplatzprofile für den Bottom
  * - Dreiteilige alltagstaugliche Tages-Impulse (Morgen, Arbeitstag, Feierabend)
  * - Multi-KI Anbindung via AIAdapter mit resilienter prozeduraler Offline-Heuristik
- * - Reibungs- & Verhaltensmuster-Analytik mit klickbaren Deeplinks
- * - Anti-TftB Durchsetzung (§ 2 Abs. 3 & § 3 Abs. 4 Beziehungsvertrag)
- * - 100 % frei von infantilen System-Emojis in Datenstrukturen und Benutzeroberfläche
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
+ * - Reibungs- & Verhaltensmuster-Analytik mit klickbaren Deeplinks (#view=chores, #tab=dashboard, #tab=contract)
+ * - Anti-TftB Durchsetzung (§ 2 Abs. 2 & § 6 Beziehungsvertrag)
+ * - 100 % frei von infantilen System-Emojis, keine window.alert() / confirm() Aufrufe
  */
 
 (function(window) {
@@ -41,11 +42,9 @@
     if (!container) return;
 
     const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
+    el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
     el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+      <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(el);
@@ -85,7 +84,7 @@
       posture: 'Bücken, Heben, Treppensteigen, Knien auf harten Böden',
       frictionRisk: 'Starker Schweiß, Staub und Reibung; erhöhtes Mazerationsrisiko',
       spuelFenster: 'Alle 6 Stunden dringend empfohlen',
-      hint: 'Staub und Schweißbelastung. Priorität: Urologische Feierabend-Spülung (50ml Kochsalz) sofort nach Schichtende!',
+      hint: 'Staub- und Schweißbelastung. Priorität: Urologische Feierabend-Spülung (50ml Kochsalzlösung) sofort nach Schichtende!',
       defaultTeaser: 'Konzentrierter Gehorsam im Alltag. Feierabend-Spülung unter der Dusche sofort nach Heimkehr vorzeigen.'
     },
     medical_service: {
@@ -200,34 +199,34 @@
     // 1. TOP IST ERSCHÖPFT: STRIKTER TOP-FATIGUE SCHUTZ
     if (load === 'exhausted') {
       return `
-<strong>1. Morgen-Impuls (Vollkommene Stille):</strong><br>
+<strong class="text-[#c5a880] block font-bold mb-1">1. Morgen-Impuls (Vollkommene Stille):</strong>
 ${sub} verharrt vor dem Verlassen der Wohnung 30 Sekunden im aufrechten Kniestand mit gesenktem Blick vor deinen Knien. Kein Redebedarf, kein Frühstücks-Smalltalk. Ein stummer Kopfstreich genügt als Entlassung in den Tag.<br><br>
-<strong>2. Alltags-Teaser (${workplace.label}):</strong><br>
+<strong class="text-[#c5a880] block font-bold mb-1">2. Alltags-Teaser (${escapeHtml(workplace.label)}):</strong>
 Kein forderndes Erotik-Teasing heute. Führen ist ein Privileg der Freude, kein unbezahlter Verwaltungsjob. ${sub} konzentriert sich voll auf seine Arbeit und erledigt auf dem Heimweg unaufgefordert die Einkäufe.<br><br>
-<strong>3. Feierabend-Dienst (Haushaltsentlastung):</strong><br>
-Bevor du die Wohnung betrittst, hat die Küche makellos bereinigt zu sein. ${sub} nimmt dir an der Tür schweigend Mantel und Schuhe ab, reicht ein Glas Wasser oder Tee und bietet eine 20-minütige Nackenmassage im Halbdunkel ohne jede Gegenforderung an.
+<strong class="text-[#c5a880] block font-bold mb-1">3. Feierabend-Dienst (Haushaltsentlastung &amp; Entlastung des Tops):</strong>
+Bevor du die Wohnung betrittst, hat die Küche makellos bereinigt zu sein. ${sub} nimmt dir an der Tür schweigend Mantel und Schuhe ab, reicht ein Glas Wasser oder Tee und bietet eine 20-minütige Nacken- oder Fußmassage im Halbdunkel ohne jede Gegenforderung an.
       `.trim();
     }
 
     // 2. TOP IST STRENG: INSPEKTION & KÖRPERLICHE ZUCHT
     if (load === 'strict') {
       return `
-<strong>1. Morgen-Appell (Haltungskontrolle):</strong><br>
-Appell im Kniestand. ${isLocked ? `Vorzeigen des tadellosen Sitzes des ${somatic.hardwareName}. Trockener, ruhiger Blickkontakt für 60 Sekunden ohne Blinzeln.` : `Morgenprüfung der Haltung und klares Bekenntnis zum heutigen Gehorsam.`}<br><br>
-<strong>2. Alltags-Teaser (${workplace.label}):</strong><br>
-${workplace.defaultTeaser} Jedes Zögern oder Murren wird als Pflichtverletzung gewertet.<br><br>
-<strong>3. Feierabend-Dienst (Inspektion & Rapport):</strong><br>
+<strong class="text-[#b3734a] block font-bold mb-1">1. Morgen-Appell (Haltungskontrolle):</strong>
+Appell im Kniestand. ${isLocked ? `Vorzeigen des tadellosen Sitzes des ${escapeHtml(somatic.hardwareName)}. Trockener, ruhiger Blickkontakt für 60 Sekunden ohne Blinzeln.` : `Morgenprüfung der Haltung und klares Bekenntnis zum heutigen Gehorsam.`}<br><br>
+<strong class="text-[#b3734a] block font-bold mb-1">2. Alltags-Teaser (${escapeHtml(workplace.label)}):</strong>
+${escapeHtml(workplace.defaultTeaser)} Jedes Zögern oder Murren wird als Pflichtverletzung gewertet.<br><br>
+<strong class="text-[#b3734a] block font-bold mb-1">3. Feierabend-Dienst (Inspektion &amp; Rapport):</strong>
 ${isLocked ? `Urologische 50ml-Kochsalzspülung unter der Dusche durchführen und das reizfreie Hautbild vorzeigen. ` : ``}Danach 10 Schläge mit der flachen Hand auf das Gesäß zur Besinnung über den Gehorsam des Tages, quittiert durch lautes Mitzählen.
       `.trim();
     }
 
     // 3. TOP IST AUSGEGLICHEN: SOUVERÄNE FÜHRUNG & HARMONISCHE NÄHE
     return `
-<strong>1. Morgen-Impuls (Körperlicher Anker):</strong><br>
+<strong class="text-[#c5a880] block font-bold mb-1">1. Morgen-Impuls (Körperlicher Anker):</strong>
 Gemeinsamer Duftanker vor dem Verlassen der Wohnung: Ein Hauch deines Parfüms auf das Handgelenk von ${sub} als ständiger Begleiter während des Arbeitstages.<br><br>
-<strong>2. Alltags-Teaser (${workplace.label}):</strong><br>
-${workplace.defaultTeaser} ${isLocked ? `Tag ${days} im Verschluss fordert Achtsamkeit: Schwellkörperdruck bewusst wahrnehmen, ohne zu hadern.` : `Aufrechte Haltung am Arbeitsplatz einhalten.`}<br><br>
-<strong>3. Feierabend-Dienst (Dienstbare Entlastung):</strong><br>
+<strong class="text-[#c5a880] block font-bold mb-1">2. Alltags-Teaser (${escapeHtml(workplace.label)}):</strong>
+${escapeHtml(workplace.defaultTeaser)} ${isLocked ? `Tag ${days} im Verschluss fordert Achtsamkeit: Schwellkörperdruck bewusst wahrnehmen, ohne zu hadern.` : `Aufrechte Haltung am Arbeitsplatz einhalten.`}<br><br>
+<strong class="text-[#c5a880] block font-bold mb-1">3. Feierabend-Dienst (Dienstbare Entlastung):</strong>
 Empfang an der Tür. ${sub} schenkt dir seine volle Aufmerksamkeit, nimmt dir den mentalen Ballast des Tages ab und serviert das Abendessen in ruhiger, dienender Haltung.
     `.trim();
   }
@@ -242,10 +241,10 @@ Empfang an der Tür. ${sub} schenkt dir seine volle Aufmerksamkeit, nimmt dir de
     if (!contentBox) return;
 
     contentBox.innerHTML = `
-      <div class="py-4 text-center space-y-2 animate-pulse">
-        <div class="w-6 h-6 border-2 border-purple-500/20 border-t-purple-400 rounded-full animate-spin mx-auto"></div>
-        <span class="text-xs text-purple-300 font-mono block">Berechne situative Tages-Empfehlung...</span>
-        <span class="text-[10px] text-slate-500 block">Koppelt Führungszustand, Tragetage und Arbeitsplatz</span>
+      <div class="py-5 text-center space-y-2 animate-pulse">
+        <div class="w-6 h-6 border-2 border-[#c5a880]/30 border-t-[#c5a880] rounded-full animate-spin mx-auto"></div>
+        <span class="text-xs text-[#c5a880] font-mono block">Berechne situative Tages-Empfehlung...</span>
+        <span class="text-[10px] text-[#94a3b8] block">Koppelt Führungszustand, Tragetage und Arbeitsplatz-Kontext</span>
       </div>
     `;
 
@@ -253,12 +252,6 @@ Empfang an der Tür. ${sub} schenkt dir seine volle Aufmerksamkeit, nimmt dir de
     const workplace = getActiveWorkplaceProfile();
     let names = { top: 'Top', sub: 'Bottom' };
 
-    if (window.ProtocolContract && typeof window.ProtocolContract.getActiveContract === 'function') {
-      const contract = window.ProtocolContract.getActiveContract();
-      if (contract) {
-        // Namen über HubContext holen falls vorhanden
-      }
-    }
     if (window.HubContext && typeof window.HubContext.getNames === 'function') {
       const rawNames = window.HubContext.getNames();
       const roles = window.HubContext.getRoles();
@@ -323,9 +316,9 @@ WICHTIGE LEITPLANKEN:
     } catch (e) {}
 
     contentBox.innerHTML = `
-      <div class="space-y-2 text-[11px] text-slate-200 leading-relaxed font-sans">
+      <div class="space-y-2.5 text-[11px] text-[#f8fafc] leading-relaxed font-sans">
         ${generatedHtml}
-        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9.5px] font-mono text-slate-500">
+        <div class="pt-2.5 border-t border-[#1e2638] flex items-center justify-between text-[9.5px] font-mono text-[#94a3b8]">
           <span>Kontext: ${escapeHtml(workplace.label)} · Load: ${escapeHtml(somatic.topMentalLoad)}</span>
           <span>Berechnet um ${new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
@@ -343,9 +336,9 @@ WICHTIGE LEITPLANKEN:
         const contentBox = document.getElementById('ai-coach-directive-content');
         if (contentBox && parsed.html) {
           contentBox.innerHTML = `
-            <div class="space-y-2 text-[11px] text-slate-200 leading-relaxed font-sans">
+            <div class="space-y-2.5 text-[11px] text-[#f8fafc] leading-relaxed font-sans">
               ${parsed.html}
-              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9.5px] font-mono text-slate-500">
+              <div class="pt-2.5 border-t border-[#1e2638] flex items-center justify-between text-[9.5px] font-mono text-[#94a3b8]">
                 <span>Kontext: ${escapeHtml(parsed.workplaceId || '')}</span>
                 <span>Gespeichert vom Vortag</span>
               </div>
@@ -375,7 +368,7 @@ WICHTIGE LEITPLANKEN:
           badge: `${overdueTasks.length} überfällige Pflichten`,
           title: "Säumigkeit im Alltag (Disziplinarischer Anlass)",
           desc: `${overdueTasks.length} vereinbarte Aufgaben sind fällig, wurden aber noch nicht vollzogen. Disziplinierung nach § 7 Beziehungsvertrag empfohlen.`,
-          actionHtml: `<a href="protocol.html#view=chores" class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-mono text-[9px] font-bold">Zucht anordnen ↗</a>`
+          actionHtml: `<a href="protocol.html#view=chores" class="px-2.5 py-1 rounded-xl bg-[#450a0a] text-white border border-[#991b1b] font-mono text-[9.5px] font-bold touch-btn">Zucht anordnen ↗</a>`
         });
       }
 
@@ -386,7 +379,7 @@ WICHTIGE LEITPLANKEN:
           badge: `${submittedTasks.length} in Prüfung`,
           title: "Vollzugsmeldungen warten auf Quittierung",
           desc: `Der Bottom hat Pflichten eingereicht. Zeitnahes Quittieren erhält den motivationalen Führungsfluss.`,
-          actionHtml: `<a href="protocol.html#view=chores" class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono text-[9px] font-bold">Prüfen ↗</a>`
+          actionHtml: `<a href="protocol.html#view=chores" class="px-2.5 py-1 rounded-xl bg-[#4a2818] text-[#f8fafc] border border-[#8a5232] font-mono text-[9.5px] font-bold touch-btn">Prüfen ↗</a>`
         });
       }
     }
@@ -401,7 +394,7 @@ WICHTIGE LEITPLANKEN:
           badge: `Lust-Ratio ${ratioProgress.topCount}:${ratioProgress.subCount}`,
           title: "Top-Höhepunkte haben strikte Priorität",
           desc: `Die Zielquote (${ratioProgress.target}:1) ist noch nicht erreicht (${ratioProgress.remainingInCycle} Top-Höhepunkte verbleibend). Gemäß § 5 Abs. 3 gilt strikte Schweigepflicht des Subs über eigene Ejakulation.`,
-          actionHtml: `<a href="protocol.html#tab=dashboard" class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[9px] font-bold">Ratio einsehen ↗</a>`
+          actionHtml: `<a href="protocol.html#tab=dashboard" class="px-2.5 py-1 rounded-xl bg-[#090d14] text-[#c5a880] border border-[#c5a880]/50 font-mono text-[9.5px] font-bold touch-btn">Ratio einsehen ↗</a>`
         });
       }
     }
@@ -416,7 +409,7 @@ WICHTIGE LEITPLANKEN:
           badge: "Vertrag: Entwurf",
           title: "Bündnisvertrag noch unratifiziert",
           desc: "Der Beziehungsvertrag wurde noch nicht von beiden Partnern besiegelt. Eine feierliche Unterzeichnung schafft verbindliche Klarheit.",
-          actionHtml: `<a href="protocol.html#tab=contract" class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-mono text-[9px] font-bold">Ratifizieren ↗</a>`
+          actionHtml: `<a href="protocol.html#tab=contract" class="px-2.5 py-1 rounded-xl bg-[#090d14] text-[#d4af37] border border-[#d4af37]/60 font-mono text-[9.5px] font-bold touch-btn">Ratifizieren ↗</a>`
         });
       }
     }
@@ -424,12 +417,12 @@ WICHTIGE LEITPLANKEN:
     // 4. Default wenn harmonisch
     if (frictionPoints.length === 0) {
       container.innerHTML = `
-        <div class="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-800/50 space-y-1 text-xs">
-          <strong class="text-emerald-300 block font-bold flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="p-3.5 rounded-2xl bg-[#142b24]/40 border border-[#2e5746] space-y-1 text-xs shadow-sm">
+          <strong class="text-[#2e5746] block font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#2e5746] animate-pulse"></span>
             <span>Keine offenen Reibungspunkte</span>
           </strong>
-          <p class="text-[10.5px] text-slate-300 leading-snug">
+          <p class="text-[10.5px] text-[#f8fafc] leading-snug">
             Die Dynamik läuft synchron: Alle Pflichten sind geregelt, die Ratio wird eingehalten und es bestehen keine akuten Schieflagen.
           </p>
         </div>
@@ -438,15 +431,15 @@ WICHTIGE LEITPLANKEN:
     }
 
     container.innerHTML = frictionPoints.map(f => `
-      <div class="p-3 rounded-2xl border transition-all space-y-1.5 ${f.severity === 'high' ? 'bg-rose-950/20 border-rose-800/70' : (f.severity === 'medium' ? 'bg-amber-950/20 border-amber-800/70' : 'bg-slate-900/60 border-slate-800')}">
-        <div class="flex items-center justify-between">
-          <span class="text-[9.5px] font-mono px-2 py-0.5 rounded font-bold ${f.severity === 'high' ? 'bg-rose-950 text-rose-300 border border-rose-800' : (f.severity === 'medium' ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-purple-950 text-purple-300 border border-purple-800')}">
+      <div class="p-3.5 rounded-2xl border transition-all space-y-2 ${f.severity === 'high' ? 'bg-[#450a0a]/30 border-[#991b1b]' : (f.severity === 'medium' ? 'bg-[#4a2818]/30 border-[#8a5232]' : 'bg-[#090d14] border-[#1e2638]')}">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[9.5px] font-mono px-2 py-0.5 rounded font-bold ${f.severity === 'high' ? 'bg-[#450a0a] text-white border border-[#991b1b]' : (f.severity === 'medium' ? 'bg-[#4a2818] text-[#f8fafc] border border-[#8a5232]' : 'bg-[#000000] text-[#c5a880] border border-[#c5a880]/50')}">
             ${escapeHtml(f.badge)}
           </span>
           ${f.actionHtml}
         </div>
-        <strong class="text-xs text-white block font-bold">${escapeHtml(f.title)}</strong>
-        <p class="text-[10.5px] text-slate-300 leading-snug">${escapeHtml(f.desc)}</p>
+        <strong class="text-xs text-[#f8fafc] block font-bold leading-tight">${escapeHtml(f.title)}</strong>
+        <p class="text-[10.5px] text-[#94a3b8] leading-snug break-words">${escapeHtml(f.desc)}</p>
       </div>
     `).join('');
   }
