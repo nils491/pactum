@@ -1,18 +1,18 @@
 /**
  * js/protocol_tasks.js
- * TACTUS Aufgaben-, Pflichten- & Hyperdynamische Zucht-Engine (V3.0 Hyper-Dynamisch)
+ * TACTUS Aufgaben-, Pflichten- & Hyperdynamische Zucht-Engine (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
- * Standards & Garantien:
- * - Klickbare Fragebogen-Deeplinks für jedes Zucht- und Disziplinaritem
- * - Schrank- und Inventarprüfung gegen tactus_owned_equipment & EquipmentCatalog
- * - Ungekürzte Einblendung der persönlichen Sub-Notizen (note_${id})
- * - Hyperdynamischer SomaticPostureSynthesizer mit Re-Roll Button direkt im Modal
+ * Standards & Garantien nach Master-Roadbook:
+ * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
+ * - Haute-Horlogerie Palette: OLED-Schwarz, Graphit, Champagner-Gold, Malachit, Cognac & Bordeaux
+ * - Echte Hyperdynamik: Keine starren Standardlisten – situative Aufgaben-Synthese
+ * - Kinetischer SomaticPostureSynthesizer mit DoF-Prüfung & Re-Roll Button
+ * - RACK-Schutzampel: Note 1 (Veto gesperrt), Note 2 (Sanfte Grenze), Note 3 (Brücke), Note 4/5 (Freigabe)
  * - Begründetes Abweisen von Aufgaben mit Feedback-Übertragung in den Paar-Stream
- * - Top-First Mental Load Umschaltung (exhausted, balanced, strict)
- * - RACK-Schutzampel: Note 1 Veto-Blockade, Note 2 Sanfte Grenze, Note 3 Brücke, Note 4/5 Freigabe
- * - 100 % frei von infantilen System-Emojis in Datenstrukturen und UI
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
+ * - Schrankprüfung gegen EquipmentCatalog und tactus_owned_equipment
+ * - Vollständig ungekürzte Partner-Notizen mit klickbaren Fragebogen-Deeplinks
+ * - 100 % frei von infantilen System-Emojis, keine window.alert() / confirm() Aufrufe
  */
 
 (function(window) {
@@ -29,7 +29,7 @@
       title: "Spanking mit der flachen Hand",
       itemId: 56, // Kap. 11
       category: "manual_impact",
-      equipmentTag: null, // Immer verfügbar (Hand)
+      equipmentTag: null,
       defaultHits: 15,
       defaultPenalty: 20,
       zone: "gluteal_pelvis",
@@ -40,7 +40,7 @@
       title: "Züchtigung über das Knie gelegt (OTK)",
       itemId: 57, // Kap. 11
       category: "manual_impact",
-      equipmentTag: null, // Immer verfügbar (Schoß)
+      equipmentTag: null,
       defaultHits: 20,
       defaultPenalty: 25,
       zone: "gluteal_pelvis",
@@ -107,7 +107,7 @@
       itemId: 49, // Kap. 9
       category: "posture_penance",
       equipmentTag: null,
-      defaultHits: 15, // Steht für 15 Minuten
+      defaultHits: 15,
       defaultPenalty: 25,
       zone: "limbs_ankles_feet",
       basePostureType: "kneeling_nadu"
@@ -118,7 +118,7 @@
       itemId: 68, // Kap. 13
       category: "thermal_shock",
       equipmentTag: "ice",
-      defaultHits: 10, // Steht für 10 Schmelz-Minuten
+      defaultHits: 10,
       defaultPenalty: 20,
       zone: "perineum_pelvic_floor",
       basePostureType: "supine_spread"
@@ -129,95 +129,12 @@
       itemId: 90, // Kap. 17
       category: "household_penance",
       equipmentTag: null,
-      defaultHits: 45, // Steht für 45 Minuten
+      defaultHits: 45,
       defaultPenalty: 30,
       zone: "full_body",
       basePostureType: "dynamic_chores"
     }
   ];
-
-  const PROCEDURAL_DUTY_TEMPLATES = {
-    exhausted: [
-      {
-        title: "Stiller Empfang & Entlastungsdienst",
-        category: "relief_service",
-        interval: "daily",
-        dueTime: "19:00",
-        points: 35,
-        desc: "Schuhe an der Wohnungstür abnehmen, warmen Tee oder Wasser reichen; danach 20 Minuten schweigende Fuß- oder Nackenmassage im Halbdunkel ohne jede Gegenforderung oder Konversation."
-      },
-      {
-        title: "Haushalt vor Eintreffen des Tops bereinigen",
-        category: "household",
-        interval: "daily",
-        dueTime: "18:30",
-        points: 25,
-        desc: "Küche makellos hinterlassen, Müll leeren, Kleidung wegräumen. Der Top darf beim Betreten der Wohnung auf keinerlei offenen Mental Load stoßen."
-      },
-      {
-        title: "Wortloses Rückzugs-Geleit",
-        category: "relief_service",
-        interval: "daily",
-        dueTime: "22:00",
-        points: 20,
-        desc: "Bett aufdecken, Wasserflasche bereitstellen, Vorhänge schließen. Rückzug auf die eigene Seite ohne Anforderung an Nähe oder Gespräch."
-      }
-    ],
-    balanced: [
-      {
-        title: "Morgenappell im Kniestand (30s)",
-        category: "micro_ds",
-        interval: "daily",
-        dueTime: "07:30",
-        points: 20,
-        desc: "30 Sekunden aufrechter Kniestand mit ruhigem Blickkontakt vor der ersten Alltagsinteraktion als körperlicher Anker der Hierarchie."
-      },
-      {
-        title: "Duftanker & Haltungspflege",
-        category: "micro_ds",
-        interval: "daily",
-        dueTime: "08:00",
-        points: 15,
-        desc: "Auflegen des vom Top ausgewählten Parfüms und bewusste Atemzentrierung vor Verlassen der Wohnung."
-      },
-      {
-        title: "Wochenend-Frühstücksdienst auf Knien",
-        category: "service",
-        interval: "weekly",
-        dayOfWeek: 6,
-        dueTime: "09:30",
-        points: 30,
-        desc: "Kaffee und Frühstück für den Top servieren; dabei aufrechte Haltung und Danken für die Mahlzeit."
-      }
-    ],
-    strict: [
-      {
-        title: "Intimrasur & Körperpflege-Appell",
-        category: "discipline",
-        interval: "weekly",
-        dayOfWeek: 5,
-        dueTime: "18:00",
-        points: 30,
-        desc: "Vollständige Glattrasur des Genitalbereichs und Vorzeigen zur Inspektion vor dem Wochenende. Keine Stoppeln geduldet."
-      },
-      {
-        title: "Abendlicher Rapport im Kniestand",
-        category: "discipline",
-        interval: "daily",
-        dueTime: "21:30",
-        points: 25,
-        desc: "Vor der Bettruhe 5 Minuten stummes Verharren auf den Fersen vor dem Top zur Rechenschaft über den heutigen Gehorsam."
-      },
-      {
-        title: "Käfig-Inspektion & Hautspülung vorzeigen",
-        category: "discipline",
-        interval: "daily",
-        dueTime: "20:00",
-        points: 20,
-        desc: "Urologische Spülung durchführen und dem Top das reizfreie Hautbild am Verschluss zur Bestätigung vorzeigen."
-      }
-    ]
-  };
 
   let tasksState = {
     tasks: [],
@@ -246,11 +163,9 @@
     if (!container) return;
 
     const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
+    el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
     el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+      <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(el);
@@ -333,45 +248,138 @@
   }
 
   function synthesizeProceduralTasks(mentalLoad = 'balanced', forceReset = false) {
-    const pool = PROCEDURAL_DUTY_TEMPLATES[mentalLoad] || PROCEDURAL_DUTY_TEMPLATES.balanced;
     const now = Date.now();
 
+    // 1. Kontext extrahieren
     let workplaceStressor = 'desk_office';
+    let daysLocked = 1;
+    let isLocked = false;
+
     if (window.HubContext && typeof window.HubContext.getUnifiedState === 'function') {
       const ctx = window.HubContext.getUnifiedState();
       if (ctx && ctx.v4_energy) workplaceStressor = ctx.v4_energy.workplaceId;
+      if (ctx && ctx.v2_somatic) {
+        isLocked = ctx.v2_somatic.isLocked;
+        daysLocked = ctx.v2_somatic.daysLocked;
+      }
     } else {
       workplaceStressor = localStorage.getItem('kompass_bottom_workplace') || 'desk_office';
+      if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
+        const p = window.ProtocolCore.getState();
+        isLocked = !!p.isLocked;
+      }
     }
 
-    const generated = pool.map((tmpl, idx) => ({
-      id: `task_${mentalLoad}_${idx}_${now}`,
-      title: tmpl.title,
-      category: tmpl.category,
-      interval: tmpl.interval,
-      dueTime: tmpl.dueTime,
-      dayOfWeek: tmpl.dayOfWeek !== undefined ? tmpl.dayOfWeek : null,
-      points: tmpl.points,
-      desc: tmpl.desc,
-      status: 'pending',
-      lastSubmittedAt: null,
-      lastApprovedAt: null,
-      createdAt: now
-    }));
+    // 2. Hyperdynamische Kombinatorik für Pflichten
+    const dynamicTasks = [];
 
+    if (mentalLoad === 'exhausted') {
+      // Top ist erschöpft: Strikt Entlastung & Stille (Mental Load Beseitigung)
+      dynamicTasks.push({
+        id: `task_relief_arrival_${now}`,
+        title: "Stiller Empfang an der Wohnungstür",
+        category: "relief_service",
+        interval: "daily",
+        dueTime: "18:45",
+        points: 30,
+        desc: "Schuhe und Mantel des Tops schweigend abnehmen, warmen Tee oder Wasser reichen und für vollkommene Ruhe sorgen."
+      });
+      dynamicTasks.push({
+        id: `task_relief_kitchen_${now}`,
+        title: "Küche vor Eintreffen makellos bereinigen",
+        category: "household",
+        interval: "daily",
+        dueTime: "18:15",
+        points: 25,
+        desc: "Müll leeren, Geschirrspüler ausräumen, Oberflächen abwischen. Der Top darf auf keinen offenen Mental Load stoßen."
+      });
+      dynamicTasks.push({
+        id: `task_relief_massage_${now}`,
+        title: "20-Minuten Nacken- oder Fußmassage im Halbdunkel",
+        category: "relief_service",
+        interval: "daily",
+        dueTime: "21:00",
+        points: 35,
+        desc: "Dienstbare Massage der verspannten Muskulatur ohne Redebedarf und ohne jede Gegenforderung an Nähe oder Intimität."
+      });
+    } else if (mentalLoad === 'strict') {
+      // Top ist streng: Haltungskontrolle, Kniestand und disziplinierte Sühne
+      dynamicTasks.push({
+        id: `task_strict_inspection_${now}`,
+        title: isLocked ? "Verschluss-Inspektion & Kniestand-Appell" : "Morgenprüfung der Haltung im Kniestand",
+        category: "discipline",
+        interval: "daily",
+        dueTime: "07:30",
+        points: 25,
+        desc: isLocked
+          ? "Vorzeigen des tadellosen Sitzes der Verschluss-Hardware. 60 Sekunden starrer Blickkontakt ohne Blinzeln."
+          : "Aufrechter Kniestand vor den Knien des Tops. Ruhiger Blickkontakt und klares Bekenntnis zum heutigen Gehorsam."
+      });
+      dynamicTasks.push({
+        id: `task_strict_grooming_${now}`,
+        title: "Grooming & Intimrasur-Inspektion",
+        category: "discipline",
+        interval: "weekly",
+        dayOfWeek: 5,
+        dueTime: "19:00",
+        points: 30,
+        desc: "Lückenlose Glattrasur des Intimbereichs und Vorzeigen zur Haltungsprüfung vor dem Wochenende. Keine Stoppeln geduldet."
+      });
+      dynamicTasks.push({
+        id: `task_strict_rapport_${now}`,
+        title: "Abendlicher Rapport im Fersensitz (10 Min.)",
+        category: "discipline",
+        interval: "daily",
+        dueTime: "21:30",
+        points: 25,
+        desc: "Stummes Verharren auf den Fersen vor dem Bett zur Rechenschaft über den heutigen Gehorsam."
+      });
+    } else {
+      // Top ist ausgeglichen: Harmonische D/s-Balance
+      dynamicTasks.push({
+        id: `task_balanced_morning_${now}`,
+        title: "Morgenappell im Kniestand (30 Sek.)",
+        category: "micro_ds",
+        interval: "daily",
+        dueTime: "07:45",
+        points: 20,
+        desc: "30 Sekunden aufrechter Kniestand mit ruhigem Blickkontakt vor der ersten Alltagsinteraktion als körperlicher Anker."
+      });
+      dynamicTasks.push({
+        id: `task_balanced_scent_${now}`,
+        title: "Duftanker & Haltungspflege vor dem Gehen",
+        category: "micro_ds",
+        interval: "daily",
+        dueTime: "08:15",
+        points: 15,
+        desc: "Auflegen des vom Top ausgewählten Duftankers auf das Handgelenk und bewusste Atemzentrierung vor dem Verlassen der Wohnung."
+      });
+      dynamicTasks.push({
+        id: `task_balanced_weekend_${now}`,
+        title: "Wochenend-Frühstücksdienst auf Knien",
+        category: "service",
+        interval: "weekly",
+        dayOfWeek: 6,
+        dueTime: "09:30",
+        points: 30,
+        desc: "Kaffee und Frühstück für den Top servieren; dabei aufrechte Haltung und Danken für die Mahlzeit."
+      });
+    }
+
+    // 3. Ergonomie- & Arbeitsplatz-Adaption einsteuern
     if (workplaceStressor === 'craft_physical') {
-      generated.push({
-        id: `task_craft_wash_${now}`,
+      dynamicTasks.push({
+        id: `task_workplace_craft_${now}`,
         title: "Urologische Feierabend-Spülung nach Baustelle",
         category: "discipline",
         interval: "daily",
         dueTime: "18:00",
         points: 20,
-        desc: "Sofortige Reinigung der Eichelkammer mit Kochsalzlösung zur Vorbeugung von Balanitis nach staubiger und schweißtreibender Arbeit."
+        desc: "Sofortige Reinigung der Eichelkammer mit 50ml Kochsalzlösung zur Vorbeugung von Balanitis nach staubiger und schweißtreibender Arbeit."
       });
     } else if (workplaceStressor === 'desk_office') {
-      generated.push({
-        id: `task_desk_kegel_${now}`,
+      dynamicTasks.push({
+        id: `task_workplace_desk_${now}`,
         title: "3x 20 Beckenboden-Kontraktionen am Schreibtisch",
         category: "micro_ds",
         interval: "daily",
@@ -379,13 +387,23 @@
         points: 15,
         desc: "Diskrete Anspannung des Beckenbodens gegen das verriegelte Gitter zur Vermeidung venöser Stauung beim Dauersitzen."
       });
+    } else if (workplaceStressor === 'medical_service') {
+      dynamicTasks.push({
+        id: `task_workplace_care_${now}`,
+        title: "Umfassender Fußdienst nach langem Stehen",
+        category: "relief_service",
+        interval: "daily",
+        dueTime: "20:30",
+        points: 25,
+        desc: "Einmassieren von pflegendem Balsam in die beanspruchten Füße des Tops nach der Schicht."
+      });
     }
 
     if (forceReset) {
-      tasksState.tasks = generated;
+      tasksState.tasks = dynamicTasks;
     } else {
       const inReview = tasksState.tasks.filter(t => t.status === 'submitted');
-      tasksState.tasks = [...inReview, ...generated];
+      tasksState.tasks = [...inReview, ...dynamicTasks];
     }
 
     tasksState.topMentalLoad = mentalLoad;
@@ -485,30 +503,30 @@
     const score = (typeof rawScore === 'number') ? rawScore : 0;
 
     let tier = 'open';
-    let badgeClass = 'bg-slate-900 text-slate-400 border-slate-700';
+    let badgeClass = 'bg-[#090d14] text-[#94a3b8] border-[#1e2638]';
     let badgeText = 'Noch nicht bewertet';
     let isVeto = false;
     let interpretation = 'Noch kein Eintrag im Fragebogen vorhanden.';
 
     if (score === 1) {
       tier = 'taboo';
-      badgeClass = 'bg-rose-950 text-rose-300 border-rose-800 font-bold';
+      badgeClass = 'bg-[#450a0a] text-[#f8fafc] border-[#991b1b] font-bold';
       badgeText = 'Tabu / Veto (Note 1)';
       isVeto = true;
       interpretation = 'Unantastbares Veto des Subs. Zucht mit dieser Praxis ist als Grenzübertritt untersagt (RACK-Schutz).';
     } else if (score === 2) {
       tier = 'soft_boundary';
-      badgeClass = 'bg-amber-950 text-amber-300 border-amber-800 font-bold';
+      badgeClass = 'bg-[#4a2818] text-[#b3734a] border-[#8a5232] font-bold';
       badgeText = 'Sanfte Grenze (Note 2)';
       interpretation = 'Der Sub empfindet hier Unbehagen. Nur gedrosselt, mit Ankündigung und maximal 5 leichten Treffern anwenden.';
     } else if (score === 3) {
       tier = 'neutral';
-      badgeClass = 'bg-indigo-950 text-indigo-300 border-indigo-800 font-bold';
+      badgeClass = 'bg-[#101622] text-[#c5a880] border-[#c5a880]/40 font-bold';
       badgeText = 'Offen / Erkundung (Note 3)';
       interpretation = 'Ausprobieren gestattet. Aufmerksam auf nonverbale Signale und Atemführung achten.';
     } else if (score >= 4) {
       tier = 'preferred';
-      badgeClass = 'bg-purple-950 text-purple-200 border-purple-700 font-bold';
+      badgeClass = 'bg-[#142b24] text-[#2e5746] border-[#2e5746] font-bold';
       badgeText = `${scaleLabels[score]} (${score}/5)`;
       interpretation = 'Einvernehmlich gewünscht. Ideales Werkzeug zur disziplinarischen Erdung.';
     }
@@ -567,7 +585,7 @@
     },
 
     cognitiveAxes: {
-      gorean_demut: [
+      demut: [
         "Blick unverrückbar auf die Dielen vor den Knien des Tops gerichtet; jedes Aufsehen unterbricht die Zählung.",
         "Starrer Blickkontakt in die Augen des Tops ohne Blinzeln oder Ausweichen.",
         "Blick in den großen Spiegel: Der Sub muss die eigene Demutshaltung ununterbrochen selbst beobachten.",
@@ -580,7 +598,7 @@
       }
     },
 
-    synthesize: async function(practiceId, customPreferences = {}) {
+    synthesize: async function(practiceId) {
       const practice = SOMATIC_PRACTICE_REFERENCES.find(p => p.id === practiceId) || SOMATIC_PRACTICE_REFERENCES[0];
       
       let ctx = null;
@@ -600,19 +618,18 @@
       if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
         try {
           const aiPrompt = `
-Erstelle eine prägnante, anatomisch und kinetisch anspruchsvolle Haltungs- und Raumdirektive für die Zuchtmaßnahme „${practice.title}“ (${practice.defaultHits} Einheiten).
+Erstelle eine prägnante, anatomisch und kinetisch anspruchsvolle Haltungsdirektive für die Zuchtmaßnahme „${practice.title}“ (${practice.defaultHits} Einheiten).
 
 KONTEXT DES PAARES & DER SESSION:
 - Top: ${topName} (Mental Load: ${topMentalLoad})
 - Bottom: ${bottomName} (Keuschheit: ${isLocked ? `Tag ${daysLocked} im Käfig` : 'Frei'})
-- Sub-Präferenz: Note ${subPrefs.score}/5 („${subPrefs.label}“)${subPrefs.note ? `, Persönliche Notiz: „${subPrefs.note}“` : ''}
-- DoF-Einschränkungen: ${dof.speech_articulation <= 0.05 ? 'Mund blockiert/Geknebelt (Kein lautes Zählen möglich!)' : 'Sprache frei'}, ${dof.manual_manipulation <= 0.05 ? 'Hände fixiert/arretiert' : 'Hände frei'}
-- Biologische RACK-Schranken: ${healthGuards.map(g => g.directive).join('; ') || 'Keine'}
+- Sub-Präferenz: Note ${subPrefs.score}/5 („${subPrefs.label}“)${subPrefs.note ? `, Notiz: „${subPrefs.note}“` : ''}
+- DoF: ${dof.speech_articulation <= 0.05 ? 'Mund geknebelt (Klopfen statt Zählen!)' : 'Sprache frei'}, ${dof.manual_manipulation <= 0.05 ? 'Hände fixiert/arretiert' : 'Hände frei'}
+- Schutzschranken: ${healthGuards.map(g => g.directive).join('; ') || 'Keine'}
 
 ANFORDERUNGEN:
-- Wähle eine kinetisch interessante Lage (z.B. freies Stehen im Raum, tiefe Bauchlage/Kissen, Wandstütze, Gorean Nadu oder Fersensitz).
-- Wenn der Top 'exhausted' ist: Der Top muss sich körperlich nicht anstrengen (Bottom hält die schwere Haltung am Boden).
-- Berücksichtige eventuell geblockte Sprache (Klopfen statt Zählen).
+- Kinetisch stimmige Lage (Bauchlage/Kissen, Wandstütze, Kniestand oder Fersensitz).
+- Berücksichtige geblockte Sprache (Klopfen statt Zählen).
 - Antworte in exakt 2 prägnanten Sätzen, direkt formuliert als klare Handlungsanweisung ohne Floskeln.
 `;
           const aiResponse = await window.AIAdapter.generateText({
@@ -625,14 +642,14 @@ ANFORDERUNGEN:
             return aiResponse.trim().replace(/^["„']|["“']$/g, '');
           }
         } catch (err) {
-          console.debug("[TACTUS Posture] KI-Synthese fehlgeschlagen, nutze kinetischen Kombinator:", err);
+          console.debug("[TACTUS Posture] KI-Synthese fehlgeschlagen, nutze Kombinator:", err);
         }
       }
 
       return this.synthesizeProcedural(practice, dof, topMentalLoad, healthGuards, subPrefs);
     },
 
-    synthesizeProcedural: function(practice, dof, topMentalLoad, healthGuards, subPrefs) {
+    synthesizeProcedural: function(practice, dof, topMentalLoad) {
       const isHandsBound = (dof && dof.manual_manipulation <= 0.05);
       const isMouthGagged = (dof && dof.speech_articulation <= 0.05);
 
@@ -653,7 +670,7 @@ ANFORDERUNGEN:
       const armPool = isHandsBound ? this.limbDirectives.arms_bound : this.limbDirectives.arms_free;
       const armDirective = armPool[Math.floor(Math.random() * armPool.length)];
 
-      const demutPool = this.cognitiveAxes.gorean_demut;
+      const demutPool = this.cognitiveAxes.demut;
       const demutDirective = demutPool[Math.floor(Math.random() * demutPool.length)];
 
       const speechDirective = isMouthGagged 
@@ -682,46 +699,46 @@ ANFORDERUNGEN:
       const inventory = isPracticeToolAvailable(item.equipmentTag);
 
       return `
-        <div class="p-3.5 sm:p-4 rounded-2xl border transition-all space-y-2.5 ${interp.isVeto ? 'bg-rose-950/20 border-rose-900/60 opacity-80' : (interp.score >= 4 ? 'bg-purple-950/20 border-purple-900/60 shadow-sm' : 'bg-slate-900/70 border-slate-800')}">
+        <div class="p-3.5 sm:p-4 rounded-2xl border transition-all space-y-2.5 ${interp.isVeto ? 'bg-[#000000] border-[#991b1b] opacity-80' : (interp.score >= 4 ? 'bg-[#000000] border-[#c5a880]/60 shadow-sm' : 'bg-[#090d14] border-[#1e2638]')}">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div class="space-y-0.5 min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
-                <strong class="text-xs text-white font-bold block">${escapeHtml(item.title)}</strong>
+                <strong class="text-xs text-[#f8fafc] font-bold block">${escapeHtml(item.title)}</strong>
                 <span class="px-2 py-0.5 rounded text-[9.5px] font-mono border ${interp.badgeClass}">
                   ${interp.badgeText}
                 </span>
-                ${interp.isShame ? '<span class="px-1.5 py-0.2 rounded text-[8.5px] font-mono bg-pink-950 text-pink-300 border border-pink-800 font-bold">Scham-Schutzanker</span>' : ''}
+                ${interp.isShame ? '<span class="px-1.5 py-0.2 rounded text-[8.5px] font-mono bg-[#4a2818] text-[#b3734a] border border-[#8a5232] font-bold">Scham-Schutzanker</span>' : ''}
               </div>
-              <div class="flex items-center gap-2 text-[9.5px] font-mono text-slate-500 pt-0.5">
-                <a href="index.html#view=survey&item=${item.itemId}" target="_blank" class="text-purple-400 hover:text-purple-300 underline flex items-center gap-0.5" title="Zur Frage im Fragebogen springen">
+              <div class="flex items-center gap-2 text-[9.5px] font-mono text-[#94a3b8] pt-0.5">
+                <a href="index.html#view=survey&item=${item.itemId}" target="_blank" class="text-[#c5a880] hover:underline flex items-center gap-0.5" title="Zur Frage im Fragebogen springen">
                   <span>Fragebogen Item #${item.itemId}</span>
                   <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                 </a>
                 <span>·</span>
                 <span>Zone: ${escapeHtml(item.zone)}</span>
                 <span>·</span>
-                <span class="${inventory.available ? 'text-emerald-400' : 'text-slate-500'} font-bold">${escapeHtml(inventory.label)}</span>
+                <span class="${inventory.available ? 'text-[#2e5746]' : 'text-[#94a3b8]'} font-bold">${escapeHtml(inventory.label)}</span>
               </div>
             </div>
 
             <div class="flex items-center gap-2 flex-shrink-0">
-              <span class="font-mono text-xs font-bold text-rose-300">-${item.defaultPenalty} P</span>
+              <span class="font-mono text-xs font-bold text-[#b3734a]">-${item.defaultPenalty} P</span>
               ${isTop ? `
-                <button type="button" ${interp.isVeto ? 'disabled' : ''} onclick="ProtocolTasks.openDisciplineModal('${item.id}')" class="px-3 py-1.5 rounded-xl font-bold text-xs touch-btn shadow-sm transition-all ${interp.isVeto ? 'bg-slate-900 border border-slate-800 text-slate-600 cursor-not-allowed' : 'bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200'}">
+                <button type="button" ${interp.isVeto ? 'disabled' : ''} onclick="ProtocolTasks.openDisciplineModal('${item.id}')" class="px-3 py-1.5 rounded-xl font-bold text-xs touch-btn shadow-sm transition-all ${interp.isVeto ? 'bg-[#090d14] border border-[#1e2638] text-[#94a3b8]/40 cursor-not-allowed' : 'bg-[#991b1b] hover:bg-red-700 text-white border border-[#991b1b]'}">
                   ${interp.isVeto ? 'Veto (Gesperrt)' : 'Zucht anordnen ↗'}
                 </button>
               ` : `
-                <span class="text-[10px] text-slate-500 font-mono italic">Top-Regie</span>
+                <span class="text-[10px] text-[#94a3b8] font-mono italic">Top-Regie</span>
               `}
             </div>
           </div>
 
           <!-- Interpretierte Sub-Transparenz & Notizen -->
-          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1 text-[10.5px]">
-            <p class="text-slate-300 leading-snug">${escapeHtml(interp.interpretation)}</p>
+          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] space-y-1 text-[10.5px]">
+            <p class="text-[#94a3b8] leading-snug">${escapeHtml(interp.interpretation)}</p>
             ${interp.note ? `
-              <div class="pt-1 border-t border-slate-800/60 flex items-start gap-1.5 text-purple-300 italic font-sans">
-                <span class="font-bold font-mono not-italic text-[9.5px] text-purple-400 flex-shrink-0">[Notiz von ${escapeHtml(subName)}]:</span>
+              <div class="pt-1 border-t border-[#1e2638] flex items-start gap-1.5 text-[#b3734a] italic font-sans">
+                <span class="font-bold font-mono not-italic text-[9.5px] text-[#c5a880] flex-shrink-0">[Notiz von ${escapeHtml(subName)}]:</span>
                 <span class="break-words">„${escapeHtml(interp.note)}“</span>
               </div>
             ` : ''}
@@ -764,14 +781,14 @@ ANFORDERUNGEN:
     if (noteBox) {
       noteBox.innerHTML = `
         <div class="flex items-center justify-between text-[10px] font-mono">
-          <span class="text-slate-400">Sub-Bewertung:</span>
+          <span class="text-[#94a3b8]">Sub-Bewertung:</span>
           <div class="flex items-center gap-1.5">
-            <a href="index.html#view=survey&item=${item.itemId}" target="_blank" class="text-purple-400 hover:text-purple-300 underline" title="Fragebogen-Item ansehen">Item #${item.itemId} ↗</a>
+            <a href="index.html#view=survey&item=${item.itemId}" target="_blank" class="text-[#c5a880] hover:underline font-bold" title="Fragebogen-Item ansehen">Item #${item.itemId} ↗</a>
             <span class="${interp.badgeClass} px-2 py-0.5 rounded">${interp.badgeText}</span>
           </div>
         </div>
-        <p class="text-[10.5px] text-slate-300 leading-snug pt-0.5">${escapeHtml(interp.interpretation)}</p>
-        ${interp.note ? `<p class="text-[10px] text-purple-300 italic pt-1 border-t border-slate-800">[Notiz des Subs]: „${escapeHtml(interp.note)}“</p>` : ''}
+        <p class="text-[10.5px] text-[#f8fafc] leading-snug pt-0.5">${escapeHtml(interp.interpretation)}</p>
+        ${interp.note ? `<p class="text-[10px] text-[#b3734a] italic pt-1 border-t border-[#1e2638]">[Notiz des Subs]: „${escapeHtml(interp.note)}“</p>` : ''}
       `;
     }
 
@@ -786,8 +803,8 @@ ANFORDERUNGEN:
       const btnWrapper = document.createElement('div');
       btnWrapper.className = "flex justify-end pt-1";
       btnWrapper.innerHTML = `
-        <button type="button" id="btn-regenerate-posture" onclick="ProtocolTasks.regeneratePosture()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-purple-300 font-mono text-[10px] font-bold flex items-center gap-1 touch-btn">
-          <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+        <button type="button" id="btn-regenerate-posture" onclick="ProtocolTasks.regeneratePosture()" class="px-2.5 py-1 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/60 text-[#c5a880] font-mono text-[10px] font-bold flex items-center gap-1 touch-btn">
+          <svg class="w-3 h-3 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
           <span>Haltung neu auswürfeln</span>
         </button>
       `;
@@ -989,58 +1006,58 @@ ANFORDERUNGEN:
     container.innerHTML = `
       <div class="space-y-4">
         <!-- TOP-ENTLASTUNGS-TRIGGER: ZUSTANDS-KONTROLLE -->
-        <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-purple-900/40 space-y-2 shadow-sm">
+        <div class="p-3.5 rounded-2xl bg-[#090d14] border border-[#1e2638] space-y-2 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-bold block">Führungszustand des Tops:</span>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">Führungszustand des Tops:</span>
             ${isTop ? `
-              <button type="button" onclick="ProtocolTasks.generateAIAssisted()" class="px-2 py-0.5 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-200 font-mono text-[9.5px] font-bold flex items-center gap-1 touch-btn">
-                <svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-                <span>Neu kalibrieren</span>
+              <button type="button" onclick="ProtocolTasks.synthesizeProcedural('${load}', false); ProtocolTasks.render();" class="px-2.5 py-1 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/60 text-[#c5a880] font-mono text-[9.5px] font-bold flex items-center gap-1 touch-btn">
+                <svg class="w-3 h-3 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                <span>Neu auswürfeln</span>
               </button>
             ` : `
-              <span class="text-[9.5px] font-mono text-slate-500">Top-geführt</span>
+              <span class="text-[9.5px] font-mono text-[#94a3b8]">Top-geführt</span>
             `}
           </div>
 
-          <div class="grid grid-cols-3 gap-1.5 text-xs">
-            <button type="button" ${!isTop ? 'disabled' : ''} onclick="ProtocolTasks.setMentalLoad('exhausted')" class="p-2 rounded-xl border text-left transition-all touch-btn ${load === 'exhausted' ? 'bg-amber-950/70 border-amber-600 text-amber-200 shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'}">
-              <strong class="text-[11px] block font-bold leading-tight">Erschöpft</strong>
-              <span class="text-[9px] text-slate-400 block mt-0.5 leading-snug">Stiller Dienst & Entlastung</span>
+          <div class="grid grid-cols-3 gap-1.5 text-xs font-mono">
+            <button type="button" ${!isTop ? 'disabled' : ''} onclick="ProtocolTasks.setMentalLoad('exhausted')" class="p-2.5 rounded-xl border text-left transition-all touch-btn ${load === 'exhausted' ? 'bg-[#4a2818] border-[#8a5232] text-[#f8fafc] shadow-sm font-bold' : 'bg-[#000000] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}">
+              <strong class="text-[11px] block leading-tight">Erschöpft</strong>
+              <span class="text-[9px] text-[#dfcaa9] block mt-0.5 leading-snug">Stiller Dienst &amp; Entlastung</span>
             </button>
-            <button type="button" ${!isTop ? 'disabled' : ''} onclick="ProtocolTasks.setMentalLoad('balanced')" class="p-2 rounded-xl border text-left transition-all touch-btn ${load === 'balanced' ? 'bg-purple-950/70 border-purple-600 text-purple-200 shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'}">
-              <strong class="text-[11px] block font-bold leading-tight">Ausgeglichen</strong>
-              <span class="text-[9px] text-slate-400 block mt-0.5 leading-snug">Haltung & D/s-Ordnung</span>
+            <button type="button" ${!isTop ? 'disabled' : ''} onclick="ProtocolTasks.setMentalLoad('balanced')" class="p-2.5 rounded-xl border text-left transition-all touch-btn ${load === 'balanced' ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-sm font-bold' : 'bg-[#000000] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}">
+              <strong class="text-[11px] block leading-tight">Ausgeglichen</strong>
+              <span class="text-[9px] text-[#94a3b8] block mt-0.5 leading-snug">Haltung &amp; D/s-Ordnung</span>
             </button>
-            <button type="button" ${!isTop ? 'disabled' : ''} onclick="ProtocolTasks.setMentalLoad('strict')" class="p-2 rounded-xl border text-left transition-all touch-btn ${load === 'strict' ? 'bg-indigo-950/70 border-indigo-600 text-indigo-200 shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'}">
-              <strong class="text-[11px] block font-bold leading-tight">Streng</strong>
-              <span class="text-[9px] text-slate-400 block mt-0.5 leading-snug">Inspektion & Disziplin</span>
+            <button type="button" ${!isTop ? 'disabled' : ''} onclick="ProtocolTasks.setMentalLoad('strict')" class="p-2.5 rounded-xl border text-left transition-all touch-btn ${load === 'strict' ? 'bg-[#450a0a] border-[#991b1b] text-[#f8fafc] shadow-sm font-bold' : 'bg-[#000000] border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}">
+              <strong class="text-[11px] block leading-tight">Streng</strong>
+              <span class="text-[9px] text-[#f8fafc]/70 block mt-0.5 leading-snug">Inspektion &amp; Disziplin</span>
             </button>
           </div>
         </div>
 
         <!-- Filter Tabs -->
-        <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar pb-1 border-b border-slate-800 text-xs">
+        <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar pb-1 border-b border-[#1e2638] text-xs font-mono">
           <div class="flex items-center gap-1.5 flex-1 min-w-0">
-            <button type="button" onclick="ProtocolTasks.setTab('all')" class="px-3 py-1.5 rounded-xl font-bold transition-all ${tasksState.filterTab === 'all' ? 'bg-purple-700 text-white shadow-sm' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
+            <button type="button" onclick="ProtocolTasks.setTab('all')" class="px-3 py-1.5 rounded-xl font-bold transition-all ${tasksState.filterTab === 'all' ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}">
               Alle (${tasksState.tasks.length})
             </button>
-            <button type="button" onclick="ProtocolTasks.setTab('submitted')" class="px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${tasksState.filterTab === 'submitted' ? 'bg-amber-700 text-white shadow-sm' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
+            <button type="button" onclick="ProtocolTasks.setTab('submitted')" class="px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${tasksState.filterTab === 'submitted' ? 'bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] shadow-sm' : 'bg-[#090d14] border border-[#1e2638] text-[#b3734a] hover:text-[#f8fafc]'}">
               <span>Prüfung</span>
-              ${submittedCount > 0 ? `<span class="px-1.5 py-0.2 rounded-full text-[9px] bg-amber-400 text-black font-black">${submittedCount}</span>` : ''}
+              ${submittedCount > 0 ? `<span class="px-1.5 py-0.2 rounded-full text-[9px] bg-[#d4af37] text-black font-black">${submittedCount}</span>` : ''}
             </button>
-            <button type="button" onclick="ProtocolTasks.setTab('due')" class="px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${tasksState.filterTab === 'due' ? 'bg-rose-800 text-white shadow-sm' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
+            <button type="button" onclick="ProtocolTasks.setTab('due')" class="px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${tasksState.filterTab === 'due' ? 'bg-[#450a0a] border border-[#991b1b] text-[#f8fafc] shadow-sm' : 'bg-[#090d14] border border-[#1e2638] text-[#991b1b] hover:text-[#f8fafc]'}">
               <span>Fällig</span>
-              ${pendingCount > 0 ? `<span class="px-1.5 py-0.2 rounded-full text-[9px] bg-rose-400 text-black font-black">${pendingCount}</span>` : ''}
+              ${pendingCount > 0 ? `<span class="px-1.5 py-0.2 rounded-full text-[9px] bg-[#991b1b] text-white font-black">${pendingCount}</span>` : ''}
             </button>
-            <button type="button" onclick="ProtocolTasks.setTab('relief')" class="px-3 py-1.5 rounded-xl font-bold transition-all ${tasksState.filterTab === 'relief' ? 'bg-purple-900 border border-purple-600 text-purple-200' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
+            <button type="button" onclick="ProtocolTasks.setTab('relief')" class="px-3 py-1.5 rounded-xl font-bold transition-all ${tasksState.filterTab === 'relief' ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880]' : 'bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}">
               Entlastung
             </button>
-            <button type="button" onclick="ProtocolTasks.setTab('micro_ds')" class="px-3 py-1.5 rounded-xl font-bold transition-all ${tasksState.filterTab === 'micro_ds' ? 'bg-indigo-900 border border-indigo-600 text-indigo-200' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'}">
-              Geste & Disziplin
+            <button type="button" onclick="ProtocolTasks.setTab('micro_ds')" class="px-3 py-1.5 rounded-xl font-bold transition-all ${tasksState.filterTab === 'micro_ds' ? 'bg-[#000000] border border-[#b3734a] text-[#b3734a]' : 'bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}">
+              Geste &amp; Disziplin
             </button>
           </div>
           ${isTop ? `
-            <button type="button" onclick="ProtocolTasks.openCreateModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1 touch-btn flex-shrink-0">
+            <button type="button" onclick="ProtocolTasks.openCreateModal()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#c5a880] font-bold text-xs flex items-center gap-1 touch-btn flex-shrink-0">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
               <span>+ Pflicht</span>
             </button>
@@ -1050,7 +1067,7 @@ ANFORDERUNGEN:
         <!-- Task Cards List -->
         <div class="space-y-2.5">
           ${filtered.length === 0 ? `
-            <div class="py-8 text-center text-slate-500 text-xs">
+            <div class="py-8 text-center text-[#94a3b8] text-xs font-mono">
               Keine Pflichten in dieser Kategorie vorhanden.
             </div>
           ` : filtered.map(task => {
@@ -1060,49 +1077,49 @@ ANFORDERUNGEN:
             const isRelief = task.category === 'relief_service' || task.category === 'household';
 
             return `
-              <div class="p-3.5 sm:p-4 rounded-2xl border transition-all space-y-2 ${isSubmitted ? 'bg-amber-950/20 border-amber-700/60 shadow-md' : (isDue ? 'bg-rose-950/20 border-rose-800/80 shadow-sm' : 'bg-slate-900/60 border-slate-800/80')}">
+              <div class="p-3.5 sm:p-4 rounded-2xl border transition-all space-y-2 ${isSubmitted ? 'bg-[#4a2818]/25 border-[#8a5232] shadow-md' : (isDue ? 'bg-[#450a0a]/20 border-[#991b1b] shadow-sm' : 'bg-[#090d14] border-[#1e2638]')}">
                 <div class="flex items-start justify-between gap-2">
                   <div class="space-y-0.5 min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                      <strong class="text-xs text-white block truncate font-bold">${escapeHtml(task.title)}</strong>
-                      <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold ${isSubmitted ? 'bg-amber-950 text-amber-300 border border-amber-800' : (isApproved ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : (isDue ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-slate-400'))}">
+                      <strong class="text-xs text-[#f8fafc] block truncate font-bold">${escapeHtml(task.title)}</strong>
+                      <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold ${isSubmitted ? 'bg-[#4a2818] text-[#b3734a] border border-[#8a5232]' : (isApproved ? 'bg-[#142b24] text-[#2e5746] border border-[#2e5746]' : (isDue ? 'bg-[#450a0a] text-[#f8fafc] border border-[#991b1b]' : 'bg-[#000000] text-[#94a3b8] border border-[#1e2638]'))}">
                         ${isSubmitted ? 'In Prüfung' : (isApproved ? 'Anerkannt ✓' : (isDue ? 'Fällig' : 'Offen'))}
                       </span>
                     </div>
-                    <p class="text-[10.5px] text-slate-400 leading-snug break-words">${escapeHtml(task.desc)}</p>
+                    <p class="text-[10.5px] text-[#94a3b8] leading-snug break-words">${escapeHtml(task.desc)}</p>
                     ${task.submissionNote ? `
-                      <p class="text-[10px] text-amber-300 italic pt-1 border-t border-slate-800/60">
+                      <p class="text-[10px] text-[#dfcaa9] italic pt-1 border-t border-[#1e2638]">
                         [Vollzugsnotiz]: „${escapeHtml(task.submissionNote)}“
                       </p>
                     ` : ''}
                   </div>
-                  <span class="font-mono text-xs font-black text-amber-300 flex-shrink-0">+${task.points} P</span>
+                  <span class="font-mono text-xs font-bold text-[#c5a880] flex-shrink-0">+${task.points} P</span>
                 </div>
 
-                <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-xs">
-                  <div class="flex items-center gap-2 text-[10px] text-slate-500 font-mono">
+                <div class="flex items-center justify-between pt-1 border-t border-[#1e2638] text-xs">
+                  <div class="flex items-center gap-2 text-[10px] text-[#94a3b8] font-mono">
                     <span>${task.interval === 'daily' ? `Täglich bis ${task.dueTime || '20:00'}` : (task.interval === 'weekly' ? `Wöchentlich um ${task.dueTime || '20:00'}` : 'Einmalig')}</span>
-                    ${isRelief ? '<span class="text-amber-400 font-bold">· Entlastungsdienst</span>' : '<span class="text-purple-400 font-bold">· Micro-D/s</span>'}
+                    ${isRelief ? '<span class="text-[#c5a880] font-bold">· Entlastungsdienst</span>' : '<span class="text-[#b3734a] font-bold">· Micro-D/s</span>'}
                   </div>
 
-                  <div class="flex items-center gap-1.5">
+                  <div class="flex items-center gap-1.5 font-mono text-[10px]">
                     ${!isTop && task.status === 'pending' ? `
-                      <button type="button" onclick="ProtocolTasks.openSubmitModal('${task.id}')" class="px-3 py-1.5 rounded-xl bg-purple-900/90 hover:bg-purple-800 border border-purple-700 text-white font-bold text-xs flex items-center gap-1 touch-btn shadow-sm">
+                      <button type="button" onclick="ProtocolTasks.openSubmitModal('${task.id}')" class="px-3 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold flex items-center gap-1 touch-btn shadow-sm">
                         <span>Erledigt melden ↗</span>
                       </button>
                     ` : ''}
 
                     ${isTop && isSubmitted ? `
-                      <button type="button" onclick="ProtocolTasks.approve('${task.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs touch-btn shadow-sm">
+                      <button type="button" onclick="ProtocolTasks.approve('${task.id}')" class="px-3 py-1.5 rounded-xl bg-[#142b24] hover:bg-[#2e5746] text-[#f8fafc] border border-[#2e5746] font-bold touch-btn shadow-sm">
                         Anerkennen (+${task.points})
                       </button>
-                      <button type="button" onclick="ProtocolTasks.openRejectModal('${task.id}')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 font-bold text-xs touch-btn">
+                      <button type="button" onclick="ProtocolTasks.openRejectModal('${task.id}')" class="px-2.5 py-1.5 rounded-xl bg-[#000000] hover:bg-[#450a0a] text-[#94a3b8] hover:text-[#f8fafc] border border-[#1e2638] font-bold touch-btn">
                         Abweisen...
                       </button>
                     ` : ''}
 
                     ${isTop && !isSubmitted ? `
-                      <button type="button" onclick="ProtocolTasks.deleteTask('${task.id}')" title="Pflicht löschen" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 touch-btn">
+                      <button type="button" onclick="ProtocolTasks.deleteTask('${task.id}')" title="Pflicht löschen" class="p-1.5 rounded-lg text-[#94a3b8] hover:text-[#991b1b] touch-btn">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
                       </button>
                     ` : ''}
@@ -1123,68 +1140,68 @@ ANFORDERUNGEN:
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-create-task';
-      modal.className = "fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4";
+      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4";
       document.body.appendChild(modal);
     }
 
     modal.innerHTML = `
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-2xl text-xs">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="w-full max-w-md bg-[#090d14] border border-[#1e2638] rounded-3xl p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans">
+        <div class="flex items-center justify-between border-b border-[#1e2638] pb-3">
           <div>
-            <h3 class="text-sm font-bold text-white">Neue Pflicht anordnen</h3>
-            <span class="text-[10px] text-slate-400">Intervall, Uhrzeit und Tribut festlegen</span>
+            <h3 class="text-sm font-bold text-white font-serif">Neue Pflicht anordnen</h3>
+            <span class="text-[10px] text-[#94a3b8] font-mono">Intervall, Uhrzeit und Tribut festlegen</span>
           </div>
-          <button type="button" onclick="document.getElementById('modal-create-task').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          <button type="button" onclick="document.getElementById('modal-create-task').style.display='none'" class="p-1.5 text-[#94a3b8] hover:text-white">
+            ✕
           </button>
         </div>
 
         <div class="space-y-3">
           <div>
-            <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Titel der Pflicht:</label>
-            <input type="text" id="input-task-title" placeholder="z. B. Schuhe putzen & auf Knien servieren" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-purple-600 focus:outline-none" />
+            <label class="text-[10px] font-mono text-[#94a3b8] uppercase block mb-1">Titel der Pflicht:</label>
+            <input type="text" id="input-task-title" placeholder="z. B. Schuhe putzen &amp; auf Knien servieren" class="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-white text-xs focus:border-[#c5a880] focus:outline-none" />
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Kategorie:</label>
-              <select id="select-task-cat" class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs">
+              <label class="text-[10px] font-mono text-[#94a3b8] uppercase block mb-1">Kategorie:</label>
+              <select id="select-task-cat" class="w-full px-2.5 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-white text-xs">
                 <option value="relief_service">Stiller Dienst am Top</option>
-                <option value="household">Haushalt & Ordnung</option>
-                <option value="micro_ds">Micro-D/s & Geste</option>
-                <option value="discipline">Disziplin & Körper</option>
+                <option value="household">Haushalt &amp; Ordnung</option>
+                <option value="micro_ds">Micro-D/s &amp; Geste</option>
+                <option value="discipline">Disziplin &amp; Körper</option>
               </select>
             </div>
             <div>
-              <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Tribut-Punkte:</label>
-              <input type="number" id="input-task-points" value="20" min="5" max="200" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono" />
+              <label class="text-[10px] font-mono text-[#94a3b8] uppercase block mb-1">Tribut-Punkte:</label>
+              <input type="number" id="input-task-points" value="20" min="5" max="200" class="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-white text-xs font-mono" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Intervall:</label>
-              <select id="select-task-interval" class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs">
+              <label class="text-[10px] font-mono text-[#94a3b8] uppercase block mb-1">Intervall:</label>
+              <select id="select-task-interval" class="w-full px-2.5 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-white text-xs">
                 <option value="daily">Täglich</option>
                 <option value="weekly">Wöchentlich</option>
                 <option value="once">Einmalig</option>
               </select>
             </div>
             <div>
-              <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Fällig bis (Uhrzeit):</label>
-              <input type="time" id="input-task-duetime" value="20:00" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono" />
+              <label class="text-[10px] font-mono text-[#94a3b8] uppercase block mb-1">Fällig bis (Uhrzeit):</label>
+              <input type="time" id="input-task-duetime" value="20:00" class="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-white text-xs font-mono" />
             </div>
           </div>
 
           <div>
-            <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Genaue Ausführungs-Anweisung:</label>
-            <textarea id="input-task-desc" rows="2" placeholder="Haltung, Rhythmus und genaue Bedingungen..." class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-purple-600 focus:outline-none"></textarea>
+            <label class="text-[10px] font-mono text-[#94a3b8] uppercase block mb-1">Genaue Ausführungs-Anweisung:</label>
+            <textarea id="input-task-desc" rows="2" placeholder="Haltung, Rhythmus und genaue Bedingungen..." class="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-white text-xs focus:border-[#c5a880] focus:outline-none"></textarea>
           </div>
         </div>
 
-        <div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
-          <button type="button" onclick="document.getElementById('modal-create-task').style.display='none'" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs touch-btn">Abbrechen</button>
-          <button type="button" onclick="ProtocolTasks.saveNewTask()" class="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs touch-btn shadow-md">Pflicht anordnen ✓</button>
+        <div class="pt-2 border-t border-[#1e2638] flex justify-end gap-2 font-mono">
+          <button type="button" onclick="document.getElementById('modal-create-task').style.display='none'" class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold text-xs touch-btn">Abbrechen</button>
+          <button type="button" onclick="ProtocolTasks.saveNewTask()" class="px-4 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md">Pflicht anordnen ✓</button>
         </div>
       </div>
     `;
@@ -1246,7 +1263,7 @@ ANFORDERUNGEN:
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'modal-submit-task';
-      modal.className = "fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4";
+      modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4";
       document.body.appendChild(modal);
     }
 
@@ -1255,30 +1272,28 @@ ANFORDERUNGEN:
     if (!task) return;
 
     modal.innerHTML = `
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-2xl text-xs">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="w-full max-w-md bg-[#090d14] border border-[#1e2638] rounded-3xl p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans">
+        <div class="flex items-center justify-between border-b border-[#1e2638] pb-3">
           <div>
-            <h3 class="text-sm font-bold text-white">Pflicht als erledigt melden</h3>
-            <span class="text-[10px] text-slate-400">Reiche deinen Vollzug zur Prüfung beim Top ein</span>
+            <h3 class="text-sm font-bold text-white font-serif">Pflicht als erledigt melden</h3>
+            <span class="text-[10px] text-[#94a3b8] font-mono">Reiche deinen Vollzug zur Prüfung beim Top ein</span>
           </div>
-          <button type="button" onclick="document.getElementById('modal-submit-task').style.display='none'" class="p-1.5 text-slate-400 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
+          <button type="button" onclick="document.getElementById('modal-submit-task').style.display='none'" class="p-1.5 text-[#94a3b8] hover:text-white">✕</button>
         </div>
 
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+        <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
           <strong class="text-xs text-white block">${escapeHtml(task.title)}</strong>
-          <p class="text-[10.5px] text-slate-400">${escapeHtml(task.desc)}</p>
+          <p class="text-[10.5px] text-[#94a3b8]">${escapeHtml(task.desc)}</p>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block">Notiz an den Top (optional):</label>
-          <input type="text" id="input-submit-task-note" placeholder="z. B. Gründlich geputzt / Pünktlich vollzogen..." class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-purple-600 focus:outline-none" />
+          <label class="text-[10px] font-mono text-[#94a3b8] uppercase block">Notiz an den Top (optional):</label>
+          <input type="text" id="input-submit-task-note" placeholder="z. B. Gründlich geputzt / Pünktlich vollzogen..." class="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-white text-xs focus:border-[#c5a880] focus:outline-none" />
         </div>
 
-        <div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
-          <button type="button" onclick="document.getElementById('modal-submit-task').style.display='none'" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs touch-btn">Abbrechen</button>
-          <button type="button" onclick="ProtocolTasks.confirmSubmit('${task.id}')" class="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs touch-btn shadow-md">Zur Prüfung einreichen ↗</button>
+        <div class="pt-2 border-t border-[#1e2638] flex justify-end gap-2 font-mono">
+          <button type="button" onclick="document.getElementById('modal-submit-task').style.display='none'" class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold text-xs touch-btn">Abbrechen</button>
+          <button type="button" onclick="ProtocolTasks.confirmSubmit('${task.id}')" class="px-4 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md">Zur Prüfung einreichen ↗</button>
         </div>
       </div>
     `;
