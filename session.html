@@ -113,11 +113,11 @@
 
       <!-- Desktop Quick Actions -->
       <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
-        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung -->
-        <button type="button" onclick="SessionRuntime.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-pad" style="min-height: 36px;" title="Rollenwechsel (Top / Bottom / Switch)">
+        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung bzw. Arretierung bei FLR -->
+        <button type="button" onclick="SessionRuntime.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-pad" style="min-height: 36px;" title="Rollenanzeige / Wechsel">
           <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
           <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
-          <span class="text-[9px] text-[#94a3b8]/60">⇄ Switch</span>
+          <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
         </button>
 
         <!-- Ausrüstungsschrank Button -->
@@ -426,7 +426,46 @@
       }
 
       let currentRoleState = 'top';
+
+      function initRoleDisplay() {
+        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+        const roleText = document.getElementById('active-role-text');
+        const roleDot = document.getElementById('role-indicator-dot');
+        const roleSubline = document.getElementById('role-switch-subline');
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isTop = (assignedRole === keyholder);
+
+        if (mode === 'flr_24_7') {
+          currentRoleState = isTop ? 'top' : 'bottom';
+          if (roleText) roleText.innerText = isTop ? 'Top (FLR)' : 'Bottom (FLR)';
+          if (roleDot) roleDot.className = isTop ? 'w-1.5 h-1.5 rounded-full bg-[#c5a880]' : 'w-1.5 h-1.5 rounded-full bg-[#b3734a]';
+          if (roleSubline) roleSubline.innerText = '🔒 Fest';
+        } else {
+          currentRoleState = isTop ? 'top' : 'bottom';
+          if (roleText) roleText.innerText = isTop ? 'Top' : 'Bottom';
+          if (roleDot) roleDot.className = isTop ? 'w-1.5 h-1.5 rounded-full bg-[#c5a880]' : 'w-1.5 h-1.5 rounded-full bg-[#b3734a]';
+          if (roleSubline) roleSubline.innerText = '⇄ Switch';
+        }
+      }
+
       function toggleActiveRole() {
+        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isTop = (assignedRole === keyholder);
+
+        // Schutz im Modus flr_24_7: Kein eigenmächtiger 1-Tap Wechsel
+        if (mode === 'flr_24_7') {
+          if (!isTop) {
+            showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe erfordert formellen Antrag im Paar-Stream (chat.html).");
+          } else {
+            showToast("Führung ist fest arretiert (FLR 24/7). Übergabe nur über feierliche Zeremonie im Paar-Stream möglich.");
+          }
+          return;
+        }
+
+        // Casual- & Switch-Modus: Freier Rollenwechsel
         const roleText = document.getElementById('active-role-text');
         const roleDot = document.getElementById('role-indicator-dot');
         if (currentRoleState === 'top') {
@@ -451,8 +490,10 @@
         switchStage: switchStage,
         toggleDimmer: toggleNightstandDimmer,
         toggleActiveRole: toggleActiveRole,
+        initRoleDisplay: initRoleDisplay,
         init: function() {
           handleHashRouting();
+          initRoleDisplay();
           window.addEventListener('hashchange', handleHashRouting);
         }
       };
