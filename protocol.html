@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>TACTUS · Das Protokoll, Disziplin &amp; Beziehungsvertrag</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <script>
     (function() {
       var savedTheme = localStorage.getItem('kompass_theme') || 'dark';
@@ -21,22 +25,34 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3',
-              500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
-              800: '#9f1239', 900: '#881337', 950: '#4c0519',
-            },
-            noir: {
-              950: '#000000', 900: '#05070c', 850: '#0a0e17',
-              800: '#101726', 700: '#172238', 600: '#233454',
-            }
+            obsidian: '#000000',
+            graphite: '#090d14',
+            graphiteLight: '#101622',
+            slateBorder: '#1e2638',
+            champagne: '#c5a880',
+            champagneLight: '#dfcaa9',
+            feingold: '#d4af37',
+            bordeaux: '#991b1b',
+            bordeauxDark: '#450a0a',
+            malachite: '#142b24',
+            malachiteLight: '#2e5746',
+            cognac: '#8a5232',
+            cognacLight: '#b3734a',
+            cognacDark: '#4a2818',
+            platinum: '#f8fafc',
+            silverMuted: '#94a3b8'
+          },
+          fontFamily: {
+            serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
           }
         }
       }
     };
   </script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
     :root {
       --sat: env(safe-area-inset-top, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
@@ -44,169 +60,189 @@
       --sar: env(safe-area-inset-right, 0px);
     }
     body {
+      background-color: #000000;
+      color: #f8fafc;
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       -webkit-tap-highlight-color: transparent;
+      padding-top: var(--sat);
       padding-bottom: var(--sab);
       padding-left: var(--sal);
       padding-right: var(--sar);
     }
-    .font-serif-title {
-      font-family: 'Playfair Display', Georgia, serif;
-    }
-    html.dark body { background-color: #000000 !important; color: #f8fafc !important; }
-    html.dark .theme-card { background-color: #060911 !important; border-color: #172033 !important; color: #f8fafc !important; }
-    html.dark .theme-panel { background-color: #0b111e !important; border-color: #1e2b44 !important; color: #e2e8f0 !important; }
-    html:not(.dark) body { background-color: #f8fafc !important; color: #0f172a !important; }
-    html:not(.dark) .theme-card { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
-    html:not(.dark) .theme-panel { background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
     .touch-btn {
       min-height: 44px;
       transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
       -webkit-user-select: none;
       user-select: none;
     }
-    .touch-btn:active { transform: scale(0.98); }
+    .touch-btn:active { transform: scale(0.985); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     @media print {
       body { background-color: #ffffff !important; color: #000000 !important; }
-      header, nav, #bottom-readonly-banner, .no-print, #modal-contract-signature, #modal-contract-print-choice, #modal-reject-task, #modal-execute-discipline, #modal-break-glass, #modal-ledger-role-config { display: none !important; }
-      #view-ledger-contract { display: block !important; }
-      #view-ledger-dashboard, #view-ledger-chores, #view-ledger-ai_coach { display: none !important; }
+      header, nav, #bottom-readonly-banner, .no-print,
+      #modal-contract-signature, #modal-contract-print-choice,
+      #modal-reject-task, #modal-execute-discipline,
+      #modal-break-glass, #modal-ledger-role-config,
+      #view-ledger-dashboard, #view-ledger-chores, #view-ledger-ai_coach,
+      #toast-container, button { display: none !important; }
+      #view-ledger-contract { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
       body.print-blank-signatures #sig-box-top img,
       body.print-blank-signatures #sig-box-sub img { display: none !important; }
       body.print-blank-signatures #sig-box-top::after,
       body.print-blank-signatures #sig-box-sub::after {
-        content: "[ Siegel / Namenszug ]";
-        color: #94a3b8;
+        content: "L. S. (Locus Sigilli / Siegelwachs)";
+        position: absolute;
+        bottom: 2mm;
+        right: 3mm;
         font-family: monospace;
-        font-size: 11px;
+        font-size: 8pt;
+        color: #94a3b8;
       }
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-purple-700 selection:text-white transition-colors duration-200">
+<body class="min-h-screen flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
 
-  <!-- HEADER -->
-  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-slate-900 shadow-sm" style="padding-top: max(8px, var(--sat));">
-    <div class="max-w-4xl mx-auto px-3 sm:px-6 pb-2 space-y-1.5">
-      <div class="flex items-center justify-between gap-2">
-        <a href="index.html#view=hub" class="flex items-center space-x-2.5 min-w-0 text-left group touch-btn cursor-pointer flex-1">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-950 via-indigo-900 to-rose-950 border border-purple-500/40 text-purple-200 flex items-center justify-center shadow-lg p-1.5 flex-shrink-0 group-hover:scale-105 transition-transform">
-            <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
-            </svg>
+  <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 · ZERO PIXEL-JUMPING) -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#1e2638]/60 h-14 flex items-center">
+    <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between">
+      
+      <!-- Brand-Einheit mit TACTUS Logo & Status -->
+      <a href="index.html#view=hub" class="flex items-center space-x-3 cursor-pointer group min-w-0 flex-1 mr-2 touch-btn" style="min-height: 40px;">
+        <div class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#c5a880]/40 flex items-center justify-center p-1 shadow-sm group-hover:border-[#c5a880] transition-colors flex-shrink-0 overflow-hidden">
+          <img src="assets/logo.png" onerror="this.onerror=null; this.src='img/tactus_logo.png'; this.style.display='none'; this.nextElementSibling.style.display='block';" alt="TACTUS Logo" class="w-full h-full object-contain" />
+          <svg class="w-5 h-5 text-[#c5a880] hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5 8c3.5-3 10.5-3 14 0M7 16c2.5 2.5 7.5 2.5 10 0" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" fill-opacity="0.3" stroke="currentColor" />
+          </svg>
+        </div>
+        <div class="min-w-0 truncate">
+          <div class="flex items-center gap-1.5">
+            <span class="font-serif text-sm sm:text-base tracking-widest text-[#f8fafc] font-semibold leading-none truncate">TACTUS</span>
+            <span id="ledger-lock-status-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0">OFFEN</span>
           </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5">
-              <h1 class="text-xs sm:text-sm font-black tracking-tight leading-none text-white font-serif-title">TACTUS · Das Protokoll</h1>
-              <span id="ledger-lock-status-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-800 uppercase flex-shrink-0">OFFEN</span>
-            </div>
-            <span class="text-[9.5px] text-slate-400 font-medium block mt-0.5 truncate" id="ledger-header-roles">Top: Partner 1 · Bottom: Partner 2</span>
-          </div>
+          <span class="text-[9.5px] font-mono text-[#94a3b8] block leading-none mt-1 truncate" id="ledger-header-roles">Top: Partner 1 · Bottom: Partner 2</span>
+        </div>
+      </a>
+
+      <!-- Desktop Quick Actions -->
+      <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
+        <!-- Live-Saldo Anzeige -->
+        <div class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm" style="min-height: 36px;" title="Aktueller Saldo (Tribut-Konto)">
+          <svg class="w-3.5 h-3.5 text-[#d4af37]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span id="header-balance-display">0 P</span>
+        </div>
+
+        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung -->
+        <button type="button" onclick="ProtocolCore.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Rollenwechsel (Top / Bottom)">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
+          <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
+          <span class="text-[9px] text-[#94a3b8]/60">⇄ Switch</span>
+        </button>
+
+        <!-- Ausrüstungsschrank Button -->
+        <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Ausrüstungsschrank öffnen">
+          <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+          <span>Schrank</span>
+        </button>
+
+        <!-- RACK Notfall-Öffnung (Break-Glass) -->
+        <button type="button" onclick="ProtocolCore.openBreakGlass()" class="px-2.5 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-mono text-xs font-bold flex items-center gap-1 touch-btn shadow-sm" style="min-height: 36px;" title="RACK Notfall-Öffnung (Break-Glass)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+          <span>Notfall</span>
+        </button>
+
+        <!-- Zur Schlafzimmer-Regie -->
+        <a href="session.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] font-mono text-xs font-medium flex items-center gap-1.5 touch-btn" style="min-height: 36px;">
+          <span>Regie →</span>
         </a>
-
-        <!-- DESKTOP ACTIONS -->
-        <div class="hidden md:flex items-center gap-1.5 flex-shrink-0">
-          <div class="px-3 py-1.5 rounded-xl bg-purple-950/70 border border-purple-800 text-purple-200 font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm" title="Aktueller Saldo (Tribut-Konto)">
-            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span id="header-balance-display">0 P</span>
-          </div>
-          <a href="chat.html" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-bold text-xs flex items-center gap-1.5 shadow-sm touch-btn" title="E2EE Paar-Stream öffnen">
-            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>
-            <span>Stream</span>
-          </a>
-          <button type="button" onclick="ProtocolCore.openBreakGlass()" class="px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold text-xs flex items-center gap-1 touch-btn shadow-sm" title="Notfall-Öffnung (Break-Glass)">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
-            <span>Notfall-Öffnung</span>
-          </button>
-          <a href="session.html" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-800 to-indigo-800 text-white font-bold text-xs touch-btn shadow-md flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
-            <span>Regie</span>
-          </a>
-        </div>
-
-        <!-- MOBILE BURGER BUTTON -->
-        <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
-          <span class="px-2 py-1 rounded-xl bg-purple-950 border border-purple-800 text-purple-200 font-mono font-bold text-[11px]" id="header-balance-mobile">0 P</span>
-          <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
-          </button>
-        </div>
       </div>
 
-      <!-- DESKTOP NAV -->
-      <nav class="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-xs font-bold -mx-1 px-1">
-        <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Start-Hub</a>
-        <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Fragebogen (185)</a>
-        <a href="analyse.html" class="px-3 py-1.5 rounded-xl text-amber-300 hover:text-white transition whitespace-nowrap touch-btn">Paar-Analyse</a>
-        <a href="chat.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Paar-Stream</a>
-        <button type="button" class="px-3 py-1.5 rounded-xl bg-purple-900/90 text-white shadow-xs whitespace-nowrap cursor-default border border-purple-700">Das Protokoll</button>
-        <a href="guide.html" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition whitespace-nowrap touch-btn">Guide</a>
-        <a href="session.html" class="px-3 py-1.5 rounded-xl text-rose-300 hover:text-white transition whitespace-nowrap touch-btn">Regie</a>
-      </nav>
+      <!-- Mobile Actions -->
+      <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
+        <span class="px-2 py-1 rounded-xl bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] font-mono font-bold text-[11px]" id="header-balance-mobile">0 P</span>
+        <button type="button" onclick="ProtocolCore.openBreakGlass()" class="w-9 h-9 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white flex items-center justify-center touch-btn" title="Notfall-Öffnung">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+        </button>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#f8fafc] flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+      </div>
+
     </div>
   </header>
 
+  <!-- SUB-NAVIGATION DER 6 HAUPT-COCKPITS (DESKTOP) -->
+  <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
+    <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-mono">
+      <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Start-Hub</a>
+      <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (185)</a>
+      <a href="analyse.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Analyse</a>
+      <a href="chat.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Stream</a>
+      <span class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap cursor-default" style="min-height: 36px;">Das Protokoll ✓</span>
+      <a href="guide.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Guide</a>
+      <a href="session.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#b3734a] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Schlafzimmer-Regie</a>
+    </div>
+  </nav>
+
   <!-- MOBILE DRAWER -->
-  <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs">
+  <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs font-mono">
     <div class="space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex items-center justify-between border-b border-[#1e2638] pb-3">
         <div class="flex items-center space-x-2.5">
-          <div class="w-8 h-8 rounded-xl bg-purple-950 border border-purple-600 text-purple-300 flex items-center justify-center font-bold text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+          <div class="w-8 h-8 rounded-xl bg-[#090d14] border border-[#c5a880]/50 flex items-center justify-center p-1">
+            <span class="font-serif text-sm font-bold text-[#c5a880]">T</span>
           </div>
           <div>
-            <h3 class="text-sm font-bold text-white font-serif-title">TACTUS OS</h3>
-            <span class="text-[10px] text-slate-400 font-medium block">Das Protokoll &amp; Beziehungsvertrag</span>
+            <h3 class="text-sm font-serif text-[#f8fafc]">TACTUS OS</h3>
+            <span class="text-[10px] text-[#94a3b8]">Das Protokoll &amp; Beziehungsvertrag</span>
           </div>
         </div>
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-8 h-8 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <div class="space-y-1.5 pt-1">
-        <a href="index.html#view=hub" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-white">Start-Hub</span>
-          <span class="text-slate-500 text-xs">→</span>
+        <a href="index.html#view=hub" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#f8fafc]">Start-Hub</span>
+          <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="index.html#view=survey" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-white">Fragebogen (185 Items)</span>
-          <span class="text-slate-500 text-xs">→</span>
+        <a href="index.html#view=survey" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (185 Items)</span>
+          <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="analyse.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-amber-300">Paar-Analyse &amp; Synergie</span>
-          <span class="text-[10px] text-amber-400 font-bold">Doppel-5er</span>
+        <a href="analyse.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#c5a880]">Paar-Analyse &amp; Synergie</span>
+          <span class="text-[10px] text-[#d4af37] font-bold">Doppel-5er</span>
         </a>
-        <a href="chat.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-slate-300">E2EE Paar-Stream</span>
-          <span class="text-slate-500 text-xs">→</span>
+        <a href="chat.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#94a3b8]">E2EE Paar-Stream</span>
+          <span class="text-[#94a3b8]">→</span>
         </a>
-        <div class="w-full p-3 rounded-2xl bg-purple-950/60 border border-purple-600 text-left flex items-center justify-between shadow-md">
-          <span class="text-xs font-bold text-purple-200">Das Protokoll &amp; Vertrag</span>
-          <span class="text-[10px] text-purple-300 font-bold">Hier aktiv ✓</span>
+        <div class="w-full p-3 rounded-2xl bg-[#000000] border border-[#c5a880] text-left flex items-center justify-between shadow-md">
+          <span class="text-xs font-bold text-[#c5a880]">Das Protokoll &amp; Vertrag</span>
+          <span class="text-[10px] text-[#c5a880] font-bold">Hier aktiv ✓</span>
         </div>
-        <a href="guide.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-slate-300">BDSM- &amp; Vertrauens-Guide</span>
-          <span class="text-slate-500 text-xs">→</span>
+        <a href="guide.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#94a3b8]">BDSM- &amp; Vertrauens-Guide</span>
+          <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="session.html" class="w-full p-3 rounded-2xl theme-panel border border-slate-800 text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-rose-300">Schlafzimmer-Regie</span>
-          <span class="text-[10px] text-rose-400 font-bold">Live ↗</span>
+        <a href="session.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#b3734a]">Schlafzimmer-Regie</span>
+          <span class="text-[10px] text-[#b3734a] font-bold">Live ↗</span>
         </a>
       </div>
 
-      <div class="pt-2 border-t border-slate-800">
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; ProtocolCore.openBreakGlass();" class="w-full p-3 rounded-2xl bg-rose-950/40 border border-rose-800 text-rose-200 text-left space-y-0.5 touch-btn">
-          <strong class="text-xs block font-bold text-rose-300">Notfall-Öffnung (Break-Glass)</strong>
-          <span class="text-[10px] text-rose-300/80 block">RACK-Sicherheitsprotokoll bei Schwellung oder Notfall</span>
+      <div class="pt-2 border-t border-[#1e2638]">
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; ProtocolCore.openBreakGlass();" class="w-full p-3 rounded-2xl bg-[#450a0a] border border-[#991b1b] text-white text-left space-y-0.5 touch-btn shadow-md">
+          <strong class="text-xs block font-bold text-white">Notfall-Öffnung (Break-Glass)</strong>
+          <span class="text-[10px] text-white/80 block">RACK-Sicherheitsprotokoll bei Schwellung oder Taubheit</span>
         </button>
       </div>
     </div>
-    <div class="pt-4 border-t border-slate-900 text-center">
-      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-2.5 bg-slate-900 text-slate-300 font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
+    <div class="pt-4 border-t border-[#1e2638] text-center">
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-2.5 bg-[#090d14] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
     </div>
   </div>
 
@@ -214,74 +250,74 @@
   <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full space-y-4">
 
     <!-- ROLLEN-BANNER FÜR DEN BOTTOM -->
-    <div id="bottom-readonly-banner" class="hidden p-3.5 rounded-2xl bg-indigo-950/70 border border-indigo-700/80 text-indigo-200 text-xs flex items-center justify-between gap-2 shadow-lg animate-fade-in">
+    <div id="bottom-readonly-banner" class="hidden p-3.5 rounded-2xl bg-[#090d14] border border-[#8a5232] text-[#f8fafc] text-xs flex items-center justify-between gap-2 shadow-lg animate-fade-in font-sans">
       <div class="flex items-center gap-2.5">
-        <svg class="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+        <svg class="w-5 h-5 text-[#b3734a] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
         <div>
           <strong class="text-white block font-bold text-xs">Ansicht für den Partner (Bottom)</strong>
-          <span class="text-[10.5px] text-slate-300 block leading-snug">Du kannst alle Zähler, Pflichten, Strafen und den Kodex einsehen. Anpassungen und Freigaben obliegen dem Top.</span>
+          <span class="text-[10.5px] text-[#94a3b8] block leading-snug">Du kannst alle Zähler, Pflichten, Strafen und den Kodex einsehen. Anpassungen und Freigaben obliegen dem Top.</span>
         </div>
       </div>
-      <span class="px-2 py-0.5 rounded bg-indigo-900 text-indigo-300 font-mono text-[9.5px] font-bold flex-shrink-0">Einblick</span>
+      <span class="px-2 py-0.5 rounded bg-[#000000] text-[#b3734a] border border-[#8a5232] font-mono text-[9.5px] font-bold flex-shrink-0">Einblick</span>
     </div>
 
-    <!-- SUB-NAV TABS -->
-    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-slate-800/80">
-      <button type="button" onclick="ProtocolCore.switchTab('dashboard')" id="tab-btn-dashboard" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-700 text-white touch-btn shadow-sm whitespace-nowrap">
+    <!-- SUB-NAV TABS DER 4 PROTOKOLL-VIEWS -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#1e2638]/80 font-mono text-xs">
+      <button type="button" onclick="ProtocolCore.switchTab('dashboard')" id="tab-btn-dashboard" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap">
         Status &amp; Saldo
       </button>
-      <button type="button" onclick="ProtocolCore.switchTab('chores')" id="tab-btn-chores" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 touch-btn whitespace-nowrap">
+      <button type="button" onclick="ProtocolCore.switchTab('chores')" id="tab-btn-chores" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
         Pflichten &amp; Zuchtkatalog
       </button>
-      <button type="button" onclick="ProtocolCore.switchTab('contract')" id="tab-btn-contract" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 touch-btn whitespace-nowrap">
+      <button type="button" onclick="ProtocolCore.switchTab('contract')" id="tab-btn-contract" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
         Beziehungsvertrag
       </button>
-      <button type="button" onclick="ProtocolCore.switchTab('ai_coach')" id="tab-btn-ai_coach" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-slate-800 text-slate-300 touch-btn whitespace-nowrap flex items-center gap-1">
+      <button type="button" onclick="ProtocolCore.switchTab('ai_coach')" id="tab-btn-ai_coach" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap flex items-center gap-1">
         <span>Führungs-Coach</span>
       </button>
     </div>
 
     <!-- VIEW 1: DASHBOARD (STATUS, RATIO, MIKRO-HYGIENE, WÜRFEL, CHRONIK) -->
-    <div id="view-ledger-dashboard" class="space-y-4 animate-fade-in">
+    <div id="view-ledger-dashboard" class="space-y-4 animate-fade-in font-sans">
       
       <!-- TOP STATUS CARD -->
-      <div class="theme-card rounded-3xl p-5 sm:p-6 border border-purple-900/60 shadow-xl bg-gradient-to-br from-purple-950/40 via-noir-900 to-indigo-950/20 space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-3">
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#1e2638] shadow-2xl bg-[#090d14] space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/60 pb-3">
           <div class="space-y-0.5 min-w-0 flex-1 pr-2">
-            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-purple-950 text-purple-300 border border-purple-800 inline-block">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
               Keuschheits- &amp; Verschluss-Status
             </span>
-            <h2 class="text-sm sm:text-lg font-bold text-white mt-1 break-words leading-tight" id="dash-device-title">
+            <h2 class="text-sm sm:text-lg font-bold text-white mt-1 break-words leading-tight font-serif" id="dash-device-title">
               Frei / Unverschlossen (Cherrykeeper Micro Stub)
             </h2>
           </div>
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <button type="button" onclick="openRoleConfigModal()" id="btn-open-role-cfg" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs touch-btn" title="Hardware &amp; Rollen kalibrieren">
+          <div class="flex items-center gap-2 flex-shrink-0 font-mono text-xs">
+            <button type="button" onclick="openRoleConfigModal()" id="btn-open-role-cfg" class="px-2.5 py-1.5 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold touch-btn" title="Hardware &amp; Rollen kalibrieren">
               Hardware
             </button>
-            <button type="button" onclick="ProtocolCore.toggleLockState()" id="btn-toggle-lock" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs touch-btn">
+            <button type="button" onclick="ProtocolCore.toggleLockState()" id="btn-toggle-lock" class="px-3.5 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md">
               Verriegeln
             </button>
           </div>
         </div>
 
         <!-- STATS GRID -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-0.5">
-            <span class="text-[10px] text-slate-400 block font-medium">Aktuelle Tragedauer:</span>
-            <strong class="text-sm sm:text-base font-bold font-mono text-purple-300" id="dash-wear-duration">Nicht verriegelt (0T)</strong>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
+            <span class="text-[10px] text-[#94a3b8] block">Tragedauer:</span>
+            <strong class="text-sm sm:text-base font-bold text-[#c5a880]" id="dash-wear-duration">0 Tage</strong>
           </div>
-          <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-0.5">
-            <span class="text-[10px] text-slate-400 block font-medium">Tribut-Saldo:</span>
-            <strong class="text-sm sm:text-base font-bold font-mono text-amber-300" id="dash-balance-points">0 P</strong>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
+            <span class="text-[10px] text-[#94a3b8] block">Tribut-Saldo:</span>
+            <strong class="text-sm sm:text-base font-bold text-[#d4af37]" id="dash-balance-points">0 P</strong>
           </div>
-          <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-0.5">
-            <span class="text-[10px] text-slate-400 block font-medium">Schlüsselgewalt:</span>
-            <strong class="text-xs font-bold text-slate-200 break-words block mt-0.5 leading-snug" id="dash-key-location">kSafe</strong>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
+            <span class="text-[10px] text-[#94a3b8] block">Schlüsselgewalt:</span>
+            <strong class="text-xs font-bold text-[#f8fafc] truncate block mt-0.5" id="dash-key-location">kSafe</strong>
           </div>
-          <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-0.5">
-            <span class="text-[10px] text-slate-400 block font-medium">Duschpausen-Abzug:</span>
-            <strong class="text-xs font-bold text-rose-300 break-words block mt-0.5 leading-snug" id="hygiene-rule-desc">-15 P / Min</strong>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
+            <span class="text-[10px] text-[#94a3b8] block">Dusch-Abzug:</span>
+            <strong class="text-xs font-bold text-[#b3734a] truncate block mt-0.5" id="hygiene-rule-desc">-15 P / Min</strong>
           </div>
         </div>
       </div>
@@ -296,40 +332,40 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
         
         <!-- HYGIENE TIMER CARD -->
-        <div class="theme-card rounded-3xl p-5 border border-teal-900/60 space-y-3 shadow-md">
+        <div class="rounded-3xl p-5 bg-[#090d14] border border-[#142b24] space-y-3 shadow-md">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-              <strong class="text-xs text-white block">15m-Hygiene-Duschpause</strong>
+              <span class="w-2 h-2 rounded-full bg-[#2e5746] animate-pulse"></span>
+              <strong class="text-xs text-white block font-bold">15m-Hygiene-Duschpause</strong>
             </div>
-            <span class="text-[9.5px] font-mono px-2 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800 font-bold">Pflege</span>
+            <span class="text-[9.5px] font-mono px-2 py-0.5 rounded bg-[#000000] text-[#2e5746] border border-[#2e5746] font-bold">Urologie</span>
           </div>
-          <p class="text-[10.5px] text-slate-300 leading-snug">
+          <p class="text-[10.5px] text-[#94a3b8] leading-snug">
             Gestattet das Abnehmen des Käfigs zur Intimpflege und Wundversorgung. Nach Ablauf muss das Schloss wieder verriegelt sein.
           </p>
           <div class="flex items-center justify-between pt-1">
-            <span class="text-xs font-mono font-bold text-teal-300" id="hygiene-timer-display">15:00</span>
-            <button type="button" onclick="ProtocolCore.startHygieneTimer()" id="btn-hygiene-start" class="px-4 py-2 bg-teal-800 hover:bg-teal-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
+            <span class="text-xs font-mono font-bold text-[#2e5746]" id="hygiene-timer-display">15:00</span>
+            <button type="button" onclick="ProtocolCore.startHygieneTimer()" id="btn-hygiene-start" class="px-4 py-2 bg-[#142b24] hover:bg-[#2e5746] border border-[#2e5746] text-white font-bold rounded-xl text-xs font-mono touch-btn shadow-md">
               Starten (15m)
             </button>
           </div>
         </div>
 
         <!-- SCHICKSALS-WÜRFEL -->
-        <div class="theme-card rounded-3xl p-5 border border-amber-900/60 space-y-3 shadow-md">
+        <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="4"/><circle cx="8" cy="8" r="1.25" fill="currentColor"/><circle cx="16" cy="8" r="1.25" fill="currentColor"/><circle cx="12" cy="12" r="1.25" fill="currentColor"/><circle cx="8" cy="16" r="1.25" fill="currentColor"/><circle cx="16" cy="16" r="1.25" fill="currentColor"/></svg>
-              <strong class="text-xs text-white block">Der Schicksals-Würfel</strong>
+              <svg class="w-4 h-4 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="4"/><circle cx="8" cy="8" r="1.25" fill="currentColor"/><circle cx="16" cy="8" r="1.25" fill="currentColor"/><circle cx="12" cy="12" r="1.25" fill="currentColor"/><circle cx="8" cy="16" r="1.25" fill="currentColor"/><circle cx="16" cy="16" r="1.25" fill="currentColor"/></svg>
+              <strong class="text-xs text-white block font-bold">Der Schicksals-Würfel</strong>
             </div>
-            <span class="text-[9.5px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-bold">Exklusiv Top</span>
+            <span class="text-[9.5px] font-mono px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-bold">Exklusiv Top</span>
           </div>
-          <p class="text-[10.5px] text-slate-300 leading-snug" id="dice-status-desc">
+          <p class="text-[10.5px] text-[#94a3b8] leading-snug" id="dice-status-desc">
             1x alle 24h: Würfelt um Verlängerung (+24h), Zuchtmaßnahme, Bonuspunkte oder Duschpause.
           </p>
           <div class="flex items-center justify-between pt-1">
-            <span class="text-xs font-bold font-mono text-amber-300" id="dice-result-badge">Bereit</span>
-            <button type="button" onclick="ProtocolCore.rollDiceOfFate()" id="btn-roll-dice" class="px-4 py-2 bg-amber-800 hover:bg-amber-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
+            <span class="text-xs font-bold font-mono text-[#d4af37]" id="dice-result-badge">Bereit</span>
+            <button type="button" onclick="ProtocolCore.rollDiceOfFate()" id="btn-roll-dice" class="px-4 py-2 bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/60 text-[#c5a880] font-bold rounded-xl text-xs font-mono touch-btn shadow-md">
               Schicksalswurf
             </button>
           </div>
@@ -338,13 +374,13 @@
       </div>
 
       <!-- PUNKTE-PROTOKOLL & HISTORIE -->
-      <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-3 shadow-md text-xs">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md text-xs">
+        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
           <div class="space-y-0.5">
-            <strong class="text-xs text-white block font-bold">Punkte-Protokoll &amp; Verlauf</strong>
-            <span class="text-[10px] text-slate-400">Lückenloser Verlauf aller Gutschriften und Abzüge</span>
+            <strong class="text-xs text-white block font-bold">Punkte-Protokoll &amp; Transaktionsverlauf</strong>
+            <span class="text-[10px] text-[#94a3b8]">Lückenloser Event-Sourcing Verlauf aller Gutschriften und Abzüge</span>
           </div>
-          <span class="text-[10px] font-mono text-slate-500">Protokoll</span>
+          <span class="text-[10px] font-mono text-[#c5a880]">Audit-Trail</span>
         </div>
         <div id="ledger-transactions-list" class="space-y-2"></div>
       </div>
@@ -352,50 +388,49 @@
     </div>
 
     <!-- VIEW 2: PFLICHTEN, ZUCHTKATALOG (MIT SUB-NOTEN) & BELOHNUNGEN -->
-    <div id="view-ledger-chores" class="hidden space-y-4 animate-fade-in text-xs">
+    <div id="view-ledger-chores" class="hidden space-y-4 animate-fade-in text-xs font-sans">
       
       <!-- 1. AUFGABEN- & INTERVALL-STEUERUNG (PROTOCOLTASKS) -->
-      <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
+        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
           <div>
             <strong class="text-xs sm:text-sm text-white font-bold block">Pflichten-Register &amp; Alltags-Service:</strong>
-            <p class="text-[10px] text-slate-400">Feste Aufgaben mit Fälligkeitsprüfung und 1-Fingertipp-Meldung für den Bottom.</p>
+            <p class="text-[10px] text-[#94a3b8]">Feste Aufgaben mit Fälligkeitsprüfung und 1-Fingertipp-Meldung für den Bottom.</p>
           </div>
         </div>
         <div id="tasks-manager-container"></div>
       </div>
 
-      <!-- 2. WIEDERHERGESTELLTER DISZIPLINAR- & STRAFENKATALOG (MIT SUB-NOTEN & DEEPLINKS) -->
-      <div class="theme-card rounded-3xl p-5 border border-rose-900/60 space-y-3 shadow-md bg-gradient-to-br from-rose-950/20 via-noir-900 to-purple-950/20">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/40 pb-2.5">
+      <!-- 2. WIEDERHERGESTELLTER DISZIPLINAR- & STRAFENKATALOG -->
+      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-2.5">
           <div class="space-y-0.5 min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
-              <strong class="text-xs sm:text-sm text-rose-200 font-bold block">Disziplinar- &amp; Strafenregister (Sühne):</strong>
+              <svg class="w-4 h-4 text-[#991b1b] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+              <strong class="text-xs sm:text-sm text-[#f8fafc] font-bold block">Disziplinar- &amp; Strafenregister (Sühne):</strong>
             </div>
-            <p class="text-[10px] text-slate-400">
+            <p class="text-[10px] text-[#94a3b8]">
               Maßnahmen bei Pflichtverletzung oder Regelbruch. Zeigt direkt die <strong>persönliche Fragebogen-Note des Subs (r2)</strong> zum Schutz vor Übergriffen. Klicke auf ein Item für Details.
             </p>
           </div>
-          <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-mono text-[9px] font-bold flex-shrink-0">
+          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold flex-shrink-0">
             RACK-Schutz aktiv
           </span>
         </div>
 
-        <!-- Hier rendert ProtocolTasks das Strafenregister dynamisch -->
         <div id="discipline-punishments-container" class="space-y-2.5">
-          <div class="py-4 text-center text-slate-500 text-xs">
+          <div class="py-4 text-center text-[#94a3b8] text-xs font-mono">
             Lade Disziplinarkatalog mit Sub-Noten...
           </div>
         </div>
       </div>
 
       <!-- 3. BELOHNUNGEN & WÜNSCHE -->
-      <div class="theme-card rounded-3xl p-5 border border-amber-900/60 space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-amber-900/60 pb-2">
+      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
+        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
           <div class="space-y-0.5">
-            <strong class="text-xs sm:text-sm text-amber-200 font-bold block">Belohnungen &amp; Wünsche:</strong>
-            <p class="text-[10px] text-slate-400">Wünsche des Bottoms – Bewilligung und Einlösung obliegen allein dem Ermessen des Tops (§ 3 Abs. 4).</p>
+            <strong class="text-xs sm:text-sm text-white font-bold block">Belohnungen &amp; Wünsche:</strong>
+            <p class="text-[10px] text-[#94a3b8]">Wünsche des Bottoms – Bewilligung und Einlösung obliegen allein dem Ermessen des Tops (§ 3 Abs. 4).</p>
           </div>
         </div>
         <div id="rewards-list-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
@@ -404,44 +439,44 @@
     </div>
 
     <!-- VIEW 3: DER BEZIEHUNGSVERTRAG -->
-    <div id="view-ledger-contract" class="hidden space-y-4 animate-fade-in text-xs">
+    <div id="view-ledger-contract" class="hidden space-y-4 animate-fade-in text-xs font-sans">
       
-      <div class="theme-card rounded-3xl p-5 sm:p-6 border border-amber-800/80 shadow-2xl bg-gradient-to-br from-amber-950/30 via-noir-900 to-purple-950/20 space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-900/60 pb-2">
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#c5a880]/60 shadow-2xl bg-[#090d14] space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-2">
           <div>
-            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-amber-950 text-amber-300 border border-amber-800 inline-block">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
               Verbindlicher D/s-Kodex
             </span>
-            <h2 class="text-base sm:text-xl font-bold text-white mt-1 font-serif-title">
+            <h2 class="text-base sm:text-xl font-bold text-white mt-1 font-serif">
               TACTUS Intimum · Beziehungsvertrag
             </h2>
           </div>
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button type="button" onclick="ProtocolContract.generateFromContext()" id="btn-gen-contract" class="px-3 py-1.5 rounded-xl bg-purple-900/90 hover:bg-purple-800 text-purple-200 font-bold text-xs touch-btn shadow-md flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+          <div class="flex items-center gap-1.5 flex-wrap font-mono text-xs">
+            <button type="button" onclick="ProtocolContract.generateFromContext()" id="btn-gen-contract" class="px-3 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
               <span>Aus Bogen synthetisieren</span>
             </button>
-            <button type="button" onclick="ProtocolContract.exportRedacted()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-300 font-bold text-xs touch-btn flex items-center gap-1.5 shadow-sm" title="Geschwärzte Urkunde für Foren oder Social Media exportieren">
+            <button type="button" onclick="ProtocolContract.exportRedacted()" class="px-3 py-1.5 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-[#c5a880] font-bold touch-btn flex items-center gap-1.5 shadow-sm" title="Geschwärzte Urkunde für Foren oder Social Media exportieren">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>
               <span>Urkunde schwärzen</span>
             </button>
-            <button type="button" onclick="ProtocolContract.openPrintDialog()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs touch-btn flex items-center gap-1.5">
+            <button type="button" onclick="ProtocolContract.openPrintDialog()" class="px-3 py-1.5 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold touch-btn flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/></svg>
               <span>Drucken</span>
             </button>
           </div>
         </div>
-        <p class="text-[10.5px] text-slate-300 leading-relaxed">
-          Gespeist aus gewichteter Psychometrie (Doppel-5er, Erkundungs-Brücken &amp; Schutzanker 🙈). Beinhaltet strikte Schutzklauseln gegen verdeckte Regie (§ 2 Abs. 3), Schweigepflicht über Verschluss &amp; Lust (§ 5 Abs. 4) und Reverse Aftercare (§ 4 Abs. 2).
+        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
+          Gespeist aus gewichteter Psychometrie (Doppel-5er, Erkundungs-Brücken &amp; Schutzanker 🙈). Beinhaltet strikte Schutzklauseln gegen verdeckte Regie (§ 2 Abs. 2), Schweigepflicht über Verschluss &amp; Lust (§ 5 Abs. 3) und Reverse Aftercare (§ 4 Abs. 2).
         </p>
 
         <!-- PSYCHOSOMATISCHES HARMONIE-BANNER -->
         <div id="contract-harmony-banner"></div>
 
         <!-- STATUS PILL -->
-        <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-          <span class="text-slate-300 font-bold" id="contract-status-label">Status: Entwurf (Editierbar)</span>
-          <span class="text-amber-400 font-mono text-[10px]" id="contract-version-label">Version 1.0 Draft</span>
+        <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] flex items-center justify-between font-mono text-[10px]">
+          <span class="text-[#c5a880] font-bold" id="contract-status-label">Status: Entwurf (Editierbar)</span>
+          <span class="text-[#94a3b8]" id="contract-version-label">Version 1.0 Draft</span>
         </div>
       </div>
 
@@ -449,27 +484,27 @@
       <div id="contract-clauses-container" class="space-y-3"></div>
 
       <!-- UNTERSCHRIFTEN BLOCK -->
-      <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-4 shadow-xl">
-        <strong class="text-xs text-white block font-bold border-b border-slate-800 pb-2">
+      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-4 shadow-xl">
+        <strong class="text-xs text-white block font-bold border-b border-[#1e2638]/70 pb-2">
           Ratifizierung &amp; Digitale Signaturen:
         </strong>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-center">
-            <strong class="text-xs text-purple-300 block" id="sig-label-top">Signatur Top</strong>
-            <div id="sig-box-top" class="h-20 rounded-2xl border border-dashed border-slate-700 flex items-center justify-center text-slate-500 font-serif italic text-xs">
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2 text-center">
+            <strong class="text-xs text-[#c5a880] block font-mono" id="sig-label-top">Signatur Top</strong>
+            <div id="sig-box-top" class="h-20 rounded-2xl border border-dashed border-[#1e2638] flex items-center justify-center text-[#94a3b8] font-serif italic text-xs">
               Noch nicht unterzeichnet
             </div>
-            <button type="button" onclick="ProtocolContract.openSignatureModal('top')" id="btn-sign-top" class="w-full py-2 rounded-xl bg-purple-900/90 hover:bg-purple-800 text-white font-bold text-xs touch-btn">
+            <button type="button" onclick="ProtocolContract.openSignatureModal('top')" id="btn-sign-top" class="w-full py-2 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#c5a880]/60 text-[#c5a880] font-bold text-xs font-mono touch-btn">
               Als Top ratifizieren
             </button>
           </div>
 
-          <div class="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 text-center">
-            <strong class="text-xs text-indigo-300 block" id="sig-label-sub">Signatur Bottom</strong>
-            <div id="sig-box-sub" class="h-20 rounded-2xl border border-dashed border-slate-700 flex items-center justify-center text-slate-500 font-serif italic text-xs">
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2 text-center">
+            <strong class="text-xs text-[#b3734a] block font-mono" id="sig-label-sub">Signatur Bottom</strong>
+            <div id="sig-box-sub" class="h-20 rounded-2xl border border-dashed border-[#1e2638] flex items-center justify-center text-[#94a3b8] font-serif italic text-xs">
               Noch nicht unterzeichnet
             </div>
-            <button type="button" onclick="ProtocolContract.openSignatureModal('sub')" id="btn-sign-sub" class="w-full py-2 rounded-xl bg-indigo-900/90 hover:bg-indigo-800 text-white font-bold text-xs touch-btn">
+            <button type="button" onclick="ProtocolContract.openSignatureModal('sub')" id="btn-sign-sub" class="w-full py-2 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#8a5232] text-[#b3734a] font-bold text-xs font-mono touch-btn">
               Als Bottom ratifizieren
             </button>
           </div>
@@ -479,65 +514,68 @@
     </div>
 
     <!-- VIEW 4: DER KI-FÜHRUNGSASSISTENT FÜR DEN TOP -->
-    <div id="view-ledger-ai_coach" class="hidden space-y-4 animate-fade-in text-xs">
+    <div id="view-ledger-ai_coach" class="hidden space-y-4 animate-fade-in text-xs font-sans">
       
-      <div class="theme-card rounded-3xl p-5 sm:p-6 border border-purple-800 shadow-2xl bg-gradient-to-br from-purple-950/40 via-noir-900 to-indigo-950/30 space-y-3">
-        <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#c5a880]/60 shadow-2xl bg-[#090d14] space-y-3">
+        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
           <div class="flex items-center gap-2">
-            <div class="text-purple-300">
+            <div class="text-[#c5a880]">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-              <h2 class="text-sm sm:text-base font-bold text-white font-serif-title">Top-Führungsassistent &amp; D/s-Coach</h2>
-              <span class="text-[10px] text-purple-300 font-medium">Fokus: Entlastung der Spielleitung &amp; Teasing-Rhythmus</span>
+              <h2 class="text-sm sm:text-base font-bold text-white font-serif">Top-Führungsassistent &amp; D/s-Coach</h2>
+              <span class="text-[10px] text-[#c5a880] font-mono">Fokus: Entlastung der Spielleitung &amp; Alltagsführung</span>
             </div>
           </div>
-          <button type="button" onclick="ProtocolCoach.generateDailyDirective()" class="px-3.5 py-1.5 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">
+          <button type="button" onclick="ProtocolCoach.generateDailyDirective()" class="px-3.5 py-1.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs font-mono touch-btn shadow-md">
             Tages-Empfehlung berechnen
           </button>
         </div>
-        <p class="text-[10.5px] text-slate-300 leading-relaxed">
+        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
           Schützt den Top vor Erschöpfung: Stimmt Alltags-Impulse auf den Beruf des Bottoms ab, verhindert Verwahrlosung durch kontrollierte Reize und sorgt für verlässliche Entlastung im Haushalt.
         </p>
       </div>
 
+      <!-- INTERAKTIVES TAGES-KALIBRIERUNGS-PANEL (AUS PROTOCOL_COACH.JS) -->
+      <div id="coach-calibration-container"></div>
+
       <!-- BERUFS- & ALLTAGSPROFIL DES BOTTOMS -->
-      <div class="theme-card rounded-2xl p-4 border border-slate-800 space-y-2 text-xs">
+      <div class="rounded-2xl p-4 bg-[#090d14] border border-[#1e2638] space-y-2 text-xs">
         <div class="flex items-center justify-between">
-          <strong class="text-white text-xs block">Berufs- &amp; Alltags-Kontext des Bottoms:</strong>
-          <span class="text-[10px] font-mono text-purple-300" id="coach-workplace-label">Büro / Homeoffice</span>
+          <strong class="text-white text-xs block font-bold">Berufs- &amp; Alltags-Kontext des Bottoms:</strong>
+          <span class="text-[10px] font-mono text-[#c5a880]" id="coach-workplace-label">Büro / Homeoffice</span>
         </div>
-        <select id="coach-workplace-select" onchange="ProtocolCoach.setWorkplace(this.value)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
+        <select id="coach-workplace-select" onchange="ProtocolCoach.setWorkplace(this.value)" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white font-sans focus:border-[#c5a880] focus:outline-none">
           <option value="desk_office">Büro / Homeoffice (Langes Sitzen, Meetings)</option>
           <option value="craft_physical">Handwerk / Körperlich (Bücken, Schwitzen, Leitersteigen)</option>
           <option value="medical_service">Pflege / Gastronomie (8–12h Stehen, enge Kasacks)</option>
           <option value="driver_field">Fahrer / Außendienst (Autositz, Vibration, Pendler)</option>
           <option value="shift_variable">Schichtdienst (Verschobener Biorhythmus, Tagesschlaf)</option>
         </select>
-        <p class="text-[10.5px] text-slate-400" id="coach-workplace-hint">
+        <p class="text-[10.5px] text-[#94a3b8]" id="coach-workplace-hint">
           Dauerdruck auf Schambein und Hodenansatz im Sitzen. Teasing: Kegel-Befehle oder diskreter Foto-Appell.
         </p>
       </div>
 
       <!-- TAGES-EMPFEHLUNG CARD -->
-      <div id="ai-coach-directive-card" class="theme-card rounded-3xl p-5 border border-indigo-900/60 space-y-2.5 shadow-md">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
-          <strong class="text-xs text-indigo-300 font-bold flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+      <div id="ai-coach-directive-card" class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-2.5 shadow-md">
+        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-1.5">
+          <strong class="text-xs text-[#c5a880] font-bold flex items-center gap-1.5 font-mono">
+            <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
             <span>Aktuelle Tages-Empfehlung für den Top:</span>
           </strong>
-          <span class="text-[9.5px] font-mono text-slate-500">Regie-Impuls</span>
+          <span class="text-[9.5px] font-mono text-[#94a3b8]">Generative Vektor-Grammatik</span>
         </div>
-        <div id="ai-coach-directive-content" class="text-[11px] text-slate-300 leading-relaxed">
-          Tippe oben auf „Tages-Empfehlung berechnen“, um auf Basis der Tragetage, des Berufs und der Entlastung des Tops 3 alltagstaugliche Impulse zu erhalten.
+        <div id="ai-coach-directive-content" class="text-[11px] text-[#f8fafc] leading-relaxed">
+          Tippe oben auf „Tages-Empfehlung berechnen“, um auf Basis der Tragetage, deines aktuellen Stresslevels und des Berufs 3 alltagstaugliche Impulse zu synthetisieren.
         </div>
       </div>
 
       <!-- REIBUNGS- & MUSTER-ANALYTIK -->
-      <div class="theme-card rounded-3xl p-5 border border-slate-800 space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
+        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
           <strong class="text-xs text-white block font-bold">Verhaltensmuster &amp; Vertrags-Reibung:</strong>
-          <span class="text-[10px] text-slate-400 font-mono">Reibungs-Analyse</span>
+          <span class="text-[10px] text-[#94a3b8] font-mono">Reibungs-Analyse</span>
         </div>
         <div id="ai-coach-friction-list" class="space-y-2"></div>
       </div>
@@ -547,25 +585,25 @@
   </main>
 
   <!-- MODAL: ROLLEN- & HARDWARE CONFIG -->
-  <div id="modal-ledger-role-config" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-    <div class="theme-card rounded-3xl max-w-md w-full border border-purple-500/40 p-5 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-purple-900/60 pb-2">
-        <h3 class="text-sm font-bold text-white">Rollen &amp; Keuschheits-Hardware</h3>
-        <button type="button" onclick="document.getElementById('modal-ledger-role-config').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+  <div id="modal-ledger-role-config" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto text-[#f8fafc]">
+      <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
+        <h3 class="text-sm font-bold text-white font-serif">Rollen &amp; Keuschheits-Hardware</h3>
+        <button type="button" onclick="document.getElementById('modal-ledger-role-config').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <div class="space-y-3">
         <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Wer führt als Top / Keyholder?</label>
-          <select id="cfg-select-keyholder" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase block mb-1">Wer führt als Top / Keyholder?</label>
+          <select id="cfg-select-keyholder" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white">
             <option value="A">Partner 1</option>
             <option value="B">Partner 2</option>
           </select>
         </div>
 
         <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Verschluss-Hardware:</label>
-          <select id="cfg-select-hardware" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase block mb-1">Verschluss-Hardware:</label>
+          <select id="cfg-select-hardware" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white">
             <option value="penis_cherrykeeper">Cherrykeeper Micro Stub (&lt;= 35mm)</option>
             <option value="penis_cobra">Kink3D Cobra (SLS-Nylon)</option>
             <option value="penis_viper">Kink3D Viper (Kompakt)</option>
@@ -578,128 +616,128 @@
         </div>
 
         <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Schlüssel-Aufbewahrungsort &amp; PIN:</label>
-          <input type="text" id="cfg-input-key-storage" placeholder="z. B. kSafe (Tresor), Einweg-Plombe #8492..." class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white">
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase block mb-1">Schlüssel-Aufbewahrungsort &amp; PIN:</label>
+          <input type="text" id="cfg-input-key-storage" placeholder="z. B. kSafe (Tresor), Einweg-Plombe #8492..." class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white">
         </div>
       </div>
 
-      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-        <button type="button" onclick="document.getElementById('modal-ledger-role-config').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-        <button type="button" onclick="saveProtocolRoleConfig()" class="px-5 py-2 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Speichern ✓</button>
+      <div class="flex justify-end gap-2 pt-2 border-t border-[#1e2638] font-mono">
+        <button type="button" onclick="document.getElementById('modal-ledger-role-config').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="saveProtocolRoleConfig()" class="px-5 py-2 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Speichern ✓</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: TOP-ABLEHNUNG MIT BEGRÜNDUNG -->
-  <div id="modal-reject-task" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-    <div class="theme-card rounded-3xl max-w-md w-full border border-rose-800/80 p-5 space-y-4 shadow-2xl text-xs">
-      <div class="flex items-center justify-between border-b border-rose-900/60 pb-2">
-        <div class="flex items-center gap-2 text-rose-300">
+  <div id="modal-reject-task" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#8a5232] p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc]">
+      <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
+        <div class="flex items-center gap-2 text-[#b3734a]">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
-          <h3 class="text-sm font-bold text-white">Pflicht abweisen (Feedback)</h3>
+          <h3 class="text-sm font-bold text-white font-serif">Pflicht abweisen (Feedback)</h3>
         </div>
-        <button type="button" onclick="document.getElementById('modal-reject-task').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="document.getElementById('modal-reject-task').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <div class="space-y-2">
-        <p class="text-[10.5px] text-slate-300 leading-snug">
+        <p class="text-[10.5px] text-[#94a3b8] leading-snug">
           Begründe kurz, warum die Pflicht nicht anerkannt wird. Diese Nachricht wird dem Bottom im Paar-Stream übermittelt.
         </p>
-        <textarea id="input-reject-task-reason" rows="3" placeholder="z. B. Küche nicht vollständig gereinigt / Handtücher vergessen. Bitte gründlich nachbessern..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-600 focus:border-rose-600 focus:outline-none"></textarea>
+        <textarea id="input-reject-task-reason" rows="3" placeholder="z. B. Küche nicht vollständig gereinigt / Handtücher vergessen. Bitte gründlich nachbessern..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none"></textarea>
         <input type="hidden" id="input-reject-task-id" value="" />
       </div>
 
-      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-        <button type="button" onclick="document.getElementById('modal-reject-task').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-        <button type="button" onclick="ProtocolTasks.confirmRejectWithReason()" class="px-5 py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Abweisung senden</button>
+      <div class="flex justify-end gap-2 pt-2 border-t border-[#1e2638] font-mono">
+        <button type="button" onclick="document.getElementById('modal-reject-task').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="ProtocolTasks.confirmRejectWithReason()" class="px-5 py-2 bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-bold rounded-xl text-xs touch-btn shadow-md">Abweisung senden</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: ZUCHT-VOLLZUG & ANORDNUNG MIT DEEPLINKS -->
-  <div id="modal-execute-discipline" style="display: none;" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-    <div class="theme-card rounded-3xl max-w-md w-full border border-rose-800/80 p-5 space-y-4 shadow-2xl text-xs max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-rose-900/60 pb-2">
-        <div class="flex items-center gap-2 text-rose-300">
+  <div id="modal-execute-discipline" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#991b1b] p-5 space-y-4 shadow-2xl text-xs max-h-[92vh] overflow-y-auto text-[#f8fafc]">
+      <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
+        <div class="flex items-center gap-2 text-[#991b1b]">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
-          <h3 class="text-sm font-bold text-white" id="modal-discipline-title">Zuchtmaßnahme anordnen</h3>
+          <h3 class="text-sm font-bold text-white font-serif" id="modal-discipline-title">Zuchtmaßnahme anordnen</h3>
         </div>
-        <button type="button" onclick="document.getElementById('modal-execute-discipline').style.display='none'" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="document.getElementById('modal-execute-discipline').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <!-- SUB-NOTEN HINWEISBOX -->
-      <div id="modal-discipline-subnote-box" class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1"></div>
+      <div id="modal-discipline-subnote-box" class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1"></div>
 
-      <div class="space-y-3">
+      <div class="space-y-3 font-sans">
         <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Anzahl der Hiebe / Einheiten:</label>
-          <div class="flex items-center gap-2">
-            <input type="number" id="input-discipline-count" value="10" min="1" max="50" class="flex-1 p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono" />
-            <div class="flex items-center gap-1 font-mono text-[10px]">
-              <button type="button" onclick="document.getElementById('input-discipline-count').value = '5'" class="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold">5</button>
-              <button type="button" onclick="document.getElementById('input-discipline-count').value = '10'" class="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold">10</button>
-              <button type="button" onclick="document.getElementById('input-discipline-count').value = '15'" class="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold">15</button>
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase block mb-1">Anzahl der Hiebe / Einheiten:</label>
+          <div class="flex items-center gap-2 font-mono">
+            <input type="number" id="input-discipline-count" value="10" min="1" max="50" class="flex-1 p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs" />
+            <div class="flex items-center gap-1 text-[10px]">
+              <button type="button" onclick="document.getElementById('input-discipline-count').value = '5'" class="px-2 py-1.5 rounded-lg bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold">5</button>
+              <button type="button" onclick="document.getElementById('input-discipline-count').value = '10'" class="px-2 py-1.5 rounded-lg bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold">10</button>
+              <button type="button" onclick="document.getElementById('input-discipline-count').value = '15'" class="px-2 py-1.5 rounded-lg bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold">15</button>
             </div>
           </div>
         </div>
 
         <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Körperhaltung &amp; Anweisung:</label>
-          <textarea id="input-discipline-directive" rows="2" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs"></textarea>
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase block mb-1">Körperhaltung &amp; Anweisung:</label>
+          <textarea id="input-discipline-directive" rows="2" class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs focus:border-[#c5a880] focus:outline-none"></textarea>
         </div>
 
         <div>
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase block mb-1">Punkte-Abzug (Tribut):</label>
-          <input type="number" id="input-discipline-penalty" value="20" min="0" max="150" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-mono" />
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase block mb-1">Punkte-Abzug (Tribut):</label>
+          <input type="number" id="input-discipline-penalty" value="20" min="0" max="150" class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs font-mono" />
         </div>
 
         <input type="hidden" id="input-discipline-item-id" value="" />
       </div>
 
-      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-        <button type="button" onclick="document.getElementById('modal-execute-discipline').style.display='none'" class="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-        <button type="button" onclick="ProtocolTasks.confirmExecuteDiscipline()" class="px-5 py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Zucht vollziehen &amp; buchen</button>
+      <div class="flex justify-end gap-2 pt-2 border-t border-[#1e2638] font-mono">
+        <button type="button" onclick="document.getElementById('modal-execute-discipline').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="ProtocolTasks.confirmExecuteDiscipline()" class="px-5 py-2 bg-[#991b1b] hover:bg-red-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md">Zucht vollziehen &amp; buchen</button>
       </div>
     </div>
   </div>
 
   <!-- BREAK-GLASS RACK NOTFALL MODAL -->
   <div id="modal-break-glass" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-    <div class="theme-card rounded-3xl max-w-md w-full border border-rose-600 p-5 space-y-4 shadow-2xl text-xs text-white">
-      <div class="flex items-center justify-between border-b border-rose-900 pb-2.5">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border-2 border-[#991b1b] p-5 space-y-4 shadow-2xl text-xs text-white">
+      <div class="flex items-center justify-between border-b border-[#991b1b]/60 pb-2.5">
         <div class="flex items-center gap-2">
-          <div class="w-3 h-3 rounded-full bg-rose-500 animate-ping"></div>
+          <div class="w-3 h-3 rounded-full bg-[#991b1b] animate-ping"></div>
           <h3 class="text-sm font-bold text-white uppercase font-serif">RACK Notfall-Öffnung (Break-Glass)</h3>
         </div>
-        <button type="button" onclick="ProtocolCore.cancelBreakGlass()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="ProtocolCore.cancelBreakGlass()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
       </div>
 
-      <div class="space-y-3">
-        <p class="text-[10.5px] text-rose-200 leading-snug">
+      <div class="space-y-3 font-sans">
+        <p class="text-[10.5px] text-[#f8fafc] leading-snug">
           Dieses Notfallprotokoll dient dem Schutz vor Gewebeschäden, Durchblutungsstörungen oder unerträglichem Schmerz. Die Entriegelung pausiert den Beziehungsvertrag und benachrichtigt beide Partner.
         </p>
 
         <!-- 60-SEKUNDEN COUNTDOWN ZUR DEESKALATION -->
-        <div class="p-3.5 rounded-2xl bg-black/80 border border-rose-800 text-center space-y-1">
-          <span class="text-[9.5px] font-mono uppercase text-slate-400 block font-bold">Deeskalations-Sperre (Atme tief durch):</span>
-          <span id="break-glass-timer-display" class="font-mono text-2xl sm:text-3xl font-black text-rose-400">60s</span>
-          <span id="break-glass-status-hint" class="text-[9.5px] text-slate-400 block">PIN wird nach Ablauf der Sicherheitssekunden freigegeben</span>
+        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#991b1b]/60 text-center space-y-1 font-mono">
+          <span class="text-[9.5px] uppercase text-[#94a3b8] block font-bold">Deeskalations-Sperre (Atme tief durch):</span>
+          <span id="break-glass-timer-display" class="text-3xl font-black text-[#991b1b]">60s</span>
+          <span id="break-glass-status-hint" class="text-[9.5px] text-[#94a3b8] block">PIN wird nach Ablauf der Sicherheitssekunden freigegeben</span>
         </div>
 
-        <div id="break-glass-pin-box" class="hidden p-3 rounded-2xl bg-slate-950 border border-rose-700 text-center space-y-0.5">
-          <span class="text-[9.5px] font-mono text-slate-400 uppercase block font-bold">Hinterlegter Safe-Code / Notfall-PIN:</span>
+        <div id="break-glass-pin-box" class="hidden p-3 rounded-2xl bg-[#000000] border border-[#c5a880] text-center space-y-0.5">
+          <span class="text-[9.5px] font-mono text-[#c5a880] uppercase block font-bold">Hinterlegter Safe-Code / Notfall-PIN:</span>
           <strong id="break-glass-pin-value" class="text-lg font-mono font-black text-white tracking-widest">----</strong>
         </div>
 
         <div>
-          <label class="text-[10px] font-mono text-slate-400 uppercase block mb-1">Dokumentation des Notfalls (Grund angeben):</label>
-          <textarea id="break-glass-reason-input" rows="2" placeholder="z. B. Taubheitsgefühl im Hodenansatz / Schwellung / Panik..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-600 focus:border-rose-600 focus:outline-none"></textarea>
+          <label class="text-[10px] font-mono text-[#94a3b8] uppercase block mb-1">Dokumentation des Notfalls (Grund angeben):</label>
+          <textarea id="break-glass-reason-input" rows="2" placeholder="z. B. Taubheitsgefühl im Hodenansatz / Schwellung / Panik..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs placeholder:text-[#94a3b8]/40 focus:border-[#991b1b] focus:outline-none"></textarea>
         </div>
       </div>
 
-      <div class="flex justify-between items-center pt-2 border-t border-slate-800">
-        <button type="button" onclick="ProtocolCore.cancelBreakGlass()" class="px-4 py-2 bg-slate-900 text-slate-400 font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-        <button type="button" id="btn-confirm-break-glass" disabled onclick="ProtocolCore.executeBreakGlass()" class="px-5 py-2 bg-rose-700 hover:bg-rose-600 text-white font-bold rounded-xl text-xs touch-btn shadow-md opacity-30 cursor-not-allowed">
+      <div class="flex justify-between items-center pt-2 border-t border-[#1e2638] font-mono">
+        <button type="button" onclick="ProtocolCore.cancelBreakGlass()" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" id="btn-confirm-break-glass" disabled onclick="ProtocolCore.executeBreakGlass()" class="px-5 py-2 bg-[#991b1b] hover:bg-red-700 text-white font-bold rounded-xl text-xs touch-btn shadow-md opacity-30 cursor-not-allowed">
           Notfall-Öffnung vollziehen
         </button>
       </div>
@@ -795,7 +833,7 @@
         var modal = document.getElementById('modal-ledger-role-config');
         if (modal) modal.style.display = 'none';
         if (typeof window.showToastNotification === 'function') {
-          window.showToastNotification("Rollen & Hardware gesichert ✓");
+          window.showToastNotification("✓ Rollen &amp; Hardware gesichert");
         }
       };
 
