@@ -565,7 +565,35 @@
         <span id="ai-test-result" class="text-[9.5px] font-mono text-[#94a3b8] block">Universal Default-Key aktiv ab Werk.</span>
       </div>
 
-      <!-- 6. TUTORIAL-RELAUNCH & DATENSICHERUNG -->
+      <!-- 6. DATENSCHUTZ & PARTNER-FREIGABE (SHARING-GOVERNANCE) -->
+      <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2.5">
+        <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">6. Transparenz &amp; Partner-Freigabe (Sharing):</span>
+        <div class="space-y-1.5 font-sans">
+          <label class="p-2.5 rounded-xl border border-[#1e2638] bg-[#090d14] flex items-start gap-2.5 cursor-pointer">
+            <input type="radio" name="acc-sharing-mode" value="full_open" checked class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">1. Volle Transparenz (Standard &amp; Empfohlen)</strong>
+              <span class="text-[10px] text-[#94a3b8] block">Alle 505 Antworten, Notizen und das Solo-Dossier sind für deinen Partner sichtbar. Schafft tiefstes Vertrauen ohne Geheimnisse.</span>
+            </div>
+          </label>
+          <label class="p-2.5 rounded-xl border border-[#1e2638] bg-[#090d14] flex items-start gap-2.5 cursor-pointer">
+            <input type="radio" name="acc-sharing-mode" value="blind_match" class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">2. Blind-Match Modus</strong>
+              <span class="text-[10px] text-[#94a3b8] block">Partner sieht nur Fragen, bei denen beide mindestens Note 3 gewählt haben (Doppel-Spitzen &amp; Synergien). Einseitige Wünsche bleiben verborgen.</span>
+            </div>
+          </label>
+          <label class="p-2.5 rounded-xl border border-[#1e2638] bg-[#090d14] flex items-start gap-2.5 cursor-pointer">
+            <input type="radio" name="acc-sharing-mode" value="strict_private" class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">3. Streng privat (Selektiv freigeben)</strong>
+              <span class="text-[10px] text-[#94a3b8] block">Dein Solo-Profil bleibt geschützt, bis du es in der Analyse manuell freigibst.</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 7. TUTORIAL-RELAUNCH & DATENSICHERUNG -->
       <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] flex flex-wrap items-center justify-between gap-2 font-mono text-[10px]">
         <button type="button" onclick="IndexRuntime.openWelcomeTutorial()" class="text-[#c5a880] hover:underline font-bold">
           ✨ Tutorial erneut starten
@@ -997,6 +1025,10 @@
         const radio = document.querySelector(`input[name="acc-rel-mode"][value="${relMode}"]`);
         if (radio) radio.checked = true;
 
+        const sharingMode = localStorage.getItem('tactus_sharing_governance') || 'full_open';
+        const shareRadio = document.querySelector(`input[name="acc-sharing-mode"][value="${sharingMode}"]`);
+        if (shareRadio) shareRadio.checked = true;
+
         let activeModules = { chores: true, contract: true, coach: true };
         try {
           const rawMod = localStorage.getItem('tactus_active_modules');
@@ -1042,6 +1074,16 @@
         const checkedRadio = document.querySelector('input[name="acc-rel-mode"]:checked');
         if (checkedRadio) {
           localStorage.setItem('tactus_relationship_mode', checkedRadio.value);
+        }
+
+        const checkedSharing = document.querySelector('input[name="acc-sharing-mode"]:checked');
+        if (checkedSharing) {
+          localStorage.setItem('tactus_sharing_governance', checkedSharing.value);
+          if (checkedSharing.value === 'full_open') {
+            localStorage.setItem('tactus_individual_shared_dossier', 'true');
+          } else if (checkedSharing.value === 'strict_private') {
+            localStorage.setItem('tactus_individual_shared_dossier', 'false');
+          }
         }
 
         const modChores = document.getElementById('mod-chores');
