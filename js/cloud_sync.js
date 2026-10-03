@@ -228,6 +228,7 @@
       toyQuantities: safeJsonParse('tactus_toy_quantities', null) || safeJsonParse('kompass_toy_quantities', {}),
       customEquipment: safeJsonParse('tactus_custom_equipment', null) || safeJsonParse('kompass_custom_equipment', []),
       chatMessages: safeJsonParse('kompass_chat_messages', []),
+      sessionLogbook: safeJsonParse('tactus_session_logbook', null) || safeJsonParse('kompass_session_diary', []),
       sharing: {
         A: localStorage.getItem('tactus_individual_shared_A'),
         B: localStorage.getItem('tactus_individual_shared_B')
@@ -424,6 +425,18 @@
         changesMade = true;
       }
 
+      // 10b. Session-Logbuch (neueste zuerst)
+      if (Array.isArray(remote.sessionLogbook)) {
+        const localLog = safeJsonParse('tactus_session_logbook', null) || safeJsonParse('kompass_session_diary', []);
+        const logMap = new Map();
+        (Array.isArray(localLog) ? localLog : []).forEach(s => { if (s && s.id) logMap.set(s.id, s); });
+        remote.sessionLogbook.forEach(s => { if (s && s.id) logMap.set(s.id, s); });
+        const mergedLog = Array.from(logMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 200);
+        localStorage.setItem('tactus_session_logbook', JSON.stringify(mergedLog));
+        localStorage.setItem('kompass_session_diary', JSON.stringify(mergedLog));
+        changesMade = true;
+      }
+
       // 11. Fototresor-Import (IndexedDB)
       if (Array.isArray(remote.vaultPhotos) && remote.vaultPhotos.length > 0) {
         if (window.HubPhotos && typeof window.HubPhotos.importFromSync === 'function') {
@@ -478,7 +491,7 @@
     tasksState: 'tasks',
     climaxRatio: 'history'
   };
-  const ITEMIZED_ARRAYS = ['chatMessages', 'customEquipment'];
+  const ITEMIZED_ARRAYS = ['chatMessages', 'customEquipment', 'sessionLogbook'];
   const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing'];
 
   function stateToUnits(state) {
