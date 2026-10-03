@@ -583,25 +583,25 @@
         <div id="pillars-balance-container" class="space-y-2 pt-1 font-sans"></div>
       </div>
 
-      <!-- FILTER-TABS FÜR DIE RESONANZ-LISTEN -->
-      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs">
-        <button type="button" onclick="PairAnalysis.filterTab('peaks')" id="tab-btn-peaks" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap">
+      <!-- FILTER-TABS FÜR DIE RESONANZ-LISTEN (MIT STRIKTEM FLEX-NOWRAP & SHRINK-0) -->
+      <div class="flex flex-nowrap items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs w-full">
+        <button type="button" onclick="PairAnalysis.filterTab('peaks')" id="tab-btn-peaks" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0">
           Doppel-Spitzen (5/5)
         </button>
-        <button type="button" onclick="PairAnalysis.filterTab('synergies')" id="tab-btn-synergies" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
+        <button type="button" onclick="PairAnalysis.filterTab('synergies')" id="tab-btn-synergies" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
           Hohe Synergien (5/4)
         </button>
-        <button type="button" onclick="PairAnalysis.filterTab('bridges')" id="tab-btn-bridges" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
-          Erkundungs-Brücken (5/3)
+        <button type="button" onclick="PairAnalysis.filterTab('bridges')" id="tab-btn-bridges" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Brücken (5/3)
         </button>
-        <button type="button" onclick="PairAnalysis.filterTab('notes')" id="tab-btn-notes" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#c5a880] hover:text-white touch-btn whitespace-nowrap">
-          Mit Notizen
+        <button type="button" onclick="PairAnalysis.filterTab('notes')" id="tab-btn-notes" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#c5a880] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Notizen
         </button>
-        <button type="button" onclick="PairAnalysis.filterTab('shame')" id="tab-btn-shame" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap">
-          Scham-Schutzanker (🙈)
+        <button type="button" onclick="PairAnalysis.filterTab('shame')" id="tab-btn-shame" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Schutzanker (🙈)
         </button>
-        <button type="button" onclick="PairAnalysis.filterTab('taboos')" id="tab-btn-taboos" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap">
-          Tabu-Schranken (Note 1)
+        <button type="button" onclick="PairAnalysis.filterTab('taboos')" id="tab-btn-taboos" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Tabus (Note 1)
         </button>
       </div>
 
@@ -661,14 +661,33 @@
               <span class="text-[10px] text-[#94a3b8] uppercase font-bold">Freigabe-Status dieses Solo-Profils:</span>
             </div>
             <strong class="text-xs text-white block" id="indiv-share-status-text">Freigegeben für Partner (Volle Transparenz)</strong>
-            <p class="text-[9.5px] text-[#94a3b8] font-sans">
+            <p class="text-[9.5px] text-[#94a3b8] font-sans" id="indiv-share-status-sub">
               Empfehlung: 100 % Transparenz schafft maximale Verbundenheit. Bei Bedarf kann das Profil privat geschaltet werden.
             </p>
           </div>
-          <button type="button" onclick="PairAnalysis.toggleShareIndividual()" id="btn-toggle-indiv-share" class="px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm">
-            ✓ Für Partner freigegeben
-          </button>
+          <div id="indiv-share-button-wrapper">
+            <button type="button" onclick="PairAnalysis.toggleShareIndividual()" id="btn-toggle-indiv-share" class="px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm">
+              ✓ Für Partner freigegeben
+            </button>
+          </div>
         </div>
+
+        <!-- CONTAINER BEI GESPERRTEM PARTNER-PROFIL (VERSCHLÜSSELTER TRESOR) -->
+        <div id="indiv-locked-profile-notice" style="display: none;" class="p-6 rounded-3xl bg-[#000000] border border-[#8a5232] text-center space-y-3 font-sans">
+          <div class="w-12 h-12 rounded-2xl bg-[#4a2818]/60 border border-[#8a5232] flex items-center justify-center mx-auto text-[#b3734a]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+          </div>
+          <div class="space-y-1">
+            <strong class="text-sm text-white font-serif block" id="locked-notice-title">Dieses Solo-Profil ist privat geschützt</strong>
+            <p class="text-[11px] text-[#94a3b8] max-w-md mx-auto leading-relaxed" id="locked-notice-desc">
+              Dein Partner hat sein persönliches Solo-Profil als privat deklariert. Aus Gründen des autonomen Datenschutzes sind detaillierte Antworten, Notizen und das Solo-Dossier verborgen, bis dein Partner die Freigabe auf seinem Gerät aktiviert.
+            </p>
+          </div>
+          <span class="text-[9.5px] font-mono text-[#c5a880] block">Gemeinsame Doppel-5er Spitzen &amp; Synergien bleiben in der Paar-Analyse sichtbar.</span>
+        </div>
+
+        <!-- GESCHÜTZTE DETAIL-KARTEN (WERDEN BEI PRIVAT-MODUS DES PARTNERS AUSGEBLENDET) -->
+        <div id="indiv-accessible-content" class="space-y-4">
 
         <!-- D/S BALANCE BALKEN -->
         <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2">
@@ -752,24 +771,26 @@
         <div id="indiv-pillars-container" class="space-y-2 pt-1 font-sans"></div>
       </div>
 
-      <!-- FILTER-LEISTE FÜR DAS INDIVIDUAL-PROFIL -->
-      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs">
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('favorites')" id="indiv-tab-favorites" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap">
-          Persönliche Favoriten (4 &amp; 5)
+      <!-- FILTER-LEISTE FÜR DAS INDIVIDUAL-PROFIL (MIT STRIKTEM FLEX-NOWRAP & KURZEN TITELN) -->
+      <div class="flex flex-nowrap items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs w-full">
+        <button type="button" onclick="PairAnalysis.filterIndividualTab('favorites')" id="indiv-tab-favorites" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0">
+          Favoriten (4 &amp; 5)
         </button>
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('notes')" id="indiv-tab-notes" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap">
-          Meine Notizen
+        <button type="button" onclick="PairAnalysis.filterIndividualTab('notes')" id="indiv-tab-notes" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Notizen
         </button>
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('shame')" id="indiv-tab-shame" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap">
-          Eigene Schutzanker (🙈)
+        <button type="button" onclick="PairAnalysis.filterIndividualTab('shame')" id="indiv-tab-shame" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Schutzanker (🙈)
         </button>
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('taboos')" id="indiv-tab-taboos" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap">
-          Eigene Tabus (Note 1)
+        <button type="button" onclick="PairAnalysis.filterIndividualTab('taboos')" id="indiv-tab-taboos" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Tabus (Note 1)
         </button>
       </div>
 
       <!-- LISTE DER INDIVIDUELLEN ITEMS -->
       <div id="indiv-items-list-container" class="space-y-2.5 font-sans"></div>
+
+        </div> <!-- Ende #indiv-accessible-content -->
 
     </div>
 
@@ -796,15 +817,28 @@
       'use strict';
 
       const STORAGE_KEY_AI_ANALYSIS = 'tactus_ai_pair_analysis';
-      const STORAGE_KEY_SHARED_INDIVIDUAL = 'tactus_individual_shared_dossier';
+      const STORAGE_KEY_SHARED_PREFIX = 'tactus_individual_shared_';
       const STORAGE_KEY_LOGBOOK = 'tactus_session_logbook';
       let activeMainMode = 'pair'; // 'pair' | 'individual'
       let activePairFilter = 'peaks';
       let activeIndividualPartner = 'A'; // 'A' | 'B'
       let activeIndividualFilter = 'favorites';
       let analyzedData = null;
-      let isIndividualShared = true;
       let currentRoleState = 'top';
+
+      function isRoleShared(role) {
+        const key = STORAGE_KEY_SHARED_PREFIX + role;
+        const val = localStorage.getItem(key);
+        if (val !== null) return val === 'true';
+        // Fallback: Globale Governance Einstellung
+        const gov = localStorage.getItem('tactus_sharing_governance') || 'full_open';
+        return gov !== 'strict_private';
+      }
+
+      function setRoleShared(role, isShared) {
+        const key = STORAGE_KEY_SHARED_PREFIX + role;
+        localStorage.setItem(key, isShared ? 'true' : 'false');
+      }
 
       function escapeHtml(str) {
         if (!str) return '';
@@ -989,11 +1023,12 @@
         const transferDesc = document.getElementById('dossier-transfer-desc');
         const hazardTitle = document.getElementById('dossier-hazard-title');
         const hazardDesc = document.getElementById('dossier-hazard-desc');
+        const isShared = isRoleShared(activeIndividualPartner);
 
         if (title) title.innerText = `Psychodynamisches Solo-Dossier (${partnerName} · Persönlich)`;
         if (badge) {
-          badge.innerText = isIndividualShared ? 'Freigegeben für Partner' : 'Streng Privat';
-          badge.className = isIndividualShared 
+          badge.innerText = isShared ? 'Freigegeben für Partner' : 'Streng Privat';
+          badge.className = isShared 
             ? 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold'
             : 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold';
         }
@@ -1006,14 +1041,24 @@
       }
 
       function toggleShareIndividual() {
-        isIndividualShared = !isIndividualShared;
-        localStorage.setItem(STORAGE_KEY_SHARED_INDIVIDUAL, isIndividualShared ? 'true' : 'false');
-        updateSharingUI();
+        const myAssignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        // DATENSCHUTZ-SICHERUNG: Nur das eigene Profil darf umgeschaltet werden!
+        if (myAssignedRole !== activeIndividualPartner) {
+          showToast("Datenschutz-Sperre: Du kannst nur die Freigabe deines eigenen Profils steuern.");
+          return;
+        }
 
-        if (isIndividualShared) {
-          showToast("Individual-Dossier für Partner freigegeben ✓ (Volle Transparenz)");
+        const currentShared = isRoleShared(myAssignedRole);
+        const newShared = !currentShared;
+        setRoleShared(myAssignedRole, newShared);
+
+        updateSharingUI();
+        renderIndividualAnalysis();
+
+        if (newShared) {
+          showToast("Dein Solo-Profil ist nun für deinen Partner freigegeben ✓");
         } else {
-          showToast("Freigabe widerrufen – Solo-Profil ist privat geschaltet");
+          showToast("Dein Solo-Profil ist nun privat geschützt 🔒");
         }
 
         if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
@@ -1022,41 +1067,108 @@
       }
 
       function updateSharingUI() {
+        const myAssignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const viewingRole = activeIndividualPartner;
+        const isMe = (myAssignedRole === viewingRole);
+        const isShared = isRoleShared(viewingRole);
+
         const btnToggle = document.getElementById('btn-toggle-indiv-share');
         const statusText = document.getElementById('indiv-share-status-text');
+        const statusSub = document.getElementById('indiv-share-status-sub');
         const statusDot = document.getElementById('indiv-share-status-dot');
         const btnShareDossier = document.getElementById('btn-share-individual');
         const badgeDossier = document.getElementById('dossier-privacy-badge');
+        const lockedNotice = document.getElementById('indiv-locked-profile-notice');
+        const accessibleContent = document.getElementById('indiv-accessible-content');
+        const lockedTitle = document.getElementById('locked-notice-title');
+        const lockedDesc = document.getElementById('locked-notice-desc');
 
-        if (btnToggle) {
-          if (isIndividualShared) {
-            btnToggle.innerText = '✓ Für Partner freigegeben';
-            btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
+        let names = { A: 'Partner 1', B: 'Partner 2' };
+        if (window.HubContext && typeof window.HubContext.getNames === 'function') {
+          names = window.HubContext.getNames();
+        }
+        const partnerName = names[viewingRole] || (viewingRole === 'A' ? 'Partner 1' : 'Partner 2');
+
+        if (isMe) {
+          // EIGENES PROFIL: Volle Kontrolle zum Umschalten
+          if (btnToggle) {
+            btnToggle.disabled = false;
+            btnToggle.style.display = 'block';
+            if (isShared) {
+              btnToggle.innerText = '✓ Für Partner freigegeben';
+              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
+            } else {
+              btnToggle.innerText = '🔒 Nur für mich (Privat)';
+              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
+            }
+          }
+          if (statusText) {
+            statusText.innerText = isShared 
+              ? 'Freigegeben für Partner (Volle Transparenz)' 
+              : 'Streng privat (Partner sieht deine Solo-Details nicht)';
+          }
+          if (statusSub) {
+            statusSub.innerText = isShared 
+              ? 'Dein Partner kann dein Solo-Dossier und deine Favoriten einsehen.' 
+              : 'Tippe auf den Button, um deinem Partner Einblick in dein Solo-Dossier zu gewähren.';
+          }
+          if (statusDot) {
+            statusDot.className = isShared ? 'w-2 h-2 rounded-full bg-[#2e5746]' : 'w-2 h-2 rounded-full bg-[#8a5232]';
+          }
+          // Das eigene Profil ist für einen selbst immer sichtbar
+          if (lockedNotice) lockedNotice.style.display = 'none';
+          if (accessibleContent) accessibleContent.style.display = 'block';
+
+        } else {
+          // FREMDES PROFIL DES PARTNERS: Reines Read-Only Badge, KEINE Umschaltmöglichkeit!
+          if (btnToggle) {
+            btnToggle.disabled = true;
+            if (isShared) {
+              btnToggle.innerText = `✓ Von ${partnerName} freigegeben`;
+              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold text-[10.5px] opacity-90 cursor-default self-start sm:self-auto whitespace-nowrap';
+            } else {
+              btnToggle.innerText = `🔒 Von ${partnerName} gesperrt`;
+              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold text-[10.5px] opacity-90 cursor-default self-start sm:self-auto whitespace-nowrap';
+            }
+          }
+          if (statusText) {
+            statusText.innerText = isShared 
+              ? `Freigegeben von ${partnerName}` 
+              : `Privat geschützt von ${partnerName}`;
+          }
+          if (statusSub) {
+            statusSub.innerText = isShared 
+              ? `${partnerName} hat dieses Profil für dich freigegeben.` 
+              : `Freigabe kann nur von ${partnerName} auf dem eigenen Gerät erteilt werden.`;
+          }
+          if (statusDot) {
+            statusDot.className = isShared ? 'w-2 h-2 rounded-full bg-[#2e5746]' : 'w-2 h-2 rounded-full bg-[#991b1b]';
+          }
+
+          // Wenn Partner nicht freigegeben hat: SCHUTZWAND AKTIVIEREN
+          if (!isShared) {
+            if (lockedNotice) {
+              lockedNotice.style.display = 'block';
+              if (lockedTitle) lockedTitle.innerText = `Solo-Profil von ${partnerName} ist privat geschützt`;
+              if (lockedDesc) lockedDesc.innerText = `${partnerName} hat die Solo-Auswertung noch nicht freigegeben. Aus Respekt vor der Privatsphäre bleiben persönliche Notizen, Schutzanker und das Solo-Psychogramm verborgen.`;
+            }
+            if (accessibleContent) accessibleContent.style.display = 'none';
           } else {
-            btnToggle.innerText = '🔒 Nur für mich (Privat)';
-            btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
+            if (lockedNotice) lockedNotice.style.display = 'none';
+            if (accessibleContent) accessibleContent.style.display = 'block';
           }
         }
 
-        if (statusText) {
-          statusText.innerText = isIndividualShared 
-            ? 'Freigegeben für Partner (Volle Transparenz)' 
-            : 'Streng privat (Partner sieht nur gemeinsame Treffer)';
-        }
-
-        if (statusDot) {
-          statusDot.className = isIndividualShared 
-            ? 'w-2 h-2 rounded-full bg-[#2e5746]' 
-            : 'w-2 h-2 rounded-full bg-[#8a5232]';
-        }
-
         if (btnShareDossier) {
-          btnShareDossier.innerText = isIndividualShared ? '✓ Für Partner freigegeben (Widerrufen)' : '🔒 Für Partner freigeben';
+          btnShareDossier.style.display = isMe ? 'block' : 'none';
+          if (isMe) {
+            btnShareDossier.innerText = isShared ? '✓ Für Partner freigegeben (Widerrufen)' : '🔒 Für Partner freigeben';
+          }
         }
 
         if (badgeDossier) {
-          badgeDossier.innerText = isIndividualShared ? 'Freigegeben für Partner' : 'Streng Privat';
-          badgeDossier.className = isIndividualShared 
+          badgeDossier.innerText = isShared ? 'Freigegeben für Partner' : 'Streng Privat';
+          badgeDossier.className = isShared 
             ? 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold'
             : 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold';
         }
@@ -1543,9 +1655,9 @@
           const btn = document.getElementById(`tab-btn-${k}`);
           if (btn) {
             if (k === tabKey) {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap";
+              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0";
             } else {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap";
+              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
             }
           }
         });
@@ -1663,11 +1775,11 @@
 
         if (btnA && btnB) {
           if (partnerRole === 'A') {
-            btnA.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn";
-            btnB.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#000000] text-[#94a3b8] hover:text-white touch-btn";
+            btnA.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn shrink-0 flex-shrink-0";
+            btnB.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#000000] text-[#94a3b8] hover:text-white touch-btn shrink-0 flex-shrink-0";
           } else {
-            btnB.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn";
-            btnA.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#000000] text-[#94a3b8] hover:text-white touch-btn";
+            btnB.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn shrink-0 flex-shrink-0";
+            btnA.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#000000] text-[#94a3b8] hover:text-white touch-btn shrink-0 flex-shrink-0";
           }
         }
 
@@ -1680,9 +1792,9 @@
           const btn = document.getElementById(`indiv-tab-${k}`);
           if (btn) {
             if (k === tabKey) {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap";
+              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0";
             } else {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap";
+              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
             }
           }
         });
@@ -2232,8 +2344,6 @@ Nutze die Transparenz dieses Profils: Indem du dieses Solo-Dossier mit deinem Pa
       };
 
       document.addEventListener('DOMContentLoaded', () => {
-        const savedShared = localStorage.getItem(STORAGE_KEY_SHARED_INDIVIDUAL);
-        if (savedShared !== null) isIndividualShared = (savedShared === 'true');
         initRoleDisplay();
         runFullPairAnalysis();
       });
