@@ -90,7 +90,9 @@ function removeTailwindConfig(html) {
 }
 
 // 6. HTML umschreiben: CDN/Google Fonts raus, lokale Styles rein, Cache-Busting, Service Worker
-const swSnippet = `<script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { navigator.serviceWorker.register('sw.js').catch(function(){}); }</script>`;
+// Übernimmt nach einem Update der neue Service Worker die Seite, wird sie einmal neu geladen –
+// aber nur direkt nach dem Öffnen, damit keine laufende Session unterbrochen wird.
+const swSnippet = `<script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { var hadSw = !!navigator.serviceWorker.controller, t0 = Date.now(); navigator.serviceWorker.addEventListener('controllerchange', function() { if (hadSw && Date.now() - t0 < 15000) location.reload(); }); navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function(r) { r.update(); }).catch(function(){}); }</script>`;
 for (const f of htmlFiles) {
   const file = path.join(dist, f);
   let html = fs.readFileSync(file, 'utf8');
@@ -110,13 +112,18 @@ for (const f of htmlFiles) {
 }
 
 // 7. Service Worker
+// JS/CSS genau unter der Adresse vorhalten, die die Seiten laden (mit ?v=Version)
+const versioned = (p) => /^(js|data|assets)\/[^?#]+\.(js|css)$/.test(p) ? `${p}?v=${version}` : p;
 const precache = ['./'].concat(walk(dist).map(f => path.relative(dist, f).split(path.sep).join('/'))
-  .filter(p => !p.endsWith('.map') && p !== 'sw.js' && p !== '_headers'));
+  .filter(p => !p.endsWith('.map') && p !== 'sw.js' && p !== '_headers').map(versioned));
 const sw = `/* TACTUS Service Worker · Version ${version} (automatisch erzeugt) */
 const CACHE = 'tactus-${version}';
 const PRECACHE = ${JSON.stringify(precache)};
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  // Am HTTP-Cache vorbei laden; einzelne Fehler verhindern das Update nicht
+  event.waitUntil(caches.open(CACHE).then((cache) => Promise.all(PRECACHE.map((p) =>
+    fetch(new Request(p, { cache: 'reload' })).then((res) => res.ok && !res.redirected ? cache.put(p, res) : null).catch(() => null)
+  ))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
@@ -124,18 +131,20 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
-  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/')) return;
+  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/') || url.pathname === '/sw.js') return;
   if (req.mode === 'navigate') {
     // Seiten: zuerst Netz (Updates sofort), offline aus dem Cache
     event.respondWith(fetch(req).then((res) => {
-      const copy = res.clone();
-      caches.open(CACHE).then((c) => c.put(req, copy));
+      if (res.ok && !res.redirected) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req, { ignoreSearch: true }).then((r) => r || caches.match('./'))));
     return;
   }
-  // Dateien mit Versions-Parameter: Cache zuerst
-  event.respondWith(caches.match(req, { ignoreSearch: true }).then((cached) => cached || fetch(req)));
+  // Dateien: nur die exakt passende Version aus dem Cache, sonst Netz; offline notfalls ältere Fassung
+  event.respondWith(caches.open(CACHE).then((cache) => cache.match(req).then((cached) => cached || fetch(req).then((res) => {
+    if (res.ok) cache.put(req, res.clone());
+    return res;
+  }).catch(() => caches.match(req, { ignoreSearch: true })))));
 });
 `;
 fs.writeFileSync(path.join(dist, 'sw.js'), sw);

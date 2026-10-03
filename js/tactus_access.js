@@ -314,19 +314,17 @@
         return false;
       };
 
-      el.querySelector('#tx-lic-ok').addEventListener('click', async (ev) => {
-        const input = el.querySelector('#tx-lic').value.trim().toUpperCase();
-        const msg = el.querySelector('#tx-lic-msg');
+      const unlockWithCode = async (raw, msg, btn) => {
+        const input = raw.trim().toUpperCase();
         const compact = input.replace(/[^A-Z0-9]/g, '');
         if (compact.length < 6) { msg.textContent = 'Bitte gib deinen Schlüssel oder Code vollständig ein.'; return; }
 
         // Lizenzschlüssel: TACT + 16 Zeichen. Alles andere wird als Testercode eingelöst.
         if (/^TACT[A-Z0-9]{16}$/.test(compact)) {
           localStorage.setItem(KEYS.license, input);
-          await tryUnlock(msg, ev.currentTarget);
+          await tryUnlock(msg, btn);
           return;
         }
-        const btn = ev.currentTarget;
         btn.disabled = true;
         msg.className = 'tx-msg';
         msg.textContent = 'Löse Testercode ein …';
@@ -339,10 +337,19 @@
         }
         el.querySelector('#tx-lic').value = redeemed.key;
         await tryUnlock(msg, btn);
-      });
+      };
+
+      el.querySelector('#tx-lic-ok').addEventListener('click', (ev) =>
+        unlockWithCode(el.querySelector('#tx-lic').value, el.querySelector('#tx-lic-msg'), ev.currentTarget));
 
       el.querySelector('#tx-pair-ok').addEventListener('click', async (ev) => {
         const msg = el.querySelector('#tx-pair-msg');
+        const value = el.querySelector('#tx-pair').value.trim();
+        // Testercode oder Lizenzschlüssel versehentlich hier eingefügt: trotzdem einlösen
+        if (value && !/^TACTUS1-/i.test(value) && value.replace(/[^A-Za-z0-9]/g, '').length <= 40) {
+          await unlockWithCode(value, msg, ev.currentTarget);
+          return;
+        }
         try {
           if (!window.CloudSync || typeof window.CloudSync.joinPairing !== 'function') throw new Error('Sync-Modul nicht geladen.');
           window.CloudSync.joinPairing(el.querySelector('#tx-pair').value);
