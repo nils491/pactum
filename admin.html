@@ -80,7 +80,7 @@
     <div id="icreated"></div>
   </div>
   <button id="ilist">Testercodes laden</button>
-  <div class="table-wrap"><table id="itable"></table></div>
+  <div id="itable"></div>
 
   <h2>Kündigungen</h2>
   <p>Eingegangen über „Verträge hier kündigen“. Nach dem Beenden des Abos beim Zahlungsanbieter als erledigt markieren.</p>
@@ -141,12 +141,23 @@
     $('ilist').onclick = async () => {
       try {
         const d = await call('/api/admin/invites', 'GET');
-        $('itable').innerHTML = '<tr><th>Code</th><th>Eingelöst</th><th>Zugang</th><th>Gültig bis</th><th>Status</th><th>Notiz</th></tr>' +
-          d.invites.map(i => `<tr><td class="key" style="font-size:14px">${esc(i.code_display)}</td><td>${i.uses} / ${i.max_uses}</td><td>${i.months ? i.months + ' Mon.' : 'unbegrenzt'}</td><td>${date(i.expires_at)}</td>` +
-            `<td><button data-code="${esc(i.code_display)}" data-active="${i.active ? 0 : 1}">${i.active ? 'Deaktivieren' : 'Aktivieren'}</button></td><td>${esc(i.note)}</td></tr>`).join('');
+        $('itable').innerHTML = d.invites.length ? d.invites.map(i => `<div class="box" style="margin:10px 0">
+            <div class="key" style="font-size:17px">${esc(i.code_display)} <span class="meta" style="color:${i.active ? '#4ade80' : '#f87171'}">${i.active ? 'aktiv' : 'deaktiviert'}</span></div>
+            <p class="meta" style="margin:6px 0 10px">Eingelöst ${i.uses} von ${i.max_uses} · Testzugang ${i.months ? i.months + ' Monat(e)' : 'unbegrenzt'} · einlösbar bis ${date(i.expires_at)}${i.note ? '<br>' + esc(i.note) : ''}</p>
+            <div class="row"><button data-code="${esc(i.code_display)}" data-active="${i.active ? 0 : 1}">${i.active ? 'Deaktivieren' : 'Aktivieren'}</button>
+            <button data-del="${esc(i.code_display)}" style="border-color:#991b1b;color:#f87171">Löschen</button></div></div>`).join('')
+          : '<p class="meta">Noch keine Testercodes.</p>';
       } catch (e) { msg(e.message); }
     };
     $('itable').addEventListener('click', async (ev) => {
+      const del = ev.target.closest('button[data-del]');
+      if (del) {
+        const code = del.dataset.del;
+        if (!confirm(`Testercode ${code} endgültig löschen?\n\nDer Code kann danach nicht mehr eingelöst werden. Bereits eingelöste Testzugänge laufen weiter.`)) return;
+        try { await call('/api/admin/invites/delete', 'POST', { code }); msg(`Testercode ${code} gelöscht.`, true); $('ilist').click(); }
+        catch (e) { msg(e.message === 'not_found' ? 'Code nicht gefunden.' : e.message); }
+        return;
+      }
       const b = ev.target.closest('button[data-code]');
       if (!b) return;
       try { await call('/api/admin/invites/update', 'POST', { code: b.dataset.code, active: b.dataset.active === '1' }); $('ilist').click(); }

@@ -435,6 +435,15 @@ async function handleAdmin(request, env, url) {
     return json({ invites: results });
   }
 
+  // POST /api/admin/invites/delete { code } – entfernt den Code; bereits eingelöste Testlizenzen bleiben bestehen
+  if (url.pathname === '/api/admin/invites/delete' && request.method === 'POST') {
+    const input = await request.json().catch(() => ({}));
+    const res = await env.DB.prepare('DELETE FROM invites WHERE code_hash = ?')
+      .bind(await sha256Hex(normalizeInviteCode(input.code))).run();
+    if (!res.meta || !res.meta.changes) return json({ error: 'not_found' }, 404);
+    return json({ ok: true });
+  }
+
   // POST /api/admin/invites/update { code, active }
   if (url.pathname === '/api/admin/invites/update' && request.method === 'POST') {
     const input = await request.json().catch(() => ({}));
