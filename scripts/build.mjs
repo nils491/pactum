@@ -24,7 +24,6 @@ for (const entry of fs.readdirSync(dist)) fs.rmSync(path.join(dist, entry), { re
 const htmlFiles = fs.readdirSync(root).filter(f => f.endsWith('.html'));
 for (const f of htmlFiles) fs.copyFileSync(rel(f), path.join(dist, f));
 for (const dir of ['js', 'data', 'assets']) fs.cpSync(rel(dir), path.join(dist, dir), { recursive: true });
-fs.copyFileSync(rel('apple-touch-icon.png'), path.join(dist, 'apple-touch-icon.png'));
 
 // 3. Tailwind-CSS erzeugen
 execFileSync(process.execPath, [
