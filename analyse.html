@@ -126,7 +126,7 @@
 
       <!-- Desktop Quick Actions -->
       <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
-        <!-- In-App Cache-Buster & Reload Button (Punkt #15) -->
+        <!-- In-App Cache-Buster & Reload Button -->
         <button type="button" onclick="PairAnalysis.forceAppReload()" class="w-10 h-10 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-btn" style="min-height: 40px;" title="App frisch vom Server neu laden (Cache leeren)">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -280,6 +280,24 @@
     </div>
 
     <div id="view-analysis-pair" class="space-y-4 animate-fade-in font-sans">
+
+      <!-- DYNAMISCHES GOLDENES AKTUALISIERUNGS-BANNER BEI NEUER DATENBASIS -->
+      <div id="pair-outdated-analysis-banner" style="display: none;" class="p-4 rounded-3xl bg-[#090d14] border border-[#d4af37] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-pulse">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-2xl bg-[#000000] border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+          </div>
+          <div class="space-y-0.5">
+            <strong class="text-xs text-white block font-bold" id="outdated-banner-title">Neue Datenbasis verfügbar!</strong>
+            <p class="text-[10.5px] text-[#94a3b8] leading-snug" id="outdated-banner-desc">
+              Seit der letzten Auswertung wurden neue Sessions im Logbuch verzeichnet oder Fragebogen-Werte modifiziert.
+            </p>
+          </div>
+        </div>
+        <button type="button" onclick="PairAnalysis.generateAiDeepReport()" class="px-4 py-2 rounded-xl bg-[#d4af37] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-btn shadow-md whitespace-nowrap self-start sm:self-auto flex items-center gap-1.5">
+          <span>Gutachten aktualisieren ↺</span>
+        </button>
+      </div>
       
       <!-- HERO OVERVIEW CARD MIT DELTA D/S QUOTIENT -->
       <div class="rounded-3xl p-5 sm:p-6 border border-[#2a364f] shadow-2xl bg-[#090d14] space-y-4">
@@ -300,7 +318,7 @@
         </div>
 
         <p class="text-[10.5px] text-[#94a3b8] leading-relaxed" id="pair-dynamic-desc">
-          Berechnet aus allen 36 Fragebogen-Kapiteln inklusive Kapitel 00 (505 Items). Unterscheidet echte Doppel-Spitzen (5/5), hohe Synergien (5/4 &amp; 4/5), Erkundungs-Brücken (5/3 &amp; 4/3), sensible Sehnsüchte mit Schutzanker, persönliche Bemerkungen und Tabu-Schranken.
+          Berechnet aus allen 36 Fragebogen-Kapiteln inklusive Kapitel 00 (505 Items) sowie der empirischen Schlafzimmer-Praxis aus dem Session-Logbuch.
         </p>
 
         <!-- EMPFOHLENER BEZIEHUNGSMODUS BANNER (GESETZ 12) -->
@@ -357,6 +375,46 @@
         </div>
       </div>
 
+      <div id="pair-logbook-integration-card" class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] space-y-3.5 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-2.5">
+          <div class="space-y-0.5 min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+              <strong class="text-xs sm:text-sm text-white font-bold block">Empirische Schlafzimmer-Praxis (Logbuch-Historie)</strong>
+            </div>
+            <p class="text-[10px] text-[#94a3b8] leading-snug">
+              Echte vollzogene Sessions fließen direkt in eure Paar-Diagnostik und KI-Verhaltensempfehlungen ein.
+            </p>
+          </div>
+          <a href="session.html#view=logbook" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] hover:text-white font-mono text-[10px] font-bold touch-btn">
+            Logbuch öffnen ↗
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
+            <span class="text-[9.5px] text-[#94a3b8] block">Sessions vollzogen:</span>
+            <strong class="text-sm sm:text-base font-bold text-white" id="stat-log-count">0</strong>
+          </div>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
+            <span class="text-[9.5px] text-[#94a3b8] block">Gesamte Praxis-Dauer:</span>
+            <strong class="text-sm sm:text-base font-bold text-[#c5a880]" id="stat-log-duration">0 Min.</strong>
+          </div>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
+            <span class="text-[9.5px] text-[#94a3b8] block">Gemeisterte Edges:</span>
+            <strong class="text-sm sm:text-base font-bold text-[#d4af37]" id="stat-log-edges">0</strong>
+          </div>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
+            <span class="text-[9.5px] text-[#94a3b8] block">Letzte Session:</span>
+            <strong class="text-xs font-bold text-[#f8fafc] truncate block mt-0.5" id="stat-log-last">Keine</strong>
+          </div>
+        </div>
+
+        <div id="logbook-latest-feedback-preview" class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] text-[10.5px] text-[#94a3b8] italic">
+          Noch keine Sessions dokumentiert. Starte eine Session in <a href="session.html" class="text-[#c5a880] underline not-italic">session.html</a>, um reale Praxis-Daten zu erfassen.
+        </div>
+      </div>
+
       <div class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] space-y-4 shadow-xl">
         <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2.5">
           <div class="flex items-center gap-2">
@@ -373,7 +431,7 @@
         <!-- 3-Spalten-Matrix: 1. Wurzeln / 2. Alltag / 3. Blinde Flecken & Gefahren -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-sans">
           
-          <!-- Spalte 1: Biopsychosoziale Wurzeln (Malachit-Touch) -->
+          <!-- Spalte 1: Biopsychosoziale Wurzeln -->
           <div class="p-4 rounded-2xl bg-[#000000] border border-[#2e5746]/50 space-y-2">
             <div class="flex items-center gap-1.5 text-[#2e5746] font-bold">
               <span class="w-1.5 h-1.5 rounded-full bg-[#2e5746]"></span>
@@ -385,7 +443,7 @@
             </p>
           </div>
 
-          <!-- Spalte 2: Alltagstransfer & Integration (Champagner-Touch) -->
+          <!-- Spalte 2: Alltagstransfer & Integration -->
           <div class="p-4 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-2">
             <div class="flex items-center gap-1.5 text-[#c5a880] font-bold">
               <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]"></span>
@@ -397,7 +455,7 @@
             </p>
           </div>
 
-          <!-- Spalte 3: Blinde Flecken & Beziehungsgefahren (Cognac-Touch) -->
+          <!-- Spalte 3: Blinde Flecken & Beziehungsgefahren -->
           <div class="p-4 rounded-2xl bg-[#000000] border border-[#8a5232]/60 space-y-2">
             <div class="flex items-center gap-1.5 text-[#b3734a] font-bold">
               <span class="w-1.5 h-1.5 rounded-full bg-[#b3734a]"></span>
@@ -429,7 +487,7 @@
               <strong class="text-xs sm:text-sm text-[#f8fafc] font-bold block">Psychologische KI-Tiefenanalyse &amp; Beziehungs-Gutachten</strong>
             </div>
             <p class="text-[10px] text-[#94a3b8] leading-snug">
-              Synthetisiert alle 505 Items, Notizen beider Partner, Scham-Anker und Traumagrenzen zu einem ganzheitlichen psychologischen Profil.
+              Synthetisiert alle 505 Items, Notizen beider Partner, Scham-Anker, Traumagrenzen und eure reale Logbuch-Praxis zu einem ganzheitlichen psychologischen Profil.
             </p>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0 font-mono">
@@ -525,7 +583,7 @@
         <div id="pillars-balance-container" class="space-y-2 pt-1 font-sans"></div>
       </div>
 
-      <!-- FILTER-TABS FÜR DIE RESONANZ-LISTEN (INKLUSIVE "MIT NOTIZEN") -->
+      <!-- FILTER-TABS FÜR DIE RESONANZ-LISTEN -->
       <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs">
         <button type="button" onclick="PairAnalysis.filterTab('peaks')" id="tab-btn-peaks" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap">
           Doppel-Spitzen (5/5)
@@ -547,7 +605,7 @@
         </button>
       </div>
 
-      <!-- LISTE DER ITEMS IM AKTIVEN FILTER (MIT AUSFÜHRLICHEN NOTIZEN BEIDER PARTNER) -->
+      <!-- LISTE DER ITEMS IM AKTIVEN FILTER -->
       <div id="pair-items-list-container" class="space-y-2.5 font-sans"></div>
 
       <!-- DIREKT-EXPORT IN DEN BEZIEHUNGSVERTRAG -->
@@ -612,7 +670,7 @@
           </button>
         </div>
 
-        <!-- D/S BALANCE BALKEN (FÜHREN VS. EMPFANGEN) -->
+        <!-- D/S BALANCE BALKEN -->
         <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2">
           <div class="flex items-center justify-between text-xs font-mono">
             <span class="text-[#c5a880] font-bold" id="indiv-lead-pct-label">Führen (r1): 50%</span>
@@ -653,7 +711,7 @@
         </div>
       </div>
 
-      <!-- KI-SOLO-TIEFENANALYSE & PSYCHOGRAMM DES EINZELNEN PARTNERS -->
+      <!-- KI-SOLO-TIEFENANALYSE -->
       <div class="rounded-3xl p-5 border border-[#2a364f] space-y-3.5 shadow-xl bg-[#090d14]">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-2.5">
           <div class="space-y-0.5 min-w-0 flex-1">
@@ -739,12 +797,13 @@
 
       const STORAGE_KEY_AI_ANALYSIS = 'tactus_ai_pair_analysis';
       const STORAGE_KEY_SHARED_INDIVIDUAL = 'tactus_individual_shared_dossier';
+      const STORAGE_KEY_LOGBOOK = 'tactus_session_logbook';
       let activeMainMode = 'pair'; // 'pair' | 'individual'
       let activePairFilter = 'peaks';
       let activeIndividualPartner = 'A'; // 'A' | 'B'
       let activeIndividualFilter = 'favorites';
       let analyzedData = null;
-      let isIndividualShared = true; // Empfehlung: 100% Offenheit standardmäßig
+      let isIndividualShared = true;
       let currentRoleState = 'top';
 
       function escapeHtml(str) {
@@ -868,7 +927,6 @@
         const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
         const isTop = (assignedRole === keyholder);
 
-        // Schutz im Modus flr_24_7: Kein eigenmächtiger 1-Tap Wechsel
         if (mode === 'flr_24_7') {
           if (!isTop) {
             showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe erfordert formellen Antrag im Paar-Stream (chat.html).");
@@ -878,7 +936,6 @@
           return;
         }
 
-        // Casual- & Switch-Modus: Freier Rollenwechsel
         const roleText = document.getElementById('active-role-text');
         const roleDot = document.getElementById('role-indicator-dot');
         if (currentRoleState === 'top') {
@@ -1031,6 +1088,20 @@
         const ansTop = answers[topRole] || {};
         const ansBottom = answers[bottomRole] || {};
 
+        // 1. Session-Logbuch einlesen & Metriken berechnen
+        let logbook = [];
+        try {
+          const rawLog = localStorage.getItem(STORAGE_KEY_LOGBOOK);
+          if (rawLog) logbook = JSON.parse(rawLog) || [];
+        } catch (e) {}
+
+        const logMetrics = {
+          count: logbook.length,
+          totalDuration: logbook.reduce((sum, s) => sum + (s.durationMinutes || 0), 0),
+          totalEdges: logbook.reduce((sum, s) => sum + (s.edgesCounted || s.edgesCount || 0), 0),
+          lastSession: logbook[0] || null
+        };
+
         const p1 = window.surveyChaptersPart1 || [];
         const p2 = window.surveyChaptersPart2 || [];
         const p3 = window.surveyChaptersPart3 || [];
@@ -1060,20 +1131,16 @@
         const softBoundaries = [];
         const chapter00Results = [];
 
-        // bdsmtest.org Delta D/s-Quotient Akkumulatoren
         let topLeadScoreSum = 0;
         let topReceiveScoreSum = 0;
         let bottomLeadScoreSum = 0;
         let bottomReceiveScoreSum = 0;
         let comparedCount = 0;
 
-        // Auswertung für Beziehungsmodus-Empfehlung (Gesetz 12)
-        // FLR / 24/7 Indikatoren: Kapitel 8, 21, 22, 23, 28, 29
         let flrSum = 0;
         let flrCount = 0;
         const flrChapters = [8, 21, 22, 23, 28, 29];
 
-        // 5 Domänen-Akkumulatoren (36 Kapitel gemappt)
         const domains = {
           power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [7, 8, 20, 21, 24, 27, 29, 36] },
           sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [1, 2, 3, 9, 10, 11, 12, 15, 30, 31, 33] },
@@ -1090,7 +1157,6 @@
           const noteBottom = (ansBottom[`note_${itemId}`] || '').trim();
           const hasNote = (noteTop.length > 0 || noteBottom.length > 0);
 
-          // Spezialbehandlung: Kapitel 00 (Items 901..905 - Choice-Fragen)
           if (meta.type === 'choice') {
             const chTop = ansTop[`choice_${itemId}`];
             const chBottom = ansBottom[`choice_${itemId}`];
@@ -1110,8 +1176,8 @@
             return;
           }
 
-          const sTop = ansTop[`it_${itemId}_r1`];       // Top führt aus
-          const sBottom = ansBottom[`it_${itemId}_r2`]; // Bottom empfängt
+          const sTop = ansTop[`it_${itemId}_r1`];
+          const sBottom = ansBottom[`it_${itemId}_r2`];
           const sTopRec = ansTop[`it_${itemId}_r2`] || 0;
           const sBottomLead = ansBottom[`it_${itemId}_r1`] || 0;
           const isShame = ansBottom[`shame_${itemId}`] === true;
@@ -1126,7 +1192,6 @@
           bottomReceiveScoreSum += sBottom;
           bottomLeadScoreSum += sBottomLead;
 
-          // FLR-Indikator
           if (flrChapters.includes(meta.chapterId)) {
             flrSum += (sTop * 0.55) + (sBottom * 0.45);
             flrCount++;
@@ -1143,24 +1208,20 @@
             bottomName: names[bottomRole]
           };
 
-          // Mit Notizen-Filter
           if (hasNote) {
             withNotes.push(itemEntry);
           }
 
-          // 1. Tabus & Grenzen
           if (sBottom === 1) {
             bottomTaboos.push(Object.assign({}, itemEntry, { reason: `Veto von ${names[bottomRole]}` }));
           } else if (sBottom === 2) {
             softBoundaries.push(Object.assign({}, itemEntry, { reason: `Sanfte Grenze von ${names[bottomRole]}` }));
           }
 
-          // 2. Scham-Schutzanker
           if (isShame && sBottom >= 3) {
             shameProtected.push(itemEntry);
           }
 
-          // 3. Resonanz-Klassifizierung
           if (sTop === 5 && sBottom === 5) {
             doubleFives.push(Object.assign({}, itemEntry, { matchType: "5/5 Doppel-Spitze" }));
             weightedResonanceSum += 1.0;
@@ -1177,7 +1238,6 @@
             weightedResonanceSum += 0.35;
           }
 
-          // Domänen-Zuordnung
           for (const dKey in domains) {
             const d = domains[dKey];
             if (d.chapterIds.includes(meta.chapterId)) {
@@ -1191,7 +1251,6 @@
           ? Math.min(99, Math.max(25, Math.round((weightedResonanceSum / scoredItemsCount) * 100))) 
           : 0;
 
-        // Beziehungsmodus-Empfehlung aus den Antworten berechnen
         const flrAvg = flrCount > 0 ? (flrSum / flrCount) : 0;
         let recommendedMode = 'switch_flexible';
         let recommendedModeTitle = 'Switch & Flexibel (Beidseitige Rollen)';
@@ -1204,8 +1263,6 @@
           recommendedModeTitle = 'Casual & Schlafzimmer (Szenen-Paare)';
         }
 
-        // Berechnung der bdsmtest.org D/s-Quotienten:
-        // Quotient = (Lead - Receive) / (Lead + Receive)
         const topTotal = (topLeadScoreSum + topReceiveScoreSum) || 1;
         const topQuotientVal = (topLeadScoreSum - topReceiveScoreSum) / topTotal;
 
@@ -1230,12 +1287,110 @@
           topName: names[topRole],
           bottomName: names[bottomRole],
           topRole,
-          bottomRole
+          bottomRole,
+          logMetrics
         };
 
         updateAnalysisUI();
+        renderLogbookIntegrationCard();
         renderChapter00Safeguards();
+        checkAndRenderOutdatedStatus();
         loadSavedAiReport();
+      }
+
+      function renderLogbookIntegrationCard() {
+        if (!analyzedData || !analyzedData.logMetrics) return;
+        const m = analyzedData.logMetrics;
+
+        const elCount = document.getElementById('stat-log-count');
+        const elDuration = document.getElementById('stat-log-duration');
+        const elEdges = document.getElementById('stat-log-edges');
+        const elLast = document.getElementById('stat-log-last');
+        const elPreview = document.getElementById('logbook-latest-feedback-preview');
+
+        if (elCount) elCount.innerText = m.count.toString();
+        if (elDuration) elDuration.innerText = `${m.totalDuration} Min.`;
+        if (elEdges) elEdges.innerText = m.totalEdges.toString();
+
+        if (elLast) {
+          if (m.lastSession) {
+            const dateStr = new Date(m.lastSession.timestamp).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+            elLast.innerText = `${dateStr} (${m.lastSession.durationMinutes || 0}m)`;
+          } else {
+            elLast.innerText = "Keine";
+          }
+        }
+
+        if (elPreview) {
+          if (m.lastSession && m.lastSession.feedbackNote) {
+            elPreview.innerHTML = `
+              <div class="space-y-1">
+                <span class="text-[9.5px] font-mono text-[#c5a880] not-italic font-bold block">
+                  Letzter Session-Rapport („${escapeHtml(m.lastSession.title || 'Schlafzimmer')}“):
+                </span>
+                <p class="text-white not-italic leading-snug">„${escapeHtml(m.lastSession.feedbackNote)}“</p>
+                <div class="text-[9px] font-mono text-[#94a3b8] not-italic pt-0.5">
+                  Tonalität: ${escapeHtml(m.lastSession.tonality || 'Standard')} · Ausgang: ${escapeHtml(m.lastSession.climaxType || 'Standard')}
+                </div>
+              </div>
+            `;
+          } else if (m.count > 0) {
+            elPreview.innerHTML = `
+              <span class="text-white not-italic font-mono text-[10.5px]">
+                ${m.count} Sessions im Logbuch verzeichnet. Regelmäßige Praxis schärft eure D/s-Passung im Gutachten.
+              </span>
+            `;
+          } else {
+            elPreview.innerHTML = `
+              Noch keine Sessions dokumentiert. Starte eine Session in <a href="session.html" class="text-[#c5a880] underline not-italic font-bold">session.html</a>, um reale Praxis-Daten in dieses Gutachten einfließen zu lassen.
+            `;
+          }
+        }
+      }
+
+      function checkAndRenderOutdatedStatus() {
+        const banner = document.getElementById('pair-outdated-analysis-banner');
+        if (!banner) return;
+
+        let saved = null;
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY_AI_ANALYSIS);
+          if (raw) saved = JSON.parse(raw);
+        } catch (e) {}
+
+        if (!saved || !saved.generatedAt) {
+          banner.style.display = 'none';
+          return;
+        }
+
+        let isOutdated = false;
+        let reasons = [];
+
+        // Prüfen, ob eine Session nach dem letzten Bericht stattfand
+        if (analyzedData && analyzedData.logMetrics && analyzedData.logMetrics.lastSession) {
+          if (analyzedData.logMetrics.lastSession.timestamp > saved.generatedAt) {
+            isOutdated = true;
+            reasons.push("neue Schlafzimmer-Sessions im Logbuch");
+          }
+        }
+
+        // Prüfen, ob der Match-Score signifikant divergiert
+        if (analyzedData && saved.matchPercentage !== undefined) {
+          if (Math.abs(analyzedData.overallMatchPercentage - saved.matchPercentage) >= 3) {
+            isOutdated = true;
+            reasons.push("geänderte Fragebogen-Antworten");
+          }
+        }
+
+        if (isOutdated) {
+          banner.style.display = 'flex';
+          const desc = document.getElementById('outdated-banner-desc');
+          if (desc) {
+            desc.innerText = `Seit der letzten Berechnung liegen ${reasons.join(' sowie ')} vor. Aktualisiere euer Gutachten für präzise Beziehungs-Impulse.`;
+          }
+        } else {
+          banner.style.display = 'none';
+        }
       }
 
       function updateAnalysisUI() {
@@ -1246,7 +1401,6 @@
           badge.innerText = `${analyzedData.overallMatchPercentage} % Resonanz`;
         }
 
-        // Psychometrische Modus-Empfehlung rendern
         const recTitle = document.getElementById('recommended-mode-title');
         const recBadge = document.getElementById('recommended-mode-badge');
         if (recTitle && analyzedData.recommendedModeTitle) {
@@ -1265,7 +1419,6 @@
           }
         }
 
-        // Quotient Top
         const qTopVal = document.getElementById('quotient-value-top');
         const qTopLbl = document.getElementById('quotient-label-top');
         const qTopArch = document.getElementById('quotient-archetype-top');
@@ -1278,7 +1431,6 @@
           qTopArch.innerText = analyzedData.topQuotientVal > 0.15 ? 'Dominant / Führend' : (analyzedData.topQuotientVal < -0.15 ? 'Devot / Hingebend' : 'Switch / Ausgewogen');
         }
 
-        // Quotient Bottom
         const qSubVal = document.getElementById('quotient-value-sub');
         const qSubLbl = document.getElementById('quotient-label-sub');
         const qSubArch = document.getElementById('quotient-archetype-sub');
@@ -1291,7 +1443,6 @@
           qSubArch.innerText = analyzedData.bottomQuotientVal < -0.15 ? 'Devot / Hingebend' : (analyzedData.bottomQuotientVal > 0.15 ? 'Dominant / Führend' : 'Switch / Ausgewogen');
         }
 
-        // Rollen-Resonanz Delta
         const qDelta = document.getElementById('quotient-delta-display');
         const qDeltaHint = document.getElementById('quotient-delta-hint');
         if (qDelta) qDelta.innerText = `${analyzedData.overallMatchPercentage} %`;
@@ -1465,7 +1616,6 @@
 
               <p class="text-[10.5px] text-[#94a3b8] leading-snug break-words">${escapeHtml(meta.desc)}</p>
 
-              <!-- BEWERTUNGEN BEIDER PARTNER TRANSPARENT AUSGEWIESEN -->
               ${!entry.isChoice ? `
                 <div class="flex items-center gap-3 text-[10px] font-mono pt-0.5 text-[#94a3b8] border-t border-[#2a364f]">
                   <span>${escapeHtml(analyzedData.topName)} (Top/führt): <strong class="text-[#c5a880]">${entry.sTop}/5</strong></span>
@@ -1474,7 +1624,6 @@
                 </div>
               ` : ''}
 
-              <!-- PERSÖNLICHE NOTIZEN BEIDER PARTNER IM KLARTEXT NEBENEINANDER -->
               ${entry.noteTop || entry.noteBottom ? `
                 <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] space-y-1.5 text-[10.5px]">
                   ${entry.noteTop ? `
@@ -1596,7 +1745,6 @@
         const myShame = [];
         const myTaboos = [];
 
-        // 36 Kapitel gemappt
         const domains = {
           power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [7, 8, 20, 21, 24, 27, 29, 36] },
           sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [1, 2, 3, 9, 10, 11, 12, 15, 30, 31, 33] },
@@ -1643,7 +1791,6 @@
           }
         });
 
-        // D/s Balance Prozente
         const totalSum = leadSum + receiveSum;
         const leadPct = totalSum > 0 ? Math.round((leadSum / totalSum) * 100) : 50;
         const receivePct = 100 - leadPct;
@@ -1665,7 +1812,6 @@
           else tagArchetype.innerText = "Switch / Ausgewogene Balance";
         }
 
-        // Stats Zahlen
         const stat5 = document.getElementById('stat-indiv-fives');
         const stat4 = document.getElementById('stat-indiv-fours');
         const statShame = document.getElementById('stat-indiv-shame');
@@ -1676,7 +1822,6 @@
         if (statShame) statShame.innerText = myShame.length.toString();
         if (statTaboos) statTaboos.innerText = myTaboos.length.toString();
 
-        // 5 Säulen rendern
         const pillarsContainer = document.getElementById('indiv-pillars-container');
         if (pillarsContainer) {
           pillarsContainer.innerHTML = Object.keys(domains).map(k => {
@@ -1801,14 +1946,17 @@
         container.innerHTML = `
           <div class="p-6 rounded-2xl bg-[#000000] border border-[#c5a880]/50 text-center space-y-3 animate-pulse font-mono">
             <div class="w-8 h-8 border-2 border-[#c5a880]/20 border-t-[#c5a880] rounded-full animate-spin mx-auto"></div>
-            <strong class="text-xs text-[#c5a880] block font-bold">TACTUS KI synthetisiert 505 psychometrische Datenpunkte &amp; Paar-Resonanz...</strong>
-            <p class="text-[10.5px] text-[#94a3b8]">Verbindet Doppel-5er Spitzen, Erkundungs-Brücken, Scham-Anker und Schutzraum-Grenzen.</p>
+            <strong class="text-xs text-[#c5a880] block font-bold">TACTUS KI synthetisiert 505 psychometrische Datenpunkte &amp; reale Schlafzimmer-Praxis...</strong>
+            <p class="text-[10.5px] text-[#94a3b8]">Verbindet Doppel-5er Spitzen, Erkundungs-Brücken, Scham-Anker und reale Logbuch-Sessions.</p>
           </div>
         `;
 
         let reportText = null;
 
         if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
+          const log = analyzedData.logMetrics || {};
+          const lastSess = log.lastSession;
+
           const prompt = `
 Du bist der leitende Beziehungs- und Somatik-Psychologe für TACTUS (tactus.digital).
 Erstelle für das Paar ${analyzedData.topName} (Top) und ${analyzedData.bottomName} (Bottom) eine tiefgründige, ungeschönte und praxistaugliche psychologische Tiefenanalyse.
@@ -1826,11 +1974,18 @@ PSYCHOMETRISCHE DATENBASIS DES PAARES:
 - Tabu-Schranken (Note 1): ${analyzedData.bottomTaboos.map(t => t.meta.title).join(', ') || 'Keine harten Vetos'}
 - Kapitel 00 Intervention bei Dissoziation: ${analyzedData.chapter00Results.map(r => r.meta.title).join('; ') || 'Standard-Holding'}
 
-GLIEDERUNG DES PSYCHOLOGISCHEN GUTACHTENS (exakt 4 Abschnitte):
+EMPIRISCHE PRAXIS AUS DEM SESSION-LOGBUCH:
+- Vollzogene Sessions im Schlafzimmer: ${log.count || 0} Sessions (Gesamtdauer: ${log.totalDuration || 0} Minuten)
+- Gemeisterte Edges an der Schwelle: ${log.totalEdges || 0} Edges
+${lastSess ? `- Letzte dokumentierte Session: „${lastSess.title}“ (${lastSess.durationMinutes} Min. · Tonalität: ${lastSess.tonality} · Ausgang: ${lastSess.climaxType})` : '- Noch keine Sessions absolviert'}
+${lastSess && lastSess.feedbackNote ? `- Letztes Partner-Feedback: „${lastSess.feedbackNote}“` : ''}
+
+GLIEDERUNG DES PSYCHOLOGISCHEN GUTACHTENS (exakt 5 Abschnitte):
 1. Das Wesen eurer Dynamik & Die biopsychosozialen Wurzeln
 2. Die gemeinsamen Leuchttürme (Doppel-Spitzen & Erotischer Spielraum)
 3. Wachstumszonen & Das Erkunden von Neuland (Brücken & Scham-Schutzanker)
-4. Konkreter Beziehungs-Leitfaden für Alltag und Schlafzimmer (Safewords, Aftercare, Top Fatigue Schutz)
+4. Empirische Schlafzimmer-Praxis & Was euer Logbuch über euch verrät
+5. Konkreter Beziehungs-Leitfaden für Alltag und Schlafzimmer (Safewords, Aftercare, Top Fatigue Schutz)
 
 Formuliere erwachsen, direkt, psychologisch fundiert, frei von Kitsch und ohne infantile Emojis.
 `;
@@ -1859,6 +2014,7 @@ Formuliere erwachsen, direkt, psychologisch fundiert, frei von Kitsch und ohne i
         } catch (e) {}
 
         renderDeepReportHtml(reportText);
+        checkAndRenderOutdatedStatus();
         showToast("✓ Psychologische Tiefenanalyse erfolgreich berechnet");
 
         if (triggerBtn) triggerBtn.disabled = false;
@@ -1866,6 +2022,9 @@ Formuliere erwachsen, direkt, psychologisch fundiert, frei von Kitsch und ohne i
       }
 
       function synthesizeProceduralDeepReport(data) {
+        const log = data.logMetrics || {};
+        const lastSess = log.lastSession;
+
         return `### 1. Das Wesen eurer Dynamik & Die biopsychosozialen Wurzeln
 Zwischen ${data.topName} (Top) und ${data.bottomName} (Bottom) zeigt sich eine ausgeprägte Resonanz von ${data.overallMatchPercentage} %. Der D/s-Quotient von ${data.topName} (+${data.topQuotientVal.toFixed(2)}) und ${data.bottomName} (${data.bottomQuotientVal.toFixed(2)}) belegt eine ideale komplementäre Rollenpassung: ${data.topName} schöpft Erfüllung aus der bewussten, ruhigen Verantwortung und Leitung, während ${data.bottomName} das vegetative Nervensystem durch die Abgabe der exekutiven Alltags-Kontrolle nachhaltig entlastet (transiente Hypofrontalität nach Baumeister).
 
@@ -1875,7 +2034,10 @@ Eure stärksten Resonanzpunkte liegen in den Bereichen: ${data.doubleFives.map(f
 ### 3. Wachstumszonen & Das Erkunden von Neuland
 Mit ${data.bridges.length} Erkundungs-Brücken verfügt ihr über enormes Ausbaupotenzial. Hier ist der führende Partner eingeladen, behutsam anzuleiten. ${data.shameProtected.length > 0 ? `Besondere Achtsamkeit gilt den ${data.shameProtected.length} Wünschen mit dem Scham-Schutzanker (🙈): Sie stehen unter vertraglichem Alltags-Spottverbot (§ 1 Abs. 2) und werden ausschließlich im geschützten Halbdunkel erprobt.` : 'Eure Schamgrenzen sind bemerkenswert offen kommuniziert.'}
 
-### 4. Konkreter Beziehungs-Leitfaden für Alltag und Schlafzimmer
+### 4. Empirische Schlafzimmer-Praxis (Logbuch-Historie)
+${log.count > 0 ? `Mit ${log.count} vollzogenen Sessions und einer Gesamtdauer von ${log.totalDuration} Minuten habt ihr bereits eine reale Praxisbasis aufgebaut. Ihr habt ${log.totalEdges} Edges an der Schwelle gemeistert.${lastSess && lastSess.feedbackNote ? ` Euer letztes Feedback („${escapeHtml(lastSess.feedbackNote)}“) belegt eine wachsende somatische Abstimmung.` : ''} Die reale Praxis bestätigt die im Fragebogen ermittelte Rollenverteilung.` : `Ihr habt bisher noch keine Sessions im Logbuch verzeichnet. Die Praxis wird eure ermittelten Neigungen im Alltag erden – nutzt das Staging in session.html für euren ersten geführten Durchlauf.`}
+
+### 5. Konkreter Beziehungs-Leitfaden für Alltag und Schlafzimmer
 • **Im Alltag:** Diskrete Mikro-Gesten (Blickkontakt beim Verlassen des Hauses, Teekochen im Kniestand) erhalten die Bindung lebendig, ohne 24/7-Dauerstress zu erzeugen.
 • **Im Schlafzimmer:** Nutzt die RACK-Ampel (Grün/Gelb/Rot) konsequent. Bei Gelb wird die Intensität sofort gedrosselt; bei Rot herrscht absoluter Stillstand.
 • **Schutz vor Top Fatigue:** ${data.bottomName} entlastet ${data.topName} aktiv im Haushalt (Reverse Aftercare), damit das Führen für die Herrin eine Freude bleibt und nicht zur anstrengenden Pflicht wird.`;
@@ -1896,7 +2058,7 @@ Mit ${data.bridges.length} Erkundungs-Brücken verfügt ihr über enormes Ausbau
             ${formattedHtml}
             <div class="pt-3 border-t border-[#2a364f] flex items-center justify-between text-[9.5px] font-mono text-[#94a3b8]">
               <span>TACTUS Psychometrisches Gutachten</span>
-              <span>Evidenzbasierte Vektor-Synthese</span>
+              <span>Evidenzbasierte Vektor- &amp; Praxis-Synthese</span>
             </div>
           </div>
         `;
