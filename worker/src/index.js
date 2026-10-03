@@ -10,7 +10,7 @@
  * 3. KI-Fallback (/api/ai/*): Leitet Gemini-Anfragen mit dem Betreiber-Key
  *    weiter – nur mit gültiger Lizenz und innerhalb eines Tageskontingents.
  *    Anfragen werden nicht gespeichert.
- * 4. Lizenzen (/api/license/*, /api/admin/*) in D1.
+ * 4. Lizenzen und Testercodes (/api/license/*, /api/admin/*) in D1.
  */
 
 import { DurableObject } from 'cloudflare:workers';
@@ -154,6 +154,68 @@ async function handleAi(request, env, url) {
   });
 }
 
+async function createLicense(env, { plan, months, note }) {
+  const expiresAt = months ? Date.now() + months * 31 * 24 * 3600 * 1000 : null;
+  const key = generateLicenseKey();
+  await env.DB.prepare(
+    'INSERT INTO licenses (key_hash, key_hint, plan, status, expires_at, created_at, note) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).bind(await sha256Hex(normalizeLicenseKey(key)), key.slice(-4), plan, 'active', expiresAt, Date.now(), String(note || '')).run();
+  return { key, plan, expiresAt };
+}
+
+function normalizeInviteCode(code) {
+  return String(code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+function generateInviteCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const chars = [...crypto.getRandomValues(new Uint8Array(8))].map(b => alphabet[b % alphabet.length]).join('');
+  return `TEST-${chars.slice(0, 4)}-${chars.slice(4, 8)}`;
+}
+
+const MAX_FAILED_REDEEMS_PER_DAY = 20;
+
+// POST /api/license/redeem { code } – Testercode einlösen, erzeugt eine eigene Testlizenz
+async function handleRedeem(request, env) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405);
+  const { code } = await request.json().catch(() => ({}));
+  const normalized = normalizeInviteCode(code);
+
+  const day = new Date().toISOString().slice(0, 10);
+  const ipHash = await sha256Hex('tactus-ip:' + (request.headers.get('CF-Connecting-IP') || 'local'));
+  const attempts = await env.DB.prepare('SELECT count FROM redeem_attempts WHERE ip_hash = ? AND day = ?').bind(ipHash, day).first();
+  if (attempts && attempts.count >= MAX_FAILED_REDEEMS_PER_DAY) return json({ error: 'too_many_attempts' }, 429);
+
+  const fail = async (reason) => {
+    await env.DB.prepare(
+      `INSERT INTO redeem_attempts (ip_hash, day, count) VALUES (?, ?, 1)
+       ON CONFLICT (ip_hash, day) DO UPDATE SET count = count + 1`
+    ).bind(ipHash, day).run();
+    return json({ error: reason }, 400);
+  };
+
+  if (normalized.length < 6) return fail('invalid_code');
+
+  // Atomar: nur einlösen, solange der Code aktiv, gültig und nicht aufgebraucht ist
+  const invite = await env.DB.prepare(
+    `UPDATE invites SET uses = uses + 1
+     WHERE code_hash = ? AND active = 1 AND uses < max_uses AND (expires_at IS NULL OR expires_at > ?)
+     RETURNING code_display, months`
+  ).bind(await sha256Hex(normalized), Date.now()).first();
+
+  if (!invite) {
+    const known = await env.DB.prepare('SELECT active, uses, max_uses, expires_at FROM invites WHERE code_hash = ?')
+      .bind(await sha256Hex(normalized)).first();
+    if (!known) return fail('invalid_code');
+    if (!known.active) return fail('code_inactive');
+    if (known.expires_at && known.expires_at <= Date.now()) return fail('code_expired');
+    return fail('code_used_up');
+  }
+
+  const license = await createLicense(env, { plan: 'tester', months: invite.months, note: `Testercode ${invite.code_display}` });
+  return json(license);
+}
+
 async function handleLicenseCheck(request, env) {
   if (request.method !== 'POST') return json({ error: 'method' }, 405);
   const { key } = await request.json().catch(() => ({}));
@@ -177,13 +239,44 @@ async function handleAdmin(request, env, url) {
   if (url.pathname === '/api/admin/licenses' && request.method === 'POST') {
     const input = await request.json().catch(() => ({}));
     const plan = ['monthly', 'yearly', 'lifetime'].includes(input.plan) ? input.plan : 'monthly';
-    const months = Number.isFinite(input.months) ? input.months : (plan === 'yearly' ? 12 : 1);
-    const expiresAt = plan === 'lifetime' ? null : Date.now() + months * 31 * 24 * 3600 * 1000;
-    const key = generateLicenseKey();
-    await env.DB.prepare(
-      'INSERT INTO licenses (key_hash, key_hint, plan, status, expires_at, created_at, note) VALUES (?, ?, ?, ?, ?, ?, ?)'
-    ).bind(await sha256Hex(normalizeLicenseKey(key)), key.slice(-4), plan, 'active', expiresAt, Date.now(), String(input.note || '')).run();
-    return json({ key, plan, expiresAt });
+    const months = plan === 'lifetime' ? null : (Number.isFinite(input.months) ? input.months : (plan === 'yearly' ? 12 : 1));
+    return json(await createLicense(env, { plan, months, note: input.note }));
+  }
+
+  // POST /api/admin/invites { code?, months?, maxUses?, validDays?, note? }
+  if (url.pathname === '/api/admin/invites' && request.method === 'POST') {
+    const input = await request.json().catch(() => ({}));
+    const display = input.code ? String(input.code).trim().toUpperCase() : generateInviteCode();
+    const normalized = normalizeInviteCode(display);
+    if (normalized.length < 6) return json({ error: 'code_too_short' }, 400);
+    const months = Number.isFinite(input.months) && input.months > 0 ? Math.floor(input.months) : null;
+    const maxUses = Number.isFinite(input.maxUses) && input.maxUses > 0 ? Math.floor(input.maxUses) : 1;
+    const expiresAt = Number.isFinite(input.validDays) && input.validDays > 0 ? Date.now() + input.validDays * 24 * 3600 * 1000 : null;
+    try {
+      await env.DB.prepare(
+        'INSERT INTO invites (code_hash, code_display, months, max_uses, uses, expires_at, active, created_at, note) VALUES (?, ?, ?, ?, 0, ?, 1, ?, ?)'
+      ).bind(await sha256Hex(normalized), display, months, maxUses, expiresAt, Date.now(), String(input.note || '')).run();
+    } catch (e) {
+      return json({ error: 'code_exists' }, 409);
+    }
+    return json({ code: display, months, maxUses, expiresAt });
+  }
+
+  // GET /api/admin/invites
+  if (url.pathname === '/api/admin/invites' && request.method === 'GET') {
+    const { results } = await env.DB.prepare(
+      'SELECT code_display, months, max_uses, uses, expires_at, active, created_at, note FROM invites ORDER BY created_at DESC LIMIT 500'
+    ).all();
+    return json({ invites: results });
+  }
+
+  // POST /api/admin/invites/update { code, active }
+  if (url.pathname === '/api/admin/invites/update' && request.method === 'POST') {
+    const input = await request.json().catch(() => ({}));
+    const res = await env.DB.prepare('UPDATE invites SET active = ? WHERE code_hash = ?')
+      .bind(input.active ? 1 : 0, await sha256Hex(normalizeInviteCode(input.code))).run();
+    if (!res.meta || !res.meta.changes) return json({ error: 'not_found' }, 404);
+    return json({ ok: true });
   }
 
   // GET /api/admin/licenses
@@ -222,6 +315,7 @@ export default {
       if (url.pathname.startsWith('/api/relay/')) return await handleRelay(request, env, url);
       if (url.pathname.startsWith('/api/ai/')) return await handleAi(request, env, url);
       if (url.pathname === '/api/license/check') return await handleLicenseCheck(request, env);
+      if (url.pathname === '/api/license/redeem') return await handleRedeem(request, env);
       if (url.pathname.startsWith('/api/admin/')) return await handleAdmin(request, env, url);
       if (url.pathname.startsWith('/api/')) return json({ error: 'not_found' }, 404);
       return env.ASSETS.fetch(request);

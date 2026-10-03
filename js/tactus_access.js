@@ -250,6 +250,31 @@
       <p class="tx-small">Ein Abo gilt für ein Paar (zwei Geräte).${any ? '' : ` Der Online-Kauf startet in Kürze – bis dahin erhältst du deinen Schlüssel unter <a href="mailto:${CONFIG.supportEmail}" style="color:#c5a880">${CONFIG.supportEmail}</a>.`}</p>`;
   }
 
+  async function redeemInviteCode(code) {
+    try {
+      const res = await fetch(`${apiBase()}/api/license/redeem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.key) {
+        localStorage.setItem(KEYS.license, data.key);
+        return { ok: true, key: data.key };
+      }
+      const messages = {
+        invalid_code: 'Dieser Code ist ungültig.',
+        code_inactive: 'Dieser Code wurde deaktiviert.',
+        code_expired: 'Dieser Code ist abgelaufen.',
+        code_used_up: 'Dieser Code wurde bereits so oft eingelöst wie erlaubt.',
+        too_many_attempts: 'Zu viele Fehlversuche. Bitte versuche es morgen erneut.'
+      };
+      return { ok: false, message: messages[data.error] || 'Einlösen fehlgeschlagen.' };
+    } catch (e) {
+      return { ok: false, message: reasonText('offline') };
+    }
+  }
+
   function showPaywall(reason) {
     return new Promise(resolve => {
       const el = overlay(`
@@ -258,8 +283,8 @@
         <p class="tx-text">Euer verschlüsseltes Paar-Cockpit: Konsens-Fragebogen, Paar-Analyse, Partner-Sync, Protokoll und Session-Regie.</p>
         ${planButtons()}
         <hr class="tx-sep">
-        <div class="tx-sub">Lizenzschlüssel eingeben</div>
-        <input id="tx-lic" class="tx-input" placeholder="TACT-XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${escapeHtml(getLicense())}">
+        <div class="tx-sub">Lizenzschlüssel oder Testercode</div>
+        <input id="tx-lic" class="tx-input" placeholder="TACT-… oder Testercode" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${escapeHtml(getLicense())}">
         <div style="height:8px"></div>
         <button type="button" class="tx-btn tx-btn-gold" id="tx-lic-ok">Freischalten</button>
         <p class="tx-msg tx-err" id="tx-lic-msg">${escapeHtml(reasonText(reason))}</p>
@@ -289,11 +314,30 @@
       };
 
       el.querySelector('#tx-lic-ok').addEventListener('click', async (ev) => {
-        const key = el.querySelector('#tx-lic').value.trim().toUpperCase();
+        const input = el.querySelector('#tx-lic').value.trim().toUpperCase();
         const msg = el.querySelector('#tx-lic-msg');
-        if (key.replace(/[^A-Z0-9]/g, '').length < 16) { msg.textContent = 'Bitte gib den vollständigen Schlüssel ein.'; return; }
-        localStorage.setItem(KEYS.license, key);
-        await tryUnlock(msg, ev.currentTarget);
+        const compact = input.replace(/[^A-Z0-9]/g, '');
+        if (compact.length < 6) { msg.textContent = 'Bitte gib deinen Schlüssel oder Code vollständig ein.'; return; }
+
+        // Lizenzschlüssel: TACT + 16 Zeichen. Alles andere wird als Testercode eingelöst.
+        if (/^TACT[A-Z0-9]{16}$/.test(compact)) {
+          localStorage.setItem(KEYS.license, input);
+          await tryUnlock(msg, ev.currentTarget);
+          return;
+        }
+        const btn = ev.currentTarget;
+        btn.disabled = true;
+        msg.className = 'tx-msg';
+        msg.textContent = 'Löse Testercode ein …';
+        const redeemed = await redeemInviteCode(input);
+        btn.disabled = false;
+        if (!redeemed.ok) {
+          msg.className = 'tx-msg tx-err';
+          msg.textContent = redeemed.message;
+          return;
+        }
+        el.querySelector('#tx-lic').value = redeemed.key;
+        await tryUnlock(msg, btn);
       });
 
       el.querySelector('#tx-pair-ok').addEventListener('click', async (ev) => {
@@ -360,7 +404,7 @@
     const lic = await checkLicense(false);
     const sync = window.CloudSync && window.CloudSync.getConfig ? window.CloudSync.getConfig() : { paired: false };
     const route = window.AIAdapter && window.AIAdapter.getGeminiRoute ? window.AIAdapter.getGeminiRoute().mode : 'none';
-    const planName = { monthly: 'Monatsabo', yearly: 'Jahresabo', lifetime: 'Unbegrenzt' }[lic.plan] || '–';
+    const planName = { monthly: 'Monatsabo', yearly: 'Jahresabo', lifetime: 'Unbegrenzt', tester: 'Testzugang' }[lic.plan] || '–';
     const lastSync = sync.lastSyncTime ? new Date(parseInt(sync.lastSyncTime, 10)).toLocaleString('de-DE') : 'noch nie';
 
     const el = overlay(`
@@ -401,7 +445,7 @@
       ${hasAiConsent() ? '<button type="button" class="tx-btn" id="tx-ai-revoke">Einwilligung widerrufen</button>' : ''}
 
       <hr class="tx-sep">
-      <button type="button" class="tx-btn tx-btn-quiet" id="tx-lic-change">Anderen Lizenzschlüssel eingeben</button>
+      <button type="button" class="tx-btn tx-btn-quiet" id="tx-lic-change">Anderen Lizenzschlüssel oder Testercode eingeben</button>
       <div class="tx-legal">${LEGAL_LINKS}</div>`, { dim: true, closable: true });
 
     const msg = el.querySelector('#tx-pair-msg2');

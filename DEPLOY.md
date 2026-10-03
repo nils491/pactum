@@ -27,7 +27,7 @@ Der bisherige Schlüssel stand im Chat und gilt deshalb als verbraucht.
 1. Cloudflare-Dashboard → **Storage & Databases → D1 SQL Database → Create**.
 2. Name: `tactus` → **Create**.
 3. Die angezeigte **Database ID** kopieren und in `wrangler.jsonc` bei `database_id` eintragen. Du kannst sie auch mir geben, dann trage ich sie ein.
-4. In der Datenbank auf **Console** gehen, den kompletten Inhalt von `worker/migrations/0001_init.sql` einfügen und **Execute** drücken.
+4. In der Datenbank auf **Console** gehen, nacheinander den kompletten Inhalt von `worker/migrations/0001_init.sql` und `worker/migrations/0002_invites.sql` einfügen und jeweils **Execute** drücken.
 
 ## Schritt 3 – Worker mit GitHub verbinden
 
@@ -68,6 +68,19 @@ Danach lass die Texte **einmal von einem Anwalt** (IT-/Medienrecht) prüfen, bev
 
 1. `https://tactus.digital/admin` öffnen und das `ADMIN_TOKEN` eingeben.
 2. Tarif **Unbegrenzt** wählen → **Lizenz erstellen** und den Schlüssel notieren.
+
+## Testercodes (kostenloser Zugang für Tester)
+
+Unter `https://tactus.digital/admin` im Bereich **Testercodes**:
+
+- **Wunschcode** (z. B. `BETA-HERBST`) oder leer lassen für einen Zufallscode
+- **Testzugang gilt:** wie lange die Tester kostenlos nutzen dürfen
+- **Einlösbar von:** wie viele **Paare** den Code nutzen dürfen. Ein Paar löst nur einmal ein, das zweite Gerät bekommt den Zugang über die Partner-Kopplung.
+- **Code gültig für:** bis wann der Code eingelöst werden kann
+
+Tester geben den Code im Abo-Fenster ins Feld **„Lizenzschlüssel oder Testercode“** ein. Codes kannst du jederzeit deaktivieren. Bereits eingelöste Testzugänge laufen bis zu ihrem Ablaufdatum weiter, sperren kannst du sie über „Lizenz ändern“. Nach 20 falschen Versuchen pro Tag und Anschluss wird das Einlösen gesperrt.
+
+> Tipp für Beta-Gruppen: lieber einen gut lesbaren Wunschcode mit begrenzter Einlöse-Zahl als einen Code, der unbegrenzt oft funktioniert. Codes werden weitergegeben.
 
 ## Schritt 8 – Auf dem iPhone einrichten
 

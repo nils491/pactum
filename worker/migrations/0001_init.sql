@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS licenses (
   key_hash   TEXT PRIMARY KEY,      -- SHA-256 des Lizenzschlüssels (Klartext wird nie gespeichert)
   key_hint   TEXT NOT NULL,         -- letzte 4 Zeichen zur Wiedererkennung
-  plan       TEXT NOT NULL,         -- monthly | yearly | lifetime
+  plan       TEXT NOT NULL,         -- monthly | yearly | lifetime | tester
   status     TEXT NOT NULL,         -- active | revoked | cancelled
   expires_at INTEGER,               -- ms seit Epoch, NULL = unbegrenzt
   created_at INTEGER NOT NULL,

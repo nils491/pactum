@@ -54,6 +54,34 @@
     </div>
   </div>
 
+  <h2>Testercodes</h2>
+  <p>Ein Testercode umgeht die Bezahlung: Wer ihn im Abo-Fenster eingibt, bekommt automatisch eine eigene Testlizenz.</p>
+  <div class="box grid">
+    <input id="icode" placeholder="Wunschcode, z. B. BETA-HERBST (leer = Zufallscode)" autocapitalize="characters">
+    <div class="row">
+      <label class="grid">Testzugang gilt
+        <select id="imonths">
+          <option value="1">1 Monat</option>
+          <option value="3" selected>3 Monate</option>
+          <option value="6">6 Monate</option>
+          <option value="12">12 Monate</option>
+          <option value="0">unbegrenzt</option>
+        </select>
+      </label>
+      <label class="grid">Einlösbar von
+        <input id="iuses" type="number" min="1" max="10000" value="1">
+      </label>
+      <label class="grid">Code gültig für (Tage, 0 = unbegrenzt)
+        <input id="idays" type="number" min="0" max="3650" value="30">
+      </label>
+    </div>
+    <input id="inote" placeholder="Notiz, z. B. Beta-Gruppe Oktober">
+    <button class="gold" id="icreate">Testercode erstellen</button>
+    <div id="icreated"></div>
+  </div>
+  <button id="ilist">Testercodes laden</button>
+  <div class="table-wrap"><table id="itable"></table></div>
+
   <p id="msg"></p>
 
   <h2>Alle Lizenzen</h2>
@@ -91,6 +119,34 @@
     $('extend12').onclick = update({ extendMonths: 12 });
     $('revoke').onclick = update({ status: 'revoked' });
     $('activate').onclick = update({ status: 'active' });
+    $('icreate').onclick = async () => {
+      try {
+        const d = await call('/api/admin/invites', 'POST', {
+          code: $('icode').value.trim() || undefined,
+          months: parseInt($('imonths').value, 10) || 0,
+          maxUses: parseInt($('iuses').value, 10) || 1,
+          validDays: parseInt($('idays').value, 10) || 0,
+          note: $('inote').value
+        });
+        $('icreated').innerHTML = `<p class="key">${esc(d.code)}</p><p class="meta">${d.maxUses}× einlösbar · Testzugang ${d.months ? d.months + ' Monat(e)' : 'unbegrenzt'} · Code gültig bis ${date(d.expiresAt)}</p>`;
+        msg('Testercode erstellt.', true);
+        $('ilist').click();
+      } catch (e) { msg(e.message === 'code_exists' ? 'Diesen Code gibt es schon.' : e.message === 'code_too_short' ? 'Code muss mindestens 6 Buchstaben/Ziffern haben.' : e.message); }
+    };
+    $('ilist').onclick = async () => {
+      try {
+        const d = await call('/api/admin/invites', 'GET');
+        $('itable').innerHTML = '<tr><th>Code</th><th>Eingelöst</th><th>Zugang</th><th>Gültig bis</th><th>Status</th><th>Notiz</th></tr>' +
+          d.invites.map(i => `<tr><td class="key" style="font-size:14px">${esc(i.code_display)}</td><td>${i.uses} / ${i.max_uses}</td><td>${i.months ? i.months + ' Mon.' : 'unbegrenzt'}</td><td>${date(i.expires_at)}</td>` +
+            `<td><button data-code="${esc(i.code_display)}" data-active="${i.active ? 0 : 1}">${i.active ? 'Deaktivieren' : 'Aktivieren'}</button></td><td>${esc(i.note)}</td></tr>`).join('');
+      } catch (e) { msg(e.message); }
+    };
+    $('itable').addEventListener('click', async (ev) => {
+      const b = ev.target.closest('button[data-code]');
+      if (!b) return;
+      try { await call('/api/admin/invites/update', 'POST', { code: b.dataset.code, active: b.dataset.active === '1' }); $('ilist').click(); }
+      catch (e) { msg(e.message); }
+    });
     $('list').onclick = async () => {
       try {
         const d = await call('/api/admin/licenses', 'GET');
