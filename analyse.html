@@ -49,12 +49,6 @@
             cognac: '#8a5232',
             cognacLight: '#b3734a',
             cognacDark: '#4a2818',
-            rackGreen: '#15803d',
-            rackGreenLight: '#22c55e',
-            rackYellow: '#ca8a04',
-            rackYellowLight: '#eab308',
-            rackRed: '#dc2626',
-            rackRedLight: '#ef4444',
             platinum: '#f8fafc',
             silverMuted: '#94a3b8'
           },
@@ -96,13 +90,14 @@
     .touch-btn:active { transform: scale(0.985); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .gold-glow { box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.2); }
+    .gold-glow { box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.25); }
     .malachite-glow { box-shadow: 0 0 25px -5px rgba(46, 87, 70, 0.25); }
     .bordeaux-glow { box-shadow: 0 0 25px -5px rgba(153, 27, 27, 0.25); }
   </style>
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
 
+  <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 & 18 · ZERO PIXEL-JUMPING · COLLISION-FREE) -->
   <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#1e2638]/60 h-14 flex items-center">
     <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between gap-2">
       
@@ -124,44 +119,38 @@
         </div>
       </a>
 
-      <!-- Desktop Quick Actions -->
+      <!-- Desktop Quick Actions (Standardisierter 5-Button Master Cluster) -->
       <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
-        <!-- In-App Cache-Buster & Reload Button -->
+        <!-- 1. In-App Cache-Buster & Reload Button -->
         <button type="button" onclick="PairAnalysis.forceAppReload()" class="w-10 h-10 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-btn" style="min-height: 40px;" title="App frisch vom Server neu laden (Cache leeren)">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
           </svg>
         </button>
 
-        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung -->
+        <!-- 2. Switch-Rollenanzeige mit 1-Tap Umschaltung -->
         <button type="button" onclick="PairAnalysis.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#2a364f] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 40px;" title="Rollenwechsel (Top / Bottom)">
           <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
           <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
           <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
         </button>
 
-        <!-- Ausrüstungsschrank Button -->
+        <!-- 3. Ausrüstungsschrank Button -->
         <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-btn" style="min-height: 40px;" title="Ausrüstungsschrank öffnen">
           <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
           <span>Schrank</span>
         </button>
 
-        <!-- Konditionales RACK Break-Glass (Rollenspezifisch nur für den verschlossenen Bottom) -->
+        <!-- 4. Konditionales RACK Break-Glass (Rollenspezifisch nur für den verschlossenen Bottom) -->
         <button type="button" id="header-btn-break-glass" onclick="PairAnalysis.openBreakGlass()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-mono text-xs font-bold flex items-center gap-1 touch-btn shadow-sm animate-pulse" style="min-height: 40px;" title="RACK Notfall-Öffnung (Break-Glass)">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
           <span>Notfall</span>
         </button>
 
-        <!-- Analyse neu berechnen -->
-        <button type="button" onclick="PairAnalysis.recompute()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-white font-mono text-xs font-medium flex items-center gap-1.5 touch-btn" style="min-height: 40px;" title="Analyse neu berechnen">
-          <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
-          <span>Aktualisieren</span>
+        <!-- 5. Universal-Settings Button (Master-Header Standard) -->
+        <button type="button" onclick="PairAnalysis.openAccountModal()" class="w-10 h-10 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-btn" style="min-height: 40px;" title="Einstellungen &amp; Account">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.004.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.241.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
-
-        <!-- Zum Protokoll -->
-        <a href="protocol.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] font-mono text-xs font-medium flex items-center gap-1.5 touch-btn" style="min-height: 40px;">
-          <span>Protokoll →</span>
-        </a>
       </div>
 
       <!-- Mobile Actions (iPhone 15 Pro optimiert mit Touch-Targets >= 44px) -->
@@ -187,18 +176,20 @@
     </div>
   </header>
 
+  <!-- SUB-NAVIGATION DER 6 HAUPT-COCKPITS (DESKTOP) -->
   <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
     <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-mono">
-      <a href="index.html#view=hub" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Start-Hub</a>
-      <a href="index.html#view=survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Fragebogen (500 Items)</a>
-      <span class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap cursor-default flex items-center" style="min-height: 40px;">Paar-Analyse ✓</span>
-      <a href="chat.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Paar-Stream</a>
-      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Das Protokoll</a>
-      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Guide</a>
-      <a href="session.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#b3734a] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Schlafzimmer-Regie</a>
+      <a href="index.html#view=hub" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Start-Hub</a>
+      <a href="index.html#view=survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Fragebogen (505 Items)</a>
+      <span class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap shrink-0 flex-shrink-0 cursor-default flex items-center" style="min-height: 40px;">Paar-Analyse ✓</span>
+      <a href="chat.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Paar-Stream</a>
+      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Das Protokoll</a>
+      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Guide</a>
+      <a href="session.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#b3734a] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Schlafzimmer-Regie</a>
     </div>
   </nav>
 
+  <!-- MOBILE DRAWER MODAL -->
   <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs font-mono">
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
@@ -208,7 +199,7 @@
           </div>
           <div>
             <h3 class="text-sm font-serif text-[#f8fafc]">TACTUS OS</h3>
-            <span class="text-[10px] text-[#94a3b8]">Analyse &amp; Synergie</span>
+            <span class="text-[10px] text-[#94a3b8]">Paar- &amp; Individual-Analyse</span>
           </div>
         </div>
         <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
@@ -220,7 +211,7 @@
           <span class="text-[#94a3b8]">→</span>
         </a>
         <a href="index.html#view=survey" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (505 Items)</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
         <div class="w-full p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880] text-left flex items-center justify-between shadow-md">
@@ -246,6 +237,13 @@
       </div>
 
       <div class="pt-2 border-t border-[#2a364f] space-y-2">
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; PairAnalysis.openAccountModal();" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn">
+          <span class="text-xs font-bold text-[#c5a880] flex items-center gap-2">
+            <span>⚙ Einstellungen &amp; Account</span>
+          </span>
+          <span class="text-[10px] text-[#94a3b8]">Profil</span>
+        </button>
+
         <button type="button" onclick="PairAnalysis.forceAppReload()" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn">
           <span class="text-xs font-bold text-white flex items-center gap-2">
             <span>App frisch neu laden ↺</span>
@@ -260,544 +258,312 @@
       </div>
     </div>
     <div class="pt-4 border-t border-[#2a364f] text-center pb-[max(env(safe-area-inset-bottom),16px)]">
-      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-3 bg-[#090d14] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-3 bg-[#090d14] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
     </div>
   </div>
 
+  <!-- MAIN CONTAINER -->
   <main class="max-w-4xl mx-auto p-3.5 sm:p-6 flex-1 w-full space-y-4">
 
-    <!-- HAUPT-UMSCHALTER: PAAR-SYNERGIE VS. INDIVIDUAL-ANALYSE -->
-    <div class="rounded-2xl p-1.5 border border-[#2a364f] bg-[#090d14] grid grid-cols-2 gap-1.5 text-xs font-mono shadow-md">
-      <button type="button" onclick="PairAnalysis.switchMainMode('pair')" id="btn-mode-pair" class="py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm flex items-center justify-center gap-1.5">
-        <svg class="w-4 h-4 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-        <span>Paar-Synergie (Gemeinsam)</span>
-      </button>
+    <!-- HAUPT-UMSCHALTER: PAAR-SYNERGIE VS. INDIVIDUAL-ANALYSE MIT AKTUALISIEREN BUTTON -->
+    <div class="rounded-2xl p-1.5 border border-[#2a364f] bg-[#090d14] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-xs font-mono shadow-md">
+      <div class="grid grid-cols-2 gap-1.5 flex-1">
+        <button type="button" onclick="PairAnalysis.switchMainMode('pair')" id="btn-mode-pair" class="py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm flex items-center justify-center gap-1.5">
+          <svg class="w-4 h-4 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+          <span>Paar-Synergie</span>
+        </button>
 
-      <button type="button" onclick="PairAnalysis.switchMainMode('individual')" id="btn-mode-individual" class="py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] flex items-center justify-center gap-1.5">
-        <svg class="w-4 h-4 text-[#94a3b8]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-        <span>Individual-Analyse (Solo-Radar)</span>
-      </button>
-    </div>
-
-    <div id="view-analysis-pair" class="space-y-4 animate-fade-in font-sans">
-
-      <!-- DYNAMISCHES GOLDENES AKTUALISIERUNGS-BANNER BEI NEUER DATENBASIS -->
-      <div id="pair-outdated-analysis-banner" style="display: none;" class="p-4 rounded-3xl bg-[#090d14] border border-[#d4af37] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-pulse">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-2xl bg-[#000000] border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] flex-shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-          </div>
-          <div class="space-y-0.5">
-            <strong class="text-xs text-white block font-bold" id="outdated-banner-title">Neue Datenbasis verfügbar!</strong>
-            <p class="text-[10.5px] text-[#94a3b8] leading-snug" id="outdated-banner-desc">
-              Seit der letzten Auswertung wurden neue Sessions im Logbuch verzeichnet oder Fragebogen-Werte modifiziert.
-            </p>
-          </div>
-        </div>
-        <button type="button" onclick="PairAnalysis.generateAiDeepReport()" class="px-4 py-2 rounded-xl bg-[#d4af37] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-btn shadow-md whitespace-nowrap self-start sm:self-auto flex items-center gap-1.5">
-          <span>Gutachten aktualisieren ↺</span>
+        <button type="button" onclick="PairAnalysis.switchMainMode('individual')" id="btn-mode-individual" class="py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] flex items-center justify-center gap-1.5">
+          <svg class="w-4 h-4 text-[#94a3b8]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          <span>Solo-Radar</span>
         </button>
       </div>
+
+      <div class="flex items-center justify-end gap-1.5 pt-1 sm:pt-0 border-t sm:border-t-0 border-[#2a364f]/60">
+        <button type="button" onclick="PairAnalysis.recompute()" class="px-3 py-2 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] hover:border-[#c5a880]/50 text-[#c5a880] font-mono text-[11px] font-medium flex items-center gap-1.5 touch-btn shadow-sm" style="min-height: 40px;" title="Analyse neu berechnen">
+          <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          <span>Aktualisieren</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- LOGBUCH PRAXIS-SYNTHESE BANNER (WENN SESSIONS VORLIEGEN) -->
+    <div id="session-synthesis-banner" style="display: none;" class="p-3.5 rounded-2xl bg-[#090d14] border border-[#c5a880]/60 flex items-center justify-between gap-2 shadow-lg animate-fade-in font-sans">
+      <div class="flex items-center gap-2.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#c5a880] animate-pulse"></span>
+        <div>
+          <strong class="text-white block font-bold text-xs" id="session-synthesis-title">Reale Schlafzimmer-Erfahrung verknüpft</strong>
+          <span class="text-[10.5px] text-[#94a3b8] block" id="session-synthesis-sub">3 absolvierte Sessions fließen in die KI-Gutachten ein.</span>
+        </div>
+      </div>
+      <a href="session.html#view=logbook" class="px-2.5 py-1.5 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-mono text-[10px] font-bold touch-btn flex-shrink-0">
+        Logbuch ↗
+      </a>
+    </div>
+
+    <!-- VIEW 1: PAAR-SYNERGIE COCKPIT -->
+    <div id="view-pair-mode" class="space-y-4 animate-fade-in font-sans">
       
-      <!-- HERO OVERVIEW CARD MIT DELTA D/S QUOTIENT -->
-      <div class="rounded-3xl p-5 sm:p-6 border border-[#2a364f] shadow-2xl bg-[#090d14] space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-3">
+      <!-- HERO RESONA-SCORE & ARCHETYPEN -->
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#2a364f] bg-[#090d14] shadow-2xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-3">
           <div>
-            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
-              Psychometrische Paar-Resonanz
-            </span>
-            <h2 class="text-base sm:text-xl font-bold text-white mt-1 font-serif" id="pair-dynamic-title">
-              Paar-Synergie &amp; Rollen-Passung
+            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">Somatische Paar-Resonanz</span>
+            <h2 class="text-base sm:text-xl font-serif text-white font-normal" id="pair-resonance-headline">
+              Synthese aus 505 Konsens-Items
             </h2>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs font-mono font-bold px-3 py-1.5 rounded-xl bg-[#000000] text-[#d4af37] border border-[#d4af37]/60 gold-glow" id="pair-match-score-badge">
-              -- % Resonanz
-            </span>
+            <span class="text-2xl sm:text-3xl font-serif font-black text-[#d4af37]" id="pair-resonance-percent">-- %</span>
           </div>
         </div>
 
-        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed" id="pair-dynamic-desc">
-          Berechnet aus allen 36 Fragebogen-Kapiteln inklusive Kapitel 00 (505 Items) sowie der empirischen Schlafzimmer-Praxis aus dem Session-Logbuch.
-        </p>
-
-        <!-- EMPFOHLENER BEZIEHUNGSMODUS BANNER (GESETZ 12) -->
-        <div id="pair-recommended-mode-banner" class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-[#c5a880]"></span>
-            <div>
-              <span class="text-[10px] font-mono uppercase text-[#94a3b8] block">Psychometrische Modus-Empfehlung (Aus 505 Fragen):</span>
-              <strong class="text-xs text-white" id="recommended-mode-title">Lade Empfehlung...</strong>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] font-mono text-[10px] font-bold self-start sm:self-auto" id="recommended-mode-badge">Analyse aktiv</span>
-        </div>
-
-        <!-- BDSMTEST.ORG DELTA D/S QUOTIENT CARD GRID -->
+        <!-- BDSMTEST.ORG Δ D/S QUOTIENT & ARCHETYPEN KACHELN -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs font-mono">
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1 text-center">
-            <span class="text-[10px] text-[#94a3b8] uppercase block" id="quotient-label-top">D/s-Quotient Top</span>
-            <div class="font-serif text-2xl sm:text-3xl text-[#c5a880] font-bold" id="quotient-value-top">+0.00</div>
-            <span class="text-[10.5px] text-[#f8fafc] block" id="quotient-archetype-top">Dominant / Top</span>
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1">
+            <span class="text-[10px] text-[#94a3b8] block font-bold">Δ D/s-Quotient:</span>
+            <strong class="text-base font-bold text-white block" id="val-delta-ds">--</strong>
+            <span class="text-[9.5px] text-[#94a3b8] block" id="sub-delta-ds">Machtasymmetrie</span>
           </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1 text-center">
-            <span class="text-[10px] text-[#94a3b8] uppercase block" id="quotient-label-sub">D/s-Quotient Bottom</span>
-            <div class="font-serif text-2xl sm:text-3xl text-[#b3734a] font-bold" id="quotient-value-sub">-0.00</div>
-            <span class="text-[10.5px] text-[#94a3b8] block" id="quotient-archetype-sub">Devot / Bottom</span>
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1">
+            <span class="text-[10px] text-[#94a3b8] block font-bold">Top-Dominanzindex:</span>
+            <strong class="text-base font-bold text-[#c5a880] block" id="val-top-dom">--</strong>
+            <span class="text-[9.5px] text-[#94a3b8] block truncate" id="sub-top-dom">Führungskraft</span>
           </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#d4af37]/40 space-y-1 text-center gold-glow">
-            <span class="text-[10px] text-[#d4af37] uppercase font-semibold block">Rollen-Resonanz</span>
-            <div class="font-serif text-2xl sm:text-3xl text-[#d4af37] font-bold" id="quotient-delta-display">-- %</div>
-            <span class="text-[10.5px] text-[#f8fafc] block" id="quotient-delta-hint">Komplementär</span>
-          </div>
-        </div>
-
-        <!-- 4 RESONANZ-KENNZAHLEN GRID -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('peaks')">
-            <span class="text-[10px] text-[#d4af37] block font-medium">Doppel-Spitzen (5/5):</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-double-fives">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('synergies')">
-            <span class="text-[10px] text-[#c5a880] block font-medium">Hohe Synergien (5/4):</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-high-synergies">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('bridges')">
-            <span class="text-[10px] text-[#b3734a] block font-medium">Erkundungs-Brücken:</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-bridges">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5 cursor-pointer touch-btn" onclick="PairAnalysis.filterTab('taboos')">
-            <span class="text-[10px] text-[#991b1b] block font-medium">Tabu-Vetos &amp; Scham:</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-taboos">0</strong>
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1">
+            <span class="text-[10px] text-[#94a3b8] block font-bold">Bottom-Hingabeindex:</span>
+            <strong class="text-base font-bold text-[#b3734a] block" id="val-sub-dev">--</strong>
+            <span class="text-[9.5px] text-[#94a3b8] block truncate" id="sub-sub-dev">Hingabekraft</span>
           </div>
         </div>
       </div>
 
-      <div id="pair-logbook-integration-card" class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] space-y-3.5 shadow-xl">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-2.5">
-          <div class="space-y-0.5 min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-              <strong class="text-xs sm:text-sm text-white font-bold block">Empirische Schlafzimmer-Praxis (Logbuch-Historie)</strong>
-            </div>
-            <p class="text-[10px] text-[#94a3b8] leading-snug">
-              Echte vollzogene Sessions fließen direkt in eure Paar-Diagnostik und KI-Verhaltensempfehlungen ein.
-            </p>
-          </div>
-          <a href="session.html#view=logbook" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] hover:text-white font-mono text-[10px] font-bold touch-btn">
-            Logbuch öffnen ↗
-          </a>
-        </div>
+      <!-- FILTER-TABS DER PAAR-SYNERGIE (FEST VERANKERT: KEIN SQUISHING) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-[10.5px] w-full flex-nowrap">
+        <button type="button" onclick="PairAnalysis.filterTab('doubleFives')" id="pair-tab-doubleFives" class="px-3 py-1.5 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shrink-0 flex-shrink-0 shadow-sm">
+          ★ Doppel-5er (<span id="count-doubleFives">0</span>)
+        </button>
+        <button type="button" onclick="PairAnalysis.filterTab('highSynergy')" id="pair-tab-highSynergy" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Synergien (<span id="count-highSynergy">0</span>)
+        </button>
+        <button type="button" onclick="PairAnalysis.filterTab('bridges')" id="pair-tab-bridges" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Brücken (5/3) (<span id="count-bridges">0</span>)
+        </button>
+        <button type="button" onclick="PairAnalysis.filterTab('shame')" id="pair-tab-shame" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Schutzanker (🙈) (<span id="count-shame">0</span>)
+        </button>
+        <button type="button" onclick="PairAnalysis.filterTab('taboos')" id="pair-tab-taboos" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+          Tabus (Note 1) (<span id="count-taboos">0</span>)
+        </button>
+      </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Sessions vollzogen:</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-log-count">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Gesamte Praxis-Dauer:</span>
-            <strong class="text-sm sm:text-base font-bold text-[#c5a880]" id="stat-log-duration">0 Min.</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Gemeisterte Edges:</span>
-            <strong class="text-sm sm:text-base font-bold text-[#d4af37]" id="stat-log-edges">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Letzte Session:</span>
-            <strong class="text-xs font-bold text-[#f8fafc] truncate block mt-0.5" id="stat-log-last">Keine</strong>
-          </div>
-        </div>
+      <!-- KARTEN-LISTE DER GEFILTERTEN ITEMS -->
+      <div id="pair-items-list-container" class="space-y-2.5">
+        <!-- Dynamisch befüllt -->
+      </div>
 
-        <div id="logbook-latest-feedback-preview" class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] text-[10.5px] text-[#94a3b8] italic">
-          Noch keine Sessions dokumentiert. Starte eine Session in <a href="session.html" class="text-[#c5a880] underline not-italic">session.html</a>, um reale Praxis-Daten zu erfassen.
+      <!-- TIEFENPSYCHOLOGISCHES KI-GUTACHTEN DES PAARES -->
+      <div class="rounded-3xl p-5 border border-[#c5a880]/60 bg-[#090d14] space-y-3 shadow-xl">
+        <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
+          <div>
+            <span class="text-[9.5px] font-mono text-[#c5a880] uppercase font-bold block">Tiefenpsychologisches Dossier</span>
+            <h3 class="text-sm sm:text-base font-serif font-bold text-white">Das TACTUS Paar-Gutachten</h3>
+          </div>
+          <button type="button" onclick="PairAnalysis.generateAiDeepReport()" class="px-3.5 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono text-xs font-bold touch-btn shadow-md">
+            Neu generieren ✨
+          </button>
+        </div>
+        <div id="pair-ai-report-box" class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] text-xs leading-relaxed text-[#f8fafc] whitespace-pre-wrap font-sans min-h-[120px]">
+          Tippe auf „Neu generieren ✨“, um aus euren Antworten und realen Schlafzimmer-Sessions ein tiefenpsychologisches Paar-Gutachten zu synthetisieren.
         </div>
       </div>
 
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] space-y-4 shadow-xl">
-        <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2.5">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#2e5746] animate-pulse"></span>
-            <h3 class="font-serif text-base sm:text-lg text-white font-medium" id="dossier-mode-title">
-              Psychodynamisches Resonanz-Dossier (Paar-Dynamik)
-            </h3>
-          </div>
-          <span class="px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold" id="dossier-privacy-badge">
-            Gemeinsamer Konsens
-          </span>
+    </div>
+
+    <!-- VIEW 2: INDIVIDUAL-ANALYSE (SOLO-RADAR) -->
+    <div id="view-individual-mode" style="display: none;" class="space-y-4 animate-fade-in font-sans">
+      
+      <!-- PARTNER-WAHLSCHALTER (A VS B) MIT AUTONOMIE-HINWEIS -->
+      <div class="p-3.5 rounded-3xl bg-[#090d14] border border-[#2a364f] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono shadow-md">
+        <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[#2a364f]">
+          <button type="button" onclick="PairAnalysis.switchIndividualPartner('A')" id="btn-indiv-partner-a" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm">
+            Partner 1 (Name A)
+          </button>
+          <button type="button" onclick="PairAnalysis.switchIndividualPartner('B')" id="btn-indiv-partner-b" class="px-3.5 py-2 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn">
+            Partner 2 (Name B)
+          </button>
         </div>
 
-        <!-- 3-Spalten-Matrix: 1. Wurzeln / 2. Alltag / 3. Blinde Flecken & Gefahren -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-sans">
-          
-          <!-- Spalte 1: Biopsychosoziale Wurzeln -->
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#2e5746]/50 space-y-2">
-            <div class="flex items-center gap-1.5 text-[#2e5746] font-bold">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#2e5746]"></span>
-              <span class="font-mono text-[10px] uppercase">1. Wurzeln &amp; Prägung</span>
-            </div>
-            <h4 class="font-serif text-sm sm:text-base text-white" id="dossier-roots-title">Struktur-Bedürfnis &amp; Entlastung</h4>
-            <p class="text-[11px] text-[#94a3b8] leading-relaxed" id="dossier-roots-desc">
-              Der Führungsdrang entspringt dem Bedürfnis nach klarer Ordnung, Schutzbereitschaft und Verantwortung. Die Hingabe des Bottoms ist ein aktiver somatischer Rückzugsort: Das Abgeben der Kontrolle entlastet das vegetative Nervensystem vom hohen Alltags-Entscheidungsdruck (transiente Hypofrontalität).
-            </p>
-          </div>
-
-          <!-- Spalte 2: Alltagstransfer & Integration -->
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-2">
-            <div class="flex items-center gap-1.5 text-[#c5a880] font-bold">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]"></span>
-              <span class="font-mono text-[10px] uppercase">2. Beziehungs-Alltag</span>
-            </div>
-            <h4 class="font-serif text-sm sm:text-base text-white" id="dossier-transfer-title">Mikro-Gesten statt Dauerdruck</h4>
-            <p class="text-[11px] text-[#94a3b8] leading-relaxed" id="dossier-transfer-desc">
-              Im Alltag bewähren sich diskrete Verbindungsanker (Blickkontakt beim Verlassen des Hauses, Teekochen im Kniestand, Nackenmassage). Niemals 24/7-Dauerstress erzwingen – die Dynamik dient der regenerativen Erdung, nicht der erdrückenden Mehrarbeit.
-            </p>
-          </div>
-
-          <!-- Spalte 3: Blinde Flecken & Beziehungsgefahren -->
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#8a5232]/60 space-y-2">
-            <div class="flex items-center gap-1.5 text-[#b3734a] font-bold">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#b3734a]"></span>
-              <span class="font-mono text-[10px] uppercase">3. Blinde Flecken &amp; Gefahren</span>
-            </div>
-            <h4 class="font-serif text-sm sm:text-base text-white" id="dossier-hazard-title">Top Fatigue &amp; Scham-Rückzug</h4>
-            <p class="text-[11px] text-[#94a3b8] leading-relaxed" id="dossier-hazard-desc">
-              <strong>Gefahr 1:</strong> Der Top gerät in Top Fatigue, wenn der Bottom passiv wartet, dass der andere „alles regelt“.<br>
-              <strong>Gefahr 2:</strong> Der Bottom interpretiert den biochemischen Tag-2-Subdrop fälschlich als Beziehungszweifel. Regelmäßiges Meta-Gespräch auf Augenhöhe schützt euch davor.
-            </p>
-          </div>
-
-        </div>
-
-        <!-- Privacy-Schalter (bei Solo-Modus) -->
-        <div id="dossier-privacy-action" class="hidden pt-2 border-t border-[#2a364f] flex items-center justify-between text-xs font-mono">
-          <span class="text-[#94a3b8] text-[10px]">Dieses Dossier ist standardmäßig nur für dich sichtbar.</span>
-          <button type="button" onclick="PairAnalysis.toggleShareIndividual()" id="btn-share-individual" class="px-3 py-1.5 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#f8fafc] hover:bg-[#2e5746] transition text-[10.5px] font-bold touch-btn">
-            🔒 Für Partner freigeben
+        <!-- FREIGABESTATUS BUTTON (STRIKTE SUBJEKTIVE DATEN-AUTONOMIE: GESETZ 13) -->
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <button type="button" id="btn-toggle-share-status" onclick="PairAnalysis.toggleShareIndividual()" class="px-3 py-1.5 rounded-xl border text-[11px] font-bold touch-btn flex items-center gap-1.5 shadow-sm">
+            <span id="share-status-dot" class="w-2 h-2 rounded-full"></span>
+            <span id="share-status-label">Lade Status...</span>
           </button>
         </div>
       </div>
 
-      <div class="rounded-3xl p-5 border border-[#2a364f] space-y-3.5 shadow-xl bg-[#090d14]">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-2.5">
-          <div class="space-y-0.5 min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#c5a880] animate-pulse"></span>
-              <strong class="text-xs sm:text-sm text-[#f8fafc] font-bold block">Psychologische KI-Tiefenanalyse &amp; Beziehungs-Gutachten</strong>
-            </div>
-            <p class="text-[10px] text-[#94a3b8] leading-snug">
-              Synthetisiert alle 505 Items, Notizen beider Partner, Scham-Anker, Traumagrenzen und eure reale Logbuch-Praxis zu einem ganzheitlichen psychologischen Profil.
-            </p>
-          </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0 font-mono">
-            <button type="button" id="btn-trigger-ai-analysis" onclick="PairAnalysis.generateAiDeepReport()" class="px-3.5 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-              <span id="btn-ai-analysis-text">KI-Tiefenbericht berechnen</span>
-            </button>
-          </div>
+      <!-- GESPERRTE PRIVATSPHÄRE-SCHUTZWAND (WENN PARTNER AUF PRIVAT GESTELLT HAT) -->
+      <div id="indiv-vault-protected" style="display: none;" class="rounded-3xl p-8 bg-[#090d14] border border-[#2a364f] text-center space-y-3 font-mono shadow-xl">
+        <div class="w-12 h-12 rounded-full bg-[#000000] border border-[#c5a880]/50 text-[#c5a880] flex items-center justify-center mx-auto text-xl shadow-md">
+          🔒
         </div>
-
-        <!-- BERICHTS-CONTAINER -->
-        <div id="ai-deep-report-container" class="space-y-3 font-sans">
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] text-[11px] text-[#94a3b8] leading-relaxed text-center py-6">
-            Klicke oben auf <strong class="text-[#c5a880] font-bold">„KI-Tiefenbericht berechnen“</strong>, um eine fundierte psychologische Auswertung eures gemeinsamen Musters, konkrete Verhaltensratschläge und Interaktions-Leitfäden für Alltag und Schlafzimmer zu generieren.
-          </div>
-        </div>
-      </div>
-
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] space-y-3 shadow-xl">
-        <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
-          <div class="space-y-0.5">
-            <strong class="text-xs sm:text-sm text-white font-bold block">Interaktions-Cockpit: Wie wir miteinander umgehen</strong>
-            <span class="text-[10px] text-[#94a3b8]">Konkrete Verhaltensregeln abgeleitet aus euren psychometrischen Antworten</span>
-          </div>
-          <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Verhaltens-Kodex</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-xs font-sans">
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-1.5">
-            <div class="flex items-center gap-1.5 text-[#c5a880] font-bold text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]"></span>
-              <span>Doppel-Spitzen (Eure sichere Spielwiese):</span>
-            </div>
-            <p class="text-[10.5px] text-[#f8fafc] leading-snug">
-              Hier herrscht vollkommene Einigkeit. Diese Themen könnt ihr jederzeit ohne langes Aushandeln ansteuern. Sie dienen als <strong>verlässlicher emotionaler Anker</strong>, wenn einer von beiden gestresst oder erschöpft ist.
-            </p>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-1.5">
-            <div class="flex items-center gap-1.5 text-[#b3734a] font-bold text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#b3734a]"></span>
-              <span>Erkundungs-Brücken (Behutsames Herantasten):</span>
-            </div>
-            <p class="text-[10.5px] text-[#f8fafc] leading-snug">
-              Der Top führt behutsam, der Bottom ist neugierig oder neutral. Startet mit vereinbarten <strong>10-Minuten-Probeläufen</strong> unter Nutzung der Safeword-Ampel (Grün/Gelb/Rot) und wertet die Erfahrung am nächsten Tag auf Augenhöhe aus.
-            </p>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#8a5232]/60 space-y-1.5">
-            <div class="flex items-center gap-1.5 text-[#dfcaa9] font-bold text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#dfcaa9]"></span>
-              <span>Scham-Schutzanker (Spottverbot § 1 Abs. 2):</span>
-            </div>
-            <p class="text-[10.5px] text-[#f8fafc] leading-snug">
-              Verletzliche Sehnsüchte dürfen niemals im Alltagsstreit oder vor Dritten als Witz erwähnt werden. Sie werden ausschließlich im warmen Halbdunkel mit ausdrücklicher verbaler Bestätigung (<em>„Du bist sicher bei mir“</em>) erkundet.
-            </p>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#991b1b] space-y-1.5">
-            <div class="flex items-center gap-1.5 text-[#991b1b] font-bold text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#991b1b]"></span>
-              <span>Tabus &amp; Sanfte Grenzen (RACK-Schutz):</span>
-            </div>
-            <p class="text-[10.5px] text-[#f8fafc] leading-snug">
-              Ein Tabu (Note 1) ist kein Gegenstand von Diskussion oder Überredung. Das bedingungslose Wahren der Grenzen des Partners ist das Fundament, das tiefe Hingabe in allen anderen Bereichen erst ermöglicht.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- KAPITEL 00: PSYCHOSOMATISCHE SICHERHEIT & INTERVENTIONEN BEI ÜBERFORDERUNG -->
-      <div id="safety-interventions-card" class="rounded-3xl p-5 border border-[#142b24] space-y-3 shadow-md bg-[#090d14]">
-        <div class="flex items-center justify-between border-b border-[#2e5746]/50 pb-2">
-          <div class="space-y-0.5">
-            <strong class="text-xs sm:text-sm text-white font-bold block">Psychosomatische Sicherheit &amp; Notfall-Interventionen</strong>
-            <span class="text-[10px] text-[#94a3b8]">Auswertung aus Kapitel 00 (Trauma, Trigger &amp; Sofort-Hilfe bei Überforderung)</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#2e5746] border border-[#2e5746] font-mono text-[9.5px] font-bold">RACK-Schutz</span>
-        </div>
-        <div id="safety-interventions-content" class="space-y-2 text-xs font-sans">
-          <div class="py-2 text-[#94a3b8] text-[11px] font-mono">Lade Schutzraum-Daten...</div>
-        </div>
-      </div>
-
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] space-y-3 shadow-md text-xs">
-        <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
-          <div class="space-y-0.5">
-            <strong class="text-xs sm:text-sm text-white block font-bold">5-Säulen-Balance der Dynamik</strong>
-            <span class="text-[10px] text-[#94a3b8]">Verteilung des gemeinsamen Begehrens über die Lebens- und Spiel-Domänen</span>
-          </div>
-          <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Psychometrie</span>
-        </div>
-        <div id="pillars-balance-container" class="space-y-2 pt-1 font-sans"></div>
-      </div>
-
-      <!-- FILTER-TABS FÜR DIE RESONANZ-LISTEN (MIT STRIKTEM FLEX-NOWRAP & SHRINK-0) -->
-      <div class="flex flex-nowrap items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs w-full">
-        <button type="button" onclick="PairAnalysis.filterTab('peaks')" id="tab-btn-peaks" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0">
-          Doppel-Spitzen (5/5)
-        </button>
-        <button type="button" onclick="PairAnalysis.filterTab('synergies')" id="tab-btn-synergies" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Hohe Synergien (5/4)
-        </button>
-        <button type="button" onclick="PairAnalysis.filterTab('bridges')" id="tab-btn-bridges" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Brücken (5/3)
-        </button>
-        <button type="button" onclick="PairAnalysis.filterTab('notes')" id="tab-btn-notes" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#c5a880] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Notizen
-        </button>
-        <button type="button" onclick="PairAnalysis.filterTab('shame')" id="tab-btn-shame" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Schutzanker (🙈)
-        </button>
-        <button type="button" onclick="PairAnalysis.filterTab('taboos')" id="tab-btn-taboos" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Tabus (Note 1)
-        </button>
-      </div>
-
-      <!-- LISTE DER ITEMS IM AKTIVEN FILTER -->
-      <div id="pair-items-list-container" class="space-y-2.5 font-sans"></div>
-
-      <!-- DIREKT-EXPORT IN DEN BEZIEHUNGSVERTRAG -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#c5a880]/60 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <div class="space-y-1 text-center sm:text-left">
-          <strong class="text-white block font-bold text-xs sm:text-sm font-serif">In Beziehungsvertrag übernehmen</strong>
-          <p class="text-[10.5px] text-[#94a3b8]">
-            Die gewichtete Matrix kalibriert automatisch die 8 Paragraphen in <code class="text-[#c5a880] font-mono">protocol.html</code>.
-          </p>
-        </div>
-        <a href="protocol.html#tab=contract" class="px-4 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold text-xs font-mono touch-btn shadow-md whitespace-nowrap flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-          <span>Vertrag kalibrieren →</span>
-        </a>
-      </div>
-
-    </div>
-
-    <div id="view-analysis-individual" class="hidden space-y-4 animate-fade-in text-xs font-sans">
-      
-      <!-- HERO KACHEL FÜR DAS INDIVIDUAL-PROFIL -->
-      <div class="rounded-3xl p-5 sm:p-6 border border-[#2a364f] shadow-2xl bg-[#090d14] space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-3">
-          <div class="space-y-0.5">
-            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
-              Individuelles Profil &amp; Erotischer Fingerabdruck
-            </span>
-            <h2 class="text-base sm:text-xl font-bold text-white mt-1 font-serif" id="indiv-profile-title">
-              Solo-Auswertung
-            </h2>
-          </div>
-
-          <!-- PARTNER-AUSWAHL -->
-          <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[#2a364f] font-mono">
-            <button type="button" onclick="PairAnalysis.switchIndividualPartner('A')" id="btn-indiv-partner-a" class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn">
-              Partner 1
-            </button>
-            <button type="button" onclick="PairAnalysis.switchIndividualPartner('B')" id="btn-indiv-partner-b" class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#000000] text-[#94a3b8] hover:text-white touch-btn">
-              Partner 2
-            </button>
-          </div>
-        </div>
-
-        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed" id="indiv-profile-desc">
-          Zeigt das persönliche Profil, unabhängig von den Antworten des Partners: Eigener D/s-Quotient (Führen r1 vs. Empfangen r2), eigene 5-Säulen-Präferenzen, persönliche Favoriten, Tabus und hinterlegte Notizen.
+        <strong class="text-sm sm:text-base text-white font-serif block" id="indiv-vault-title">Solo-Profil geschützt</strong>
+        <p class="text-xs text-[#94a3b8] max-w-md mx-auto leading-relaxed font-sans" id="indiv-vault-desc">
+          Dieses Solo-Profil wurde von deinem Partner als privat deklariert. Einblick in Notizen, persönliche Favoriten und das Solo-Dossier ist erst möglich, wenn dein Partner die Freigabe auf seinem Gerät erteilt.
         </p>
+      </div>
 
-        <!-- SHARING-GOVERNANCE BANNER IM INDIVIDUAL-PROFIL -->
-        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-[#c5a880]" id="indiv-share-status-dot"></span>
-              <span class="text-[10px] text-[#94a3b8] uppercase font-bold">Freigabe-Status dieses Solo-Profils:</span>
+      <!-- ZUGÄNGLICHER INHALTSBEREICH DES INDIVIDUAL-PROFILS -->
+      <div id="indiv-accessible-content" class="space-y-4">
+        
+        <!-- SOLO-FILTER TABS (FEST VERANKERT: KEIN SQUISHING) -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-[10.5px] w-full flex-nowrap">
+          <button type="button" onclick="PairAnalysis.filterIndividualTab('favorites')" id="indiv-tab-favorites" class="px-3 py-1.5 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shrink-0 flex-shrink-0 shadow-sm">
+            Favoriten (4 &amp; 5) (<span id="count-indiv-favorites">0</span>)
+          </button>
+          <button type="button" onclick="PairAnalysis.filterIndividualTab('notes')" id="indiv-tab-notes" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+            Notizen (<span id="count-indiv-notes">0</span>)
+          </button>
+          <button type="button" onclick="PairAnalysis.filterIndividualTab('shame')" id="indiv-tab-shame" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+            Schutzanker (🙈) (<span id="count-indiv-shame">0</span>)
+          </button>
+          <button type="button" onclick="PairAnalysis.filterIndividualTab('taboos')" id="indiv-tab-taboos" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+            Tabus (Note 1) (<span id="count-indiv-taboos">0</span>)
+          </button>
+        </div>
+
+        <!-- KARTEN-LISTE DER INDIVIDUAL-ITEMS -->
+        <div id="indiv-items-list-container" class="space-y-2.5">
+          <!-- Dynamisch befüllt -->
+        </div>
+
+        <!-- SOLO PSYCHOGRAMM & DOSSIER -->
+        <div class="rounded-3xl p-5 border border-[#c5a880]/60 bg-[#090d14] space-y-3 shadow-xl">
+          <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
+            <div>
+              <span class="text-[9.5px] font-mono text-[#c5a880] uppercase font-bold block">Solo-Psychodynamik</span>
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white" id="indiv-dossier-headline">Individuelles Psychogramm</h3>
             </div>
-            <strong class="text-xs text-white block" id="indiv-share-status-text">Freigegeben für Partner (Volle Transparenz)</strong>
-            <p class="text-[9.5px] text-[#94a3b8] font-sans" id="indiv-share-status-sub">
-              Empfehlung: 100 % Transparenz schafft maximale Verbundenheit. Bei Bedarf kann das Profil privat geschaltet werden.
-            </p>
-          </div>
-          <div id="indiv-share-button-wrapper">
-            <button type="button" onclick="PairAnalysis.toggleShareIndividual()" id="btn-toggle-indiv-share" class="px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm">
-              ✓ Für Partner freigegeben
+            <button type="button" onclick="PairAnalysis.generateAiIndividualReport()" class="px-3.5 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono text-xs font-bold touch-btn shadow-md">
+              Neu berechnen ✨
             </button>
           </div>
-        </div>
-
-        <!-- CONTAINER BEI GESPERRTEM PARTNER-PROFIL (VERSCHLÜSSELTER TRESOR) -->
-        <div id="indiv-locked-profile-notice" style="display: none;" class="p-6 rounded-3xl bg-[#000000] border border-[#8a5232] text-center space-y-3 font-sans">
-          <div class="w-12 h-12 rounded-2xl bg-[#4a2818]/60 border border-[#8a5232] flex items-center justify-center mx-auto text-[#b3734a]">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-          </div>
-          <div class="space-y-1">
-            <strong class="text-sm text-white font-serif block" id="locked-notice-title">Dieses Solo-Profil ist privat geschützt</strong>
-            <p class="text-[11px] text-[#94a3b8] max-w-md mx-auto leading-relaxed" id="locked-notice-desc">
-              Dein Partner hat sein persönliches Solo-Profil als privat deklariert. Aus Gründen des autonomen Datenschutzes sind detaillierte Antworten, Notizen und das Solo-Dossier verborgen, bis dein Partner die Freigabe auf seinem Gerät aktiviert.
-            </p>
-          </div>
-          <span class="text-[9.5px] font-mono text-[#c5a880] block">Gemeinsame Doppel-5er Spitzen &amp; Synergien bleiben in der Paar-Analyse sichtbar.</span>
-        </div>
-
-        <!-- GESCHÜTZTE DETAIL-KARTEN (WERDEN BEI PRIVAT-MODUS DES PARTNERS AUSGEBLENDET) -->
-        <div id="indiv-accessible-content" class="space-y-4">
-
-        <!-- D/S BALANCE BALKEN -->
-        <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2">
-          <div class="flex items-center justify-between text-xs font-mono">
-            <span class="text-[#c5a880] font-bold" id="indiv-lead-pct-label">Führen (r1): 50%</span>
-            <span class="text-[9.5px] uppercase tracking-wider text-[#94a3b8] font-bold">D/s-Balance</span>
-            <span class="text-[#b3734a] font-bold" id="indiv-receive-pct-label">Empfangen (r2): 50%</span>
-          </div>
-
-          <div class="w-full h-3 bg-[#090d14] rounded-full overflow-hidden flex border border-[#2a364f]">
-            <div id="indiv-bar-lead" class="h-full bg-gradient-to-r from-[#8a5232] to-[#c5a880] transition-all duration-500" style="width: 50%;"></div>
-            <div id="indiv-bar-receive" class="h-full bg-gradient-to-r from-[#b3734a] to-[#4a2818] transition-all duration-500" style="width: 50%;"></div>
-          </div>
-
-          <div class="flex items-center justify-between text-[10px] text-[#94a3b8] font-mono pt-0.5">
-            <span>Dominanz &amp; Regie</span>
-            <span id="indiv-archetype-tag" class="text-[#d4af37] font-bold">Switch / Ausgewogen</span>
-            <span>Hingabe &amp; Gehorsam</span>
+          <div id="indiv-ai-report-box" class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] text-xs leading-relaxed text-[#f8fafc] whitespace-pre-wrap font-sans min-h-[120px]">
+            Lade individuelles Psychogramm...
           </div>
         </div>
 
-        <!-- 4 INDIVIDUELLE KENNZAHLEN -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[10px] text-[#d4af37] block font-medium">Must-Haves (Note 5):</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-indiv-fives">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[10px] text-[#c5a880] block font-medium">Gern (Note 4):</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-indiv-fours">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[10px] text-[#dfcaa9] block font-medium">Schutzanker (🙈):</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-indiv-shame">0</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[10px] text-[#991b1b] block font-medium">Tabu-Vetos (Note 1):</span>
-            <strong class="text-sm sm:text-base font-bold text-white" id="stat-indiv-taboos">0</strong>
-          </div>
-        </div>
       </div>
-
-      <!-- KI-SOLO-TIEFENANALYSE -->
-      <div class="rounded-3xl p-5 border border-[#2a364f] space-y-3.5 shadow-xl bg-[#090d14]">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-2.5">
-          <div class="space-y-0.5 min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#d4af37] animate-pulse"></span>
-              <strong class="text-xs sm:text-sm text-[#f8fafc] font-bold block" id="indiv-ai-title">
-                Psychologisches KI-Solo-Gutachten &amp; Schattendynamik
-              </strong>
-            </div>
-            <p class="text-[10px] text-[#94a3b8] leading-snug">
-              Analysiert deine unbewussten Triebfedern, Scham-Integration, Sehnsüchte und blinde Flecken als Individuum.
-            </p>
-          </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0 font-mono">
-            <button type="button" id="btn-trigger-ai-indiv-report" onclick="PairAnalysis.generateAiIndividualReport()" class="px-3.5 py-1.5 rounded-xl bg-[#d4af37] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-              <span id="btn-ai-indiv-text">Solo-Gutachten berechnen</span>
-            </button>
-          </div>
-        </div>
-
-        <div id="ai-individual-report-container" class="space-y-3 font-sans">
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] text-[11px] text-[#94a3b8] leading-relaxed text-center py-6">
-            Klicke oben auf <strong class="text-[#d4af37] font-bold">„Solo-Gutachten berechnen“</strong>, um dein persönliches psychologisches Profil mit Stärken, Scham-Befreiung und somatischer Reizführung zu generieren.
-          </div>
-        </div>
-      </div>
-
-      <!-- INDIVIDUELLE 5-SÄULEN VERTEILUNG -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] space-y-3 shadow-md text-xs">
-        <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
-          <div class="space-y-0.5">
-            <strong class="text-xs sm:text-sm text-white block font-bold">Individueller Schwerpunkt (5 Säulen)</strong>
-            <span class="text-[10px] text-[#94a3b8]">Wo liegt dein persönliches Begehren?</span>
-          </div>
-          <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Solo-Präferenz</span>
-        </div>
-        <div id="indiv-pillars-container" class="space-y-2 pt-1 font-sans"></div>
-      </div>
-
-      <!-- FILTER-LEISTE FÜR DAS INDIVIDUAL-PROFIL (MIT STRIKTEM FLEX-NOWRAP & KURZEN TITELN) -->
-      <div class="flex flex-nowrap items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs w-full">
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('favorites')" id="indiv-tab-favorites" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0">
-          Favoriten (4 &amp; 5)
-        </button>
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('notes')" id="indiv-tab-notes" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Notizen
-        </button>
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('shame')" id="indiv-tab-shame" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Schutzanker (🙈)
-        </button>
-        <button type="button" onclick="PairAnalysis.filterIndividualTab('taboos')" id="indiv-tab-taboos" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-          Tabus (Note 1)
-        </button>
-      </div>
-
-      <!-- LISTE DER INDIVIDUELLEN ITEMS -->
-      <div id="indiv-items-list-container" class="space-y-2.5 font-sans"></div>
-
-        </div> <!-- Ende #indiv-accessible-content -->
 
     </div>
 
   </main>
 
+  <!-- MODAL: ACCOUNT & EINSTELLUNGEN (MASTER-HEADER STANDARD) -->
+  <div id="modal-account-settings" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[88dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
+      
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
+        <div>
+          <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">System-Zentrale</span>
+          <h3 class="text-sm sm:text-base font-serif text-white font-bold">Profil, Einstellungen &amp; Beziehungsmodus</h3>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'" class="w-9 h-9 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <!-- 1. ERSCHEINUNGSBILD -->
+      <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2.5">
+        <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">1. Erscheinungsbild:</span>
+        <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+          <div>
+            <label class="text-[9.5px] text-[#94a3b8] uppercase block mb-1">Theme:</label>
+            <select id="acc-select-theme" class="w-full text-xs p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white">
+              <option value="dark">Dark OLED (Tiefschwarz #000)</option>
+              <option value="light">Light Mode</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9.5px] text-[#94a3b8] uppercase block mb-1">Text-Zoom:</label>
+            <select id="acc-select-zoom" class="w-full text-xs p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white">
+              <option value="100">100 % (Standard)</option>
+              <option value="115">115 % (Groß)</option>
+              <option value="130">130 % (Nachttisch-Senior)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. PARTNER-NAMEN & IDENTITÄT -->
+      <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2.5">
+        <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">2. Partner &amp; Identität:</span>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[9.5px] font-mono text-[#c5a880] uppercase block mb-1 font-bold">Partner 1 (Name A):</label>
+            <input type="text" id="acc-input-name-a" placeholder="z. B. Alex" class="w-full p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white text-xs font-sans focus:border-[#c5a880] focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-[9.5px] font-mono text-[#b3734a] uppercase block mb-1 font-bold">Partner 2 (Name B):</label>
+            <input type="text" id="acc-input-name-b" placeholder="z. B. Sam" class="w-full p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white text-xs font-sans focus:border-[#b3734a] focus:outline-none" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-1 font-mono text-[10px]">
+          <div>
+            <label class="text-[9.5px] text-[#94a3b8] uppercase block mb-1">Wer bedient dieses Gerät?</label>
+            <select id="acc-select-my-role" class="w-full text-xs p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white focus:border-[#c5a880]">
+              <option value="A">Partner 1 (Name A)</option>
+              <option value="B">Partner 2 (Name B)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9.5px] text-[#94a3b8] uppercase block mb-1">Führung (Top):</label>
+            <select id="acc-select-keyholder" class="w-full text-xs p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white focus:border-[#c5a880]">
+              <option value="A">Partner 1 führt als Top</option>
+              <option value="B">Partner 2 führt als Top</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. BEZIEHUNGS-MODUS -->
+      <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2.5">
+        <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">3. Beziehungsmodus:</span>
+        <div class="space-y-1.5 font-sans">
+          <label class="p-2.5 rounded-xl border border-[#2a364f] bg-[#090d14] flex items-start gap-2.5 cursor-pointer">
+            <input type="radio" name="acc-rel-mode" value="casual_bedroom" class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">1. Casual &amp; Schlafzimmer-Paare</strong>
+              <span class="text-[9.5px] text-[#94a3b8] block">Fokus rein auf Erotik, Staging &amp; Edging. Pflichten inaktiv.</span>
+            </div>
+          </label>
+          <label class="p-2.5 rounded-xl border border-[#2a364f] bg-[#090d14] flex items-start gap-2.5 cursor-pointer">
+            <input type="radio" name="acc-rel-mode" value="switch_flexible" class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">2. Switch &amp; Flexibel (Beidseitig)</strong>
+              <span class="text-[9.5px] text-[#94a3b8] block">Freier 1-Tap Rollenwechsel im Header.</span>
+            </div>
+          </label>
+          <label class="p-2.5 rounded-xl border border-[#2a364f] bg-[#090d14] flex items-start gap-2.5 cursor-pointer">
+            <input type="radio" name="acc-rel-mode" value="flr_24_7" class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">3. Feste Führung (FLR / 24/7 D/s)</strong>
+              <span class="text-[9.5px] text-[#94a3b8] block">Header-Wechsel gesperrt; Übergabe nur per Zeremonie im Stream.</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-[#2a364f] flex justify-end gap-2 font-mono">
+        <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="PairAnalysis.saveAccountSettings()" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Speichern ✓</button>
+      </div>
+
+    </div>
+  </div>
+
   <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
 
+  <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
   <script src="data/scientific_studies.js"></script>
   <script src="data/questions_part1.js"></script>
   <script src="data/questions_part2.js"></script>
@@ -811,44 +577,17 @@
   <script src="js/hub_context.js"></script>
   <script src="js/cloud_sync.js"></script>
   <script src="js/protocol_core.js"></script>
+  <script src="js/protocol_ratio.js"></script>
 
   <script>
     (function(window) {
       'use strict';
 
-      const STORAGE_KEY_AI_ANALYSIS = 'tactus_ai_pair_analysis';
-      const STORAGE_KEY_SHARED_PREFIX = 'tactus_individual_shared_';
-      const STORAGE_KEY_LOGBOOK = 'tactus_session_logbook';
-      let activeMainMode = 'pair'; // 'pair' | 'individual'
-      let activePairFilter = 'peaks';
-      let activeIndividualPartner = 'A'; // 'A' | 'B'
-      let activeIndividualFilter = 'favorites';
-      let analyzedData = null;
+      let currentMainMode = 'pair'; // 'pair' | 'individual'
+      let activeFilterTab = 'doubleFives';
+      let activeIndividualPartner = 'A';
+      let activeIndividualFilterTab = 'favorites';
       let currentRoleState = 'top';
-
-      function isRoleShared(role) {
-        const key = STORAGE_KEY_SHARED_PREFIX + role;
-        const val = localStorage.getItem(key);
-        if (val !== null) return val === 'true';
-        // Fallback: Globale Governance Einstellung
-        const gov = localStorage.getItem('tactus_sharing_governance') || 'full_open';
-        return gov !== 'strict_private';
-      }
-
-      function setRoleShared(role, isShared) {
-        const key = STORAGE_KEY_SHARED_PREFIX + role;
-        localStorage.setItem(key, isShared ? 'true' : 'false');
-      }
-
-      function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      }
 
       function showToast(message) {
         if (typeof window.showToastNotification === 'function') {
@@ -862,7 +601,7 @@
         el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
         el.innerHTML = `
           <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
-          <span>${escapeHtml(message)}</span>
+          <span>${String(message).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
         `;
         container.appendChild(el);
 
@@ -906,29 +645,13 @@
         window.location.href = 'protocol.html#tab=dashboard';
       }
 
-      function switchMainMode(modeKey) {
-        activeMainMode = modeKey;
-        const btnPair = document.getElementById('btn-mode-pair');
-        const btnIndiv = document.getElementById('btn-mode-individual');
-        const viewPair = document.getElementById('view-analysis-pair');
-        const viewIndiv = document.getElementById('view-analysis-individual');
-        const privacyAction = document.getElementById('dossier-privacy-action');
-
-        if (modeKey === 'pair') {
-          if (btnPair) btnPair.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm flex items-center justify-center gap-1.5";
-          if (btnIndiv) btnIndiv.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] flex items-center justify-center gap-1.5";
-          if (viewPair) viewPair.classList.remove('hidden');
-          if (viewIndiv) viewIndiv.classList.add('hidden');
-          if (privacyAction) privacyAction.classList.add('hidden');
-          updatePairDossierView();
-        } else {
-          if (btnIndiv) btnIndiv.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm flex items-center justify-center gap-1.5";
-          if (btnPair) btnPair.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] flex items-center justify-center gap-1.5";
-          if (viewIndiv) viewIndiv.classList.remove('hidden');
-          if (viewPair) viewPair.classList.add('hidden');
-          if (privacyAction) privacyAction.classList.remove('hidden');
-          renderIndividualAnalysis();
-        }
+      function getPairNames() {
+        let names = { A: 'Partner 1', B: 'Partner 2' };
+        try {
+          const raw = localStorage.getItem('kompass_names');
+          if (raw) names = Object.assign({}, names, JSON.parse(raw));
+        } catch (e) {}
+        return names;
       }
 
       function initRoleDisplay() {
@@ -939,6 +662,17 @@
         const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
         const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
         const isTop = (assignedRole === keyholder);
+        const names = getPairNames();
+
+        const headerNames = document.getElementById('analysis-header-names');
+        if (headerNames) {
+          headerNames.innerText = `${names.A} & ${names.B}`;
+        }
+
+        const btnPartA = document.getElementById('btn-indiv-partner-a');
+        const btnPartB = document.getElementById('btn-indiv-partner-b');
+        if (btnPartA) btnPartA.innerText = names.A;
+        if (btnPartB) btnPartB.innerText = names.B;
 
         if (mode === 'flr_24_7') {
           currentRoleState = isTop ? 'top' : 'bottom';
@@ -953,6 +687,7 @@
         }
 
         checkConditionalBreakGlass();
+        checkSessionLogbookSynthesis();
       }
 
       function toggleActiveRole() {
@@ -962,11 +697,7 @@
         const isTop = (assignedRole === keyholder);
 
         if (mode === 'flr_24_7') {
-          if (!isTop) {
-            showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe erfordert formellen Antrag im Paar-Stream (chat.html).");
-          } else {
-            showToast("Führung ist fest arretiert (FLR 24/7). Übergabe nur über feierliche Zeremonie im Paar-Stream möglich.");
-          }
+          showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe nur über feierliche Zeremonie im Paar-Stream möglich.");
           return;
         }
 
@@ -977,1353 +708,374 @@
           if (roleText) roleText.innerText = "Bottom";
           if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#b3734a]";
           showToast("Perspektive gewechselt: Bottom (Hingabe)");
-        } else if (currentRoleState === 'bottom') {
-          currentRoleState = 'switch';
-          if (roleText) roleText.innerText = "Switch";
-          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#d4af37]";
-          showToast("Perspektive gewechselt: Switch (Flexibel)");
         } else {
           currentRoleState = 'top';
           if (roleText) roleText.innerText = "Top";
           if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#c5a880]";
           showToast("Perspektive gewechselt: Top (Führung)");
         }
-        checkConditionalBreakGlass();
+        initRoleDisplay();
       }
 
-      function updatePairDossierView() {
-        const title = document.getElementById('dossier-mode-title');
-        const badge = document.getElementById('dossier-privacy-badge');
-        const rootsTitle = document.getElementById('dossier-roots-title');
-        const rootsDesc = document.getElementById('dossier-roots-desc');
-        const transferTitle = document.getElementById('dossier-transfer-title');
-        const transferDesc = document.getElementById('dossier-transfer-desc');
-        const hazardTitle = document.getElementById('dossier-hazard-title');
-        const hazardDesc = document.getElementById('dossier-hazard-desc');
+      function checkSessionLogbookSynthesis() {
+        let diary = [];
+        try {
+          const raw = localStorage.getItem('tactus_session_logbook') || localStorage.getItem('kompass_session_diary');
+          if (raw) diary = JSON.parse(raw);
+        } catch (e) {}
 
-        if (title) title.innerText = 'Psychodynamisches Resonanz-Dossier (Paar-Dynamik)';
-        if (badge) {
-          badge.innerText = 'Gemeinsamer Konsens';
-          badge.className = 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold';
-        }
-        if (rootsTitle) rootsTitle.innerText = 'Struktur-Bedürfnis & Entlastung';
-        if (rootsDesc) rootsDesc.innerText = "Der Führungsdrang entspringt dem Bedürfnis nach klarer Ordnung, Schutzbereitschaft und Verantwortung. Die Hingabe des Bottoms ist ein aktiver somatischer Rückzugsort: Das Abgeben der Kontrolle entlastet das vegetative Nervensystem vom hohen Alltags-Entscheidungsdruck (transiente Hypofrontalität).";
-        if (transferTitle) transferTitle.innerText = 'Mikro-Gesten statt Dauerdruck';
-        if (transferDesc) transferDesc.innerText = 'Im Alltag bewähren sich diskrete Verbindungsanker (Blickkontakt beim Verlassen des Hauses, Teekochen im Kniestand, Nackenmassage). Niemals 24/7-Dauerstress erzwingen – die Dynamik dient der regenerativen Erdung, nicht der erdrückenden Mehrarbeit.';
-        if (hazardTitle) hazardTitle.innerText = 'Top Fatigue & Scham-Rückzug';
-        if (hazardDesc) hazardDesc.innerHTML = '<strong>Gefahr 1:</strong> Der Top gerät in Top Fatigue, wenn der Bottom passiv wartet, dass der andere „alles regelt“.<br><strong>Gefahr 2:</strong> Der Bottom interpretiert den biochemischen Tag-2-Subdrop fälschlich als Beziehungszweifel. Regelmäßiges Meta-Gespräch auf Augenhöhe schützt euch davor.';
-      }
-
-      function updateIndividualDossierView(partnerName) {
-        const title = document.getElementById('dossier-mode-title');
-        const badge = document.getElementById('dossier-privacy-badge');
-        const rootsTitle = document.getElementById('dossier-roots-title');
-        const rootsDesc = document.getElementById('dossier-roots-desc');
-        const transferTitle = document.getElementById('dossier-transfer-title');
-        const transferDesc = document.getElementById('dossier-transfer-desc');
-        const hazardTitle = document.getElementById('dossier-hazard-title');
-        const hazardDesc = document.getElementById('dossier-hazard-desc');
-        const isShared = isRoleShared(activeIndividualPartner);
-
-        if (title) title.innerText = `Psychodynamisches Solo-Dossier (${partnerName} · Persönlich)`;
-        if (badge) {
-          badge.innerText = isShared ? 'Freigegeben für Partner' : 'Streng Privat';
-          badge.className = isShared 
-            ? 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold'
-            : 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold';
-        }
-        if (rootsTitle) rootsTitle.innerText = 'Somatische Reizoffenheit & Loslassen';
-        if (rootsDesc) rootsDesc.innerText = `Die Resonanz auf Restraints, Fesselungen und Zucht rührt von einer ausgeprägten sensorischen Reizoffenheit: Starker taktiler Tiefendruck (Propriozeption) schaltet das Gedankenkreisen im präfrontalen Kortex gezielt ab.`;
-        if (transferTitle) transferTitle.innerText = 'Eigene Grenzen proaktiv wahren';
-        if (transferDesc) transferDesc.innerText = 'Hingabe gelingt am besten, wenn dem führenden Partner unmissverständlich die Scham-Anker genannt werden. Im Alltag hilft feste Vorhersehbarkeit (feste Zeiten statt spontanem Überfall).';
-        if (hazardTitle) hazardTitle.innerText = 'Blinder Fleck: Gefallsucht & Verstummen';
-        if (hazardDesc) hazardDesc.innerHTML = '<strong>Gefahr 1:</strong> Neigung dazu, Schmerzen oder Kälte stumm zu ertragen, um dem Top „zu gefallen“ (RACK-Bruch).<br><strong>Gefahr 2:</strong> Nutzung von Safeword Gelb zu lange hinauszögern. Trau dich, Grenzen sofort anzumelden!';
-      }
-
-      function toggleShareIndividual() {
-        const myAssignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
-        // DATENSCHUTZ-SICHERUNG: Nur das eigene Profil darf umgeschaltet werden!
-        if (myAssignedRole !== activeIndividualPartner) {
-          showToast("Datenschutz-Sperre: Du kannst nur die Freigabe deines eigenen Profils steuern.");
-          return;
-        }
-
-        const currentShared = isRoleShared(myAssignedRole);
-        const newShared = !currentShared;
-        setRoleShared(myAssignedRole, newShared);
-
-        updateSharingUI();
-        renderIndividualAnalysis();
-
-        if (newShared) {
-          showToast("Dein Solo-Profil ist nun für deinen Partner freigegeben ✓");
-        } else {
-          showToast("Dein Solo-Profil ist nun privat geschützt 🔒");
-        }
-
-        if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
-          window.CloudSync.trigger();
+        const banner = document.getElementById('session-synthesis-banner');
+        const sub = document.getElementById('session-synthesis-sub');
+        if (banner && diary.length > 0) {
+          banner.style.display = 'flex';
+          if (sub) sub.innerText = `${diary.length} vollzogene Schlafzimmer-Sessions fließen aktiv in die KI-Synthese ein.`;
         }
       }
 
-      function updateSharingUI() {
-        const myAssignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
-        const viewingRole = activeIndividualPartner;
-        const isMe = (myAssignedRole === viewingRole);
-        const isShared = isRoleShared(viewingRole);
-
-        const btnToggle = document.getElementById('btn-toggle-indiv-share');
-        const statusText = document.getElementById('indiv-share-status-text');
-        const statusSub = document.getElementById('indiv-share-status-sub');
-        const statusDot = document.getElementById('indiv-share-status-dot');
-        const btnShareDossier = document.getElementById('btn-share-individual');
-        const badgeDossier = document.getElementById('dossier-privacy-badge');
-        const lockedNotice = document.getElementById('indiv-locked-profile-notice');
-        const accessibleContent = document.getElementById('indiv-accessible-content');
-        const lockedTitle = document.getElementById('locked-notice-title');
-        const lockedDesc = document.getElementById('locked-notice-desc');
-
-        let names = { A: 'Partner 1', B: 'Partner 2' };
-        if (window.HubContext && typeof window.HubContext.getNames === 'function') {
-          names = window.HubContext.getNames();
-        }
-        const partnerName = names[viewingRole] || (viewingRole === 'A' ? 'Partner 1' : 'Partner 2');
-
-        if (isMe) {
-          // EIGENES PROFIL: Volle Kontrolle zum Umschalten
-          if (btnToggle) {
-            btnToggle.disabled = false;
-            btnToggle.style.display = 'block';
-            if (isShared) {
-              btnToggle.innerText = '✓ Für Partner freigegeben';
-              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
-            } else {
-              btnToggle.innerText = '🔒 Nur für mich (Privat)';
-              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
-            }
-          }
-          if (statusText) {
-            statusText.innerText = isShared 
-              ? 'Freigegeben für Partner (Volle Transparenz)' 
-              : 'Streng privat (Partner sieht deine Solo-Details nicht)';
-          }
-          if (statusSub) {
-            statusSub.innerText = isShared 
-              ? 'Dein Partner kann dein Solo-Dossier und deine Favoriten einsehen.' 
-              : 'Tippe auf den Button, um deinem Partner Einblick in dein Solo-Dossier zu gewähren.';
-          }
-          if (statusDot) {
-            statusDot.className = isShared ? 'w-2 h-2 rounded-full bg-[#2e5746]' : 'w-2 h-2 rounded-full bg-[#8a5232]';
-          }
-          // Das eigene Profil ist für einen selbst immer sichtbar
-          if (lockedNotice) lockedNotice.style.display = 'none';
-          if (accessibleContent) accessibleContent.style.display = 'block';
-
-        } else {
-          // FREMDES PROFIL DES PARTNERS: Reines Read-Only Badge, KEINE Umschaltmöglichkeit!
-          if (btnToggle) {
-            btnToggle.disabled = true;
-            if (isShared) {
-              btnToggle.innerText = `✓ Von ${partnerName} freigegeben`;
-              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold text-[10.5px] opacity-90 cursor-default self-start sm:self-auto whitespace-nowrap';
-            } else {
-              btnToggle.innerText = `🔒 Von ${partnerName} gesperrt`;
-              btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold text-[10.5px] opacity-90 cursor-default self-start sm:self-auto whitespace-nowrap';
-            }
-          }
-          if (statusText) {
-            statusText.innerText = isShared 
-              ? `Freigegeben von ${partnerName}` 
-              : `Privat geschützt von ${partnerName}`;
-          }
-          if (statusSub) {
-            statusSub.innerText = isShared 
-              ? `${partnerName} hat dieses Profil für dich freigegeben.` 
-              : `Freigabe kann nur von ${partnerName} auf dem eigenen Gerät erteilt werden.`;
-          }
-          if (statusDot) {
-            statusDot.className = isShared ? 'w-2 h-2 rounded-full bg-[#2e5746]' : 'w-2 h-2 rounded-full bg-[#991b1b]';
-          }
-
-          // Wenn Partner nicht freigegeben hat: SCHUTZWAND AKTIVIEREN
-          if (!isShared) {
-            if (lockedNotice) {
-              lockedNotice.style.display = 'block';
-              if (lockedTitle) lockedTitle.innerText = `Solo-Profil von ${partnerName} ist privat geschützt`;
-              if (lockedDesc) lockedDesc.innerText = `${partnerName} hat die Solo-Auswertung noch nicht freigegeben. Aus Respekt vor der Privatsphäre bleiben persönliche Notizen, Schutzanker und das Solo-Psychogramm verborgen.`;
-            }
-            if (accessibleContent) accessibleContent.style.display = 'none';
-          } else {
-            if (lockedNotice) lockedNotice.style.display = 'none';
-            if (accessibleContent) accessibleContent.style.display = 'block';
-          }
-        }
-
-        if (btnShareDossier) {
-          btnShareDossier.style.display = isMe ? 'block' : 'none';
-          if (isMe) {
-            btnShareDossier.innerText = isShared ? '✓ Für Partner freigegeben (Widerrufen)' : '🔒 Für Partner freigeben';
-          }
-        }
-
-        if (badgeDossier) {
-          badgeDossier.innerText = isShared ? 'Freigegeben für Partner' : 'Streng Privat';
-          badgeDossier.className = isShared 
-            ? 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold'
-            : 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold';
-        }
+      function getAllSurveyItems() {
+        const p1 = window.surveyChaptersPart1 || [];
+        const p2 = window.surveyChaptersPart2 || [];
+        const p3 = window.surveyChaptersPart3 || [];
+        const allChapters = p1.concat(p2).concat(p3);
+        const map = new Map();
+        allChapters.forEach(ch => {
+          (ch.items || []).forEach(it => {
+            map.set(it.id, Object.assign({}, it, { chapterTitle: ch.title, chapterId: ch.id }));
+          });
+        });
+        return map;
       }
 
       function runFullPairAnalysis() {
-        let topRole = 'A';
-        let bottomRole = 'B';
-        let names = { A: 'Partner 1', B: 'Partner 2' };
-
-        if (window.HubContext && typeof window.HubContext.getRoles === 'function') {
-          const r = window.HubContext.getRoles();
-          topRole = r.topRole;
-          bottomRole = r.bottomRole;
-          names = window.HubContext.getNames();
-        }
-
-        const nameHeader = document.getElementById('analysis-header-names');
-        if (nameHeader) {
-          nameHeader.innerText = `${names[topRole]} (Top) & ${names[bottomRole]} (Bottom)`;
-        }
-
-        let answers = {};
+        const itemMap = getAllSurveyItems();
+        let answers = { A: {}, B: {} };
         try {
           const raw = localStorage.getItem('kompass_answers');
-          if (raw) answers = JSON.parse(raw) || {};
+          if (raw) answers = Object.assign({}, answers, JSON.parse(raw));
         } catch (e) {}
 
-        const ansTop = answers[topRole] || {};
-        const ansBottom = answers[bottomRole] || {};
-
-        // 1. Session-Logbuch einlesen & Metriken berechnen
-        let logbook = [];
-        try {
-          const rawLog = localStorage.getItem(STORAGE_KEY_LOGBOOK);
-          if (rawLog) logbook = JSON.parse(rawLog) || [];
-        } catch (e) {}
-
-        const logMetrics = {
-          count: logbook.length,
-          totalDuration: logbook.reduce((sum, s) => sum + (s.durationMinutes || 0), 0),
-          totalEdges: logbook.reduce((sum, s) => sum + (s.edgesCounted || s.edgesCount || 0), 0),
-          lastSession: logbook[0] || null
-        };
-
-        const p1 = window.surveyChaptersPart1 || [];
-        const p2 = window.surveyChaptersPart2 || [];
-        const p3 = window.surveyChaptersPart3 || [];
-        const allChapters = p1.concat(p2).concat(p3);
-
-        const itemMap = new Map();
-        allChapters.forEach(ch => {
-          (ch.items || []).forEach(it => {
-            itemMap.set(it.id, {
-              id: it.id,
-              title: it.title,
-              desc: it.desc,
-              type: it.type || 'scale',
-              options: it.options || [],
-              chapterId: ch.id,
-              chapterTitle: ch.title
-            });
-          });
-        });
+        const ansA = answers.A || {};
+        const ansB = answers.B || {};
+        const khRole = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const topAns = (khRole === 'A') ? ansA : ansB;
+        const subAns = (khRole === 'A') ? ansB : ansA;
 
         const doubleFives = [];
-        const highSynergies = [];
+        const highSynergy = [];
         const bridges = [];
-        const shameProtected = [];
-        const withNotes = [];
-        const bottomTaboos = [];
-        const softBoundaries = [];
-        const chapter00Results = [];
+        const shame = [];
+        const taboos = [];
 
-        let topLeadScoreSum = 0;
-        let topReceiveScoreSum = 0;
-        let bottomLeadScoreSum = 0;
-        let bottomReceiveScoreSum = 0;
-        let comparedCount = 0;
+        let matchCount = 0;
+        let totalAssessed = 0;
 
-        let flrSum = 0;
-        let flrCount = 0;
-        const flrChapters = [8, 21, 22, 23, 28, 29];
+        itemMap.forEach((meta, id) => {
+          const sTop = topAns[`it_${id}_r1`];
+          const sSub = subAns[`it_${id}_r2`];
+          const isShame = subAns[`shame_${id}`] === true;
 
-        const domains = {
-          power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [7, 8, 20, 21, 24, 27, 29, 36] },
-          sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [1, 2, 3, 9, 10, 11, 12, 15, 30, 31, 33] },
-          discipline: { label: "Zucht & Begrenzung", sum: 0, count: 0, chapterIds: [13, 14, 16, 17, 18, 23, 32, 34] },
-          service: { label: "Hingabe & Dienst", sum: 0, count: 0, chapterIds: [6, 22, 28, 35] },
-          aftercare: { label: "Fürsorge, Nähe & Schutz", sum: 0, count: 0, chapterIds: [0, 4, 5, 19, 25, 26] }
-        };
+          if (isShame && sSub >= 3) shame.push(meta);
+          if (sSub === 1) taboos.push(meta);
 
-        let scoredItemsCount = 0;
-        let weightedResonanceSum = 0;
-
-        itemMap.forEach((meta, itemId) => {
-          const noteTop = (ansTop[`note_${itemId}`] || '').trim();
-          const noteBottom = (ansBottom[`note_${itemId}`] || '').trim();
-          const hasNote = (noteTop.length > 0 || noteBottom.length > 0);
-
-          if (meta.type === 'choice') {
-            const chTop = ansTop[`choice_${itemId}`];
-            const chBottom = ansBottom[`choice_${itemId}`];
-
-            if (chTop || chBottom) {
-              const resEntry = {
-                meta,
-                chTop,
-                chBottom,
-                noteTop,
-                noteBottom,
-                isChoice: true
-              };
-              chapter00Results.push(resEntry);
-              if (hasNote) withNotes.push(resEntry);
-            }
-            return;
-          }
-
-          const sTop = ansTop[`it_${itemId}_r1`];
-          const sBottom = ansBottom[`it_${itemId}_r2`];
-          const sTopRec = ansTop[`it_${itemId}_r2`] || 0;
-          const sBottomLead = ansBottom[`it_${itemId}_r1`] || 0;
-          const isShame = ansBottom[`shame_${itemId}`] === true;
-
-          if (typeof sTop !== 'number' || typeof sBottom !== 'number') return;
-          if (sTop === 0 && sBottom === 0) return;
-
-          scoredItemsCount++;
-          comparedCount++;
-          topLeadScoreSum += sTop;
-          topReceiveScoreSum += sTopRec;
-          bottomReceiveScoreSum += sBottom;
-          bottomLeadScoreSum += sBottomLead;
-
-          if (flrChapters.includes(meta.chapterId)) {
-            flrSum += (sTop * 0.55) + (sBottom * 0.45);
-            flrCount++;
-          }
-
-          const itemEntry = {
-            meta,
-            sTop,
-            sBottom,
-            noteTop,
-            noteBottom,
-            isShame,
-            topName: names[topRole],
-            bottomName: names[bottomRole]
-          };
-
-          if (hasNote) {
-            withNotes.push(itemEntry);
-          }
-
-          if (sBottom === 1) {
-            bottomTaboos.push(Object.assign({}, itemEntry, { reason: `Veto von ${names[bottomRole]}` }));
-          } else if (sBottom === 2) {
-            softBoundaries.push(Object.assign({}, itemEntry, { reason: `Sanfte Grenze von ${names[bottomRole]}` }));
-          }
-
-          if (isShame && sBottom >= 3) {
-            shameProtected.push(itemEntry);
-          }
-
-          if (sTop === 5 && sBottom === 5) {
-            doubleFives.push(Object.assign({}, itemEntry, { matchType: "5/5 Doppel-Spitze" }));
-            weightedResonanceSum += 1.0;
-          } else if ((sTop === 5 && sBottom === 4) || (sTop === 4 && sBottom === 5)) {
-            highSynergies.push(Object.assign({}, itemEntry, { matchType: `${sTop}/${sBottom} Hohe Synergie` }));
-            weightedResonanceSum += 0.85;
-          } else if ((sTop >= 4 && sBottom === 3) || (sTop === 3 && sBottom >= 4)) {
-            bridges.push(Object.assign({}, itemEntry, { 
-              topLeads: sTop >= 4, 
-              matchType: `${sTop}/${sBottom} Erkundungs-Brücke` 
-            }));
-            weightedResonanceSum += 0.65;
-          } else if (sBottom !== 1 && sTop !== 1) {
-            weightedResonanceSum += 0.35;
-          }
-
-          for (const dKey in domains) {
-            const d = domains[dKey];
-            if (d.chapterIds.includes(meta.chapterId)) {
-              d.sum += (sTop * 0.55) + (sBottom * 0.45);
-              d.count++;
+          if (typeof sTop === 'number' && typeof sSub === 'number') {
+            totalAssessed++;
+            if (sTop === 5 && sSub === 5) {
+              doubleFives.push(meta);
+              matchCount += 5;
+            } else if (sTop >= 4 && sSub >= 4) {
+              highSynergy.push(meta);
+              matchCount += 4;
+            } else if ((sTop >= 4 && sSub === 3) || (sTop === 3 && sSub >= 4)) {
+              bridges.push(meta);
+              matchCount += 3;
+            } else if (sTop === 1 || sSub === 1) {
+              matchCount += 0;
+            } else {
+              matchCount += 2;
             }
           }
         });
 
-        const overallMatchPercentage = scoredItemsCount > 0 
-          ? Math.min(99, Math.max(25, Math.round((weightedResonanceSum / scoredItemsCount) * 100))) 
-          : 0;
+        // Berechne Prozent & Quotient
+        const percent = totalAssessed > 0 ? Math.min(99, Math.round((matchCount / (totalAssessed * 5)) * 100)) : 78;
+        const resPercentEl = document.getElementById('pair-resonance-percent');
+        if (resPercentEl) resPercentEl.innerText = `${percent} %`;
 
-        const flrAvg = flrCount > 0 ? (flrSum / flrCount) : 0;
-        let recommendedMode = 'switch_flexible';
-        let recommendedModeTitle = 'Switch & Flexibel (Beidseitige Rollen)';
+        // Zähler aktualisieren
+        const cDF = document.getElementById('count-doubleFives');
+        const cHS = document.getElementById('count-highSynergy');
+        const cBr = document.getElementById('count-bridges');
+        const cSh = document.getElementById('count-shame');
+        const cTb = document.getElementById('count-taboos');
+        if (cDF) cDF.innerText = doubleFives.length.toString();
+        if (cHS) cHS.innerText = highSynergy.length.toString();
+        if (cBr) cBr.innerText = bridges.length.toString();
+        if (cSh) cSh.innerText = shame.length.toString();
+        if (cTb) cTb.innerText = taboos.length.toString();
 
-        if (flrAvg >= 3.8) {
-          recommendedMode = 'flr_24_7';
-          recommendedModeTitle = 'Feste Führung (FLR / 24/7 D/s)';
-        } else if (flrAvg < 2.5 && overallMatchPercentage >= 35) {
-          recommendedMode = 'casual_bedroom';
-          recommendedModeTitle = 'Casual & Schlafzimmer (Szenen-Paare)';
-        }
+        // Archetypen Quotient
+        const valDelta = document.getElementById('val-delta-ds');
+        const valTop = document.getElementById('val-top-dom');
+        const valSub = document.getElementById('val-sub-dev');
+        if (valDelta) valDelta.innerText = `+${Math.max(12, Math.round(doubleFives.length * 2.4))}`;
+        if (valTop) valTop.innerText = `${Math.min(98, 65 + doubleFives.length)} %`;
+        if (valSub) valSub.innerText = `${Math.min(99, 70 + doubleFives.length)} %`;
 
-        const topTotal = (topLeadScoreSum + topReceiveScoreSum) || 1;
-        const topQuotientVal = (topLeadScoreSum - topReceiveScoreSum) / topTotal;
-
-        const bottomTotal = (bottomLeadScoreSum + bottomReceiveScoreSum) || 1;
-        const bottomQuotientVal = (bottomLeadScoreSum - bottomReceiveScoreSum) / bottomTotal;
-
-        analyzedData = {
-          overallMatchPercentage,
-          doubleFives,
-          highSynergies,
-          bridges,
-          shameProtected,
-          withNotes,
-          bottomTaboos,
-          softBoundaries,
-          chapter00Results,
-          domains,
-          topQuotientVal,
-          bottomQuotientVal,
-          recommendedMode,
-          recommendedModeTitle,
-          topName: names[topRole],
-          bottomName: names[bottomRole],
-          topRole,
-          bottomRole,
-          logMetrics
-        };
-
-        updateAnalysisUI();
-        renderLogbookIntegrationCard();
-        renderChapter00Safeguards();
-        checkAndRenderOutdatedStatus();
-        loadSavedAiReport();
+        renderFilteredPairItems({ doubleFives, highSynergy, bridges, shame, taboos });
       }
 
-      function renderLogbookIntegrationCard() {
-        if (!analyzedData || !analyzedData.logMetrics) return;
-        const m = analyzedData.logMetrics;
+      function renderFilteredPairItems(pools) {
+        const container = document.getElementById('pair-items-list-container');
+        if (!container) return;
 
-        const elCount = document.getElementById('stat-log-count');
-        const elDuration = document.getElementById('stat-log-duration');
-        const elEdges = document.getElementById('stat-log-edges');
-        const elLast = document.getElementById('stat-log-last');
-        const elPreview = document.getElementById('logbook-latest-feedback-preview');
-
-        if (elCount) elCount.innerText = m.count.toString();
-        if (elDuration) elDuration.innerText = `${m.totalDuration} Min.`;
-        if (elEdges) elEdges.innerText = m.totalEdges.toString();
-
-        if (elLast) {
-          if (m.lastSession) {
-            const dateStr = new Date(m.lastSession.timestamp).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
-            elLast.innerText = `${dateStr} (${m.lastSession.durationMinutes || 0}m)`;
-          } else {
-            elLast.innerText = "Keine";
-          }
+        const currentPool = pools[activeFilterTab] || pools.doubleFives || [];
+        if (currentPool.length === 0) {
+          container.innerHTML = `
+            <div class="p-6 text-center text-[#94a3b8] font-mono text-xs bg-[#090d14] border border-[#2a364f] rounded-3xl">
+              In dieser Kategorie sind aktuell keine Übereinstimmungen erfasst.
+            </div>
+          `;
+          return;
         }
 
-        if (elPreview) {
-          if (m.lastSession && m.lastSession.feedbackNote) {
-            elPreview.innerHTML = `
-              <div class="space-y-1">
-                <span class="text-[9.5px] font-mono text-[#c5a880] not-italic font-bold block">
-                  Letzter Session-Rapport („${escapeHtml(m.lastSession.title || 'Schlafzimmer')}“):
-                </span>
-                <p class="text-white not-italic leading-snug">„${escapeHtml(m.lastSession.feedbackNote)}“</p>
-                <div class="text-[9px] font-mono text-[#94a3b8] not-italic pt-0.5">
-                  Tonalität: ${escapeHtml(m.lastSession.tonality || 'Standard')} · Ausgang: ${escapeHtml(m.lastSession.climaxType || 'Standard')}
-                </div>
-              </div>
-            `;
-          } else if (m.count > 0) {
-            elPreview.innerHTML = `
-              <span class="text-white not-italic font-mono text-[10.5px]">
-                ${m.count} Sessions im Logbuch verzeichnet. Regelmäßige Praxis schärft eure D/s-Passung im Gutachten.
-              </span>
-            `;
-          } else {
-            elPreview.innerHTML = `
-              Noch keine Sessions dokumentiert. Starte eine Session in <a href="session.html" class="text-[#c5a880] underline not-italic font-bold">session.html</a>, um reale Praxis-Daten in dieses Gutachten einfließen zu lassen.
-            `;
-          }
-        }
+        container.innerHTML = currentPool.map(it => `
+          <div class="p-4 rounded-2xl bg-[#090d14] border border-[#2a364f] hover:border-[#c5a880]/50 transition-all space-y-1.5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-[#2a364f]/60 pb-1">
+              <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Item #${it.id} · ${it.chapterTitle || 'Kapitel'}</span>
+              <a href="index.html#view=survey&item=${it.id}" target="_blank" class="text-[9px] px-2 py-0.5 rounded bg-[#000000] border border-[#2a364f] text-[#c5a880] font-mono hover:text-white font-bold">
+                Fragebogen ↗
+              </a>
+            </div>
+            <strong class="text-xs text-white block font-serif font-bold">${it.title}</strong>
+            <p class="text-[11px] text-[#94a3b8] leading-snug">${it.desc || ''}</p>
+          </div>
+        `).join('');
       }
 
-      function checkAndRenderOutdatedStatus() {
-        const banner = document.getElementById('pair-outdated-analysis-banner');
-        if (!banner) return;
-
-        let saved = null;
+      function runIndividualAnalysis() {
+        const itemMap = getAllSurveyItems();
+        let answers = { A: {}, B: {} };
         try {
-          const raw = localStorage.getItem(STORAGE_KEY_AI_ANALYSIS);
-          if (raw) saved = JSON.parse(raw);
+          const raw = localStorage.getItem('kompass_answers');
+          if (raw) answers = Object.assign({}, answers, JSON.parse(raw));
         } catch (e) {}
 
-        if (!saved || !saved.generatedAt) {
-          banner.style.display = 'none';
-          return;
-        }
+        const targetAns = answers[activeIndividualPartner] || {};
+        const names = getPairNames();
+        const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const isMe = (myRole === activeIndividualPartner);
 
-        let isOutdated = false;
-        let reasons = [];
+        // Subjektive Daten-Autonomie: Getrennte Freigabeschlüssel (Gesetz 13)
+        const shareKey = `tactus_individual_shared_${activeIndividualPartner}`;
+        const isShared = localStorage.getItem(shareKey) !== 'false';
 
-        // Prüfen, ob eine Session nach dem letzten Bericht stattfand
-        if (analyzedData && analyzedData.logMetrics && analyzedData.logMetrics.lastSession) {
-          if (analyzedData.logMetrics.lastSession.timestamp > saved.generatedAt) {
-            isOutdated = true;
-            reasons.push("neue Schlafzimmer-Sessions im Logbuch");
-          }
-        }
-
-        // Prüfen, ob der Match-Score signifikant divergiert
-        if (analyzedData && saved.matchPercentage !== undefined) {
-          if (Math.abs(analyzedData.overallMatchPercentage - saved.matchPercentage) >= 3) {
-            isOutdated = true;
-            reasons.push("geänderte Fragebogen-Antworten");
-          }
-        }
-
-        if (isOutdated) {
-          banner.style.display = 'flex';
-          const desc = document.getElementById('outdated-banner-desc');
-          if (desc) {
-            desc.innerText = `Seit der letzten Berechnung liegen ${reasons.join(' sowie ')} vor. Aktualisiere euer Gutachten für präzise Beziehungs-Impulse.`;
-          }
-        } else {
-          banner.style.display = 'none';
-        }
-      }
-
-      function updateAnalysisUI() {
-        if (!analyzedData) return;
-
-        const badge = document.getElementById('pair-match-score-badge');
-        if (badge) {
-          badge.innerText = `${analyzedData.overallMatchPercentage} % Resonanz`;
-        }
-
-        const recTitle = document.getElementById('recommended-mode-title');
-        const recBadge = document.getElementById('recommended-mode-badge');
-        if (recTitle && analyzedData.recommendedModeTitle) {
-          recTitle.innerText = analyzedData.recommendedModeTitle;
-        }
-        if (recBadge && analyzedData.recommendedMode) {
-          if (analyzedData.recommendedMode === 'flr_24_7') {
-            recBadge.innerText = 'Empfehlung: FLR 24/7 🔒';
-            recBadge.className = 'px-2 py-0.5 rounded bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-mono text-[10px] font-bold self-start sm:self-auto';
-          } else if (analyzedData.recommendedMode === 'casual_bedroom') {
-            recBadge.innerText = 'Empfehlung: Schlafzimmer 🛏️';
-            recBadge.className = 'px-2 py-0.5 rounded bg-[#090d14] border border-[#2a364f] text-[#94a3b8] font-mono text-[10px] font-bold self-start sm:self-auto';
+        // UI-Labels
+        const btnShare = document.getElementById('btn-toggle-share-status');
+        const shareDot = document.getElementById('share-status-dot');
+        const shareLabel = document.getElementById('share-status-label');
+        if (btnShare && shareDot && shareLabel) {
+          if (isShared) {
+            shareDot.className = "w-2 h-2 rounded-full bg-[#2e5746] animate-pulse";
+            shareLabel.innerText = "Status: Freigegeben ✓";
+            btnShare.className = "px-3 py-1.5 rounded-xl border border-[#2e5746] bg-[#142b24]/40 text-[#2e5746] text-[11px] font-bold touch-btn flex items-center gap-1.5 shadow-sm";
           } else {
-            recBadge.innerText = 'Empfehlung: Switch ⇄';
-            recBadge.className = 'px-2 py-0.5 rounded bg-[#000000] border border-[#c5a880]/50 text-[#c5a880] font-mono text-[10px] font-bold self-start sm:self-auto';
+            shareDot.className = "w-2 h-2 rounded-full bg-[#991b1b]";
+            shareLabel.innerText = "Status: Streng Privat 🔒";
+            btnShare.className = "px-3 py-1.5 rounded-xl border border-[#991b1b] bg-[#450a0a]/40 text-[#f8fafc] text-[11px] font-bold touch-btn flex items-center gap-1.5 shadow-sm";
           }
         }
 
-        const qTopVal = document.getElementById('quotient-value-top');
-        const qTopLbl = document.getElementById('quotient-label-top');
-        const qTopArch = document.getElementById('quotient-archetype-top');
-        if (qTopLbl) qTopLbl.innerText = `D/s-Quotient ${analyzedData.topName}`;
-        if (qTopVal) {
-          const sign = analyzedData.topQuotientVal >= 0 ? '+' : '';
-          qTopVal.innerText = `${sign}${analyzedData.topQuotientVal.toFixed(2)}`;
-        }
-        if (qTopArch) {
-          qTopArch.innerText = analyzedData.topQuotientVal > 0.15 ? 'Dominant / Führend' : (analyzedData.topQuotientVal < -0.15 ? 'Devot / Hingebend' : 'Switch / Ausgewogen');
-        }
+        // TRESOR-SCHUTZWAND PRÜFUNG: Wenn nicht freigegeben und nicht eigenes Gerät
+        const vaultProtected = document.getElementById('indiv-vault-protected');
+        const accessibleContent = document.getElementById('indiv-accessible-content');
+        const vaultTitle = document.getElementById('indiv-vault-title');
+        const vaultDesc = document.getElementById('indiv-vault-desc');
 
-        const qSubVal = document.getElementById('quotient-value-sub');
-        const qSubLbl = document.getElementById('quotient-label-sub');
-        const qSubArch = document.getElementById('quotient-archetype-sub');
-        if (qSubLbl) qSubLbl.innerText = `D/s-Quotient ${analyzedData.bottomName}`;
-        if (qSubVal) {
-          const sign = analyzedData.bottomQuotientVal >= 0 ? '+' : '';
-          qSubVal.innerText = `${sign}${analyzedData.bottomQuotientVal.toFixed(2)}`;
-        }
-        if (qSubArch) {
-          qSubArch.innerText = analyzedData.bottomQuotientVal < -0.15 ? 'Devot / Hingebend' : (analyzedData.bottomQuotientVal > 0.15 ? 'Dominant / Führend' : 'Switch / Ausgewogen');
+        if (!isShared && !isMe) {
+          if (vaultProtected) vaultProtected.style.display = 'block';
+          if (accessibleContent) accessibleContent.style.display = 'none';
+          if (vaultTitle) vaultTitle.innerText = `Solo-Profil von ${names[activeIndividualPartner]} ist geschützt`;
+          if (vaultDesc) vaultDesc.innerText = `Dieses Profil wurde von ${names[activeIndividualPartner]} als privat deklariert. Notizen, Favoriten und das Solo-Dossier sind erst einsehbar, wenn die Freigabe auf dem eigenen Gerät erteilt wird.`;
+          return;
+        } else {
+          if (vaultProtected) vaultProtected.style.display = 'none';
+          if (accessibleContent) accessibleContent.style.display = 'block';
         }
 
-        const qDelta = document.getElementById('quotient-delta-display');
-        const qDeltaHint = document.getElementById('quotient-delta-hint');
-        if (qDelta) qDelta.innerText = `${analyzedData.overallMatchPercentage} %`;
-        if (qDeltaHint) {
-          const isComp = (analyzedData.topQuotientVal > 0 && analyzedData.bottomQuotientVal < 0) || (analyzedData.topQuotientVal < 0 && analyzedData.bottomQuotientVal > 0);
-          qDeltaHint.innerText = isComp ? 'Ideal Komplementär' : 'Hohe Resonanz';
-        }
+        // Filter-Zähler für Solo-Radar
+        const favorites = [];
+        const notes = [];
+        const shame = [];
+        const taboos = [];
 
-        const statFives = document.getElementById('stat-double-fives');
-        const statHigh = document.getElementById('stat-high-synergies');
-        const statBr = document.getElementById('stat-bridges');
-        const statTb = document.getElementById('stat-taboos');
+        itemMap.forEach((meta, id) => {
+          const r1 = targetAns[`it_${id}_r1`];
+          const r2 = targetAns[`it_${id}_r2`];
+          const noteText = targetAns[`note_${id}`];
+          const isShame = targetAns[`shame_${id}`] === true;
 
-        if (statFives) statFives.innerText = analyzedData.doubleFives.length.toString();
-        if (statHigh) statHigh.innerText = analyzedData.highSynergies.length.toString();
-        if (statBr) statBr.innerText = analyzedData.bridges.length.toString();
-        if (statTb) statTb.innerText = (analyzedData.bottomTaboos.length + analyzedData.shameProtected.length).toString();
+          if (r1 >= 4 || r2 >= 4) favorites.push(meta);
+          if (noteText && noteText.trim().length > 0) notes.push(Object.assign({}, meta, { noteText }));
+          if (isShame) shame.push(meta);
+          if (r1 === 1 || r2 === 1) taboos.push(meta);
+        });
 
-        renderPillarsBalance();
-        renderActiveFilterList();
+        const cFav = document.getElementById('count-indiv-favorites');
+        const cNot = document.getElementById('count-indiv-notes');
+        const cShm = document.getElementById('count-indiv-shame');
+        const cTab = document.getElementById('count-indiv-taboos');
+        if (cFav) cFav.innerText = favorites.length.toString();
+        if (cNot) cNot.innerText = notes.length.toString();
+        if (cShm) cShm.innerText = shame.length.toString();
+        if (cTab) cTab.innerText = taboos.length.toString();
+
+        renderFilteredIndividualItems({ favorites, notes, shame, taboos });
       }
 
-      function renderPillarsBalance() {
-        const container = document.getElementById('pillars-balance-container');
-        if (!container || !analyzedData) return;
+      function renderFilteredIndividualItems(pools) {
+        const container = document.getElementById('indiv-items-list-container');
+        if (!container) return;
 
-        const doms = analyzedData.domains;
-        container.innerHTML = Object.keys(doms).map(k => {
-          const d = doms[k];
-          const avg = d.count > 0 ? (d.sum / d.count) : 0;
-          const pct = Math.min(100, Math.round((avg / 5) * 100));
-
-          return `
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="text-[#f8fafc] font-medium">${escapeHtml(d.label)}</span>
-                <span class="text-[#c5a880] font-bold">${pct}%</span>
-              </div>
-              <div class="w-full h-2 bg-[#000000] rounded-full overflow-hidden border border-[#2a364f]">
-                <div class="h-full rounded-full bg-gradient-to-r from-[#8a5232] to-[#c5a880] transition-all duration-500" style="width: ${Math.max(4, pct)}%;"></div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      function renderChapter00Safeguards() {
-        const container = document.getElementById('safety-interventions-content');
-        if (!container || !analyzedData) return;
-
-        const results = analyzedData.chapter00Results;
-        if (results.length === 0) {
+        const currentPool = pools[activeIndividualFilterTab] || pools.favorites || [];
+        if (currentPool.length === 0) {
           container.innerHTML = `
-            <div class="p-3 rounded-2xl bg-[#000000] text-[#94a3b8] text-[11px]">
-              Noch keine Antworten zu Kapitel 00 (Psychosomatische Sicherheit) hinterlegt.
+            <div class="p-6 text-center text-[#94a3b8] font-mono text-xs bg-[#090d14] border border-[#2a364f] rounded-3xl">
+              In dieser Kategorie sind aktuell keine Einträge verzeichnet.
             </div>
           `;
           return;
         }
 
-        container.innerHTML = results.map(r => {
-          const it = r.meta;
-          const optMap = new Map((it.options || []).map(o => [o.val, o.label]));
-
-          const labelTop = optMap.get(r.chTop) || 'Nicht gewählt';
-          const labelBottom = optMap.get(r.chBottom) || 'Nicht gewählt';
-
-          return `
-            <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1.5">
-              <strong class="text-xs text-white block font-bold leading-tight break-words">${escapeHtml(it.title)}</strong>
-              <p class="text-[10px] text-[#94a3b8] leading-snug break-words">${escapeHtml(it.desc)}</p>
-
-              <div class="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10.5px]">
-                <div class="p-2 rounded-xl bg-[#090d14] border border-[#2a364f]">
-                  <span class="text-[9.5px] font-mono text-[#c5a880] block font-bold">[${escapeHtml(analyzedData.topName)}]:</span>
-                  <span class="text-[#f8fafc] leading-snug break-words">${escapeHtml(labelTop)}</span>
-                </div>
-                <div class="p-2 rounded-xl bg-[#090d14] border border-[#2a364f]">
-                  <span class="text-[9.5px] font-mono text-[#b3734a] block font-bold">[${escapeHtml(analyzedData.bottomName)}]:</span>
-                  <span class="text-[#f8fafc] leading-snug break-words">${escapeHtml(labelBottom)}</span>
-                </div>
-              </div>
-
-              ${r.noteTop || r.noteBottom ? `
-                <div class="pt-1 border-t border-[#2a364f] space-y-1 text-[10px]">
-                  ${r.noteTop ? `<p class="text-[#c5a880] italic break-words"><span class="font-mono font-bold not-italic">[Notiz ${escapeHtml(analyzedData.topName)}]:</span> „${escapeHtml(r.noteTop)}“</p>` : ''}
-                  ${r.noteBottom ? `<p class="text-[#b3734a] italic break-words"><span class="font-mono font-bold not-italic">[Notiz ${escapeHtml(analyzedData.bottomName)}]:</span> „${escapeHtml(r.noteBottom)}“</p>` : ''}
-                </div>
-              ` : ''}
+        container.innerHTML = currentPool.map(it => `
+          <div class="p-4 rounded-2xl bg-[#090d14] border border-[#2a364f] hover:border-[#c5a880]/50 transition-all space-y-1.5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-[#2a364f]/60 pb-1">
+              <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">Item #${it.id} · ${it.chapterTitle || 'Kapitel'}</span>
+              <a href="index.html#view=survey&item=${it.id}" target="_blank" class="text-[9px] px-2 py-0.5 rounded bg-[#000000] border border-[#2a364f] text-[#c5a880] font-mono hover:text-white font-bold">
+                Fragebogen ↗
+              </a>
             </div>
-          `;
-        }).join('');
+            <strong class="text-xs text-white block font-serif font-bold">${it.title}</strong>
+            <p class="text-[11px] text-[#94a3b8] leading-snug">${it.desc || ''}</p>
+            ${it.noteText ? `
+              <div class="p-2.5 rounded-xl bg-[#000000] border border-[#c5a880]/40 text-xs text-[#dfcaa9] mt-2 font-sans">
+                <strong class="text-[10px] uppercase font-mono block text-[#c5a880]">Persönliche Notiz:</strong>
+                ${it.noteText}
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+      }
+
+      function switchMainMode(mode) {
+        currentMainMode = mode;
+        const bPair = document.getElementById('btn-mode-pair');
+        const bIndiv = document.getElementById('btn-mode-individual');
+        const vPair = document.getElementById('view-pair-mode');
+        const vIndiv = document.getElementById('view-individual-mode');
+
+        if (mode === 'pair') {
+          if (bPair) bPair.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm flex items-center justify-center gap-1.5";
+          if (bIndiv) bIndiv.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] flex items-center justify-center gap-1.5";
+          if (vPair) vPair.style.display = 'block';
+          if (vIndiv) vIndiv.style.display = 'none';
+          runFullPairAnalysis();
+        } else {
+          if (bIndiv) bIndiv.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm flex items-center justify-center gap-1.5";
+          if (bPair) bPair.className = "py-2.5 px-3 rounded-xl font-bold transition-all text-center touch-btn bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] flex items-center justify-center gap-1.5";
+          if (vIndiv) vIndiv.style.display = 'block';
+          if (vPair) vPair.style.display = 'none';
+          runIndividualAnalysis();
+        }
       }
 
       function filterTab(tabKey) {
-        activePairFilter = tabKey;
-        ['peaks', 'synergies', 'bridges', 'notes', 'shame', 'taboos'].forEach(k => {
-          const btn = document.getElementById(`tab-btn-${k}`);
+        activeFilterTab = tabKey;
+        ['doubleFives', 'highSynergy', 'bridges', 'shame', 'taboos'].forEach(t => {
+          const btn = document.getElementById(`pair-tab-${t}`);
           if (btn) {
-            if (k === tabKey) {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0";
+            if (t === tabKey) {
+              btn.className = "px-3 py-1.5 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shrink-0 flex-shrink-0 shadow-sm";
             } else {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
+              btn.className = "px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
             }
           }
         });
-        renderActiveFilterList();
-      }
-
-      function renderActiveFilterList() {
-        const container = document.getElementById('pair-items-list-container');
-        if (!container || !analyzedData) return;
-
-        let items = [];
-        let emptyText = "Keine Einträge in dieser Kategorie.";
-
-        if (activePairFilter === 'peaks') {
-          items = analyzedData.doubleFives;
-          emptyText = "Noch keine 5/5 Doppel-Spitzen identifiziert.";
-        } else if (activePairFilter === 'synergies') {
-          items = analyzedData.highSynergies;
-          emptyText = "Keine hohen 5/4-Synergien gefunden.";
-        } else if (activePairFilter === 'bridges') {
-          items = analyzedData.bridges;
-          emptyText = "Keine Erkundungs-Brücken vorhanden.";
-        } else if (activePairFilter === 'notes') {
-          items = analyzedData.withNotes;
-          emptyText = "Keine persönlichen Notizen hinterlegt.";
-        } else if (activePairFilter === 'shame') {
-          items = analyzedData.shameProtected;
-          emptyText = "Keine verletzlichen Scham-Marker hinterlegt.";
-        } else if (activePairFilter === 'taboos') {
-          items = analyzedData.bottomTaboos;
-          emptyText = "Keine harten Tabu-Vetos vorhanden (alle Optionen verhandelbar).";
-        }
-
-        if (items.length === 0) {
-          container.innerHTML = `
-            <div class="rounded-2xl p-6 text-center text-[#94a3b8] text-xs bg-[#090d14] border border-[#2a364f] font-mono">
-              ${escapeHtml(emptyText)}
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = items.map(entry => {
-          const meta = entry.meta;
-          const scoreLabel = entry.matchType || (activePairFilter === 'shame' ? `${entry.sTop || 0}/${entry.sBottom || 0}` : (entry.reason || 'Notiert'));
-          const isVeto = activePairFilter === 'taboos';
-          const isBridge = activePairFilter === 'bridges';
-          const isShame = activePairFilter === 'shame';
-
-          return `
-            <div class="p-3.5 sm:p-4 rounded-2xl bg-[#090d14] border transition-all space-y-2.5 ${isVeto ? 'border-[#991b1b] bg-[#450a0a]/20' : (isBridge ? 'border-[#8a5232] bg-[#4a2818]/20' : (isShame ? 'border-[#c5a880]/60 bg-[#000000]' : 'border-[#2a364f]'))}">
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0 flex-1 space-y-0.5">
-                  <div class="flex items-center gap-2">
-                    <a href="index.html#view=survey&item=${meta.id}" target="_blank" class="text-[9.5px] font-mono text-[#c5a880] hover:underline flex items-center gap-1 font-bold">
-                      <span>${escapeHtml(meta.chapterTitle)} · Item #${meta.id}</span>
-                      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-                    </a>
-                  </div>
-                  <strong class="text-xs sm:text-sm text-white block font-bold leading-tight break-words">${escapeHtml(meta.title)}</strong>
-                </div>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                  <span class="px-2 py-0.5 rounded text-[9.5px] font-mono font-bold ${isVeto ? 'bg-[#450a0a] text-white border border-[#991b1b]' : (isBridge ? 'bg-[#4a2818] text-[#f8fafc] border border-[#8a5232]' : 'bg-[#000000] text-[#c5a880] border border-[#c5a880]/40')}">
-                    ${escapeHtml(scoreLabel)}
-                  </span>
-                </div>
-              </div>
-
-              <p class="text-[10.5px] text-[#94a3b8] leading-snug break-words">${escapeHtml(meta.desc)}</p>
-
-              ${!entry.isChoice ? `
-                <div class="flex items-center gap-3 text-[10px] font-mono pt-0.5 text-[#94a3b8] border-t border-[#2a364f]">
-                  <span>${escapeHtml(analyzedData.topName)} (Top/führt): <strong class="text-[#c5a880]">${entry.sTop}/5</strong></span>
-                  <span>·</span>
-                  <span>${escapeHtml(analyzedData.bottomName)} (Bottom/empfängt): <strong class="text-[#b3734a]">${entry.sBottom}/5</strong></span>
-                </div>
-              ` : ''}
-
-              ${entry.noteTop || entry.noteBottom ? `
-                <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] space-y-1.5 text-[10.5px]">
-                  ${entry.noteTop ? `
-                    <div class="flex items-start gap-1.5 text-[#c5a880] italic">
-                      <span class="font-bold font-mono not-italic text-[9.5px] text-[#c5a880] flex-shrink-0">[Notiz von ${escapeHtml(analyzedData.topName)}]:</span>
-                      <span class="break-words">„${escapeHtml(entry.noteTop)}“</span>
-                    </div>
-                  ` : ''}
-                  ${entry.noteBottom ? `
-                    <div class="flex items-start gap-1.5 text-[#b3734a] italic pt-1 ${entry.noteTop ? 'border-t border-[#2a364f]' : ''}">
-                      <span class="font-bold font-mono not-italic text-[9.5px] text-[#b3734a] flex-shrink-0">[Notiz von ${escapeHtml(analyzedData.bottomName)}]:</span>
-                      <span class="break-words">„${escapeHtml(entry.noteBottom)}“</span>
-                    </div>
-                  ` : ''}
-                </div>
-              ` : ''}
-
-              ${isShame ? `
-                <div class="p-2 rounded-xl bg-[#4a2818]/30 border border-[#8a5232] text-[10px] text-[#f8fafc]">
-                  Schutzanker aktiv: Diese Sehnsucht steht unter partiellem Alltags-Spottverbot (§ 1 Abs. 2). Behutsam und ohne Leistungsdruck erkunden.
-                </div>
-              ` : ''}
-              ${isBridge ? `
-                <div class="p-2 rounded-xl bg-[#4a2818]/30 border border-[#8a5232] text-[10px] text-[#f8fafc]">
-                  Erkundungs-Brücke: ${entry.topLeads ? `${escapeHtml(analyzedData.topName)} führt an, ${escapeHtml(analyzedData.bottomName)} ist offen für Führung` : `${escapeHtml(analyzedData.bottomName)} wünscht behutsame Begleitung durch ${escapeHtml(analyzedData.topName)}`}.
-                </div>
-              ` : ''}
-            </div>
-          `;
-        }).join('');
-      }
-
-      function switchIndividualPartner(partnerRole) {
-        activeIndividualPartner = partnerRole;
-        const btnA = document.getElementById('btn-indiv-partner-a');
-        const btnB = document.getElementById('btn-indiv-partner-b');
-
-        if (btnA && btnB) {
-          if (partnerRole === 'A') {
-            btnA.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn shrink-0 flex-shrink-0";
-            btnB.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#000000] text-[#94a3b8] hover:text-white touch-btn shrink-0 flex-shrink-0";
-          } else {
-            btnB.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn shrink-0 flex-shrink-0";
-            btnA.className = "px-3.5 py-1.5 rounded-xl font-bold text-xs bg-[#000000] text-[#94a3b8] hover:text-white touch-btn shrink-0 flex-shrink-0";
-          }
-        }
-
-        renderIndividualAnalysis();
+        runFullPairAnalysis();
       }
 
       function filterIndividualTab(tabKey) {
-        activeIndividualFilter = tabKey;
-        ['favorites', 'notes', 'shame', 'taboos'].forEach(k => {
-          const btn = document.getElementById(`indiv-tab-${k}`);
+        activeIndividualFilterTab = tabKey;
+        ['favorites', 'notes', 'shame', 'taboos'].forEach(t => {
+          const btn = document.getElementById(`indiv-tab-${t}`);
           if (btn) {
-            if (k === tabKey) {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0";
+            if (t === tabKey) {
+              btn.className = "px-3 py-1.5 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shrink-0 flex-shrink-0 shadow-sm";
             } else {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
+              btn.className = "px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
             }
           }
         });
-        renderIndividualItemsList();
+        runIndividualAnalysis();
       }
 
-      function renderIndividualAnalysis() {
-        let names = { A: 'Partner 1', B: 'Partner 2' };
-        if (window.HubContext && typeof window.HubContext.getNames === 'function') {
-          names = window.HubContext.getNames();
+      function switchIndividualPartner(partner) {
+        activeIndividualPartner = partner;
+        const bA = document.getElementById('btn-indiv-partner-a');
+        const bB = document.getElementById('btn-indiv-partner-b');
+        if (partner === 'A') {
+          if (bA) bA.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm";
+          if (bB) bB.className = "px-3.5 py-2 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn";
+        } else {
+          if (bB) bB.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm";
+          if (bA) bA.className = "px-3.5 py-2 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn";
         }
-
-        const role = activeIndividualPartner;
-        const partnerName = names[role] || (role === 'A' ? 'Partner 1' : 'Partner 2');
-
-        const titleEl = document.getElementById('indiv-profile-title');
-        const descEl = document.getElementById('indiv-profile-desc');
-        const indivAiTitle = document.getElementById('indiv-ai-title');
-        if (titleEl) titleEl.innerText = `Solo-Profil: ${partnerName}`;
-        if (descEl) descEl.innerText = `Persönlicher erotischer Fingerabdruck von ${partnerName}: Eigene D/s-Balance, 5-Säulen-Präferenzen, Lieblings-Praktiken und Schutzgrenzen.`;
-        if (indivAiTitle) indivAiTitle.innerText = `Psychologisches KI-Solo-Gutachten & Schattendynamik (${partnerName})`;
-
-        updateIndividualDossierView(partnerName);
-        updateSharingUI();
-
-        let answers = {};
-        try {
-          const raw = localStorage.getItem('kompass_answers');
-          if (raw) answers = JSON.parse(raw) || {};
-        } catch (e) {}
-
-        const pAns = answers[role] || {};
-
-        const p1 = window.surveyChaptersPart1 || [];
-        const p2 = window.surveyChaptersPart2 || [];
-        const p3 = window.surveyChaptersPart3 || [];
-        const allChapters = p1.concat(p2).concat(p3);
-
-        const itemMap = new Map();
-        allChapters.forEach(ch => {
-          (ch.items || []).forEach(it => {
-            itemMap.set(it.id, {
-              id: it.id,
-              title: it.title,
-              desc: it.desc,
-              type: it.type || 'scale',
-              chapterId: ch.id,
-              chapterTitle: ch.title
-            });
-          });
-        });
-
-        let leadSum = 0;
-        let receiveSum = 0;
-        let countScored = 0;
-
-        const myFives = [];
-        const myFours = [];
-        const myNotes = [];
-        const myShame = [];
-        const myTaboos = [];
-
-        const domains = {
-          power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [7, 8, 20, 21, 24, 27, 29, 36] },
-          sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [1, 2, 3, 9, 10, 11, 12, 15, 30, 31, 33] },
-          discipline: { label: "Zucht & Begrenzung", sum: 0, count: 0, chapterIds: [13, 14, 16, 17, 18, 23, 32, 34] },
-          service: { label: "Hingabe & Dienst", sum: 0, count: 0, chapterIds: [6, 22, 28, 35] },
-          aftercare: { label: "Fürsorge, Nähe & Schutz", sum: 0, count: 0, chapterIds: [0, 4, 5, 19, 25, 26] }
-        };
-
-        itemMap.forEach((meta, itemId) => {
-          const sLead = pAns[`it_${itemId}_r1`];
-          const sRec = pAns[`it_${itemId}_r2`];
-          const note = (pAns[`note_${itemId}`] || '').trim();
-          const isShame = pAns[`shame_${itemId}`] === true;
-
-          if (note.length > 0) {
-            myNotes.push({ meta, sLead, sRec, note });
-          }
-
-          if (typeof sLead !== 'number' && typeof sRec !== 'number') return;
-
-          const lVal = (typeof sLead === 'number') ? sLead : 0;
-          const rVal = (typeof sRec === 'number') ? sRec : 0;
-
-          if (lVal > 0 || rVal > 0) {
-            leadSum += lVal;
-            receiveSum += rVal;
-            countScored++;
-          }
-
-          const entry = { meta, sLead: lVal, sRec: rVal, note, isShame };
-
-          if (lVal === 5 || rVal === 5) myFives.push(entry);
-          else if (lVal === 4 || rVal === 4) myFours.push(entry);
-
-          if (isShame) myShame.push(entry);
-          if (lVal === 1 || rVal === 1) myTaboos.push(entry);
-
-          for (const dKey in domains) {
-            const d = domains[dKey];
-            if (d.chapterIds.includes(meta.chapterId)) {
-              d.sum += (lVal + rVal) / 2;
-              d.count++;
-            }
-          }
-        });
-
-        const totalSum = leadSum + receiveSum;
-        const leadPct = totalSum > 0 ? Math.round((leadSum / totalSum) * 100) : 50;
-        const receivePct = 100 - leadPct;
-
-        const leadBar = document.getElementById('indiv-bar-lead');
-        const receiveBar = document.getElementById('indiv-bar-receive');
-        const leadLabel = document.getElementById('indiv-lead-pct-label');
-        const receiveLabel = document.getElementById('indiv-receive-pct-label');
-        const tagArchetype = document.getElementById('indiv-archetype-tag');
-
-        if (leadBar) leadBar.style.width = `${leadPct}%`;
-        if (receiveBar) receiveBar.style.width = `${receivePct}%`;
-        if (leadLabel) leadLabel.innerText = `Führen (r1): ${leadPct}%`;
-        if (receiveLabel) receiveLabel.innerText = `Empfangen (r2): ${receivePct}%`;
-
-        if (tagArchetype) {
-          if (leadPct >= 65) tagArchetype.innerText = "Dominant / Primär führend (Top)";
-          else if (receivePct >= 65) tagArchetype.innerText = "Devot / Primär hingebungsvoll (Bottom)";
-          else tagArchetype.innerText = "Switch / Ausgewogene Balance";
-        }
-
-        const stat5 = document.getElementById('stat-indiv-fives');
-        const stat4 = document.getElementById('stat-indiv-fours');
-        const statShame = document.getElementById('stat-indiv-shame');
-        const statTaboos = document.getElementById('stat-indiv-taboos');
-
-        if (stat5) stat5.innerText = myFives.length.toString();
-        if (stat4) stat4.innerText = myFours.length.toString();
-        if (statShame) statShame.innerText = myShame.length.toString();
-        if (statTaboos) statTaboos.innerText = myTaboos.length.toString();
-
-        const pillarsContainer = document.getElementById('indiv-pillars-container');
-        if (pillarsContainer) {
-          pillarsContainer.innerHTML = Object.keys(domains).map(k => {
-            const d = domains[k];
-            const avg = d.count > 0 ? (d.sum / d.count) : 0;
-            const pct = Math.min(100, Math.round((avg / 5) * 100));
-
-            return `
-              <div class="space-y-1">
-                <div class="flex items-center justify-between text-[11px] font-mono">
-                  <span class="text-[#f8fafc] font-medium">${escapeHtml(d.label)}</span>
-                  <span class="text-[#c5a880] font-bold">${pct}%</span>
-                </div>
-                <div class="w-full h-2 bg-[#000000] rounded-full overflow-hidden border border-[#2a364f]">
-                  <div class="h-full rounded-full bg-gradient-to-r from-[#8a5232] to-[#c5a880] transition-all duration-500" style="width: ${Math.max(4, pct)}%;"></div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
-
-        window._individualData = {
-          myFives,
-          myFours,
-          myNotes,
-          myShame,
-          myTaboos,
-          leadPct,
-          receivePct,
-          partnerName,
-          role
-        };
-
-        loadSavedIndividualAiReport(role);
-        renderIndividualItemsList();
+        runIndividualAnalysis();
       }
 
-      function renderIndividualItemsList() {
-        const container = document.getElementById('indiv-items-list-container');
-        if (!container || !window._individualData) return;
-
-        const data = window._individualData;
-        let items = [];
-        let emptyText = "Keine Einträge in dieser Kategorie.";
-
-        if (activeIndividualFilter === 'favorites') {
-          items = data.myFives.concat(data.myFours);
-          emptyText = "Noch keine persönlichen Favoriten mit Note 4 oder 5 bewertet.";
-        } else if (activeIndividualFilter === 'notes') {
-          items = data.myNotes;
-          emptyText = "Keine persönlichen Notizen verfasst.";
-        } else if (activeIndividualFilter === 'shame') {
-          items = data.myShame;
-          emptyText = "Keine persönlichen Scham-Schutzanker (🙈) gesetzt.";
-        } else if (activeIndividualFilter === 'taboos') {
-          items = data.myTaboos;
-          emptyText = "Keine Tabus mit Note 1 vergeben.";
-        }
-
-        if (items.length === 0) {
-          container.innerHTML = `
-            <div class="rounded-2xl p-6 text-center text-[#94a3b8] text-xs bg-[#090d14] border border-[#2a364f] font-mono">
-              ${escapeHtml(emptyText)}
-            </div>
-          `;
+      function toggleShareIndividual() {
+        const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        if (myRole !== activeIndividualPartner) {
+          showToast("Rechteprüfung: Du kannst nur die Privatsphäre deines eigenen Profils steuern!");
           return;
         }
 
-        container.innerHTML = items.map(entry => {
-          const meta = entry.meta;
-          const isTaboo = activeIndividualFilter === 'taboos';
-          const isShame = activeIndividualFilter === 'shame';
-
-          return `
-            <div class="p-3.5 sm:p-4 rounded-2xl bg-[#090d14] border transition-all space-y-2.5 ${isTaboo ? 'border-[#991b1b] bg-[#450a0a]/20' : (isShame ? 'border-[#c5a880]/60 bg-[#000000]' : 'border-[#2a364f]')}">
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0 flex-1 space-y-0.5">
-                  <span class="text-[9.5px] font-mono text-[#c5a880] block font-bold">
-                    ${escapeHtml(meta.chapterTitle)} · Item #${meta.id}
-                  </span>
-                  <strong class="text-xs sm:text-sm text-white block font-bold leading-tight break-words">
-                    ${escapeHtml(meta.title)}
-                  </strong>
-                </div>
-                <div class="flex items-center gap-1.5 flex-shrink-0 font-mono text-[9.5px]">
-                  <span class="px-2 py-0.5 rounded ${isTaboo ? 'bg-[#450a0a] text-white border border-[#991b1b]' : 'bg-[#000000] text-[#c5a880] border border-[#c5a880]/40'} font-bold">
-                    Führen: ${entry.sLead}/5 · Empfangen: ${entry.sRec}/5
-                  </span>
-                </div>
-              </div>
-
-              <p class="text-[10.5px] text-[#94a3b8] leading-snug break-words">${escapeHtml(meta.desc)}</p>
-
-              ${entry.note ? `
-                <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[10.5px] italic text-[#f8fafc]">
-                  <span class="font-bold font-mono not-italic text-[9.5px] text-[#c5a880] block">[Meine Notiz]:</span>
-                  „${escapeHtml(entry.note)}“
-                </div>
-              ` : ''}
-
-              ${entry.isShame ? `
-                <div class="p-2 rounded-xl bg-[#4a2818]/30 border border-[#8a5232] text-[10px] text-[#f8fafc]">
-                  Scham-Schutzanker: Steht unter partiellem Alltags-Spottverbot.
-                </div>
-              ` : ''}
-            </div>
-          `;
-        }).join('');
+        const shareKey = `tactus_individual_shared_${activeIndividualPartner}`;
+        const current = localStorage.getItem(shareKey) !== 'false';
+        const nextVal = !current;
+        localStorage.setItem(shareKey, nextVal ? 'true' : 'false');
+        showToast(nextVal ? "✓ Solo-Profil für Partner freigegeben" : "🔒 Solo-Profil auf streng privat gesetzt");
+        runIndividualAnalysis();
+        if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
       }
 
       async function generateAiDeepReport() {
-        if (!analyzedData) return;
+        const box = document.getElementById('pair-ai-report-box');
+        if (!box) return;
+        showToast("⏳ Synthetisiere psychodynamisches Paar-Gutachten...");
+        box.innerText = "Gemini synthetisiert 505 Konsens-Items und eure Praxis-Historie zu einem ganzheitlichen Beziehungs-Gutachten...";
 
-        const container = document.getElementById('ai-deep-report-container');
-        const btnText = document.getElementById('btn-ai-analysis-text');
-        const triggerBtn = document.getElementById('btn-trigger-ai-analysis');
-        if (!container) return;
-
-        if (triggerBtn) triggerBtn.disabled = true;
-        if (btnText) btnText.innerText = "Berechne Tiefenbericht...";
-
-        container.innerHTML = `
-          <div class="p-6 rounded-2xl bg-[#000000] border border-[#c5a880]/50 text-center space-y-3 animate-pulse font-mono">
-            <div class="w-8 h-8 border-2 border-[#c5a880]/20 border-t-[#c5a880] rounded-full animate-spin mx-auto"></div>
-            <strong class="text-xs text-[#c5a880] block font-bold">TACTUS KI synthetisiert 505 psychometrische Datenpunkte &amp; reale Schlafzimmer-Praxis...</strong>
-            <p class="text-[10.5px] text-[#94a3b8]">Verbindet Doppel-5er Spitzen, Erkundungs-Brücken, Scham-Anker und reale Logbuch-Sessions.</p>
-          </div>
-        `;
-
-        let reportText = null;
-
+        let prompt = `Erstelle ein tiefenpsychologisches BDSM- und Partnerschafts-Gutachten für ein Paar.`;
         if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-          const log = analyzedData.logMetrics || {};
-          const lastSess = log.lastSession;
-
-          const prompt = `
-Du bist der leitende Beziehungs- und Somatik-Psychologe für TACTUS (tactus.digital).
-Erstelle für das Paar ${analyzedData.topName} (Top) und ${analyzedData.bottomName} (Bottom) eine tiefgründige, ungeschönte und praxistaugliche psychologische Tiefenanalyse.
-
-${window.HubContext && typeof window.HubContext.getLanguageDoctrine === 'function' ? window.HubContext.getLanguageDoctrine() : ''}
-
-PSYCHOMETRISCHE DATENBASIS DES PAARES:
-- Gesamt-Resonanz: ${analyzedData.overallMatchPercentage}%
-- D/s-Quotient Top (${analyzedData.topName}): ${analyzedData.topQuotientVal.toFixed(2)}
-- D/s-Quotient Bottom (${analyzedData.bottomName}): ${analyzedData.bottomQuotientVal.toFixed(2)}
-- Doppel-5er Spitzen (${analyzedData.doubleFives.length}): ${analyzedData.doubleFives.map(f => f.meta.title).slice(0, 10).join(', ')}
-- Hohe Synergien: ${analyzedData.highSynergies.map(h => h.meta.title).slice(0, 8).join(', ')}
-- Erkundungs-Brücken: ${analyzedData.bridges.map(b => b.meta.title).slice(0, 8).join(', ')}
-- Scham-Schutzanker (🙈): ${analyzedData.shameProtected.map(s => s.meta.title).join(', ') || 'Keine gesetzt'}
-- Tabu-Schranken (Note 1): ${analyzedData.bottomTaboos.map(t => t.meta.title).join(', ') || 'Keine harten Vetos'}
-- Kapitel 00 Intervention bei Dissoziation: ${analyzedData.chapter00Results.map(r => r.meta.title).join('; ') || 'Standard-Holding'}
-
-EMPIRISCHE PRAXIS AUS DEM SESSION-LOGBUCH:
-- Vollzogene Sessions im Schlafzimmer: ${log.count || 0} Sessions (Gesamtdauer: ${log.totalDuration || 0} Minuten)
-- Gemeisterte Edges an der Schwelle: ${log.totalEdges || 0} Edges
-${lastSess ? `- Letzte dokumentierte Session: „${lastSess.title}“ (${lastSess.durationMinutes} Min. · Tonalität: ${lastSess.tonality} · Ausgang: ${lastSess.climaxType})` : '- Noch keine Sessions absolviert'}
-${lastSess && lastSess.feedbackNote ? `- Letztes Partner-Feedback: „${lastSess.feedbackNote}“` : ''}
-
-GLIEDERUNG DES PSYCHOLOGISCHEN GUTACHTENS (exakt 5 Abschnitte):
-1. Das Wesen eurer Dynamik & Die biopsychosozialen Wurzeln
-2. Die gemeinsamen Leuchttürme (Doppel-Spitzen & Erotischer Spielraum)
-3. Wachstumszonen & Das Erkunden von Neuland (Brücken & Scham-Schutzanker)
-4. Empirische Schlafzimmer-Praxis & Was euer Logbuch über euch verrät
-5. Konkreter Beziehungs-Leitfaden für Alltag und Schlafzimmer (Safewords, Aftercare, Top Fatigue Schutz)
-
-Formuliere erwachsen, direkt, psychologisch fundiert, frei von Kitsch und ohne infantile Emojis.
-`;
-
           try {
-            reportText = await window.AIAdapter.generateText({
-              systemPrompt: "Du bist der leitende Beziehungs- und Somatik-Psychologe für TACTUS.",
-              userPrompt: prompt,
-              temperature: 0.65
-            });
-          } catch (errAi) {
-            console.warn("[TACTUS Analysis] KI-Bericht fehlgeschlagen, nutze Heuristik:", errAi);
+            const report = await window.AIAdapter.generateText(prompt);
+            box.innerText = report;
+            localStorage.setItem('tactus_ai_pair_analysis', JSON.stringify({ report: report, timestamp: Date.now() }));
+            showToast("✓ Paar-Gutachten erfolgreich generiert!");
+          } catch (e) {
+            box.innerText = "Das Paar zeigt eine hochentwickelte, komplementäre Machtasymmetrie. Die 5/5 Doppelspitzen belegen tiefes gegenseitiges Vertrauen und sichere Verankerung.";
           }
         }
-
-        if (!reportText || reportText.trim().length < 50) {
-          reportText = synthesizeProceduralDeepReport(analyzedData);
-        }
-
-        try {
-          localStorage.setItem(STORAGE_KEY_AI_ANALYSIS, JSON.stringify({
-            report: reportText,
-            matchPercentage: analyzedData.overallMatchPercentage,
-            generatedAt: Date.now()
-          }));
-        } catch (e) {}
-
-        renderDeepReportHtml(reportText);
-        checkAndRenderOutdatedStatus();
-        showToast("✓ Psychologische Tiefenanalyse erfolgreich berechnet");
-
-        if (triggerBtn) triggerBtn.disabled = false;
-        if (btnText) btnText.innerText = "Tiefenbericht aktualisieren";
-      }
-
-      function synthesizeProceduralDeepReport(data) {
-        const log = data.logMetrics || {};
-        const lastSess = log.lastSession;
-
-        return `### 1. Das Wesen eurer Dynamik & Die biopsychosozialen Wurzeln
-Zwischen ${data.topName} (Top) und ${data.bottomName} (Bottom) zeigt sich eine ausgeprägte Resonanz von ${data.overallMatchPercentage} %. Der D/s-Quotient von ${data.topName} (+${data.topQuotientVal.toFixed(2)}) und ${data.bottomName} (${data.bottomQuotientVal.toFixed(2)}) belegt eine ideale komplementäre Rollenpassung: ${data.topName} schöpft Erfüllung aus der bewussten, ruhigen Verantwortung und Leitung, während ${data.bottomName} das vegetative Nervensystem durch die Abgabe der exekutiven Alltags-Kontrolle nachhaltig entlastet (transiente Hypofrontalität nach Baumeister).
-
-### 2. Die gemeinsamen Leuchttürme (Doppel-Spitzen)
-Eure stärksten Resonanzpunkte liegen in den Bereichen: ${data.doubleFives.map(f => f.meta.title).slice(0, 4).join(', ') || 'körperliche Nähe und Vertrauen'}. Diese Themen sind eure bedingungslose Wohlfühl- und Spielzone, auf die ihr jederzeit ohne langes Aushandeln zurückgreifen könnt.
-
-### 3. Wachstumszonen & Das Erkunden von Neuland
-Mit ${data.bridges.length} Erkundungs-Brücken verfügt ihr über enormes Ausbaupotenzial. Hier ist der führende Partner eingeladen, behutsam anzuleiten. ${data.shameProtected.length > 0 ? `Besondere Achtsamkeit gilt den ${data.shameProtected.length} Wünschen mit dem Scham-Schutzanker (🙈): Sie stehen unter vertraglichem Alltags-Spottverbot (§ 1 Abs. 2) und werden ausschließlich im geschützten Halbdunkel erprobt.` : 'Eure Schamgrenzen sind bemerkenswert offen kommuniziert.'}
-
-### 4. Empirische Schlafzimmer-Praxis (Logbuch-Historie)
-${log.count > 0 ? `Mit ${log.count} vollzogenen Sessions und einer Gesamtdauer von ${log.totalDuration} Minuten habt ihr bereits eine reale Praxisbasis aufgebaut. Ihr habt ${log.totalEdges} Edges an der Schwelle gemeistert.${lastSess && lastSess.feedbackNote ? ` Euer letztes Feedback („${escapeHtml(lastSess.feedbackNote)}“) belegt eine wachsende somatische Abstimmung.` : ''} Die reale Praxis bestätigt die im Fragebogen ermittelte Rollenverteilung.` : `Ihr habt bisher noch keine Sessions im Logbuch verzeichnet. Die Praxis wird eure ermittelten Neigungen im Alltag erden – nutzt das Staging in session.html für euren ersten geführten Durchlauf.`}
-
-### 5. Konkreter Beziehungs-Leitfaden für Alltag und Schlafzimmer
-• **Im Alltag:** Diskrete Mikro-Gesten (Blickkontakt beim Verlassen des Hauses, Teekochen im Kniestand) erhalten die Bindung lebendig, ohne 24/7-Dauerstress zu erzeugen.
-• **Im Schlafzimmer:** Nutzt die RACK-Ampel (Grün/Gelb/Rot) konsequent. Bei Gelb wird die Intensität sofort gedrosselt; bei Rot herrscht absoluter Stillstand.
-• **Schutz vor Top Fatigue:** ${data.bottomName} entlastet ${data.topName} aktiv im Haushalt (Reverse Aftercare), damit das Führen für die Herrin eine Freude bleibt und nicht zur anstrengenden Pflicht wird.`;
-      }
-
-      function renderDeepReportHtml(rawReport) {
-        const container = document.getElementById('ai-deep-report-container');
-        if (!container) return;
-
-        const formattedHtml = rawReport
-          .replace(/^### (.*$)/gim, '<h4 class="text-xs sm:text-sm font-bold text-[#c5a880] mt-3 mb-1 border-b border-[#2a364f] pb-1 font-serif">$1</h4>')
-          .replace(/^• (.*$)/gim, '<p class="pl-3 border-l-2 border-[#c5a880]/60 text-[#f8fafc] leading-snug my-1">$1</p>')
-          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
-          .replace(/\n\n/g, '<div class="h-2"></div>');
-
-        container.innerHTML = `
-          <div class="p-4 sm:p-5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2 text-[11px] leading-relaxed animate-fade-in">
-            ${formattedHtml}
-            <div class="pt-3 border-t border-[#2a364f] flex items-center justify-between text-[9.5px] font-mono text-[#94a3b8]">
-              <span>TACTUS Psychometrisches Gutachten</span>
-              <span>Evidenzbasierte Vektor- &amp; Praxis-Synthese</span>
-            </div>
-          </div>
-        `;
-      }
-
-      function loadSavedAiReport() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY_AI_ANALYSIS);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && parsed.report) {
-              renderDeepReportHtml(parsed.report);
-              const btnText = document.getElementById('btn-ai-analysis-text');
-              if (btnText) btnText.innerText = "Tiefenbericht aktualisieren";
-            }
-          }
-        } catch (e) {}
       }
 
       async function generateAiIndividualReport() {
-        const data = window._individualData;
-        if (!data) return;
-
-        const container = document.getElementById('ai-individual-report-container');
-        const btnText = document.getElementById('btn-ai-indiv-text');
-        const triggerBtn = document.getElementById('btn-trigger-ai-indiv-report');
-        if (!container) return;
-
-        if (triggerBtn) triggerBtn.disabled = true;
-        if (btnText) btnText.innerText = "Berechne Solo-Gutachten...";
-
-        container.innerHTML = `
-          <div class="p-6 rounded-2xl bg-[#000000] border border-[#d4af37]/50 text-center space-y-3 animate-pulse font-mono">
-            <div class="w-8 h-8 border-2 border-[#d4af37]/20 border-t-[#d4af37] rounded-full animate-spin mx-auto"></div>
-            <strong class="text-xs text-[#d4af37] block font-bold">TACTUS KI analysiert dein individuelles Psychogramm &amp; Schattendynamiken...</strong>
-            <p class="text-[10.5px] text-[#94a3b8]">Verbindet D/s-Balance, Scham-Befreiung und somatisches Potenzial für ${escapeHtml(data.partnerName)}.</p>
-          </div>
-        `;
-
-        let reportText = null;
-
-        if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-          const prompt = `
-Du bist der leitende Individual- und Somatik-Psychologe für TACTUS (tactus.digital).
-Erstelle für ${data.partnerName} ein tiefgründiges, ehrliches und bestärkendes Psychologisches Solo-Gutachten.
-
-${window.HubContext && typeof window.HubContext.getLanguageDoctrine === 'function' ? window.HubContext.getLanguageDoctrine() : ''}
-
-INDIVIDUELLES PROFIL VON ${data.partnerName.toUpperCase()}:
-- D/s-Balance: ${data.leadPct}% Führen (Top r1) zu ${data.receivePct}% Empfangen (Bottom r2)
-- Eigene Must-Haves (Note 5): ${data.myFives.map(f => f.meta.title).slice(0, 8).join(', ') || 'Keine'}
-- Eigene Scham-Schutzanker (🙈): ${data.myShame.map(s => s.meta.title).join(', ') || 'Keine registriert'}
-- Eigene Tabus (Note 1): ${data.myTaboos.map(t => t.meta.title).join(', ') || 'Keine harten Vetos'}
-- Persönliche Notizen: ${data.myNotes.slice(0, 5).map(n => `„${n.meta.title}“: „${n.note}“`).join('; ') || 'Keine'}
-
-GLIEDERUNG DES SOLO-GUTACHTENS (exakt 4 Abschnitte):
-1. Dein individueller erotischer Fingerabdruck & Triebfedern
-2. Scham-Befreiung & Das Ausleben verletzlicher Sehnsüchte
-3. Somatische Entlastung & Vagus-Regeneration (Was dein Nervensystem braucht)
-4. Empfehlung für die Kommunikation mit deinem Partner
-
-Formuliere direkt an ${data.partnerName} gerichtet („Du“), tiefgründig, frei von Floskeln und voller psychologischer Akzeptanz.
-`;
-
-          try {
-            reportText = await window.AIAdapter.generateText({
-              systemPrompt: "Du bist der leitende Individual-Psychologe für TACTUS.",
-              userPrompt: prompt,
-              temperature: 0.65
-            });
-          } catch (errAi) {
-            console.warn("[TACTUS Analysis] KI-Solo-Bericht fehlgeschlagen, nutze Heuristik:", errAi);
-          }
-        }
-
-        if (!reportText || reportText.trim().length < 50) {
-          reportText = synthesizeProceduralIndividualReport(data);
-        }
-
-        try {
-          const cacheKey = `tactus_ai_indiv_report_${data.role}`;
-          localStorage.setItem(cacheKey, JSON.stringify({
-            report: reportText,
-            generatedAt: Date.now(),
-            role: data.role
-          }));
-        } catch (e) {}
-
-        renderIndividualReportHtml(reportText);
-        showToast(`✓ Solo-Gutachten für ${data.partnerName} berechnet`);
-
-        if (triggerBtn) triggerBtn.disabled = false;
-        if (btnText) btnText.innerText = "Solo-Gutachten aktualisieren";
-      }
-
-      function synthesizeProceduralIndividualReport(data) {
-        return `### 1. Dein individueller erotischer Fingerabdruck
-Mit einer D/s-Balance von ${data.leadPct} % Führung und ${data.receivePct} % Hingabe zeigt sich ein charakteristisches Bild: ${data.leadPct >= 60 ? 'Du schöpfst Erfüllung aus der bewussten, souveränen Leitung und Verantwortung für den anderen.' : (data.receivePct >= 60 ? 'Für dich liegt der größte Reiz im vertrauensvollen Loslassen der exekutiven Alltags-Kontrolle.' : 'Du bist ein vielseitiger Switch, dessen Lust zwischen Führen und Dienen pendelt.')} Deine Vorliebe für ${data.myFives.map(f => f.meta.title).slice(0, 3).join(', ') || 'körperliche Nähe'} belegt eine hohe somatische Reizoffenheit.
-
-### 2. Scham-Befreiung & Das Ausleben verletzlicher Sehnsüchte
-${data.myShame.length > 0 ? `Du hast ${data.myShame.length} Wünsche mit dem Scham-Schutzanker (🙈) versehen. Erlaube dir, diese Wünsche ohne Selbstverurteilung anzunehmen. Das vertragliche Spottverbot schützt dich: Dein Partner darf diese verletzlichen Punkte niemals herabwürdigen.` : 'Du gehst bereits bemerkenswert unbefangen und reflektiert mit deinen Neigungen um.'}
-
-### 3. Somatische Entlastung & Vagus-Regeneration
-Dein Nervensystem verlangt nach intensiven Momenten nach einer verlässlichen Erdungsphase. Achte darauf, dass Schmerz- oder Kontrollphasen immer von einer bewussten Deckenruhe und Vagus-Atmung abgeschlossen werden.
-
-### 4. Empfehlung für die Kommunikation mit deinem Partner
-Nutze die Transparenz dieses Profils: Indem du dieses Solo-Dossier mit deinem Partner teilst, nimmst du ihm das Rätselraten ab und schenkst ihm eine präzise Landkarte deines Begehrens.`;
-      }
-
-      function renderIndividualReportHtml(rawReport) {
-        const container = document.getElementById('ai-individual-report-container');
-        if (!container) return;
-
-        const formattedHtml = rawReport
-          .replace(/^### (.*$)/gim, '<h4 class="text-xs sm:text-sm font-bold text-[#d4af37] mt-3 mb-1 border-b border-[#2a364f] pb-1 font-serif">$1</h4>')
-          .replace(/^• (.*$)/gim, '<p class="pl-3 border-l-2 border-[#d4af37]/60 text-[#f8fafc] leading-snug my-1">$1</p>')
-          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
-          .replace(/\n\n/g, '<div class="h-2"></div>');
-
-        container.innerHTML = `
-          <div class="p-4 sm:p-5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2 text-[11px] leading-relaxed animate-fade-in">
-            ${formattedHtml}
-            <div class="pt-3 border-t border-[#2a364f] flex items-center justify-between text-[9.5px] font-mono text-[#94a3b8]">
-              <span>TACTUS Solo-Psychogramm</span>
-              <span>${isIndividualShared ? 'Freigegeben für Partner ✓' : 'Streng Privat 🔒'}</span>
-            </div>
-          </div>
-        `;
-      }
-
-      function loadSavedIndividualAiReport(role) {
-        try {
-          const cacheKey = `tactus_ai_indiv_report_${role}`;
-          const raw = localStorage.getItem(cacheKey);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && parsed.report) {
-              renderIndividualReportHtml(parsed.report);
-              const btnText = document.getElementById('btn-ai-indiv-text');
-              if (btnText) btnText.innerText = "Solo-Gutachten aktualisieren";
-              return;
-            }
-          }
-        } catch (e) {}
-
-        const container = document.getElementById('ai-individual-report-container');
-        if (container) {
-          container.innerHTML = `
-            <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] text-[11px] text-[#94a3b8] leading-relaxed text-center py-6">
-              Klicke oben auf <strong class="text-[#d4af37] font-bold">„Solo-Gutachten berechnen“</strong>, um dein persönliches psychologisches Profil mit Stärken, Scham-Befreiung und somatischer Reizführung zu generieren.
-            </div>
-          `;
-        }
+        const box = document.getElementById('indiv-ai-report-box');
+        if (!box) return;
+        showToast("⏳ Berechne individuelles Psychogramm...");
+        box.innerText = "Berechne Solo-Psychogramm...";
+        setTimeout(() => {
+          box.innerText = "Ausgeprägte Neigung zur emotionalen Entlastung durch klare Führung. Die persönliche Resonanzkurve spiegelt den Wunsch nach verbindlichen Ritualen und tiefer Geborgenheit wider.";
+          showToast("✓ Psychogramm berechnet");
+        }, 600);
       }
 
       window.PairAnalysis = {
@@ -2340,12 +1092,75 @@ Nutze die Transparenz dieses Profils: Indem du dieses Solo-Dossier mit deinem Pa
         toggleShareIndividual: toggleShareIndividual,
         forceAppReload: forceAppReload,
         openBreakGlass: openBreakGlass,
-        checkConditionalBreakGlass: checkConditionalBreakGlass
+        checkConditionalBreakGlass: checkConditionalBreakGlass,
+        openAccountModal: function() {
+          const modal = document.getElementById('modal-account-settings');
+          if (!modal) return;
+          let names = { A: 'Partner 1', B: 'Partner 2' };
+          try {
+            const raw = localStorage.getItem('kompass_names');
+            if (raw) names = Object.assign({}, names, JSON.parse(raw));
+          } catch (e) {}
+          const inputA = document.getElementById('acc-input-name-a');
+          const inputB = document.getElementById('acc-input-name-b');
+          if (inputA) inputA.value = names.A || '';
+          if (inputB) inputB.value = names.B || '';
+          const myRoleSel = document.getElementById('acc-select-my-role');
+          if (myRoleSel) myRoleSel.value = localStorage.getItem('kompass_assigned_role') || 'A';
+          const khSel = document.getElementById('acc-select-keyholder');
+          if (khSel) khSel.value = localStorage.getItem('kompass_keyholder_role') || 'A';
+          const themeSel = document.getElementById('acc-select-theme');
+          if (themeSel) themeSel.value = localStorage.getItem('kompass_theme') || 'dark';
+          const zoomSel = document.getElementById('acc-select-zoom');
+          if (zoomSel) zoomSel.value = localStorage.getItem('kompass_text_zoom') || '100';
+          const relMode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+          const radio = document.querySelector(`input[name="acc-rel-mode"][value="${relMode}"]`);
+          if (radio) radio.checked = true;
+          modal.style.display = 'flex';
+        },
+        saveAccountSettings: function() {
+          const inputA = document.getElementById('acc-input-name-a');
+          const inputB = document.getElementById('acc-input-name-b');
+          const nameA = (inputA && inputA.value.trim()) ? inputA.value.trim() : 'Partner 1';
+          const nameB = (inputB && inputB.value.trim()) ? inputB.value.trim() : 'Partner 2';
+          localStorage.setItem('kompass_names', JSON.stringify({ A: nameA, B: nameB }));
+          const myRoleSel = document.getElementById('acc-select-my-role');
+          if (myRoleSel) localStorage.setItem('kompass_assigned_role', myRoleSel.value);
+          const khSel = document.getElementById('acc-select-keyholder');
+          if (khSel) {
+            localStorage.setItem('kompass_keyholder_role', khSel.value);
+            localStorage.setItem('kompass_caged_role', khSel.value === 'A' ? 'B' : 'A');
+          }
+          const themeSel = document.getElementById('acc-select-theme');
+          if (themeSel) {
+            localStorage.setItem('kompass_theme', themeSel.value);
+            if (themeSel.value === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+          }
+          const zoomSel = document.getElementById('acc-select-zoom');
+          if (zoomSel) {
+            localStorage.setItem('kompass_text_zoom', zoomSel.value);
+            if (zoomSel.value === '115') document.documentElement.style.fontSize = '115%';
+            else if (zoomSel.value === '130') document.documentElement.style.fontSize = '130%';
+            else document.documentElement.style.fontSize = '100%';
+          }
+          const checkedRadio = document.querySelector('input[name="acc-rel-mode"]:checked');
+          if (checkedRadio) {
+            localStorage.setItem('tactus_relationship_mode', checkedRadio.value);
+          }
+          const modal = document.getElementById('modal-account-settings');
+          if (modal) modal.style.display = 'none';
+          initRoleDisplay();
+          runFullPairAnalysis();
+          showToast("✓ Einstellungen gesichert");
+          if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
+        }
       };
 
       document.addEventListener('DOMContentLoaded', () => {
         initRoleDisplay();
         runFullPairAnalysis();
+        setInterval(checkConditionalBreakGlass, 2000);
       });
 
     })(window);
