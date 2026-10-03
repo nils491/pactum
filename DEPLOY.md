@@ -57,9 +57,7 @@ Danach unter **Actions → Veröffentlichen → Run workflow** einmal starten.
 
 ## Schritt 5 – Domain
 
-Die Domain ist in `wrangler.jsonc` fest an den Worker gebunden (`tactus.digital` und `www.tactus.digital`). Cloudflare legt die passenden DNS-Einträge beim Veröffentlichen selbst an.
-
-> Bricht die Veröffentlichung mit einem Hinweis auf bereits vorhandene DNS-Einträge ab: in Cloudflare → **DNS → Records** die bisherigen **A/AAAA-Einträge für `tactus.digital` und `www`** löschen (nicht die MX- und TXT-Einträge von IONOS!) und den Workflow erneut starten.
+Die Domain ist in `wrangler.jsonc` per **Route** an den Worker gebunden (`tactus.digital/*` und `www.tactus.digital/*`). Alle Anfragen an die Domain laufen damit über den Worker. Die vorhandenen DNS-Einträge bleiben unverändert; sie müssen nur über Cloudflare laufen (orangene Wolke „Proxied“). Die MX- und TXT-Einträge für die IONOS-Mails sind davon nicht betroffen.
 
 ## Schritt 5b – E-Mails für Kündigungsbestätigungen (Brevo)
 

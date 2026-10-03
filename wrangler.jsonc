@@ -4,10 +4,11 @@
   "name": "tactus",
   "main": "worker/src/index.js",
   "compatibility_date": "2026-09-01",
-  // Domain direkt an diesen Worker binden (legt die DNS-Einträge bei Cloudflare selbst an)
+  // Alle Anfragen an die Domain laufen über diesen Worker. Bestehende DNS-Einträge
+  // (proxied A-Records, IONOS-MX/TXT) bleiben unverändert.
   "routes": [
-    { "pattern": "tactus.digital", "custom_domain": true },
-    { "pattern": "www.tactus.digital", "custom_domain": true }
+    { "pattern": "tactus.digital/*", "zone_name": "tactus.digital" },
+    { "pattern": "www.tactus.digital/*", "zone_name": "tactus.digital" }
   ],
   "assets": {
     "directory": "./dist",
