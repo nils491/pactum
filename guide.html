@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>TACTUS · Somatischer BDSM-, Sub- &amp; Vertrauens-Guide</title>
+  <title>TACTUS · Wissenschaftlicher BDSM- &amp; Vertrauens-Guide</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,10 +79,13 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .gold-glow { box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.2); }
+    .malachite-glow { box-shadow: 0 0 25px -5px rgba(46, 87, 70, 0.25); }
+    .bordeaux-glow { box-shadow: 0 0 25px -5px rgba(153, 27, 27, 0.25); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
 
+  <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 · ZERO PIXEL-JUMPING) -->
   <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#1e2638]/60 h-14 flex items-center">
     <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between">
       
@@ -98,16 +101,16 @@
         <div class="min-w-0 truncate">
           <div class="flex items-center gap-1.5">
             <span class="font-serif text-sm sm:text-base tracking-widest text-[#f8fafc] font-semibold leading-none truncate">TACTUS</span>
-            <span class="px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0">GUIDE</span>
+            <span id="guide-status-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0">GUIDE</span>
           </div>
-          <span class="text-[9.5px] font-mono text-[#94a3b8] block leading-none mt-1 truncate" id="guide-header-roles">Sicherheit, Subspace, Psychosomatik &amp; Praxis</span>
+          <span class="text-[9.5px] font-mono text-[#94a3b8] block leading-none mt-1 truncate" id="guide-header-subline">Wissenschaft, RACK &amp; Kink-Kompendium</span>
         </div>
       </a>
 
       <!-- Desktop Quick Actions -->
       <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
-        <!-- Switch-Rollenanzeige -->
-        <button type="button" onclick="GuideRuntime.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Rollenanzeige">
+        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung -->
+        <button type="button" onclick="GuideRuntime.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Rollenanzeige (Top / Bottom)">
           <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
           <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
           <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
@@ -119,16 +122,17 @@
           <span>Schrank</span>
         </button>
 
-        <!-- Zur Schlafzimmer-Regie -->
-        <a href="session.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#b3734a] hover:text-[#f8fafc] font-mono text-xs font-medium flex items-center gap-1.5 touch-btn" style="min-height: 36px;">
-          <span>Regie →</span>
-        </a>
+        <!-- Akut-Hilfe Button -->
+        <button type="button" onclick="GuideRuntime.switchStage('sos')" class="px-3 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-mono text-xs font-bold flex items-center gap-1.5 touch-btn shadow-sm" style="min-height: 36px;" title="Akut-Ratgeber &amp; Notfall-Hilfe">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+          <span>Akut-Hilfe</span>
+        </button>
       </div>
 
       <!-- Mobile Actions -->
       <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
-        <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#c5a880] flex items-center justify-center touch-btn" title="Schrank">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        <button type="button" onclick="GuideRuntime.switchStage('sos')" class="w-9 h-9 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white flex items-center justify-center touch-btn" title="Akut-Hilfe">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
         </button>
         <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#f8fafc] flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
@@ -138,10 +142,11 @@
     </div>
   </header>
 
+  <!-- SUB-NAVIGATION DER 6 HAUPT-COCKPITS (DESKTOP) -->
   <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
     <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-mono">
       <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Start-Hub</a>
-      <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (185)</a>
+      <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (500 Items)</a>
       <a href="analyse.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Analyse</a>
       <a href="chat.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Stream</a>
       <a href="protocol.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Das Protokoll</a>
@@ -150,6 +155,7 @@
     </div>
   </nav>
 
+  <!-- MOBILE DRAWER -->
   <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs font-mono">
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-[#1e2638] pb-3">
@@ -159,7 +165,7 @@
           </div>
           <div>
             <h3 class="text-sm font-serif text-[#f8fafc]">TACTUS OS</h3>
-            <span class="text-[10px] text-[#94a3b8]">BDSM- &amp; Vertrauens-Guide</span>
+            <span class="text-[10px] text-[#94a3b8]">Wissens- &amp; Vertrauens-Guide</span>
           </div>
         </div>
         <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-8 h-8 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
@@ -171,12 +177,12 @@
           <span class="text-[#94a3b8]">→</span>
         </a>
         <a href="index.html#view=survey" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (185 Items)</span>
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
         <a href="analyse.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
-          <span class="text-xs font-bold text-[#c5a880]">Paar-Analyse &amp; Synergie</span>
-          <span class="text-[10px] text-[#c5a880] font-bold">Doppel-5er</span>
+          <span class="text-xs font-bold text-[#f8fafc]">Paar-Analyse &amp; Synergie</span>
+          <span class="text-[#94a3b8]">→</span>
         </a>
         <a href="chat.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">E2EE Paar-Stream</span>
@@ -187,7 +193,7 @@
           <span class="text-[#94a3b8]">→</span>
         </a>
         <div class="w-full p-3 rounded-2xl bg-[#000000] border border-[#c5a880] text-left flex items-center justify-between shadow-md">
-          <span class="text-xs font-bold text-[#c5a880]">BDSM- &amp; Vertrauens-Guide</span>
+          <span class="text-xs font-bold text-[#c5a880]">Wissens- &amp; Vertrauens-Guide</span>
           <span class="text-[10px] text-[#c5a880] font-bold">Hier aktiv ✓</span>
         </div>
         <a href="session.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
@@ -201,637 +207,468 @@
     </div>
   </div>
 
+  <!-- MAIN CONTAINER -->
   <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full space-y-4">
-    
-    <!-- HERO OVERVIEW CARD -->
-    <div class="rounded-3xl p-5 sm:p-6 border border-[#1e2638] shadow-2xl bg-[#090d14] space-y-3 font-sans">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-3">
-        <div>
+
+    <!-- SUB-NAV TABS DER 6 GUIDE-BÜHNEN -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#1e2638]/80 font-mono text-xs">
+      <button type="button" onclick="GuideRuntime.switchStage('manifest')" id="tab-stage-manifest" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap">
+        1. Manifest des Vertrauens
+      </button>
+      <button type="button" onclick="GuideRuntime.switchStage('studies')" id="tab-stage-studies" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
+        2. Die 10 Säulen der Evidenz
+      </button>
+      <button type="button" onclick="GuideRuntime.switchStage('lexicon')" id="tab-stage-lexicon" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
+        3. Kink-Lexikon
+      </button>
+      <button type="button" onclick="GuideRuntime.switchStage('neurobiology')" id="tab-stage-neurobiology" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
+        4. Subspace &amp; Neurobiologie
+      </button>
+      <button type="button" onclick="GuideRuntime.switchStage('safety')" id="tab-stage-safety" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
+        5. RACK-Sicherheitsarchitektur
+      </button>
+      <button type="button" onclick="GuideRuntime.switchStage('sos')" id="tab-stage-sos" class="px-3.5 py-2 rounded-xl font-bold bg-[#450a0a]/30 border border-[#991b1b] text-[#f8fafc] hover:bg-[#991b1b] touch-btn whitespace-nowrap flex items-center gap-1">
+        <span>6. Akut-Ratgeber &amp; SOS</span>
+      </button>
+    </div>
+
+    <!-- =========================================================================
+         BÜHNE 1: DAS MANIFEST DES VERTRAUENS (#manifest)
+         ========================================================================= -->
+    <div id="view-guide-manifest" class="space-y-4 animate-fade-in font-sans">
+      
+      <!-- HERO CARD -->
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#1e2638] shadow-2xl bg-[#090d14] space-y-4">
+        <div class="border-b border-[#1e2638]/70 pb-3">
           <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
-            TACTUS Kompendium · Somatik &amp; Wissenschaft
+            Psychiatrische &amp; Juristische Entpathologisierung
           </span>
-          <h2 class="text-base sm:text-xl font-bold text-white mt-1 font-serif">
-            Das Handbuch für Hingabe, Führung &amp; Vertrauen
+          <h2 class="text-base sm:text-xl font-serif text-[#f8fafc] font-normal mt-1.5">
+            Das Manifest des Vertrauens: Freiheit jenseits des Stigmas
           </h2>
         </div>
-        <span class="text-xs font-mono font-bold px-3 py-1.5 rounded-xl bg-[#000000] text-[#c5a880] border border-[#c5a880]/40">
-          Evidenz, Praxis &amp; Subspace
-        </span>
-      </div>
 
-      <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
-        BDSM, D/s und Keuschheit sind keine theoretischen Gedankenspiele. Sie greifen tief in das vegetative Nervensystem, den Hormonhaushalt und die emotionale Bindung ein. Dieses Kompendium gibt beiden Partnern praktische Sicherheit: dem <strong>Sub</strong> den geschützten Raum für tiefes Loslassen und Subspace, dem <strong>Top</strong> souveräne Führungswerkzeuge ohne Ausbrennen (Top-Fatigue) – fundiert durch Peer-Reviewed Studien (PubMed-DOIs).
-      </p>
-
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
-        <div class="p-2.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
-          <span class="text-[9.5px] text-[#94a3b8] block">Der Sub:</span>
-          <strong class="text-xs font-bold text-[#b3734a]">Subspace &amp; Trance</strong>
-        </div>
-        <div class="p-2.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
-          <span class="text-[9.5px] text-[#94a3b8] block">Sicherheit:</span>
-          <strong class="text-xs font-bold text-[#2e5746]">RACK &amp; Nervenbahnen</strong>
-        </div>
-        <div class="p-2.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
-          <span class="text-[9.5px] text-[#94a3b8] block">Der Top:</span>
-          <strong class="text-xs font-bold text-[#c5a880]">Schutz vor Fatigue</strong>
-        </div>
-        <div class="p-2.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
-          <span class="text-[9.5px] text-[#94a3b8] block">Nachsorge:</span>
-          <strong class="text-xs font-bold text-[#d4af37]">Subdrop &amp; 4-7-8 Vagus</strong>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#1e2638]/80 font-mono text-xs">
-      <button type="button" onclick="GuideRuntime.switchTab('praxis')" id="tab-guide-praxis" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap">
-        Praxis &amp; Spielarten
-      </button>
-      <button type="button" onclick="GuideRuntime.switchTab('sub_experience')" id="tab-guide-sub_experience" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
-        Subspace, Hingabe &amp; Psyche
-      </button>
-      <button type="button" onclick="GuideRuntime.switchTab('safety')" id="tab-guide-safety" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#2e5746] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
-        Anatomie, Nerven &amp; RACK
-      </button>
-      <button type="button" onclick="GuideRuntime.switchTab('dynamics')" id="tab-guide-dynamics" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#c5a880] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
-        Top-Schutz &amp; Dynamik
-      </button>
-      <button type="button" onclick="GuideRuntime.switchTab('emergency')" id="tab-guide-emergency" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#991b1b] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
-        Akut- &amp; Symptom-Ratgeber
-      </button>
-      <button type="button" onclick="GuideRuntime.switchTab('science')" id="tab-guide-science" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
-        Evidenz &amp; Studien
-      </button>
-    </div>
-
-    <div id="guide-view-praxis" class="space-y-3 text-xs animate-fade-in font-sans">
-      
-      <!-- IMPACT PLAY & SPANKING -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-white block font-bold">Impact Play: Gesäßzüchtigung, Flogger &amp; Paddle</strong>
-            <span class="text-[10px] text-[#94a3b8]">Anatomische Trefferzonen, Einfliegen &amp; Schmerzverarbeitung des Subs</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Impact</span>
-        </div>
-
-        <div class="space-y-2 text-[10.5px] text-[#f8fafc] leading-relaxed">
-          <p class="text-[#94a3b8]">
-            Impact ist keine wahllose Gewalt, sondern eine rhythmische, präzise Stimulation großer Muskelpartien. Das Ziel ist nicht Verletzung, sondern <strong>Hyperämie (starke Durchblutung)</strong>, vegetative Entladung und das Anschwemmen körpereigener Endorphine.
-          </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans">
-            <div class="p-3 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-1">
-              <strong class="text-[#2e5746] text-xs block font-bold font-mono">Sichere Trefferzone (Grün):</strong>
-              <p class="text-[10px] text-[#94a3b8] leading-snug">
-                Ausschließlich die <strong>fleischigen Gesäßbacken (Gluteus maximus)</strong> und die obere Oberschenkelrückseite. Hier schützt dicke Muskulatur Knochen und innere Organe.
-              </p>
-            </div>
-            <div class="p-3 rounded-2xl bg-[#000000] border border-[#991b1b] space-y-1">
-              <strong class="text-[#991b1b] text-xs block font-bold font-mono">Absolute Tabu-Zonen (Rot / Lebensgefahr):</strong>
-              <p class="text-[10px] text-[#94a3b8] leading-snug">
-                <strong>Nierenloge</strong> (untere Rippen), <strong>Lendenwirbelsäule</strong>, <strong>Steißbein</strong> und <strong>Kniekehlen</strong>. Schläge hier können Nierenrisse, Nervenläsionen oder Knochenbrüche verursachen.
-              </p>
-            </div>
-          </div>
-
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-1 text-[#f8fafc]">
-            <strong class="text-[#c5a880] text-xs block font-mono">Das Einfliegen (Warm-up für das Nervensystem des Subs):</strong>
-            <p class="text-[#94a3b8] text-[10px] leading-snug">
-              Niemals kalt mit voller Härte zuschlagen. Beginne mit flacher Hand oder weichem Flogger (1–2 Minuten), um die Haut zu erwärmen und die Schmerzrezeptoren zu sättigen. Erst wenn das Gesäß gleichmäßig gerötet ist, greift die natürliche Schmerz-Analgesie des Gehirns.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- FESSELUNG & SHIBARI -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-white block font-bold">Fesselung &amp; Shibari: Hingabe in Seilen &amp; Manschetten</strong>
-            <span class="text-[10px] text-[#94a3b8]">Das Loslassen der motorischen Kontrolle ohne Nervenschäden</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Bondage</span>
-        </div>
-
-        <div class="space-y-2 text-[10.5px] text-[#94a3b8] leading-relaxed">
-          <p>
-            Für den Sub bedeutet Gefesseltsein eine tiefgreifende Erleichterung: <strong>Die Last, handeln zu müssen, fällt ab.</strong> Der Körper wird gehalten, begrenzt und dem Partner vollständig anvertraut.
-          </p>
-
-          <div class="space-y-1 text-[10px] text-[#f8fafc]">
-            <p>• <strong>Materialwahl:</strong> Natürliche Jute (6mm weich geölt) oder Hanf bieten festen Grip ohne elastisches Einschnüren. Für den Einstieg eignen sich gepolsterte Ledermanschetten (Layer 0), die Gelenke schonen.</p>
-            <p>• <strong>Positionsschock vermeiden:</strong> Wer gefesselt am Boden oder über der Bettkante liegt, verliert nach 20 Minuten das Gefühl für den Kreislauf. Niemals ruckartig aufrichten; erst die Gliedmaßen sanft durchbewegen.</p>
-            <p>• <strong>EMT-Schere am Bett:</strong> Eine abgerundete Sicherheits-Verbandschere liegt immer in Griffweite des Tops, ohne langes Suchen.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- KEUSCHHEIT & TRIEBAUFSCHUB -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-white block font-bold">Keuschheit &amp; Triebaufschub: Mentale Befreiung statt Quälerei</strong>
-            <span class="text-[10px] text-[#94a3b8]">Was der Verschluss im Sub bewirkt und wie die Dynamik gelingt</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Chastity</span>
-        </div>
-
-        <div class="space-y-2 text-[10.5px] text-[#94a3b8] leading-relaxed">
-          <p>
-            In einer gesunden D/s- oder FLR-Dynamik ist Keuschheit keine Strafe, sondern eine <strong>Entlastung für den Sub</strong>: Der ständige Druck, performen, initiieren oder ejakulieren zu müssen, wird ihm abgenommen. Seine sexuelle Energie kanalisiert sich in Aufmerksamkeit, Verehrung und Dienst an der Partnerin.
-          </p>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#c5a880]/30 space-y-1 text-[10px]">
-            <strong class="text-[#c5a880] block font-bold font-mono">Die hormonelle Schwelle um Tag 5 bis 7 (Canivet et al. 2025):</strong>
-            <p class="text-[#94a3b8] leading-snug">
-              Zwischen Tag 4 und 7 erreicht das freie Testosteron einen transienten Höchststand (+42 %). Hier erlebt der Sub oft unruhige Nervosität oder Schmollen. Die Lösung ist kein Öffnen, sondern <strong>körperliche Alltagsentlastung</strong>: Den Sub im Haushalt fordern und ihm durch Berührungsanker (Kraulen, Umarmung) zeigen, dass er begehrt und sicher ist.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- FACESITTING, QUEENING & ATEMKONTROLLE -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="border-b border-[#1e2638]/70 pb-2">
-          <strong class="text-xs text-white block font-bold">Facesitting, Thronsitz &amp; Atembegrenzung</strong>
-          <p class="text-[10.5px] text-[#94a3b8]">Orale Hingabe unter Gewicht ohne Ersticken</p>
-        </div>
-        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
-          Beim Queening dient das Gesicht des Subs der Partnerin als Sitzgelegenheit. Der Reiz liegt in der vollkommenen Hilflosigkeit und sensorischen Fülle.
+        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+          Jahrzehntelang wurden einvernehmliche Macht-, Fesselungs- und Hingabe-Praktiken von unwissenden Außenstehenden fälschlich als Störung, Trauma oder seelische Schwäche stigmatisiert. Die moderne evidenzbasierte Sexualmedizin, Psychiatrie und Kriminalpsychologie zeichnen heute ein vollkommen gegenteiliges Bild.
         </p>
-        <div class="space-y-1.5 text-[10px] text-[#f8fafc]">
-          <p>• <strong>Freie Nasenatmung:</strong> Das Becken wird so positioniert, dass die Nasenlöcher frei bleiben oder gezielte Atemfenster gewährt werden.</p>
-          <p>• <strong>Nackenlagerung:</strong> Ein Kissen unter dem Hinterkopf verhindert das Überstrecken der Halswirbelsäule.</p>
-          <p>• <strong>Klopfsignale:</strong> Da der Mund belegt ist, signalisiert der Sub Wohlbefinden durch leichtes rhythmisches Tippen an die Oberschenkel der Partnerin.</p>
+
+        <!-- 3 MEILENSTEINE DER ENTKATALOGISIERUNG -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-1 malachite-glow">
+            <span class="text-[9.5px] text-[#2e5746] uppercase font-bold block">1. WHO ICD-11 (2019)</span>
+            <strong class="text-white block text-xs">Vollständige Streichung</strong>
+            <p class="text-[10px] text-[#94a3b8] font-sans">Einvernehmliche BDSM-Praktiken gelten nicht mehr als psychische Störung. Nur nicht-konsensuale Gewalt bleibt strafbar.</p>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/50 space-y-1 gold-glow">
+            <span class="text-[9.5px] text-[#c5a880] uppercase font-bold block">2. APA DSM-5 (2013)</span>
+            <strong class="text-white block text-xs">Paraphilie ≠ Störung</strong>
+            <p class="text-[10px] text-[#94a3b8] font-sans">Klarer Unterschied zwischen sexueller Vorliebe und klinischer Paraphilic Disorder (erfordert echtes Leiden oder Fremdschädigung).</p>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-1">
+            <span class="text-[9.5px] text-[#b3734a] uppercase font-bold block">3. Joyal &amp; Richters</span>
+            <strong class="text-white block text-xs">40–55 % Normalität</strong>
+            <p class="text-[10px] text-[#94a3b8] font-sans">Über die Hälfte der Normalbevölkerung hegt BDSM-Wünsche. Praktizierende zeigen signifikant höhere Beziehungsstabilität.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAS FORENSISCHE MODELL VON LYDIA BENECKE -->
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#2e5746] shadow-xl bg-[#090d14] space-y-3.5">
+        <div class="flex items-center justify-between border-b border-[#2e5746]/40 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#2e5746] animate-pulse"></span>
+            <h3 class="text-sm sm:text-base font-serif font-bold text-white">Das forensische Differenzierungsmodell (Lydia Benecke)</h3>
+          </div>
+          <span class="text-[9.5px] font-mono text-[#2e5746] font-bold">Kriminalpsychologie</span>
+        </div>
+
+        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+          Dipl.-Psychologin und Kriminalpsychologin Lydia Benecke definierte das international anerkannte Modell zur strikten Trennung von konsensualem BDSM und echter Kriminalität:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-2">
+            <strong class="text-[#2e5746] font-mono text-xs block font-bold">A. Inklinierender Sadismus (Einvernehmliches BDSM):</strong>
+            <ul class="text-[10.5px] text-[#f8fafc] space-y-1.5 list-disc pl-4 leading-relaxed font-sans">
+              <li><strong>Prosozial &amp; Empathiegeleitet:</strong> Die sexuelle Erregung speist sich aus der gemeinsamen Hingabe und dem sichtbaren Genuss des Partners.</li>
+              <li><strong>Sicherheitsfokussiert:</strong> Reize werden achtsam dosiert; Safewords werden bedingungslos geachtet.</li>
+              <li><strong>Bindungsstiftend:</strong> Schenkt dem Bottom kognitive Entlastung (Ego-Abschaltung) und stärkt das Vertrauen.</li>
+            </ul>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#991b1b] space-y-2">
+            <strong class="text-[#991b1b] font-mono text-xs block font-bold">B. Periculärer Sadismus (Fremdschädigung &amp; Gewalt):</strong>
+            <ul class="text-[10.5px] text-[#94a3b8] space-y-1.5 list-disc pl-4 leading-relaxed font-sans">
+              <li><strong>Antisozial &amp; Egoistisch:</strong> Die Befriedigung speist sich aus dem realen Leiden, der echten Angst oder der Erniedrigung gegen den Willen des Opfers.</li>
+              <li><strong>Empathielos &amp; Grenzenlos:</strong> Grenzen werden bewusst missachtet; keine Reue oder Nachsorge.</li>
+              <li><strong>Kriminell:</strong> Hat rein gar nichts mit BDSM oder TACTUS zu tun und wird strafrechtlich verfolgt.</li>
+            </ul>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <div id="guide-view-sub_experience" class="hidden space-y-3 text-xs animate-fade-in font-sans">
+    <!-- =========================================================================
+         BÜHNE 2: DIE 10 SÄULEN DER EVIDENZ (#studies)
+         ========================================================================= -->
+    <div id="view-guide-studies" class="hidden space-y-4 animate-fade-in font-sans">
       
-      <!-- DER SUBSPACE: WAS PASSIERT IM GEHIRN? -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-white block font-bold">Der Subspace: Neurobiologie der tiefen Hingabe</strong>
-            <span class="text-[10px] text-[#94a3b8]">Veränderte Bewusstseinszustände, Endorphine &amp; Flow (Ambler et al. 2017)</span>
+      <!-- STUDIES CONTROL BAR -->
+      <div class="rounded-3xl p-4 sm:p-5 bg-[#090d14] border border-[#1e2638] shadow-2xl space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-3">
+          <div class="space-y-0.5">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
+              Peer-Reviewed Wissenschafts-Datenbank
+            </span>
+            <h2 class="text-base sm:text-lg font-serif text-white mt-1">
+              Die 10 Säulen der BDSM- &amp; Intimitäts-Evidenz
+            </h2>
           </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Neurobiologie</span>
+          <span class="text-xs font-mono text-[#d4af37] font-bold" id="studies-count-badge">10 Verifizierte Studien</span>
         </div>
 
-        <div class="space-y-2 text-[10.5px] text-[#94a3b8] leading-relaxed">
-          <p>
-            Der sogenannte <strong>Subspace</strong> ist kein Mythos, sondern ein messbarer neurobiologischer Trancezustand (Altered State of Consciousness / ASC). Unter wiederholten Reizen (Schlägen, Fesselung, intensiver Schwellenreizung) schüttet die Hypophyse massive Mengen an <strong>Endorphinen (endogene Opioide)</strong> und <strong>Dopamin</strong> aus.
-          </p>
+        <!-- SUCHE & FILTER-PILLS -->
+        <div class="space-y-2 text-xs font-mono">
+          <div class="relative">
+            <input type="text" id="studies-search-input" oninput="GuideRuntime.searchStudies(this.value)" placeholder="Suche nach Autoren, DOI, Neurobiologie oder Thema..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" />
+            <span class="absolute right-3 top-2.5 text-[#94a3b8]/40 pointer-events-none">🔍</span>
+          </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-mono">
-            <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
-              <strong class="text-[#c5a880] text-xs block font-bold">Was der Sub erlebt:</strong>
-              <ul class="text-[10px] text-[#f8fafc] space-y-0.5 leading-snug font-sans">
-                <li>• Das Zeitgefühl löst sich auf (Minuten fühlen sich wie Sekunden an).</li>
-                <li>• Körperlicher Schmerz verwandelt sich in dumpfe, wohlige Hitze (Analgesie).</li>
-                <li>• Das Alltags-Grübeln verstummt vollständig (transiente Hypofrontalität).</li>
-                <li>• Tiefe Euphorie, Trance und grenzenloses Vertrauen zum führenden Partner.</li>
-              </ul>
-            </div>
-
-            <div class="p-3 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-1">
-              <strong class="text-[#b3734a] text-xs block font-bold">Wachsamkeit des Tops im Subspace:</strong>
-              <p class="text-[10px] text-[#f8fafc] leading-snug font-sans">
-                Weil der Sub im Rausch kaum noch Schmerz spürt, verliert er die Fähigkeit, echte Gewebegrenzen einzuschätzen. <strong>Der Top muss jetzt das Fühlen für den Sub übernehmen</strong>, Hautrötungen prüfen und das Tempo drosseln, bevor Hämatome entstehen.
-              </p>
-            </div>
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-[10.5px]" id="studies-category-pills">
+            <!-- Dynamisch befüllt -->
           </div>
         </div>
       </div>
 
-      <!-- DER SUBDROP -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-white block font-bold">Der Subdrop: Der hormonelle Absturz nach 24 bis 48 Stunden</strong>
-            <span class="text-[10px] text-[#94a3b8]">Warum Tränen und Leere nach einer tollen Session völlig normal sind</span>
+      <!-- CONTAINER FÜR DIE STUDIEN-KARTEN -->
+      <div id="studies-cards-container" class="space-y-3 font-sans"></div>
+
+    </div>
+
+    <!-- =========================================================================
+         BÜHNE 3: DAS WISSENSCHAFTLICHE KINK-LEXIKON (#lexicon)
+         ========================================================================= -->
+    <div id="view-guide-lexicon" class="hidden space-y-4 animate-fade-in font-sans">
+      
+      <div class="rounded-3xl p-4 sm:p-5 bg-[#090d14] border border-[#1e2638] shadow-2xl space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-3">
+          <div class="space-y-0.5">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
+              Fachglossar &amp; Definitionen
+            </span>
+            <h2 class="text-base sm:text-lg font-serif text-white mt-1">
+              Das wissenschaftliche Kink-Lexikon (12 Kernbegriffe)
+            </h2>
           </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Hormon-Achse</span>
+          <span class="text-xs font-mono text-[#c5a880] font-bold">12 Termini</span>
         </div>
 
-        <div class="space-y-2 text-[10.5px] text-[#94a3b8] leading-relaxed">
-          <p>
-            Ein bis zwei Tage nach einer berauschenden Session wachen viele Subs plötzlich auf und fühlen sich leer, traurig, grundlos den Tränen nah oder verunsichert.
+        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
+          Präzise, erwachsene Begriffsdefinitionen ohne Verlegenheit. Dient dem gemeinsamen Verständnis von Sprache, Vertrauen und Schutzmechanismen im Schlafzimmer.
+        </p>
+
+        <!-- LEXIKON SUCHFELD -->
+        <div class="relative text-xs font-mono">
+          <input type="text" id="lexicon-search-input" oninput="GuideRuntime.searchLexicon(this.value)" placeholder="Begriff suchen (z. B. Subspace, RACK, Edging)..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" />
+          <span class="absolute right-3 top-2.5 text-[#94a3b8]/40 pointer-events-none">🔍</span>
+        </div>
+      </div>
+
+      <div id="lexicon-cards-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-sans"></div>
+
+    </div>
+
+    <!-- =========================================================================
+         BÜHNE 4: SOMATISCHER SUBSPACE & NEUROBIOLOGIE (#neurobiology)
+         ========================================================================= -->
+    <div id="view-guide-neurobiology" class="hidden space-y-4 animate-fade-in font-sans">
+      
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#1e2638] shadow-2xl bg-[#090d14] space-y-4">
+        <div class="border-b border-[#1e2638]/70 pb-3">
+          <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
+            Hirnforschung &amp; Endokrinologie
+          </span>
+          <h2 class="text-base sm:text-xl font-serif text-[#f8fafc] font-normal mt-1.5">
+            Die Neurobiologie des Rausches: Warum Schmerz zu Seligkeit wird
+          </h2>
+        </div>
+
+        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+          Was passiert biochemisch im Kopf des Bottoms und des Tops während einer intensiven Session? Bildgebende Verfahren (fMRI) und Hormonstudien belegen eine faszinierende neurochemische Kaskade:
+        </p>
+
+        <!-- 3 NEURO-ACHSEN -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-2">
+            <span class="text-[10px] font-mono text-[#2e5746] font-bold uppercase block">1. Transiente Hypofrontalität</span>
+            <strong class="text-white block font-serif text-sm">Abschalten des Denkhirns</strong>
+            <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
+              Nachgewiesen von Ambler et al. (2017): Starker körperlicher Reiz dämpft die exekutiven Funktionen im präfrontalen Kortex. Alltagsgrübeln, Selbstzweifel und Planungsdruck stoppen schlagartig.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-2">
+            <span class="text-[10px] font-mono text-[#c5a880] font-bold uppercase block">2. Anandamid &amp; Endorphine</span>
+            <strong class="text-white block font-serif text-sm">Der körpereigene Opiat-Rausch</strong>
+            <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
+              Wuyts &amp; Morrens (2022): Der Körper schüttet massive Mengen Endocannabinoide (Anandamid) und Endorphine aus. Schmerzreize werden im Nucleus accumbens (Belohnungszentrum) in wohlige Glut umgedeutet.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-2">
+            <span class="text-[10px] font-mono text-[#b3734a] font-bold uppercase block">3. Cortisol &amp; Oxytocin</span>
+            <strong class="text-white block font-serif text-sm">Die Bindungssynchronisation</strong>
+            <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
+              Sagarin et al. (2009): Während der Session steigt Cortisol beim Sub an und fällt danach drastisch ab. Gleichzeitig flutet Oxytocin den Körper – die dyadische Paar-Intimität erreicht ihren Höchstwert.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- BAUMEISTER ESCAPE FROM SELF VERTIEFUNG -->
+        <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
+          <strong class="text-xs text-[#c5a880] font-mono font-bold block">Roy F. Baumeister: „Masochism as Escape from Self“ (1988)</strong>
+          <p class="text-[10.5px] text-[#f8fafc] leading-relaxed">
+            Hochleistungs-Menschen und Verantwortungsträger tragen im Alltag eine erdrückende Last der Selbstbeobachtung und Entscheidungsfällung. Die freiwillige Unterwerfung unter die feste Führung eines Tops ist ein hochwirksamer Mechanismus der <strong>De-Reflexion</strong>: Der Bottom muss für eine Stunde keine einzige Entscheidung treffen, sondern darf rein im physischen Reiz existieren.
           </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =========================================================================
+         BÜHNE 5: RACK-SICHERHEITSARCHITEKTUR & PROTOKOLLE (#safety)
+         ========================================================================= -->
+    <div id="view-guide-safety" class="hidden space-y-4 animate-fade-in font-sans">
+      
+      <div class="rounded-3xl p-5 sm:p-6 border border-[#2e5746] shadow-2xl bg-[#090d14] space-y-4 malachite-glow">
+        <div class="border-b border-[#2e5746]/50 pb-3 flex items-center justify-between">
+          <div class="space-y-0.5">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#2e5746] border border-[#2e5746] inline-block">
+              Verantwortungsvolles Bündnis
+            </span>
+            <h2 class="text-base sm:text-xl font-serif text-white mt-1">
+              RACK: Risk-Aware Consensual Kink
+            </h2>
+          </div>
+          <span class="text-xs font-mono text-[#2e5746] font-bold">Gold-Standard</span>
+        </div>
+
+        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+          Das alte 80er-Jahre Modell <em>SSC (Safe, Sane, Consensual)</em> suggerierte, dass BDSM vollkommen risikofrei („safe“) gemacht werden könne. Das moderne RACK-Modell ist ehrlicher: Jedes intensive Spiel birgt reale Risiken (z. B. Kreislaufabfall, Nervenreizung, Subdrop). Wahre Sicherheit entsteht dadurch, dass beide Partner diese Risiken genau kennen und dafür Notfallprotokolle bereithalten.
+        </p>
+
+        <!-- PROTOKOLL-MATRIX -->
+        <div class="space-y-2.5 text-xs font-mono">
           <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
-            <strong class="text-white text-xs block font-bold font-mono">Die Ursache: Reiner Opiat-Entzug des Gehirns</strong>
-            <p class="text-[10px] text-[#94a3b8] leading-snug">
-              Während der Session schwamm das Gehirn in Endorphinen. Am Folgetag sind die Speicher leer, der Cortisolspiegel sinkt ab. Es handelt sich um ein rein <strong>physiologisches Phänomen</strong> – nicht um eine Beziehungskrise oder Reue.
+            <strong class="text-white block text-xs">1. Die Safeword-Ampel (Wörtliche Kommunikation)</strong>
+            <p class="text-[10.5px] text-[#94a3b8] font-sans">
+              <span class="text-[#2e5746] font-bold">GRÜN:</span> Alles perfekt, Reiz kann gesteigert werden.<br>
+              <span class="text-[#b3734a] font-bold">GELB:</span> Grenze naht; Tempo drosseln, Intensität halbieren oder Position lockern.<br>
+              <span class="text-[#991b1b] font-bold">ROT:</span> Sofortiger bedingungsloser Handlungsstillstand. Reize vom Körper nehmen, keine Diskussion.
             </p>
           </div>
 
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1.5 font-sans">
-            <strong class="text-[#c5a880] text-xs block font-bold font-mono">Der 3-Stufen-Plan für den Sub im Drop:</strong>
-            <p class="text-[10px] text-[#f8fafc]">1. <strong>Keine Panik:</strong> Erkenne das Gefühl an: <em>„Das ist nur der biochemische Drop, mein Körper erholt sich.“</em></p>
-            <p class="text-[10px] text-[#f8fafc]">2. <strong>Wärme &amp; Nahrung:</strong> Heiße Dusche, kohlenhydratreiche Mahlzeit und dicke Socken anziehen.</p>
-            <p class="text-[10px] text-[#f8fafc]">3. <strong>Signal an den Partner:</strong> Ein klares Signal geben: <em>„Ich hänge im Drop. Brauche heute Abend eine lange, stumme Umarmung.“</em></p>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
+            <strong class="text-white block text-xs">2. Nonverbale Codes bei Knebelung oder Atemgeräuschen</strong>
+            <p class="text-[10.5px] text-[#94a3b8] font-sans">
+              <strong>Handdrück-Code:</strong> 2x Drücken = Alles gut; 3x Drücken = Gelb; Hand loslassen = Rot.<br>
+              <strong>Fallengelassenes Tuch:</strong> Der Bottom hält ein leichtes Tuch oder einen Gegenstand in der geschlossenen Faust. Fällt er zu Boden, stoppt der Top sofort.
+            </p>
           </div>
-        </div>
-      </div>
 
-      <!-- SCHAM BEFREIEN & SCHUTZANKER -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="border-b border-[#1e2638]/70 pb-2">
-          <strong class="text-xs text-white block font-bold">Scham überwinden: Die Psychologie des Schutzankers</strong>
-          <p class="text-[10.5px] text-[#94a3b8]">Warum verletzliche Fantasien unter partiellem Spottverbot stehen</p>
-        </div>
-        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
-          Viele geheime Wünsche (z. B. Pegging, Keuschheitsbitte, Feminisierung, Fußdienst oder Tränen) sind gesellschaftlich mit Scham besetzt. Wenn ein Sub diese Wünsche im Fragebogen mit dem Scham-Marker versieht, verlangt das vom Top absolute Achtsamkeit:
-        </p>
-        <div class="p-3 rounded-2xl bg-[#000000] border border-[#8a5232] text-[10px] space-y-1">
-          <strong class="text-[#b3734a] font-mono text-xs block font-bold">Das Gesetz des Schutzankers (§ 1 Abs. 2 Beziehungsvertrag):</strong>
-          <p class="text-[#94a3b8] leading-snug">
-            Jede Fantasie, die mit Scham markiert wurde, steht unter <strong>absolutem Alltags-Spottverbot</strong>. Der Top darf diese Sehnsucht niemals im Streit oder vor Dritten als Witz erwähnen. Sie wird ausschließlich behutsam, im geschützten Halbdunkel und mit verbaler Bestätigung erkundet.
-          </p>
+          <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
+            <strong class="text-white block text-xs">3. Der 10-Minuten Durchblutungs- &amp; Nervencheck</strong>
+            <p class="text-[10.5px] text-[#94a3b8] font-sans">
+              Bei Fesselungen an Händen oder Füßen alle 10 Minuten den <strong>Kapillar-Refill-Test</strong> machen: Daumennagel für 2 Sekunden fest auf die Fingerkuppe drücken. Nach dem Loslassen muss die weiße Stelle innerhalb von 2 Sekunden wieder rosig durchblutet sein. Kribbeln oder Taubheit verlangt sofortiges Lockern.
+            </p>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <div id="guide-view-safety" class="hidden space-y-3 text-xs animate-fade-in font-sans">
+    <!-- =========================================================================
+         BÜHNE 6: AKUT-RATGEBER & SOFORTHILFE (#sos)
+         ========================================================================= -->
+    <div id="view-guide-sos" class="hidden space-y-4 animate-fade-in font-sans">
       
-      <!-- NERVEN-SICHERHEITSKARTE -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#142b24] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#2e5746]/50 pb-2">
-          <div>
-            <strong class="text-xs text-[#2e5746] block font-bold font-mono">Nerven-Topologie: Die 2 vulnerablen Hauptbahnen</strong>
-            <span class="text-[10px] text-[#94a3b8]">Verhinderung von Fallhand und Fußheberschwäche</span>
+      <div class="rounded-3xl p-5 sm:p-6 border-2 border-[#991b1b] shadow-2xl bg-[#090d14] space-y-4 bordeaux-glow">
+        <div class="border-b border-[#991b1b]/60 pb-3 flex items-center justify-between">
+          <div class="space-y-0.5">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#450a0a] text-white border border-[#991b1b] inline-block animate-pulse">
+              Soforthilfe-Cockpit
+            </span>
+            <h2 class="text-base sm:text-xl font-serif text-white mt-1">
+              Akut-Ratgeber: Was tun bei Zwischenfällen?
+            </h2>
           </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#2e5746] border border-[#2e5746] font-mono text-[9px] font-bold">Neurologie</span>
+          <span class="text-xs font-mono text-[#991b1b] font-bold">1-Tap Aktionen</span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1.5">
-            <strong class="text-white text-xs block font-bold font-serif">1. Nervus radialis (Handgelenke / Daumen):</strong>
-            <p class="text-[10.5px] text-[#94a3b8] leading-snug">
-              Verläuft direkt über der Speiche an der Daumenseite des Handgelenks. Zu enge Seile oder harte Metallmanschetten drücken den Nerv direkt auf den Knochen.
-            </p>
-            <div class="p-2 rounded-xl bg-[#090d14] border border-[#1e2638] text-[9.5px] text-[#c5a880] font-mono">
-              <strong>Warnzeichen:</strong> Kribbeln im Daumenrücken („Ameisenlaufen“) oder Unfähigkeit, die Hand nach oben zu strecken (Fallhand). <em>Sofort lockern!</em>
-            </div>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1.5">
-            <strong class="text-white text-xs block font-bold font-serif">2. Nervus peroneus (Wadenbeinköpfchen / Knie):</strong>
-            <p class="text-[10.5px] text-[#94a3b8] leading-snug">
-              Liegt knapp unterhalb der Knieaußenseite oberflächlich auf dem Fibulaköpfchen. Häufig gefährdet bei engen Kniekehlen-Fesselungen oder harten Seilkanten.
-            </p>
-            <div class="p-2 rounded-xl bg-[#090d14] border border-[#1e2638] text-[9.5px] text-[#c5a880] font-mono">
-              <strong>Warnzeichen:</strong> Taubheitsgefühl im Fußrücken oder Nachschleifen der Fußspitze beim Gehen (Fußheberschwäche).
-            </div>
-          </div>
-        </div>
-
-        <!-- DER KAPILLARBLUT-TEST -->
-        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-1.5">
-          <strong class="text-[#2e5746] text-xs block font-bold font-mono">Der 2-Sekunden Kapillar-Refill Test (Pflicht bei jeder Fesselung):</strong>
-          <p class="text-[10.5px] text-[#f8fafc] leading-snug">
-            Drücke fest für 3 Sekunden auf das Nagelbett eines gefesselten Fingers oder Zehs. Der Nagel wird weiß. Lasse los: Die rosa Farbe <strong>muss in unter 2 Sekunden vollständig zurückkehren</strong>. Dauert es länger oder wird die Haut bläulich/kalt, ist die arterielle Versorgung kompromittiert – Fesselung sofort öffnen.
-          </p>
-        </div>
-      </div>
-
-      <!-- UROLOGISCHE MIKROPFLEGE -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-[#c5a880] block font-bold font-mono">Urologische Mikro-Hygiene &amp; Gewebeschutz</strong>
-            <span class="text-[10px] text-[#94a3b8]">Balanitis-Prävention ohne dauerndes Entriegeln (Canivet et al. 2025)</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Urologie</span>
-        </div>
-
-        <p class="text-[10.5px] text-[#94a3b8] leading-snug">
-          Über 64 % aller Keuschheits-Abbrüche entstehen durch anaerobe Bakterienfilme unter der Vorhaut infolge verbliebener Urintröpfchen. Tägliche 50ml Kochsalzspülungen senken diese Quote auf unter 2,8 %.
+        <p class="text-[11px] text-[#f8fafc] leading-relaxed">
+          Ruhe bewahren. Zwischenfälle sind keine Beziehungsfehler, sondern physiologische Reaktionen des Nervensystems. Nutze die vorbereiteten Sofortmaßnahmen:
         </p>
 
-        <div class="space-y-1.5 text-[10.5px] text-[#f8fafc]">
-          <p>• <strong>Das tägliche Spülritual:</strong> 50ml Spülspritze mit stumpfer Knopfkanüle (0,9 % NaCl oder lauwarmes Wasser) zwischen Vorhaut und Eichel einführen und sanft durchspülen.</p>
-          <p>• <strong>Das Trocken-Abtupfen:</strong> Die Eichelkammer nach dem Wasserlassen mit Toilettenpapier trocken tupfen, nicht reiben.</p>
-          <p>• <strong>Erste Rötungen:</strong> Bei beginnendem Brennen sofort 24h Tragepause verordnen, mit Dexpanthenol-Salbe behandeln und erst nach vollständiger Beruhigung wieder verriegeln.</p>
-        </div>
-      </div>
-
-      <!-- RACK & ETHIK -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="border-b border-[#1e2638]/70 pb-2">
-          <strong class="text-xs text-white block font-bold">RACK vs. SSC: Risiko-Bewusstsein statt naiver Sicherheit</strong>
-          <p class="text-[10.5px] text-[#94a3b8]">Warum echte Risikokenntnis sicherer ist als das Versprechen von „Safe“</p>
-        </div>
-        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
-          Während das klassische <strong>SSC (Safe, Sane, Consensual)</strong> suggeriert, BDSM könne vollkommen risikofrei betrieben werden, setzt TACTUS auf <strong>RACK (Risk-Aware Consensual Kink)</strong>: Echte Sicherheit entsteht, wenn beide Partner die realen physischen und seelischen Risiken kennen, akzeptieren und Vorkehrungen treffen (Verbandschere, Safewords, Notfall-PIN).
-        </p>
-      </div>
-
-    </div>
-
-    <div id="guide-view-dynamics" class="hidden space-y-3 text-xs animate-fade-in font-sans">
-      
-      <!-- DIE TOP-FIRST DOKTRIN -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-[#c5a880] block font-bold font-mono">Top Fatigue: Warum dominante Partnerinnen erschöpfen</strong>
-            <span class="text-[10px] text-[#94a3b8]">Führen ist ein Privileg der Freude, keine unbezahlte Mehrarbeit</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Top-First</span>
-        </div>
-
-        <div class="space-y-2 text-[10.5px] text-[#94a3b8] leading-relaxed">
-          <p>
-            In vielen D/s- und Keuschheitsbeziehungen brennt der Top nach wenigen Wochen aus. Der Grund: Der Bottom lädt seine Fantasien bei der Partnerin ab. Sie soll plötzlich strafen, kontrollieren, ermahnen und den Schlüssel hüten. Aus Leidenschaft wird ein zweiter, anstrengender Verwaltungsjob.
-          </p>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-1 text-white">
-            <strong class="text-[#c5a880] font-mono text-xs block font-bold">Das Gesetz des Dienens in TACTUS:</strong>
-            <p class="text-[10px] text-[#94a3b8] leading-snug">
-              Dienen bedeutet primär Alltagsentlastung. Der Bottom übernimmt Hausarbeit, hält den Kopf des Tops frei und sorgt für Ruhe. Nur wenn der Top mental entlastet ist, erwacht das Begehren zu führen.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- DER TOPDROP -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="border-b border-[#1e2638]/70 pb-2">
-          <strong class="text-xs text-white block font-bold">Der Topdrop: Schuldgefühle &amp; Leere nach der Führung</strong>
-          <p class="text-[10.5px] text-[#94a3b8]">Was geschieht mit der führenden Person nach intensiven Sessions?</p>
-        </div>
-        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
-          Nach fordernder Zucht empfinden viele Tops am Folgetag plötzliche Schuldgefühle oder emotionale Erschöpfung durch die ständige Wachsamkeit.
-        </p>
-        <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1 text-[10.5px]">
-          <strong class="text-[#c5a880] font-mono text-xs block font-bold">Die Pflicht des Bottoms beim Topdrop:</strong>
-          <p class="text-[#94a3b8]">
-            Der Bottom muss dem Top unaufgefordert und klar rückmelden: <em>„Ich bin unversehrt, dankbar für deine Führung und vollkommen sicher bei dir.“</em> Jedes Schmollen oder Zurückziehen des Bottoms nach einer Session verstärkt den Topdrop massiv.
-          </p>
-        </div>
-      </div>
-
-      <!-- ANTI-TFTB CHECKLISTE -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="border-b border-[#1e2638]/70 pb-2">
-          <strong class="text-xs text-white block font-bold">Anti-Topping from the Bottom (TftB): Der Selbst-Check</strong>
-          <p class="text-[10.5px] text-[#94a3b8]">Verdeckte Regieführung entlarven (§ 2 Abs. 3 Beziehungsvertrag)</p>
-        </div>
-
-        <div class="space-y-1.5 text-[10.5px]">
-          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] flex items-start gap-2">
-            <span class="text-[#c5a880] font-bold font-mono">1.</span>
-            <span class="text-[#94a3b8]">Schmollst du, wenn der Top heute keine Lust auf Spiel, Zucht oder Keuschheits-Talk hat? <strong class="text-white">(TftB)</strong></span>
-          </div>
-          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] flex items-start gap-2">
-            <span class="text-[#c5a880] font-bold font-mono">2.</span>
-            <span class="text-[#94a3b8]">Schlägst du dem Top selbst vor, wie viele Schläge du für ein Vergehen bekommen müsstest? <strong class="text-white">(TftB)</strong></span>
-          </div>
-          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] flex items-start gap-2">
-            <span class="text-[#c5a880] font-bold font-mono">3.</span>
-            <span class="text-[#94a3b8]">Nutzt du Unpünktlichkeit bewusst als Provokation, um Zucht zu erzwingen? <strong class="text-white">(TftB)</strong></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- DIE 4 PHASEN DER SESSION -->
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="border-b border-[#1e2638]/70 pb-2">
-          <strong class="text-xs text-white block font-bold">Die 4 Phasen einer Session</strong>
-          <p class="text-[10.5px] text-[#94a3b8]">Vom Alltag ins Halbdunkel ohne Verlegenheit</p>
-        </div>
-        <div class="space-y-2 pt-1 text-[10.5px]">
-          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] space-y-0.5">
-            <strong class="text-[#c5a880] block font-bold font-mono">Phase 1: Transition &amp; Erdung</strong>
-            <p class="text-[#94a3b8]">Alltag abstreifen. Kniestand, Entkleidung, synchrone 4-7-8 Atemzüge.</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] space-y-0.5">
-            <strong class="text-white block font-bold font-mono">Phase 2: Machtaufbau &amp; Reizvektoren</strong>
-            <p class="text-[#94a3b8]">Umsetzung des Hauptmotivs (Impact, Fesselung oder sensorischer Entzug).</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] space-y-0.5">
-            <strong class="text-[#b3734a] block font-bold font-mono">Phase 3: Katharsis (Fokus auf den Top)</strong>
-            <p class="text-[#94a3b8]">Entladung und Genuss der Herrin. Sub dient rückhaltlos.</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2e5746] space-y-0.5">
-            <strong class="text-[#2e5746] block font-bold font-mono">Phase 4: Reverse Aftercare &amp; Rüst-Pflege</strong>
-            <p class="text-[#94a3b8]">Sub deckt den Top zu, massiert ermüdete Muskeln und desinfiziert die Ausrüstung.</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div id="guide-view-emergency" class="hidden space-y-3 text-xs animate-fade-in font-sans">
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#450a0a] space-y-3 shadow-md">
-        <div class="flex items-center justify-between border-b border-[#991b1b]/40 pb-2">
-          <div>
-            <strong class="text-xs text-[#991b1b] block font-bold font-mono">Akut- &amp; Symptom-Ratgeber</strong>
-            <span class="text-[10px] text-[#94a3b8]">Sofortmaßnahmen bei somatischen und emotionalen Ausnahmezuständen</span>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#991b1b] border border-[#991b1b] font-mono text-[9px] font-bold">Notfall-Ratgeber</span>
-        </div>
-
-        <div class="space-y-2 pt-1 text-[10.5px]">
+        <!-- AKUT-MATRIX MIT 1-KLICK BUTTONS -->
+        <div class="space-y-3 text-xs">
           
           <!-- SYMPTOM 1: KÄLTEZITTERN -->
-          <details class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
-            <summary class="font-bold text-white cursor-pointer flex items-center justify-between">
-              <span>Sub zittert unkontrolliert nach der Session (Kältezittern / Schock)</span>
-              <span class="text-[#c5a880] font-mono text-[10px]">Lösung &amp; Tool ↓</span>
-            </summary>
-            <div class="pt-2 border-t border-[#1e2638] space-y-2 text-[#94a3b8] leading-snug">
-              <p><strong>Ursache:</strong> Plötzlicher Abfall von Adrenalin und Endorphinen nach intensiver Stimulation. Die peripheren Blutgefäße öffnen sich, Wärme entweicht rasch.</p>
-              <p><strong>Sofortmaßnahme:</strong> 8kg-Gewichtsdecke auflegen, dicke Socken anziehen, Traubenzucker oder gesüßten warmen Tee reichen. 4-7-8 Vagus-Atmung synchron mit dem Top durchführen.</p>
-              <div class="pt-1 flex justify-end">
-                <a href="session.html" class="px-3 py-1.5 rounded-xl bg-[#142b24] hover:bg-[#2e5746] border border-[#2e5746] text-white font-bold text-xs font-mono touch-btn flex items-center gap-1 shadow-sm">
-                  <span>4-7-8 Vagus-Erdung starten ↗</span>
-                </a>
-              </div>
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
+            <div class="flex items-center justify-between">
+              <strong class="text-white text-xs block font-bold">Symptom 1: Kältezittern &amp; Schüttelfrost</strong>
+              <span class="text-[9.5px] font-mono text-[#c5a880]">Adrenalin-Abfall</span>
             </div>
-          </details>
+            <p class="text-[10.5px] text-[#94a3b8] leading-snug">
+              Tritt häufig unmittelbar nach Schmerz- oder Fesselungsphasen auf, wenn der Körper vom Fluchtmodus in die Erschöpfung fällt.
+            </p>
+            <div class="p-2.5 rounded-xl bg-[#090d14] border border-[#2e5746] text-[#2e5746] text-[10px] space-y-0.5 font-mono">
+              <strong>Sofortmaßnahme:</strong> Schwere Gewichtsdecke überlegen, dicke Socken anziehen, warmen Tee mit Zucker reichen.
+            </div>
+            <div class="pt-1 flex justify-end">
+              <a href="session.html#view=live" class="px-3 py-1.5 rounded-xl bg-[#142b24] hover:bg-[#2e5746] text-white border border-[#2e5746] font-mono text-[10px] font-bold touch-btn">
+                4-7-8 Vagus-Atmung öffnen ↗
+              </a>
+            </div>
+          </div>
 
-          <!-- SYMPTOM 2: KREISLAUFABSACKER -->
-          <details class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
-            <summary class="font-bold text-white cursor-pointer flex items-center justify-between">
-              <span>Schwarz vor Augen beim Aufrichten (Orthostatische Hypotonie)</span>
-              <span class="text-[#c5a880] font-mono text-[10px]">Lösung ↓</span>
-            </summary>
-            <div class="pt-2 border-t border-[#1e2638] space-y-1 text-[#94a3b8] leading-snug">
-              <p><strong>Ursache:</strong> Langes Knien oder Liegen in Fesseln lässt Blut in den Beinen versacken.</p>
-              <p><strong>Sofortmaßnahme:</strong> Sub sofort flach auf den Rücken legen und Beine hochlagern (z. B. auf ein Kissen oder den Schoß des Tops). Ein Glas Wasser mit einer Prise Salz reichen. Mindestens 10 Minuten liegen bleiben.</p>
+          <!-- SYMPTOM 2: TAG-2 SUBDROP -->
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
+            <div class="flex items-center justify-between">
+              <strong class="text-white text-xs block font-bold">Symptom 2: Der Tag-2-Subdrop (Traurigkeit, Leere, Tränen)</strong>
+              <span class="text-[9.5px] font-mono text-[#b3734a]">Opiat-Entzug</span>
             </div>
-          </details>
+            <p class="text-[10.5px] text-[#94a3b8] leading-snug">
+              24 bis 48 Stunden nach einer intensiven Session sind die Endorphinspeicher leer. Der Bottom zweifelt plötzlich an sich oder der Beziehung.
+            </p>
+            <div class="p-2.5 rounded-xl bg-[#090d14] border border-[#8a5232] text-[#b3734a] text-[10px] space-y-0.5 font-mono">
+              <strong>Sofortmaßnahme:</strong> Nicht rational diskutieren! Körperkontakt schenken, bestätigen („Du warst großartig“) und keinen Streit beginnen.
+            </div>
+            <div class="pt-1 flex justify-end">
+              <a href="chat.html" class="px-3 py-1.5 rounded-xl bg-[#4a2818] hover:bg-[#8a5232] text-[#f8fafc] border border-[#8a5232] font-mono text-[10px] font-bold touch-btn">
+                Trost-Signal in Paar-Stream senden ↗
+              </a>
+            </div>
+          </div>
 
-          <!-- SYMPTOM 3: SUBDROP NACH 24H -->
-          <details class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
-            <summary class="font-bold text-white cursor-pointer flex items-center justify-between">
-              <span>Plötzliche Traurigkeit, Weinkrämpfe oder Leere nach 24–48 Stunden (Subdrop)</span>
-              <span class="text-[#c5a880] font-mono text-[10px]">Lösung &amp; Signal ↓</span>
-            </summary>
-            <div class="pt-2 border-t border-[#1e2638] space-y-2 text-[#94a3b8] leading-snug">
-              <p><strong>Ursache:</strong> Opiat-Entzug des Gehirns nach der körpereigenen Endorphinausschüttung (Ambler et al. 2017).</p>
-              <p><strong>Sofortmaßnahme:</strong> Keine Vorwürfe, keine Zucht. Eine feste Umarmung von 10 Minuten, kohlenhydratreiche Mahlzeit und verbale Bestätigung des Tops: <em>„Du hast alles richtig gemacht, ich halte dich.“</em></p>
-              <div class="pt-1 flex justify-end">
-                <a href="chat.html" class="px-3 py-1.5 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/60 text-[#c5a880] font-bold text-xs font-mono touch-btn flex items-center gap-1 shadow-sm">
-                  <span>Trost-Signal im Paar-Stream senden ↗</span>
-                </a>
-              </div>
+          <!-- SYMPTOM 3: VERGESSENER SAFE-CODE ODER SCHWELLUNG -->
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#991b1b] space-y-2">
+            <div class="flex items-center justify-between">
+              <strong class="text-white text-xs block font-bold">Symptom 3: Schwellung, Taubheit oder Panik im Verschluss</strong>
+              <span class="text-[9.5px] font-mono text-[#991b1b] font-bold">RACK-Notfall</span>
             </div>
-          </details>
-
-          <!-- SYMPTOM 4: KÄFIG-DRUCKSTELLEN -->
-          <details class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
-            <summary class="font-bold text-white cursor-pointer flex items-center justify-between">
-              <span>Druckschmerz am Basisring oder Schwellung am Damm</span>
-              <span class="text-[#c5a880] font-mono text-[10px]">Lösung &amp; Not-Aus ↓</span>
-            </summary>
-            <div class="pt-2 border-t border-[#1e2638] space-y-2 text-[#94a3b8] leading-snug">
-              <p><strong>Ursache:</strong> Zu kleiner Ringdurchmesser oder eingeklemmte Skrotalhaut bei nächtlicher Erektion.</p>
-              <p><strong>Sofortmaßnahme:</strong> Sofortiges Lösen des Verschlusses. 48 Stunden Tragepause. Bei Taubheit oder bläulicher Verfärbung Break-Glass-Notfallcode nutzen, kühlen und mit Panthenol pflegen.</p>
-              <div class="pt-1 flex justify-end">
-                <a href="protocol.html#tab=dashboard" class="px-3 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-bold text-xs font-mono touch-btn flex items-center gap-1 shadow-sm">
-                  <span>Zur Notfall-Öffnung (Break-Glass) ↗</span>
-                </a>
-              </div>
+            <p class="text-[10.5px] text-[#94a3b8] leading-snug">
+              Wenn das Genital im Käfig anschwillt, die Haut blau anläuft oder Panik aufsteigt, greift das Deeskalations-Protokoll.
+            </p>
+            <div class="pt-1 flex justify-end">
+              <a href="protocol.html#tab=dashboard" class="px-3 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] text-white border border-[#991b1b] font-mono text-[10px] font-bold touch-btn animate-pulse">
+                60s Notfall-Öffnung (Break-Glass) aufrufen ↗
+              </a>
             </div>
-          </details>
+          </div>
 
         </div>
       </div>
+
     </div>
-
-    <div id="guide-view-science" class="hidden space-y-3 text-xs animate-fade-in font-sans">
-      <div class="rounded-3xl p-5 bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-2">
-          <div>
-            <strong class="text-xs text-white block font-bold font-serif">Empirische Entkriminalisierung &amp; Neurobiologie</strong>
-            <p class="text-[10.5px] text-[#94a3b8]">Peer-Reviewed Studien mit PubMed-Referenzen und offiziellen DOIs</p>
-          </div>
-          <span class="px-2 py-0.5 rounded bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 font-mono text-[9px] font-bold">Evidence Based</span>
-        </div>
-
-        <!-- CLUSTER FILTER LEISTE -->
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-xs font-mono">
-          <button type="button" onclick="GuideRuntime.filterStudies('all')" data-study-filter="all" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shadow-sm">
-            Alle Studien
-          </button>
-          <button type="button" onclick="GuideRuntime.filterStudies('psychology_health')" data-study-filter="psychology_health" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap">
-            Psychische Gesundheit
-          </button>
-          <button type="button" onclick="GuideRuntime.filterStudies('neurobiology_flow')" data-study-filter="neurobiology_flow" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap">
-            Top-Flow &amp; Cortisol
-          </button>
-          <button type="button" onclick="GuideRuntime.filterStudies('subspace_asc')" data-study-filter="subspace_asc" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap">
-            Subspace &amp; Drop
-          </button>
-          <button type="button" onclick="GuideRuntime.filterStudies('vagus_hrv')" data-study-filter="vagus_hrv" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap">
-            Vagus &amp; HRV
-          </button>
-          <button type="button" onclick="GuideRuntime.filterStudies('urology_chastity')" data-study-filter="urology_chastity" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap">
-            Urologie &amp; Mazeration
-          </button>
-        </div>
-
-        <div id="guide-studies-container" class="space-y-2.5 pt-1">
-          <!-- Dynamisch aus data/scientific_studies.js befüllt -->
-        </div>
-      </div>
-    </div>
-
-    <section class="rounded-3xl p-5 sm:p-7 border border-[#c5a880]/60 shadow-2xl bg-[#090d14] space-y-4 font-sans">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-3">
-        <div class="space-y-0.5">
-          <span class="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
-            Seelischer Anker &amp; Entpathologisierung
-          </span>
-          <h3 class="text-base sm:text-xl font-bold text-white mt-1 font-serif">
-            Das Manifest des Vertrauens: Warum ihr vollkommen normal seid
-          </h3>
-        </div>
-        <span class="px-3 py-1 rounded-xl bg-[#000000] text-[#d4af37] font-mono text-xs font-bold border border-[#d4af37]/40 gold-glow">
-          DSM-5 &amp; ICD-11 Entstigmatisiert
-        </span>
-      </div>
-
-      <p class="text-xs sm:text-sm text-[#f8fafc] leading-relaxed font-normal">
-        Die größte Hürde für Paare auf dem Weg in tiefere Macht- und Hingabedynamiken ist selten die Technik oder das Seil – es ist die nagende, gesellschaftlich anerzogene Schamfrage: <em>„Stimmt eigentlich etwas nicht mit mir, dass ich mich unterwerfen, schlagen, wegsperren oder dominieren lassen will?“</em>
-      </p>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
-        
-        <!-- SÄULE 1: ENTPATHOLOGISIERUNG -->
-        <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1.5 shadow-sm">
-          <div class="flex items-center gap-2 text-[#c5a880] font-bold text-xs font-mono">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]"></span>
-            <span>1. Keine Krankheit, keine Störung</span>
-          </div>
-          <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-            Sowohl die <strong>Weltgesundheitsorganisation (ICD-11)</strong> als auch die <strong>American Psychiatric Association (DSM-5)</strong> haben einvernehmliche BDSM-Praktiken, Fetische und Keuschheit offiziell aus den Katalogen psychischer Störungen gestrichen. Konsensueller Machtaustausch ist eine gesunde, reife Spielart menschlicher Beziehungsgestaltung.
-          </p>
-        </div>
-
-        <!-- SÄULE 2: EMPIRISCHE BEZIEHUNGS-RESILIENZ -->
-        <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1.5 shadow-sm">
-          <div class="flex items-center gap-2 text-[#d4af37] font-bold text-xs font-mono">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#d4af37]"></span>
-            <span>2. Höhere Beziehungsreife &amp; Resilienz</span>
-          </div>
-          <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-            In der wegweisenden Vergleichsstudie von <strong>Wismeijer &amp; van Assen (2013, Journal of Sexual Medicine, n=902)</strong> wiesen BDSM-Praktizierende signifikant <em>höhere Werte für emotionale Offenheit und Beziehungszufriedenheit</em> sowie <em>messbar geringere Bindungsängste und Neurotizismus</em> auf als die Kontrollgruppe.
-          </p>
-        </div>
-
-        <!-- SÄULE 3: RADIKALES VERTRAUEN -->
-        <div class="p-4 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-1.5 shadow-sm">
-          <div class="flex items-center gap-2 text-[#2e5746] font-bold text-xs font-mono">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#2e5746]"></span>
-            <span>3. Radikale Intimität statt Gewalt</span>
-          </div>
-          <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-            Sich freiwillig fesseln, begrenzen oder dem Schmerz eines geliebten Partners anvertrauen zu können, erfordert kein Defizit, sondern den <strong>Mut zu maximaler emotionaler Nacktheit</strong>. Der Top führt nicht aus Härte, sondern übernimmt die beschützende Verantwortung, den Geist des Subs aus dem Alltagsgrübeln in pure Präsenz zu erden.
-          </p>
-        </div>
-
-        <!-- SÄULE 4: BEFREIUNG VON DER SCHAM -->
-        <div class="p-4 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-1.5 shadow-sm">
-          <div class="flex items-center gap-2 text-[#b3734a] font-bold text-xs font-mono">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#b3734a]"></span>
-            <span>4. Das Geschenk der gemeinsamen Tiefe</span>
-          </div>
-          <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-            Eure Fantasien sind kein Makel, sondern eine Schatztruhe. Indem ihr eure Sehnsüchte im Fragebogen ohne Spott offenlegt, gewinnt eure Partnerschaft eine Tiefe, Echtheit und erotische Lebendigkeit, die den meisten konventionellen Beziehungen zeitlebens verwehrt bleibt.
-          </p>
-        </div>
-
-      </div>
-
-      <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/30 text-center">
-        <p class="text-xs text-[#c5a880] font-serif italic">
-          „Echtes Vertrauen beginnt genau dort, wo die Kontrolle endet. Ihr seid sicher bei euch.“
-        </p>
-      </div>
-    </section>
 
   </main>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
 
+  <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
   <script src="data/scientific_studies.js"></script>
+  <script src="data/questions_part1.js"></script>
+  <script src="data/questions_part2.js"></script>
+  <script src="data/questions_part3.js"></script>
+  <script src="data/equipment_catalog.js"></script>
+  <script src="data/toy_combinatorics.js"></script>
+  <script src="data/chastity_database.js"></script>
+  <script src="js/ai_adapter.js"></script>
+  <script src="js/hub_photos.js"></script>
   <script src="js/hub_toys.js"></script>
   <script src="js/hub_context.js"></script>
   <script src="js/cloud_sync.js"></script>
+  <script src="js/protocol_core.js"></script>
 
+  <!-- GUIDE RUNTIME CONTROLLER ENGINE -->
   <script>
     (function(window) {
       'use strict';
 
+      let currentStage = 'manifest'; // 'manifest' | 'studies' | 'lexicon' | 'neurobiology' | 'safety' | 'sos'
       let activeStudyCategory = 'all';
+      let studySearchQuery = '';
+      let lexiconSearchQuery = '';
       let currentRoleState = 'top';
+
+      // 12-teiliges wissenschaftliches Fachlexikon (sauber in guide.html verankert)
+      const LEXIKON_DATA = [
+        {
+          term: "SSC (Safe, Sane, Consensual)",
+          def: "Klassischer Grundsatz der 1980er Jahre: Alle BDSM-Handlungen müssen sicher, vernünftig und zu 100 % einvernehmlich sein.",
+          link: "https://de.wikipedia.org/wiki/Safe,_Sane,_Consensual"
+        },
+        {
+          term: "RACK (Risk-Aware Consensual Kink)",
+          def: "Modernes Verantwortungsmodell: Beide Partner sind sich der realen physischen und psychischen Risiken bewusst und tragen die Verantwortung gemeinsam.",
+          link: "https://de.wikipedia.org/wiki/RACK"
+        },
+        {
+          term: "Aftercare (Nachsorge)",
+          def: "Verbindliche liebevolle Fürsorge nach einer Session (Kuscheln, Wärmedecken, Vagus-Atmung, Tee) zur seelischen und hormonellen Stabilisierung.",
+          link: "https://de.wikipedia.org/wiki/Aftercare_(BDSM)"
+        },
+        {
+          term: "Subdrop / Topdrop",
+          def: "Hormoneller und emotionaler Erschöpfungszustand 24–48h nach intensiven Sessions durch den natürlichen Abfall von Endorphinen und Dopamin.",
+          link: "https://de.wikipedia.org/wiki/Subdrop"
+        },
+        {
+          term: "Subspace",
+          def: "Tranceähnlicher, glückseliger Flow-Zustand des Bottoms durch Reize, Endocannabinoide und transiente Hypofrontalität (Abschalten des Denkhirns).",
+          link: "https://de.wikipedia.org/wiki/Subspace"
+        },
+        {
+          term: "Shibari / Kinbaku",
+          def: "Traditionelle japanische Kunst des Seilbindens mit geölten Naturfasern (Jute/Hanf) zur Erzeugung von Druckpunkten, Mustern und Trance.",
+          link: "https://de.wikipedia.org/wiki/Shibari"
+        },
+        {
+          term: "Praise Play",
+          def: "Führung und Bestätigung des submissiven Partners durch warmes, echtes Lob und Zärtlichkeit („Braves Mädchen“ / „Guter Junge“) statt Härte.",
+          link: "https://de.wikipedia.org/wiki/BDSM"
+        },
+        {
+          term: "Tease & Denial / Edging",
+          def: "Gezieltes Hochtreiben der sexuellen Erregung bis kurz vor die Schwelle mit anschließendem abruptem Abbruch zur Steigerung der Geduld.",
+          link: "https://de.wikipedia.org/wiki/Edging"
+        },
+        {
+          term: "Bratting & Brat Taming",
+          def: "Spielerisches, freches Provozieren des Dominanten zur Herausforderung einer liebevoll-strengen Zurechtweisung und Bändigung.",
+          link: "https://de.wikipedia.org/wiki/BDSM"
+        },
+        {
+          term: "Primal Play",
+          def: "Instinktgetriebenes, körperbetontes Spiel mit Ringen, Balgen, spielerischem Beißen und Jagen ohne formelle Regeln.",
+          link: "https://de.wikipedia.org/wiki/BDSM"
+        },
+        {
+          term: "Caregiver / Little (DDLG)",
+          def: "Erotisierte Fürsorge-Hierarchie zwischen schützender Elternfigur und beschütztem Partner zur seelischen Entlastung vom Alltagsstress.",
+          link: "https://de.wikipedia.org/wiki/Adult_Baby"
+        },
+        {
+          term: "CBT (Cock and Ball Torture)",
+          def: "Gezielte Schmerz- und Dehnungsreize an den männlichen Genitalien (z. B. Hodenringe, Gewichte, dosierte Klapser, Zugbänder).",
+          link: "https://de.wikipedia.org/wiki/Cock_and_Ball_Torture"
+        }
+      ];
 
       function escapeHtml(str) {
         if (!str) return '';
@@ -866,6 +703,40 @@
         }, 2800);
       }
 
+      function switchStage(stageKey) {
+        currentStage = stageKey;
+
+        const stages = ['manifest', 'studies', 'lexicon', 'neurobiology', 'safety', 'sos'];
+        stages.forEach(st => {
+          const view = document.getElementById(`view-guide-${st}`);
+          const btn = document.getElementById(`tab-stage-${st}`);
+          if (view) {
+            if (st === stageKey) view.classList.remove('hidden');
+            else view.classList.add('hidden');
+          }
+          if (btn) {
+            if (st === stageKey) {
+              if (st === 'sos') {
+                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#991b1b] border border-red-700 text-white touch-btn shadow-md whitespace-nowrap";
+              } else {
+                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap";
+              }
+            } else {
+              if (st === 'sos') {
+                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#450a0a]/30 border border-[#991b1b] text-[#f8fafc] hover:bg-[#991b1b] touch-btn whitespace-nowrap";
+              } else {
+                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap";
+              }
+            }
+          }
+        });
+
+        window.location.hash = `tab=${stageKey}`;
+
+        if (stageKey === 'studies') renderStudiesExplorer();
+        if (stageKey === 'lexicon') renderLexicon();
+      }
+
       function initRoleDisplay() {
         const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
         const roleText = document.getElementById('active-role-text');
@@ -895,11 +766,7 @@
         const isTop = (assignedRole === keyholder);
 
         if (mode === 'flr_24_7') {
-          if (!isTop) {
-            showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe erfordert formellen Antrag im Paar-Stream (chat.html).");
-          } else {
-            showToast("Führung ist fest arretiert (FLR 24/7). Übergabe nur über feierliche Zeremonie im Paar-Stream möglich.");
-          }
+          showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe nur über formellen Antrag im Stream.");
           return;
         }
 
@@ -923,110 +790,193 @@
         }
       }
 
-      function switchGuideTab(tabKey) {
-        const allTabs = ['praxis', 'sub_experience', 'safety', 'dynamics', 'emergency', 'science'];
-        allTabs.forEach(k => {
-          const view = document.getElementById(`guide-view-${k}`);
-          const btn = document.getElementById(`tab-guide-${k}`);
-          if (view) {
-            if (k === tabKey) view.classList.remove('hidden');
-            else view.classList.add('hidden');
-          }
-          if (btn) {
-            if (k === tabKey) {
-              btn.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap";
-            } else {
-              let textCol = 'text-[#94a3b8]';
-              if (k === 'safety') textCol = 'text-[#2e5746]';
-              else if (k === 'dynamics') textCol = 'text-[#c5a880]';
-              else if (k === 'emergency') textCol = 'text-[#991b1b]';
-              btn.className = `px-3.5 py-2 rounded-xl text-xs font-bold bg-[#090d14] border border-[#1e2638] ${textCol} hover:text-[#f8fafc] touch-btn whitespace-nowrap`;
-            }
-          }
-        });
+      function renderStudiesExplorer() {
+        const container = document.getElementById('studies-cards-container');
+        const pillsContainer = document.getElementById('studies-category-pills');
+        const countBadge = document.getElementById('studies-count-badge');
+        if (!container) return;
 
-        if (tabKey === 'science') {
-          renderScientificStudiesList();
+        let studies = [];
+        if (window.ScientificStudies && typeof window.ScientificStudies.getAll === 'function') {
+          studies = window.ScientificStudies.getAll();
+        } else if (Array.isArray(window.scientificStudies)) {
+          studies = window.scientificStudies;
         }
-      }
 
-      function filterScienceStudies(category) {
-        activeStudyCategory = category;
+        const categories = [
+          { id: 'all', label: 'Alle Studien' },
+          { id: 'demographics_health', label: 'Prävalenz & Gesundheit' },
+          { id: 'neurobiology_endocrinology', label: 'Neurobiologie & Biochemie' },
+          { id: 'psychology_subspace', label: 'Kognition & Subspace' },
+          { id: 'relationship_bonding', label: 'Beziehung & Partnerschaft' },
+          { id: 'forensics_ethics', label: 'Forensik & Ethik' }
+        ];
 
-        const buttons = document.querySelectorAll('[data-study-filter]');
-        buttons.forEach(btn => {
-          const cat = btn.getAttribute('data-study-filter');
-          if (cat === category) {
-            btn.className = "px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shadow-sm";
-          } else {
-            btn.className = "px-2.5 py-1 rounded-xl text-[10px] font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap";
-          }
-        });
+        // Pills rendern
+        if (pillsContainer) {
+          pillsContainer.innerHTML = categories.map(cat => `
+            <button type="button" onclick="GuideRuntime.setStudyCategory('${cat.id}')" class="px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all touch-btn ${activeStudyCategory === cat.id ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white'}">
+              ${escapeHtml(cat.label)}
+            </button>
+          `).join('');
+        }
 
-        renderScientificStudiesList();
-      }
+        // Filtern nach Kategorie
+        let filtered = (activeStudyCategory === 'all')
+          ? studies
+          : studies.filter(s => s.category === activeStudyCategory);
 
-      function renderScientificStudiesList() {
-        const container = document.getElementById('guide-studies-container');
-        if (!container || !window.ScientificStudies) return;
+        // Filtern nach Suchbegriff
+        if (studySearchQuery.trim().length > 0) {
+          const q = studySearchQuery.toLowerCase().trim();
+          filtered = filtered.filter(s =>
+            (s.authors && s.authors.toLowerCase().includes(q)) ||
+            (s.title && s.title.toLowerCase().includes(q)) ||
+            (s.coreFinding && s.coreFinding.toLowerCase().includes(q)) ||
+            (s.bedroomBenefit && s.bedroomBenefit.toLowerCase().includes(q))
+          );
+        }
 
-        const studies = (activeStudyCategory === 'all') 
-          ? window.ScientificStudies.getAll() 
-          : window.ScientificStudies.getByCategory(activeStudyCategory);
+        if (countBadge) {
+          countBadge.innerText = `${filtered.length} von ${studies.length} Studien`;
+        }
 
-        if (studies.length === 0) {
+        if (filtered.length === 0) {
           container.innerHTML = `
-            <div class="p-6 rounded-2xl bg-[#000000] border border-[#1e2638] text-center text-[#94a3b8] text-xs font-mono">
-              Keine Studien in dieser Kategorie hinterlegt.
+            <div class="p-8 rounded-3xl bg-[#090d14] border border-[#1e2638] text-center text-[#94a3b8] font-mono text-xs">
+              Keine Studien entsprechen dem Suchfilter.
             </div>
           `;
           return;
         }
 
-        container.innerHTML = studies.map(s => `
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2 shadow-sm font-sans">
-            <div class="flex flex-wrap items-start justify-between gap-1.5">
-              <div class="min-w-0 flex-1 space-y-0.5">
-                <strong class="text-xs text-white block font-bold leading-snug">${escapeHtml(s.title)}</strong>
-                <span class="text-[10px] text-[#c5a880] font-mono block">${escapeHtml(s.authors)} (${s.year})</span>
+        container.innerHTML = filtered.map(st => `
+          <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#1e2638] hover:border-[#c5a880]/50 transition-all space-y-3 shadow-md">
+            <div class="flex flex-wrap items-start justify-between gap-2 border-b border-[#1e2638]/60 pb-2.5">
+              <div class="space-y-0.5 min-w-0 flex-1">
+                <span class="text-[9.5px] font-mono text-[#c5a880] font-bold block uppercase">
+                  ${escapeHtml(st.categoryLabel || st.category)} · ${st.year}
+                </span>
+                <h3 class="text-xs sm:text-sm font-bold text-white font-serif leading-snug break-words">
+                  ${escapeHtml(st.title)}
+                </h3>
+                <span class="text-[10px] font-mono text-[#94a3b8] block">
+                  ${escapeHtml(st.authors)} (${escapeHtml(st.journal)}${st.volume ? `, ${escapeHtml(st.volume)}` : ''})
+                </span>
               </div>
-              <span class="px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#090d14] text-[#c5a880] border border-[#c5a880]/40 font-bold flex-shrink-0">
-                n = ${s.sampleSize}
+              <span class="px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#000000] border border-[#1e2638] text-[#d4af37] font-bold flex-shrink-0">
+                ${escapeHtml(st.sampleSize)}
               </span>
             </div>
 
-            <div class="space-y-1.5 text-[10.5px] text-[#94a3b8] leading-snug pt-1">
-              <p><strong class="text-white">Erkenntnis:</strong> ${escapeHtml(s.keyFindings)}</p>
-              <p class="text-[#f8fafc]"><strong class="text-[#c5a880]">Somatische Relevanz für TACTUS:</strong> ${escapeHtml(s.somaticRelevance)}</p>
+            <!-- KERNBEFUND & SCHLAFZIMMER-NUTZEN -->
+            <div class="space-y-2 text-xs">
+              <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
+                <strong class="text-[10px] font-mono uppercase tracking-wider text-[#f8fafc] block font-bold">Wissenschaftlicher Kernbefund:</strong>
+                <p class="text-[11px] text-[#94a3b8] leading-relaxed">${escapeHtml(st.coreFinding)}</p>
+              </div>
+
+              <div class="p-3 rounded-2xl bg-[#142b24]/40 border border-[#2e5746] space-y-1">
+                <strong class="text-[10px] font-mono uppercase tracking-wider text-[#2e5746] block font-bold">Was bedeutet das für euer Schlafzimmer?</strong>
+                <p class="text-[11px] text-[#f8fafc] leading-relaxed font-medium">${escapeHtml(st.bedroomBenefit)}</p>
+              </div>
             </div>
 
-            <div class="pt-2 border-t border-[#1e2638] flex items-center justify-between text-[9.5px] font-mono text-[#94a3b8]">
-              <span>${escapeHtml(s.journal)} · Vol. ${escapeHtml(s.volume || '1')}</span>
-              ${s.doi ? `
-                <a href="https://doi.org/${encodeURIComponent(s.doi)}" target="_blank" rel="noopener noreferrer" class="text-[#c5a880] hover:underline font-bold">
-                  DOI: ${escapeHtml(s.doi)} ↗
-                </a>
-              ` : ''}
+            <!-- METRIKEN & DOI LINKS -->
+            <div class="pt-1 border-t border-[#1e2638]/70 flex flex-wrap items-center justify-between gap-2 font-mono text-[10px]">
+              <div class="flex items-center gap-2 flex-wrap">
+                ${(st.keyMetrics || []).map(m => `
+                  <span class="text-[#94a3b8]">${escapeHtml(m.label)}: <strong class="text-white">${escapeHtml(m.value)}</strong></span>
+                `).join(' · ')}
+              </div>
+              <div class="flex items-center gap-2">
+                ${st.doiUrl ? `
+                  <a href="${escapeHtml(st.doiUrl)}" target="_blank" rel="noopener noreferrer" class="text-[#c5a880] hover:underline flex items-center gap-0.5 font-bold">
+                    <span>DOI: ${escapeHtml(st.doi || 'Link')}</span>
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                  </a>
+                ` : ''}
+                ${st.pubmedUrl ? `
+                  <a href="${escapeHtml(st.pubmedUrl)}" target="_blank" rel="noopener noreferrer" class="text-[#94a3b8] hover:text-white flex items-center gap-0.5">
+                    <span>PubMed ↗</span>
+                  </a>
+                ` : ''}
+              </div>
             </div>
+          </div>
+        `).join('');
+      }
+
+      function renderLexicon() {
+        const container = document.getElementById('lexicon-cards-container');
+        if (!container) return;
+
+        let displayItems = LEXIKON_DATA.slice();
+
+        if (lexiconSearchQuery.trim().length > 0) {
+          const q = lexiconSearchQuery.toLowerCase().trim();
+          displayItems = displayItems.filter(item =>
+            item.term.toLowerCase().includes(q) ||
+            item.def.toLowerCase().includes(q)
+          );
+        }
+
+        if (displayItems.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full p-8 rounded-3xl bg-[#090d14] border border-[#1e2638] text-center text-[#94a3b8] font-mono text-xs">
+              Keine Begriffe entsprechen dem Suchfilter.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = displayItems.map(item => `
+          <div class="p-4 rounded-2xl bg-[#090d14] border border-[#1e2638] hover:border-[#c5a880]/50 transition-all space-y-2 flex flex-col justify-between shadow-sm">
+            <div class="space-y-1">
+              <strong class="text-xs font-bold text-white font-mono block leading-snug">
+                ${escapeHtml(item.term)}
+              </strong>
+              <p class="text-[10.5px] text-[#94a3b8] leading-relaxed break-words font-sans">
+                ${escapeHtml(item.def)}
+              </p>
+            </div>
+            ${item.link ? `
+              <div class="pt-1.5 border-t border-[#1e2638]/60 flex justify-end">
+                <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" class="text-[9.5px] font-mono text-[#c5a880] hover:underline flex items-center gap-1 font-bold">
+                  <span>Wikipedia Referenz</span>
+                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                </a>
+              </div>
+            ` : ''}
           </div>
         `).join('');
       }
 
       function handleHashRouting() {
         const hash = window.location.hash || '';
-        if (hash.includes('tab=sub_experience')) switchGuideTab('sub_experience');
-        else if (hash.includes('tab=safety')) switchGuideTab('safety');
-        else if (hash.includes('tab=dynamics')) switchGuideTab('dynamics');
-        else if (hash.includes('tab=emergency')) switchGuideTab('emergency');
-        else if (hash.includes('tab=science')) switchGuideTab('science');
-        else switchGuideTab('praxis');
+        if (hash.includes('tab=studies')) switchStage('studies');
+        else if (hash.includes('tab=lexicon')) switchStage('lexicon');
+        else if (hash.includes('tab=neurobiology')) switchStage('neurobiology');
+        else if (hash.includes('tab=safety')) switchStage('safety');
+        else if (hash.includes('tab=sos')) switchStage('sos');
+        else switchStage('manifest');
       }
 
       window.GuideRuntime = {
-        initRoleDisplay,
-        toggleActiveRole,
-        switchTab: switchGuideTab,
-        filterStudies: filterScienceStudies,
+        switchStage: switchStage,
+        toggleActiveRole: toggleActiveRole,
+        setStudyCategory: function(catId) {
+          activeStudyCategory = catId;
+          renderStudiesExplorer();
+        },
+        searchStudies: function(val) {
+          studySearchQuery = val;
+          renderStudiesExplorer();
+        },
+        searchLexicon: function(val) {
+          lexiconSearchQuery = val;
+          renderLexicon();
+        },
         init: function() {
           initRoleDisplay();
           handleHashRouting();
