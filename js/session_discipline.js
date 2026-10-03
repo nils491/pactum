@@ -844,9 +844,10 @@
     const subName = names[subRole] || 'Bottom';
     const subAnat = (window.anatomy && window.anatomy[subRole]) ? window.anatomy[subRole] : 'vulva';
 
-    const apiKey = getGeminiApiKey();
-    if (!apiKey) {
-      showToast("⚠️ Kein Gemini API-Key hinterlegt. Bitte trage deinen Key in den Einstellungen ein.");
+    const aiReady = window.AIAdapter && typeof window.AIAdapter.isGeminiAvailable === 'function'
+      ? window.AIAdapter.isGeminiAvailable() : Boolean(getGeminiApiKey());
+    if (!aiReady) {
+      showToast("Kein KI-Zugang: Eigenen Gemini-Key in den Einstellungen eintragen oder TACTUS-Abo aktivieren.");
       return;
     }
 
@@ -914,14 +915,10 @@ Antworte AUSSCHLIESSLICH als valides JSON:
 
     for (const model of candidateModels) {
       try {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const resp = await window.AIAdapter.geminiFetch(model, ({
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: { temperature: 0.35, responseMimeType: "application/json" }
-          })
-        });
+        }));
 
         if (resp.ok) {
           const resData = await resp.json();

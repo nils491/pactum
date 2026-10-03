@@ -143,12 +143,64 @@
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Zentraler Gemini-Zugang: eigener Key des Paares oder TACTUS-Fallback
+  // -------------------------------------------------------------------------
+
+  function getGeminiRoute() {
+    const ownKey = getApiKeyForProvider('gemini');
+    if (ownKey) return { mode: 'own', key: ownKey };
+    const license = (localStorage.getItem('tactus_license_key') || '').trim();
+    if (license && window.location.protocol !== 'file:') return { mode: 'fallback', license };
+    return { mode: 'none' };
+  }
+
+  function isGeminiAvailable() {
+    return getGeminiRoute().mode !== 'none';
+  }
+
+  async function ensureAiConsent(route) {
+    if (window.TactusAccess && typeof window.TactusAccess.ensureAiConsent === 'function') {
+      return window.TactusAccess.ensureAiConsent(route.mode);
+    }
+    return true;
+  }
+
+  /**
+   * Führt einen generateContent-Aufruf aus und liefert das fetch-Response-Objekt.
+   * body: das Gemini-Request-Objekt (contents, generationConfig, ...)
+   */
+  async function geminiFetch(model, body) {
+    const route = getGeminiRoute();
+    if (route.mode === 'none') {
+      return new Response(JSON.stringify({ error: { message: 'Kein Gemini-Zugang: eigener API-Key oder TACTUS-Abo nötig.' } }), { status: 401 });
+    }
+    if (!(await ensureAiConsent(route))) {
+      return new Response(JSON.stringify({ error: { message: 'KI-Übermittlung nicht freigegeben.' } }), { status: 403 });
+    }
+    const cleanModel = String(model || getModelForProvider('gemini')).replace(/^models\//, '');
+    const payload = typeof body === 'string' ? body : JSON.stringify(body);
+
+    if (route.mode === 'own') {
+      return fetch(`${PROVIDERS.gemini.endpoint}/${encodeURIComponent(cleanModel)}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': route.key },
+        body: payload
+      });
+    }
+
+    const base = (localStorage.getItem('tactus_api_base') || '').trim().replace(/\/$/, '');
+    return fetch(`${base}/api/ai/${encodeURIComponent(cleanModel)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Tactus-License': route.license },
+      body: payload
+    });
+  }
+
   async function callGeminiText({ systemPrompt, userPrompt, temperature, maxTokens, model }) {
-    const key = getApiKeyForProvider('gemini');
-    if (!key) throw new Error("Kein Google Gemini API-Key hinterlegt.");
+    if (!isGeminiAvailable()) throw new Error("Kein Gemini-Zugang: eigener API-Key oder TACTUS-Abo nötig.");
 
     const targetModel = model || getModelForProvider('gemini');
-    const endpoint = `${PROVIDERS.gemini.endpoint}/${encodeURIComponent(targetModel)}:generateContent?key=${encodeURIComponent(key)}`;
 
     const bodyPayload = {
       contents: [
@@ -169,11 +221,7 @@
       };
     }
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyPayload)
-    });
+    const res = await geminiFetch(targetModel, bodyPayload);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -190,11 +238,9 @@
   }
 
   async function callGeminiVision({ base64Image, mimeType, prompt, model }) {
-    const key = getApiKeyForProvider('gemini');
-    if (!key) throw new Error("Kein Google Gemini API-Key hinterlegt.");
+    if (!isGeminiAvailable()) throw new Error("Kein Gemini-Zugang: eigener API-Key oder TACTUS-Abo nötig.");
 
     const targetModel = model || getModelForProvider('gemini');
-    const endpoint = `${PROVIDERS.gemini.endpoint}/${encodeURIComponent(targetModel)}:generateContent?key=${encodeURIComponent(key)}`;
 
     // Reinen Base64-Payload ohne Data-URL-Header sicherstellen
     const cleanBase64 = base64Image.replace(/^data:[^;]+;base64,/, '');
@@ -220,11 +266,7 @@
       }
     };
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyPayload)
-    });
+    const res = await geminiFetch(targetModel, bodyPayload);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -436,6 +478,9 @@
   }
 
   const api = {
+    geminiFetch,
+    isGeminiAvailable,
+    getGeminiRoute,
     getProvider: getActiveProvider,
     setProvider: setActiveProvider,
     getApiKey: getApiKeyForProvider,

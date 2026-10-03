@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Lizenzverwaltung · TACTUS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/fonts.css">
+  <link rel="stylesheet" href="assets/legal.css">
+  <style>
+    input, select, button { font: inherit; min-height: 46px; border-radius: 12px; border: 1px solid #2a364f; background: #000; color: #fff; padding: 8px 12px; }
+    button { cursor: pointer; font-weight: 700; }
+    button.gold { background: #c5a880; border-color: #c5a880; color: #000; }
+    .grid { display: grid; gap: 8px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .row > * { flex: 1 1 140px; }
+    .key { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #c5a880; word-break: break-all; }
+    #msg { min-height: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  </style>
+</head>
+<body>
+<main>
+  <header><a class="brand" href="./">TACTUS</a><span class="meta">Lizenzverwaltung</span></header>
+  <h1>Lizenzen</h1>
+  <p>Nur für den Betreiber. Das Admin-Passwort ist das Secret <code>ADMIN_TOKEN</code> deines Workers. Es wird nur in diesem Browser-Tab gehalten.</p>
+
+  <div class="box grid">
+    <label for="token">Admin-Passwort</label>
+    <input id="token" type="password" autocomplete="off">
+  </div>
+
+  <h2>Neue Lizenz erstellen</h2>
+  <div class="box grid">
+    <div class="row">
+      <select id="plan">
+        <option value="monthly">Monatsabo (1 Monat)</option>
+        <option value="yearly">Jahresabo (12 Monate)</option>
+        <option value="lifetime">Unbegrenzt (z. B. für euch selbst)</option>
+      </select>
+      <input id="note" placeholder="Notiz, z. B. Kunde / Bestellnummer">
+    </div>
+    <button class="gold" id="create">Lizenz erstellen</button>
+    <div id="created"></div>
+  </div>
+
+  <h2>Lizenz ändern</h2>
+  <div class="box grid">
+    <input id="ukey" placeholder="TACT-XXXX-XXXX-XXXX-XXXX">
+    <div class="row">
+      <button id="extend1">+1 Monat</button>
+      <button id="extend12">+12 Monate</button>
+      <button id="revoke">Sperren</button>
+      <button id="activate">Entsperren</button>
+    </div>
+  </div>
+
+  <p id="msg"></p>
+
+  <h2>Alle Lizenzen</h2>
+  <button id="list">Liste laden</button>
+  <div class="table-wrap"><table id="table"></table></div>
+</main>
+<script>
+  (function() {
+    const $ = (id) => document.getElementById(id);
+    const msg = (t, ok) => { $('msg').textContent = t; $('msg').style.color = ok ? '#4ade80' : '#f87171'; };
+    const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const date = (ms) => ms ? new Date(ms).toLocaleDateString('de-DE') : 'unbegrenzt';
+    async function call(path, method, body) {
+      const res = await fetch(path, {
+        method,
+        headers: { 'Authorization': 'Bearer ' + $('token').value.trim(), 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(res.status === 401 ? 'Admin-Passwort falsch.' : (data.error || 'HTTP ' + res.status));
+      return data;
+    }
+    $('create').onclick = async () => {
+      try {
+        const d = await call('/api/admin/licenses', 'POST', { plan: $('plan').value, note: $('note').value });
+        $('created').innerHTML = `<p>Neuer Schlüssel (jetzt notieren – er wird nicht noch einmal angezeigt):</p><p class="key">${esc(d.key)}</p><p class="meta">Gültig bis: ${date(d.expiresAt)}</p>`;
+        msg('Lizenz erstellt.', true);
+      } catch (e) { msg(e.message); }
+    };
+    const update = (patch) => async () => {
+      try { await call('/api/admin/licenses/update', 'POST', Object.assign({ key: $('ukey').value }, patch)); msg('Gespeichert.', true); }
+      catch (e) { msg(e.message === 'not_found' ? 'Schlüssel nicht gefunden.' : e.message); }
+    };
+    $('extend1').onclick = update({ extendMonths: 1 });
+    $('extend12').onclick = update({ extendMonths: 12 });
+    $('revoke').onclick = update({ status: 'revoked' });
+    $('activate').onclick = update({ status: 'active' });
+    $('list').onclick = async () => {
+      try {
+        const d = await call('/api/admin/licenses', 'GET');
+        $('table').innerHTML = '<tr><th>Endet auf</th><th>Tarif</th><th>Status</th><th>Gültig bis</th><th>Notiz</th></tr>' +
+          d.licenses.map(l => `<tr><td>…${esc(l.key_hint)}</td><td>${esc(l.plan)}</td><td>${esc(l.status)}</td><td>${date(l.expires_at)}</td><td>${esc(l.note)}</td></tr>`).join('');
+        msg(d.licenses.length + ' Lizenzen.', true);
+      } catch (e) { msg(e.message); }
+    };
+  })();
+</script>
+</body>
+</html>

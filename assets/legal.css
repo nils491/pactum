@@ -1,0 +1,23 @@
+/* TACTUS Rechtstexte – eigenständig, ohne externe Ressourcen */
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #000; color: #e2e8f0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  line-height: 1.65; font-size: 16px; -webkit-font-smoothing: antialiased;
+  padding: max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 32px); }
+main { max-width: 760px; margin: 0 auto; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 20px; border-bottom: 1px solid #1e2638; margin-bottom: 24px; }
+header a.brand { color: #c5a880; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; letter-spacing: .18em; text-decoration: none; font-size: 13px; }
+header a.back { color: #94a3b8; font-size: 14px; min-height: 44px; display: inline-flex; align-items: center; }
+h1 { font-family: 'Cormorant Garamond', Georgia, serif; color: #fff; font-size: 34px; line-height: 1.15; margin: 0 0 6px; }
+h2 { font-family: 'Cormorant Garamond', Georgia, serif; color: #fff; font-size: 23px; margin: 32px 0 8px; }
+h3 { color: #f8fafc; font-size: 16px; margin: 20px 0 6px; }
+p, li { color: #cbd5e1; }
+a { color: #c5a880; }
+.meta { color: #94a3b8; font-size: 13px; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.box { border: 1px solid #2a364f; background: #090d14; border-radius: 16px; padding: 14px 16px; margin: 16px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+td, th { text-align: left; vertical-align: top; padding: 8px 6px; border-bottom: 1px solid #1e2638; }
+th { color: #c5a880; font-weight: 600; }
+.table-wrap { overflow-x: auto; }
+footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #1e2638; display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; }
+footer a { color: #94a3b8; }

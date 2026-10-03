@@ -138,8 +138,7 @@
   }
 
   async function fetchGeminiAudioBlobUrl(text, voiceName) {
-    const apiKey = getGeminiApiKey();
-    if (!apiKey) return null;
+    if (!window.AIAdapter || typeof window.AIAdapter.isGeminiAvailable !== 'function' || !window.AIAdapter.isGeminiAvailable()) return null;
 
     // Sprachausgabe nur über dedizierte TTS-Modelle (normale Textmodelle liefern kein Audio)
     const candidateModels = [
@@ -151,8 +150,7 @@
     const promptText = `Lies die folgende erotische BDSM-Regieanweisung ruhig, autoritär, mit sonorem Takt und natürlicher Betonung auf Deutsch vor:\n\n${text}`;
 
     for (const model of candidateModels) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      
+            
       const payload = {
         contents: [{ parts: [{ text: promptText }] }],
         generationConfig: {
@@ -168,11 +166,7 @@
       };
 
       try {
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        const resp = await window.AIAdapter.geminiFetch(model, payload);
 
         if (resp.ok) {
           const resData = await resp.json();
