@@ -18,8 +18,7 @@
     {
       "binding": "DB",
       "database_name": "tactus",
-      // Nach "npx wrangler d1 create tactus" die ausgegebene ID hier eintragen
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "0e6700fb-c826-475b-acc7-d5a837740d89",
       "migrations_dir": "worker/migrations"
     }
   ],
