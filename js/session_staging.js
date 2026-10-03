@@ -232,7 +232,10 @@
     const ansTop = answers[topRole] || {};
     const ansBottom = answers[bottomRole] || {};
 
-    const allChapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+    const p1 = window.surveyChaptersPart1 || [];
+    const p2 = window.surveyChaptersPart2 || [];
+    const p3 = window.surveyChaptersPart3 || [];
+    const allChapters = p1.concat(p2).concat(p3);
     const candidates = [];
 
     allChapters.forEach(ch => {
