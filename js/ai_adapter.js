@@ -6,7 +6,7 @@
  * Standards & Garantien:
  * - BYOK-Architektur (Bring-Your-Own-Key): Volle Wahlfreiheit des Paares
  * - Provider-Portfolio:
- *   • Google Gemini (gemini-2.5-flash) - Multimodal Vision & hohe Geschwindigkeit
+ *   • Google Gemini (gemini-flash-latest) - Multimodal Vision & hohe Geschwindigkeit
  *   • Anthropic Claude (claude-3-5-sonnet-20241022) - Tiefe Beziehungspsychologie
  *   • OpenAI (gpt-4o) - Universelle Verbreitung
  *   • WebGPU Local Engine - 100 % privater Offline-Betrieb
@@ -34,7 +34,7 @@
     gemini: {
       id: 'gemini',
       label: 'Google Gemini',
-      defaultModel: 'gemini-2.5-flash',
+      defaultModel: 'gemini-flash-latest',
       supportsVision: true,
       requiresKey: true,
       endpoint: 'https://generativelanguage.googleapis.com/v1beta/models'
@@ -82,7 +82,8 @@
     const prov = providerId || getActiveProvider();
     if (prov === 'gemini') {
       return (localStorage.getItem(STORAGE_KEYS.geminiKey) || 
-              localStorage.getItem(STORAGE_KEYS.geminiKeyLegacy) || '').trim();
+              localStorage.getItem(STORAGE_KEYS.geminiKeyLegacy) ||
+              localStorage.getItem('tactus_ai_custom_key') || '').trim();
     }
     if (prov === 'anthropic') {
       return (localStorage.getItem(STORAGE_KEYS.anthropicKey) || '').trim();
@@ -108,7 +109,7 @@
   function getModelForProvider(providerId = null) {
     const prov = providerId || getActiveProvider();
     const custom = localStorage.getItem(`${STORAGE_KEYS.customModel}_${prov}`);
-    return custom || (PROVIDERS[prov] ? PROVIDERS[prov].defaultModel : 'gemini-2.5-flash');
+    return custom || (PROVIDERS[prov] ? PROVIDERS[prov].defaultModel : 'gemini-flash-latest');
   }
 
   function extractJsonFromText(rawText) {

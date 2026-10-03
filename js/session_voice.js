@@ -141,11 +141,10 @@
     const apiKey = getGeminiApiKey();
     if (!apiKey) return null;
 
+    // Sprachausgabe nur über dedizierte TTS-Modelle (normale Textmodelle liefern kein Audio)
     const candidateModels = [
-      localStorage.getItem('tactus_gemini_active_model') || 'gemini-2.0-flash',
-      'gemini-2.0-flash',
-      'gemini-2.5-flash',
-      'gemini-1.5-flash'
+      'gemini-3.8-flash-tts',
+      'gemini-2.5-flash-preview-tts'
     ];
 
     const cleanModelName = candidateModels[0].replace(/^models\//, '');

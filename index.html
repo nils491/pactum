@@ -1551,12 +1551,12 @@
             if (listRes.ok) {
               const listData = await listRes.json();
               const availableModels = (listData.models || []).filter(m => 
-                m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
+                m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') &&
+                !/tts|image|audio|live|embedding/i.test(m.name)
               );
 
               if (availableModels.length > 0) {
-                const preferred = availableModels.find(m => m.name.includes('2.5-flash')) ||
-                                  availableModels.find(m => m.name.includes('2.0-flash')) ||
+                const preferred = availableModels.find(m => m.name === 'models/gemini-flash-latest') ||
                                   availableModels.find(m => m.name.includes('flash')) ||
                                   availableModels[0];
 
@@ -1598,6 +1598,8 @@
           if (verifiedModel) {
             localStorage.setItem('tactus_ai_provider', 'gemini');
             localStorage.setItem('tactus_ai_custom_key', apiKey);
+            localStorage.setItem('tactus_api_key_gemini', apiKey);
+            localStorage.setItem('kompass_gemini_api_key', apiKey);
             localStorage.setItem('tactus_gemini_active_model', verifiedModel);
 
             if (result) {

@@ -988,11 +988,9 @@
 
       let currentRoleState = 'top';
 
+      // Kanonische Toast-Funktion dieser Seite (wird unten als window.showToastNotification registriert,
+      // darf deshalb nicht selbst an window.showToastNotification delegieren – sonst Endlosschleife)
       function showToast(message) {
-        if (typeof window.showToastNotification === 'function') {
-          window.showToastNotification(message);
-          return;
-        }
         const container = document.getElementById('toast-container');
         if (!container) return;
 
