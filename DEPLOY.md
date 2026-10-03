@@ -88,7 +88,7 @@ Unter `https://tactus.digital/admin` im Bereich **Testercodes**:
 - **Einlösbar von:** wie viele **Paare** den Code nutzen dürfen. Ein Paar löst nur einmal ein, das zweite Gerät bekommt den Zugang über die Partner-Kopplung.
 - **Code gültig für:** bis wann der Code eingelöst werden kann
 
-Tester geben den Code im Abo-Fenster ins Feld **„Lizenzschlüssel oder Testercode“** ein. Codes kannst du jederzeit deaktivieren. Bereits eingelöste Testzugänge laufen bis zu ihrem Ablaufdatum weiter, sperren kannst du sie über „Lizenz ändern“. Nach 20 falschen Versuchen pro Tag und Anschluss wird das Einlösen gesperrt.
+Tester geben den Code im Abo-Fenster ins Feld **„Lizenzschlüssel oder Testercode“** ein. Codes kannst du jederzeit deaktivieren oder löschen. Bereits eingelöste Testzugänge laufen bis zu ihrem Ablaufdatum weiter, sperren kannst du sie über „Lizenz ändern“. Nach 20 falschen Versuchen pro Tag und Anschluss wird das Einlösen gesperrt.
 
 > Tipp für Beta-Gruppen: lieber einen gut lesbaren Wunschcode mit begrenzter Einlöse-Zahl als einen Code, der unbegrenzt oft funktioniert. Codes werden weitergegeben.
 
