@@ -151,7 +151,7 @@
   <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
     <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-mono">
       <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Start-Hub</a>
-      <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (185)</a>
+      <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (500 Items)</a>
       <span class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap cursor-default" style="min-height: 36px;">Paar-Analyse ✓</span>
       <a href="chat.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Stream</a>
       <a href="protocol.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Das Protokoll</a>
@@ -179,6 +179,10 @@
       <div class="space-y-1.5 pt-1">
         <a href="index.html#view=hub" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">Start-Hub</span>
+          <span class="text-[#94a3b8]">→</span>
+        </a>
+        <a href="index.html#view=survey" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
         <a href="index.html#view=survey" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
@@ -252,7 +256,7 @@
         </div>
 
         <p class="text-[10.5px] text-[#94a3b8] leading-relaxed" id="pair-dynamic-desc">
-          Berechnet aus allen 36 Fragebogen-Kapiteln inklusive Kapitel 00 (185 Items). Unterscheidet echte Doppel-Spitzen (5/5), hohe Synergien (5/4 &amp; 4/5), Erkundungs-Brücken (5/3 &amp; 4/3), sensible Sehnsüchte mit Schutzanker, persönliche Bemerkungen und Tabu-Schranken.
+          Berechnet aus allen 36 Fragebogen-Kapiteln inklusive Kapitel 00 (505 Items). Unterscheidet echte Doppel-Spitzen (5/5), hohe Synergien (5/4 &amp; 4/5), Erkundungs-Brücken (5/3 &amp; 4/3), sensible Sehnsüchte mit Schutzanker, persönliche Bemerkungen und Tabu-Schranken.
         </p>
 
         <!-- EMPFOHLENER BEZIEHUNGSMODUS BANNER (GESETZ 12) -->
@@ -260,7 +264,7 @@
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-[#c5a880]"></span>
             <div>
-              <span class="text-[10px] font-mono uppercase text-[#94a3b8] block">Psychometrische Modus-Empfehlung (Aus 185 Fragen):</span>
+              <span class="text-[10px] font-mono uppercase text-[#94a3b8] block">Psychometrische Modus-Empfehlung (Aus 505 Fragen):</span>
               <strong class="text-xs text-white" id="recommended-mode-title">Lade Empfehlung...</strong>
             </div>
           </div>
@@ -556,6 +560,23 @@
           Zeigt das persönliche Profil, unabhängig von den Antworten des Partners: Eigener D/s-Quotient (Führen r1 vs. Empfangen r2), eigene 5-Säulen-Präferenzen, persönliche Favoriten, Tabus und hinterlegte Notizen.
         </p>
 
+        <!-- SHARING-GOVERNANCE BANNER IM INDIVIDUAL-PROFIL -->
+        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#c5a880]" id="indiv-share-status-dot"></span>
+              <span class="text-[10px] text-[#94a3b8] uppercase font-bold">Freigabe-Status dieses Solo-Profils:</span>
+            </div>
+            <strong class="text-xs text-white block" id="indiv-share-status-text">Freigegeben für Partner (Volle Transparenz)</strong>
+            <p class="text-[9.5px] text-[#94a3b8] font-sans">
+              Empfehlung: 100 % Transparenz schafft maximale Verbundenheit. Bei Bedarf kann das Profil privat geschaltet werden.
+            </p>
+          </div>
+          <button type="button" onclick="PairAnalysis.toggleShareIndividual()" id="btn-toggle-indiv-share" class="px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm">
+            ✓ Für Partner freigegeben
+          </button>
+        </div>
+
         <!-- D/S BALANCE BALKEN (FÜHREN VS. EMPFANGEN) -->
         <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
           <div class="flex items-center justify-between text-xs font-mono">
@@ -593,6 +614,35 @@
           <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5">
             <span class="text-[10px] text-[#991b1b] block font-medium">Tabu-Vetos (Note 1):</span>
             <strong class="text-sm sm:text-base font-bold text-white" id="stat-indiv-taboos">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- KI-SOLO-TIEFENANALYSE & PSYCHOGRAMM DES EINZELNEN PARTNERS -->
+      <div class="rounded-3xl p-5 border border-[#1e2638] space-y-3.5 shadow-xl bg-[#090d14]">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-2.5">
+          <div class="space-y-0.5 min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#d4af37] animate-pulse"></span>
+              <strong class="text-xs sm:text-sm text-[#f8fafc] font-bold block" id="indiv-ai-title">
+                Psychologisches KI-Solo-Gutachten &amp; Schattendynamik
+              </strong>
+            </div>
+            <p class="text-[10px] text-[#94a3b8] leading-snug">
+              Analysiert deine unbewussten Triebfedern, Scham-Integration, Sehnsüchte und blinde Flecken als Individuum.
+            </p>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0 font-mono">
+            <button type="button" id="btn-trigger-ai-indiv-report" onclick="PairAnalysis.generateAiIndividualReport()" class="px-3.5 py-1.5 rounded-xl bg-[#d4af37] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+              <span id="btn-ai-indiv-text">Solo-Gutachten berechnen</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="ai-individual-report-container" class="space-y-3 font-sans">
+          <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] text-[11px] text-[#94a3b8] leading-relaxed text-center py-6">
+            Klicke oben auf <strong class="text-[#d4af37] font-bold">„Solo-Gutachten berechnen“</strong>, um dein persönliches psychologisches Profil mit Stärken, Scham-Befreiung und somatischer Reizführung zu generieren.
           </div>
         </div>
       </div>
@@ -638,6 +688,7 @@
   <script src="data/scientific_studies.js"></script>
   <script src="data/questions_part1.js"></script>
   <script src="data/questions_part2.js"></script>
+  <script src="data/questions_part3.js"></script>
   <script src="data/equipment_catalog.js"></script>
   <script src="data/toy_combinatorics.js"></script>
   <script src="data/chastity_database.js"></script>
@@ -659,7 +710,7 @@
       let activeIndividualPartner = 'A'; // 'A' | 'B'
       let activeIndividualFilter = 'favorites';
       let analyzedData = null;
-      let isIndividualShared = false;
+      let isIndividualShared = true; // Empfehlung: 100% Offenheit standardmäßig
       let currentRoleState = 'top';
 
       function escapeHtml(str) {
@@ -830,33 +881,57 @@
       function toggleShareIndividual() {
         isIndividualShared = !isIndividualShared;
         localStorage.setItem(STORAGE_KEY_SHARED_INDIVIDUAL, isIndividualShared ? 'true' : 'false');
-        const btn = document.getElementById('btn-share-individual');
-        const badge = document.getElementById('dossier-privacy-badge');
+        updateSharingUI();
 
         if (isIndividualShared) {
-          if (btn) {
-            btn.innerText = '✓ Für Partner freigegeben (Widerrufen)';
-            btn.className = 'px-3 py-1.5 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:bg-[#2e5746] hover:text-white transition text-[10.5px] font-bold touch-btn';
-          }
-          if (badge) {
-            badge.innerText = 'Freigegeben für Partner';
-            badge.className = 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold';
-          }
-          showToast("Individual-Dossier für Partner freigegeben ✓");
+          showToast("Individual-Dossier für Partner freigegeben ✓ (Volle Transparenz)");
         } else {
-          if (btn) {
-            btn.innerText = '🔒 Für Partner freigeben';
-            btn.className = 'px-3 py-1.5 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] hover:bg-[#8a5232] transition text-[10.5px] font-bold touch-btn';
-          }
-          if (badge) {
-            badge.innerText = 'Streng Privat';
-            badge.className = 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold';
-          }
-          showToast("Freigabe widerrufen – Dossier ist privat");
+          showToast("Freigabe widerrufen – Solo-Profil ist privat geschaltet");
         }
 
         if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
           window.CloudSync.trigger();
+        }
+      }
+
+      function updateSharingUI() {
+        const btnToggle = document.getElementById('btn-toggle-indiv-share');
+        const statusText = document.getElementById('indiv-share-status-text');
+        const statusDot = document.getElementById('indiv-share-status-dot');
+        const btnShareDossier = document.getElementById('btn-share-individual');
+        const badgeDossier = document.getElementById('dossier-privacy-badge');
+
+        if (btnToggle) {
+          if (isIndividualShared) {
+            btnToggle.innerText = '✓ Für Partner freigegeben';
+            btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
+          } else {
+            btnToggle.innerText = '🔒 Nur für mich (Privat)';
+            btnToggle.className = 'px-3.5 py-2 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-bold text-[10.5px] touch-btn self-start sm:self-auto whitespace-nowrap shadow-sm';
+          }
+        }
+
+        if (statusText) {
+          statusText.innerText = isIndividualShared 
+            ? 'Freigegeben für Partner (Volle Transparenz)' 
+            : 'Streng privat (Partner sieht nur gemeinsame Treffer)';
+        }
+
+        if (statusDot) {
+          statusDot.className = isIndividualShared 
+            ? 'w-2 h-2 rounded-full bg-[#2e5746]' 
+            : 'w-2 h-2 rounded-full bg-[#8a5232]';
+        }
+
+        if (btnShareDossier) {
+          btnShareDossier.innerText = isIndividualShared ? '✓ Für Partner freigegeben (Widerrufen)' : '🔒 Für Partner freigeben';
+        }
+
+        if (badgeDossier) {
+          badgeDossier.innerText = isIndividualShared ? 'Freigegeben für Partner' : 'Streng Privat';
+          badgeDossier.className = isIndividualShared 
+            ? 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-bold'
+            : 'px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#4a2818] border border-[#8a5232] text-[#b3734a] font-bold';
         }
       }
 
@@ -886,7 +961,11 @@
         const ansTop = answers[topRole] || {};
         const ansBottom = answers[bottomRole] || {};
 
-        const allChapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+        const p1 = window.surveyChaptersPart1 || [];
+        const p2 = window.surveyChaptersPart2 || [];
+        const p3 = window.surveyChaptersPart3 || [];
+        const allChapters = p1.concat(p2).concat(p3);
+
         const itemMap = new Map();
         allChapters.forEach(ch => {
           (ch.items || []).forEach(it => {
@@ -919,18 +998,18 @@
         let comparedCount = 0;
 
         // Auswertung für Beziehungsmodus-Empfehlung (Gesetz 12)
-        // FLR / 24/7 Indikatoren: Kapitel 15 (FLR), 17 (Dienst/Haushalt), 7/8 (Keuschheit), 1/9 (Macht)
+        // FLR / 24/7 Indikatoren: Kapitel 8, 21, 22, 23, 28, 29
         let flrSum = 0;
         let flrCount = 0;
-        const flrChapters = [1, 7, 8, 9, 15, 17];
+        const flrChapters = [8, 21, 22, 23, 28, 29];
 
-        // 5 Domänen-Akkumulatoren
+        // 5 Domänen-Akkumulatoren (36 Kapitel gemappt)
         const domains = {
-          power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [1, 2, 7, 8, 9] },
-          sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [0, 13, 14, 26, 33] },
-          discipline: { label: "Zucht & Begrenzung", sum: 0, count: 0, chapterIds: [10, 11, 12, 24, 25] },
-          service: { label: "Hingabe & Dienst", sum: 0, count: 0, chapterIds: [3, 15, 21, 22, 23, 29, 31] },
-          aftercare: { label: "Fürsorge & Vagus", sum: 0, count: 0, chapterIds: [4, 5, 6, 19, 34, 35] }
+          power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [7, 8, 20, 21, 24, 27, 29, 36] },
+          sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [1, 2, 3, 9, 10, 11, 12, 15, 30, 31, 33] },
+          discipline: { label: "Zucht & Begrenzung", sum: 0, count: 0, chapterIds: [13, 14, 16, 17, 18, 23, 32, 34] },
+          service: { label: "Hingabe & Dienst", sum: 0, count: 0, chapterIds: [6, 22, 28, 35] },
+          aftercare: { label: "Fürsorge, Nähe & Schutz", sum: 0, count: 0, chapterIds: [0, 4, 5, 19, 25, 26] }
         };
 
         let scoredItemsCount = 0;
@@ -1402,10 +1481,13 @@
 
         const titleEl = document.getElementById('indiv-profile-title');
         const descEl = document.getElementById('indiv-profile-desc');
+        const indivAiTitle = document.getElementById('indiv-ai-title');
         if (titleEl) titleEl.innerText = `Solo-Profil: ${partnerName}`;
         if (descEl) descEl.innerText = `Persönlicher erotischer Fingerabdruck von ${partnerName}: Eigene D/s-Balance, 5-Säulen-Präferenzen, Lieblings-Praktiken und Schutzgrenzen.`;
+        if (indivAiTitle) indivAiTitle.innerText = `Psychologisches KI-Solo-Gutachten & Schattendynamik (${partnerName})`;
 
         updateIndividualDossierView(partnerName);
+        updateSharingUI();
 
         let answers = {};
         try {
@@ -1415,7 +1497,11 @@
 
         const pAns = answers[role] || {};
 
-        const allChapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+        const p1 = window.surveyChaptersPart1 || [];
+        const p2 = window.surveyChaptersPart2 || [];
+        const p3 = window.surveyChaptersPart3 || [];
+        const allChapters = p1.concat(p2).concat(p3);
+
         const itemMap = new Map();
         allChapters.forEach(ch => {
           (ch.items || []).forEach(it => {
@@ -1440,12 +1526,13 @@
         const myShame = [];
         const myTaboos = [];
 
+        // 36 Kapitel gemappt
         const domains = {
-          power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [1, 2, 7, 8, 9] },
-          sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [0, 13, 14, 26, 33] },
-          discipline: { label: "Zucht & Begrenzung", sum: 0, count: 0, chapterIds: [10, 11, 12, 24, 25] },
-          service: { label: "Hingabe & Dienst", sum: 0, count: 0, chapterIds: [3, 15, 21, 22, 23, 29, 31] },
-          aftercare: { label: "Fürsorge & Vagus", sum: 0, count: 0, chapterIds: [4, 5, 6, 19, 34, 35] }
+          power: { label: "Macht & Führung", sum: 0, count: 0, chapterIds: [7, 8, 20, 21, 24, 27, 29, 36] },
+          sensory: { label: "Sensorik & Berührung", sum: 0, count: 0, chapterIds: [1, 2, 3, 9, 10, 11, 12, 15, 30, 31, 33] },
+          discipline: { label: "Zucht & Begrenzung", sum: 0, count: 0, chapterIds: [13, 14, 16, 17, 18, 23, 32, 34] },
+          service: { label: "Hingabe & Dienst", sum: 0, count: 0, chapterIds: [6, 22, 28, 35] },
+          aftercare: { label: "Fürsorge, Nähe & Schutz", sum: 0, count: 0, chapterIds: [0, 4, 5, 19, 25, 26] }
         };
 
         itemMap.forEach((meta, itemId) => {
@@ -1547,188 +1634,113 @@
           myNotes,
           myShame,
           myTaboos,
-          partnerName
+          leadPct,
+          receivePct,
+          partnerName,
+          role
         };
 
+        loadSavedIndividualAiReport(role);
         renderIndividualItemsList();
       }
 
-      function renderIndividualItemsList() {
-        const container = document.getElementById('indiv-items-list-container');
+      async function generateAiIndividualReport() {
         const data = window._individualData;
-        if (!container || !data) return;
+        if (!data) return;
 
-        let items = [];
-        let emptyText = "Keine Einträge vorhanden.";
-
-        if (activeIndividualFilter === 'favorites') {
-          items = data.myFives.concat(data.myFours);
-          emptyText = "Noch keine Favoriten (Note 4 oder 5) bewertet.";
-        } else if (activeIndividualFilter === 'notes') {
-          items = data.myNotes;
-          emptyText = "Keine persönlichen Notizen verfasst.";
-        } else if (activeIndividualFilter === 'shame') {
-          items = data.myShame;
-          emptyText = "Keine Scham-Schutzanker aktiviert.";
-        } else if (activeIndividualFilter === 'taboos') {
-          items = data.myTaboos;
-          emptyText = "Keine Tabus (Note 1) vermerkt.";
-        }
-
-        if (items.length === 0) {
-          container.innerHTML = `
-            <div class="rounded-2xl p-6 text-center text-[#94a3b8] text-xs bg-[#090d14] border border-[#1e2638] font-mono">
-              ${escapeHtml(emptyText)}
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = items.map(entry => {
-          const meta = entry.meta;
-
-          return `
-            <div class="p-3.5 sm:p-4 rounded-2xl bg-[#090d14] border border-[#1e2638] space-y-2 shadow-sm">
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0 flex-1 space-y-0.5">
-                  <a href="index.html#view=survey&item=${meta.id}" target="_blank" class="text-[9.5px] font-mono text-[#c5a880] hover:underline flex items-center gap-1 font-bold">
-                    <span>${escapeHtml(meta.chapterTitle)} · Item #${meta.id}</span>
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-                  </a>
-                  <strong class="text-xs sm:text-sm text-white block font-bold leading-tight break-words">${escapeHtml(meta.title)}</strong>
-                </div>
-                ${entry.isShame ? '<span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-[#000000] text-[#dfcaa9] border border-[#8a5232]">Schutzanker 🙈</span>' : ''}
-              </div>
-
-              <p class="text-[10.5px] text-[#94a3b8] leading-snug break-words">${escapeHtml(meta.desc)}</p>
-
-              <!-- BEWERTUNG r1 und r2 -->
-              <div class="flex items-center gap-3 text-[10px] font-mono pt-1 text-[#94a3b8] border-t border-[#1e2638]">
-                <span>Führen (r1): <strong class="text-[#c5a880]">${entry.sLead !== undefined ? entry.sLead : '-'}/5</strong></span>
-                <span>·</span>
-                <span>Empfangen (r2): <strong class="text-[#b3734a]">${entry.sRec !== undefined ? entry.sRec : '-'}/5</strong></span>
-              </div>
-
-              <!-- NOTIZ -->
-              ${entry.note ? `
-                <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] text-[10.5px] text-[#f8fafc] italic space-y-0.5">
-                  <span class="font-bold font-mono not-italic text-[9.5px] text-[#c5a880] block">[Meine Notiz]:</span>
-                  <p class="break-words">„${escapeHtml(entry.note)}“</p>
-                </div>
-              ` : ''}
-            </div>
-          `;
-        }).join('');
-      }
-
-      async function generateAiDeepReport() {
-        if (!analyzedData) runFullPairAnalysis();
-
-        const container = document.getElementById('ai-deep-report-container');
-        const btnText = document.getElementById('btn-ai-analysis-text');
-        const triggerBtn = document.getElementById('btn-trigger-ai-analysis');
+        const container = document.getElementById('ai-individual-report-container');
+        const btnText = document.getElementById('btn-ai-indiv-text');
+        const triggerBtn = document.getElementById('btn-trigger-ai-indiv-report');
         if (!container) return;
 
         if (triggerBtn) triggerBtn.disabled = true;
-        if (btnText) btnText.innerText = "Berechne Tiefenbericht...";
+        if (btnText) btnText.innerText = "Berechne Solo-Gutachten...";
 
         container.innerHTML = `
-          <div class="p-6 rounded-2xl bg-[#000000] border border-[#c5a880]/50 text-center space-y-3 animate-pulse font-mono">
-            <div class="w-8 h-8 border-2 border-[#c5a880]/20 border-t-[#c5a880] rounded-full animate-spin mx-auto"></div>
-            <strong class="text-xs text-[#c5a880] block font-bold">TACTUS KI analysiert 185 Datenpunkte, Notizen &amp; Schutzachsen...</strong>
-            <p class="text-[10.5px] text-[#94a3b8]">Verbindet Psychometrie, Scham-Entlastung und konkrete Interaktionsratschläge.</p>
+          <div class="p-6 rounded-2xl bg-[#000000] border border-[#d4af37]/50 text-center space-y-3 animate-pulse font-mono">
+            <div class="w-8 h-8 border-2 border-[#d4af37]/20 border-t-[#d4af37] rounded-full animate-spin mx-auto"></div>
+            <strong class="text-xs text-[#d4af37] block font-bold">TACTUS KI analysiert dein individuelles Psychogramm &amp; Schattendynamiken...</strong>
+            <p class="text-[10.5px] text-[#94a3b8]">Verbindet D/s-Balance, Scham-Befreiung und somatisches Potenzial für ${escapeHtml(data.partnerName)}.</p>
           </div>
         `;
 
-        let generatedReport = null;
+        let reportText = null;
 
         if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-          const topName = analyzedData.topName;
-          const bottomName = analyzedData.bottomName;
-
           const prompt = `
-Du bist der leitende Beziehungs- und Somatik-Psychologe für das Beziehungs-Betriebssystem TACTUS (tactus.digital).
-Erstelle für ${topName} (Top) und ${bottomName} (Bottom) ein tiefgründiges, anspruchsvolles und erwachsenes Psychologisches Paar-Gutachten.
+Du bist der leitende Individual- und Somatik-Psychologe für TACTUS (tactus.digital).
+Erstelle für ${data.partnerName} ein tiefgründiges, ehrliches und bestärkendes Psychologisches Solo-Gutachten.
 
 ${window.HubContext && typeof window.HubContext.getLanguageDoctrine === 'function' ? window.HubContext.getLanguageDoctrine() : ''}
 
-DATENBASIS DES PAARES:
-- Gesamt-Resonanz: ${analyzedData.overallMatchPercentage} %
-- D/s-Quotient ${topName} (Top): ${analyzedData.topQuotientVal >= 0 ? '+' : ''}${analyzedData.topQuotientVal.toFixed(2)}
-- D/s-Quotient ${bottomName} (Bottom): ${analyzedData.bottomQuotientVal >= 0 ? '+' : ''}${analyzedData.bottomQuotientVal.toFixed(2)}
-- Doppel-Spitzen (5/5): ${analyzedData.doubleFives.map(d => d.meta.title).slice(0, 8).join(', ') || 'Keine'}
-- Hohe Synergien (5/4): ${analyzedData.highSynergies.map(d => d.meta.title).slice(0, 6).join(', ') || 'Keine'}
-- Erkundungs-Brücken (5/3): ${analyzedData.bridges.map(d => d.meta.title).slice(0, 5).join(', ') || 'Keine'}
-- Scham-Schutzanker (🙈): ${analyzedData.shameProtected.map(d => d.meta.title).join(', ') || 'Keine'}
-- Tabu-Schranken des Bottoms: ${analyzedData.bottomTaboos.map(d => d.meta.title).join(', ') || 'Keine'}
-- Hinterlegte Notizen der Partner:
-${analyzedData.withNotes.slice(0, 6).map(n => `- Thema „${n.meta.title}“: [${topName}]: „${n.noteTop || '-'}“ | [${bottomName}]: „${n.noteBottom || '-'}“`).join('\n')}
+INDIVIDUELLES PROFIL VON ${data.partnerName.toUpperCase()}:
+- D/s-Balance: ${data.leadPct}% Führen (Top r1) zu ${data.receivePct}% Empfangen (Bottom r2)
+- Eigene Must-Haves (Note 5): ${data.myFives.map(f => f.meta.title).slice(0, 8).join(', ') || 'Keine'}
+- Eigene Scham-Schutzanker (🙈): ${data.myShame.map(s => s.meta.title).join(', ') || 'Keine registriert'}
+- Eigene Tabus (Note 1): ${data.myTaboos.map(t => t.meta.title).join(', ') || 'Keine harten Vetos'}
+- Persönliche Notizen: ${data.myNotes.slice(0, 5).map(n => `„${n.meta.title}“: „${n.note}“`).join('; ') || 'Keine'}
 
-GLIEDERUNG DES GUTACHTENS (exakt 5 Abschnitte):
-1. Der psychometrische Fingerabdruck eurer Dynamik
-2. Konkreter Interaktions-Leitfaden (Alltag & Schlafzimmer: Wie beide miteinander umgehen)
-3. Schutzräume, Scham-Entlastung & das Spottverbot (§ 1 Abs. 2)
-4. Erkundungs-Brücken & Pilot-Experimente (Anleitung für behutsame Annäherung)
-5. Psychosomatische Sicherheit & Notfall-Achtsamkeit (RACK)
+GLIEDERUNG DES SOLO-GUTACHTENS (exakt 4 Abschnitte):
+1. Dein individueller erotischer Fingerabdruck & Triebfedern
+2. Scham-Befreiung & Das Ausleben verletzlicher Sehnsüchte
+3. Somatische Entlastung & Vagus-Regeneration (Was dein Nervensystem braucht)
+4. Empfehlung für die Kommunikation mit deinem Partner
 
-Formuliere direkt, hochgradig empathisch, wissenschaftlich fundiert und frei von kitschigen Klischees.
+Formuliere direkt an ${data.partnerName} gerichtet („Du“), tiefgründig, frei von Floskeln und voller psychologischer Akzeptanz.
 `;
 
           try {
-            generatedReport = await window.AIAdapter.generateText({
-              systemPrompt: "Du bist der leitende Beziehungs- und Somatik-Psychologe für TACTUS.",
+            reportText = await window.AIAdapter.generateText({
+              systemPrompt: "Du bist der leitende Individual-Psychologe für TACTUS.",
               userPrompt: prompt,
               temperature: 0.65
             });
           } catch (errAi) {
-            console.warn("[TACTUS Analysis] KI-Bericht fehlgeschlagen, nutze prozedurale Heuristik:", errAi);
+            console.warn("[TACTUS Analysis] KI-Solo-Bericht fehlgeschlagen, nutze Heuristik:", errAi);
           }
         }
 
-        if (!generatedReport || generatedReport.trim().length < 50) {
-          generatedReport = synthesizeProceduralReport(analyzedData);
+        if (!reportText || reportText.trim().length < 50) {
+          reportText = synthesizeProceduralIndividualReport(data);
         }
 
         try {
-          localStorage.setItem(STORAGE_KEY_AI_ANALYSIS, JSON.stringify({
-            report: generatedReport,
+          const cacheKey = `tactus_ai_indiv_report_${data.role}`;
+          localStorage.setItem(cacheKey, JSON.stringify({
+            report: reportText,
             generatedAt: Date.now(),
-            matchPercentage: analyzedData.overallMatchPercentage
+            role: data.role
           }));
         } catch (e) {}
 
-        renderReportHtml(generatedReport);
-        showToast("✓ Psychologischer KI-Tiefenbericht berechnet");
+        renderIndividualReportHtml(reportText);
+        showToast(`✓ Solo-Gutachten für ${data.partnerName} berechnet`);
 
         if (triggerBtn) triggerBtn.disabled = false;
-        if (btnText) btnText.innerText = "Bericht neu berechnen";
+        if (btnText) btnText.innerText = "Solo-Gutachten aktualisieren";
       }
 
-      function synthesizeProceduralReport(data) {
-        return `### 1. Der psychometrische Fingerabdruck eurer Dynamik
-Eure Gesamtresonanz liegt bei beachtlichen ${data.overallMatchPercentage} %. Mit ${data.doubleFives.length} identifizierten Doppel-Spitzen und ${data.highSynergies.length} hohen Synergien teilt ihr ein außergewöhnlich stabiles Fundament. ${data.topName} bringt einen ausgeprägten Führungswillen mit (${data.topQuotientVal >= 0 ? '+' : ''}${data.topQuotientVal.toFixed(2)}), während ${data.bottomName} eine hohe Bereitschaft zur vertrauensvollen Hingabe signalisiert (${data.bottomQuotientVal >= 0 ? '+' : ''}${data.bottomQuotientVal.toFixed(2)}).
+      function synthesizeProceduralIndividualReport(data) {
+        return `### 1. Dein individueller erotischer Fingerabdruck
+Mit einer D/s-Balance von ${data.leadPct} % Führung und ${data.receivePct} % Hingabe zeigt sich ein charakteristisches Bild: ${data.leadPct >= 60 ? 'Du schöpfst Erfüllung aus der bewussten, souveränen Leitung und Verantwortung für den anderen.' : (data.receivePct >= 60 ? 'Für dich liegt der größte Reiz im vertrauensvollen Loslassen der exekutiven Alltags-Kontrolle.' : 'Du bist ein vielseitiger Switch, dessen Lust zwischen Führen und Dienen pendelt.')} Deine Vorliebe für ${data.myFives.map(f => f.meta.title).slice(0, 3).join(', ') || 'körperliche Nähe'} belegt eine hohe somatische Reizoffenheit.
 
-### 2. Konkreter Interaktions-Leitfaden (Alltag & Schlafzimmer)
-• **Für ${data.topName} (Top):** Eure Führung entfaltet ihre stärkste erotische Kraft, wenn sie ruhig, vorhersehbar und unaufgeregt ausgeübt wird. Vermeide Hektik; gib klare Haltungsanweisungen und schenke dem Bottom nach jeder Zuchtphase eine beruhigende Handauflegung.
-• **Für ${data.bottomName} (Bottom):** Wahre Hingabe bedeutet, die motorische und gedankliche Kontrolle vertrauensvoll abzugeben. Entlaste ${data.topName} im Alltag durch unaufgeforderte Dienste, um den Raum für ungestörte Führung freizuhalten.
+### 2. Scham-Befreiung & Das Ausleben verletzlicher Sehnsüchte
+${data.myShame.length > 0 ? `Du hast ${data.myShame.length} Wünsche mit dem Scham-Schutzanker (🙈) versehen. Erlaube dir, diese Wünsche ohne Selbstverurteilung anzunehmen. Das vertragliche Spottverbot schützt dich: Dein Partner darf diese verletzlichen Punkte niemals herabwürdigen.` : 'Du gehst bereits bemerkenswert unbefangen und reflektiert mit deinen Neigungen um.'}
 
-### 3. Schutzräume, Scham-Entlastung & das Spottverbot
-Mit ${data.shameProtected.length} registrierten Schutzankern (🙈) habt ihr verletzliche Sehnsüchte benannt. Gemäß § 1 Abs. 2 Beziehungsvertrag gilt hierfür ein absolutes Spottverbot: Diese Themen werden niemals im Alltagsstreit erwähnt, sondern ausschließlich im geschützten Halbdunkel mit verbaler Geborgenheit erkundet.
+### 3. Somatische Entlastung & Vagus-Regeneration
+Dein Nervensystem verlangt nach intensiven Momenten nach einer verlässlichen Erdungsphase. Achte darauf, dass Schmerz- oder Kontrollphasen immer von einer bewussten Deckenruhe und Vagus-Atmung abgeschlossen werden.
 
-### 4. Erkundungs-Brücken & Pilot-Experimente
-Ihr habt ${data.bridges.length} Erkundungs-Brücken identifiziert. Nutzt für diese Praktiken das Prinzip der 10-Minuten-Probeläufe: Kündigt den Beginn an, wahrt den Kontakt über die Safeword-Ampel und schließt die Erkundung mit einer 5-minütigen Nachbesprechung auf Augenhöhe ab.
-
-### 5. Psychosomatische Sicherheit & Notfall-Achtsamkeit (RACK)
-Mit ${data.bottomTaboos.length} definierten Tabus sind klare Grenzlinien gezogen. Bei emotionalen Überreizungen greift sofort die vereinbarte Intervention: Berührung einstellen, Gewichtsdecke auflegen und synchrone 4-7-8 Vagus-Atmung zur Kreislaufstabilisierung.`;
+### 4. Empfehlung für die Kommunikation mit deinem Partner
+Nutze die Transparenz dieses Profils: Indem du dieses Solo-Dossier mit deinem Partner teilst, nimmst du ihm das Rätselraten ab und schenkst ihm eine präzise Landkarte deines Begehrens.`;
       }
 
-      function renderReportHtml(rawReport) {
-        const container = document.getElementById('ai-deep-report-container');
+      function renderIndividualReportHtml(rawReport) {
+        const container = document.getElementById('ai-individual-report-container');
         if (!container) return;
 
         const formattedHtml = rawReport
-          .replace(/^### (.*$)/gim, '<h4 class="text-xs sm:text-sm font-bold text-[#c5a880] mt-3 mb-1 border-b border-[#1e2638] pb-1 font-serif">$1</h4>')
-          .replace(/^• (.*$)/gim, '<p class="pl-3 border-l-2 border-[#c5a880]/60 text-[#f8fafc] leading-snug my-1">$1</p>')
+          .replace(/^### (.*$)/gim, '<h4 class="text-xs sm:text-sm font-bold text-[#d4af37] mt-3 mb-1 border-b border-[#1e2638] pb-1 font-serif">$1</h4>')
+          .replace(/^• (.*$)/gim, '<p class="pl-3 border-l-2 border-[#d4af37]/60 text-[#f8fafc] leading-snug my-1">$1</p>')
           .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
           .replace(/\n\n/g, '<div class="h-2"></div>');
 
@@ -1736,32 +1748,35 @@ Mit ${data.bottomTaboos.length} definierten Tabus sind klare Grenzlinien gezogen
           <div class="p-4 sm:p-5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2 text-[11px] leading-relaxed animate-fade-in">
             ${formattedHtml}
             <div class="pt-3 border-t border-[#1e2638] flex items-center justify-between text-[9.5px] font-mono text-[#94a3b8]">
-              <span>TACTUS Psychological Resonance Report</span>
-              <span>Zero-Knowledge Persistent</span>
+              <span>TACTUS Solo-Psychogramm</span>
+              <span>${isIndividualShared ? 'Freigegeben für Partner ✓' : 'Streng Privat 🔒'}</span>
             </div>
           </div>
         `;
       }
 
-      function loadSavedAiReport() {
+      function loadSavedIndividualAiReport(role) {
         try {
-          const raw = localStorage.getItem(STORAGE_KEY_AI_ANALYSIS);
+          const cacheKey = `tactus_ai_indiv_report_${role}`;
+          const raw = localStorage.getItem(cacheKey);
           if (raw) {
             const parsed = JSON.parse(raw);
             if (parsed && parsed.report) {
-              renderReportHtml(parsed.report);
-              const btnText = document.getElementById('btn-ai-analysis-text');
-              if (btnText) btnText.innerText = "Bericht aktualisieren";
+              renderIndividualReportHtml(parsed.report);
+              const btnText = document.getElementById('btn-ai-indiv-text');
+              if (btnText) btnText.innerText = "Solo-Gutachten aktualisieren";
+              return;
             }
           }
         } catch (e) {}
 
-        const shared = localStorage.getItem(STORAGE_KEY_SHARED_INDIVIDUAL);
-        isIndividualShared = (shared === 'true');
-        const btnShare = document.getElementById('btn-share-individual');
-        if (btnShare && isIndividualShared) {
-          btnShare.innerText = '✓ Für Partner freigegeben (Widerrufen)';
-          btnShare.className = 'px-3 py-1.5 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:bg-[#2e5746] hover:text-white transition text-[10.5px] font-bold touch-btn';
+        const container = document.getElementById('ai-individual-report-container');
+        if (container) {
+          container.innerHTML = `
+            <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] text-[11px] text-[#94a3b8] leading-relaxed text-center py-6">
+              Klicke oben auf <strong class="text-[#d4af37] font-bold">„Solo-Gutachten berechnen“</strong>, um dein persönliches psychologisches Profil mit Stärken, Scham-Befreiung und somatischer Reizführung zu generieren.
+            </div>
+          `;
         }
       }
 
@@ -1775,10 +1790,13 @@ Mit ${data.bottomTaboos.length} definierten Tabus sind klare Grenzlinien gezogen
         switchIndividualPartner: switchIndividualPartner,
         filterIndividualTab: filterIndividualTab,
         generateAiDeepReport: generateAiDeepReport,
+        generateAiIndividualReport: generateAiIndividualReport,
         toggleShareIndividual: toggleShareIndividual
       };
 
       document.addEventListener('DOMContentLoaded', () => {
+        const savedShared = localStorage.getItem(STORAGE_KEY_SHARED_INDIVIDUAL);
+        if (savedShared !== null) isIndividualShared = (savedShared === 'true');
         initRoleDisplay();
         runFullPairAnalysis();
       });
