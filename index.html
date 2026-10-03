@@ -158,7 +158,7 @@
   <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
     <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-mono">
       <button type="button" onclick="IndexRuntime.switchMainTab('hub')" id="tab-nav-hub" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn" style="min-height: 36px;">Start-Hub ✓</button>
-      <button type="button" onclick="IndexRuntime.switchMainTab('survey')" id="tab-nav-survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (36 Kap.)</button>
+      <button type="button" onclick="IndexRuntime.switchMainTab('survey')" id="tab-nav-survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (500 Items)</button>
       <a href="analyse.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Analyse</a>
       <a href="chat.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Stream</a>
       <a href="protocol.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Das Protokoll</a>
@@ -189,7 +189,7 @@
           <span class="text-[10px] text-[#c5a880]">Hier aktiv ✓</span>
         </button>
         <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; IndexRuntime.switchMainTab('survey');" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn">
-          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (36 Kapitel)</span>
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
           <span class="text-[#94a3b8]">→</span>
         </button>
         <a href="analyse.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
@@ -271,7 +271,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
           <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5 cursor-pointer touch-btn" onclick="IndexRuntime.switchMainTab('survey')">
             <span class="text-[10px] text-[#94a3b8] block">Fragen beantwortet:</span>
-            <strong class="text-sm sm:text-base font-bold text-[#c5a880]" id="hub-stat-answered">0 / 185</strong>
+            <strong class="text-sm sm:text-base font-bold text-[#c5a880]" id="hub-stat-answered">0 / 505</strong>
           </div>
           <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-0.5 cursor-pointer touch-btn" onclick="window.location.href='analyse.html'">
             <span class="text-[10px] text-[#94a3b8] block">Paar-Resonanz:</span>
@@ -377,7 +377,7 @@
               Psychometrischer Konsens-Katalog
             </span>
             <h2 class="text-base sm:text-lg font-serif text-white mt-1" id="survey-active-chapter-title">
-              Alle 36 Kapitel
+              Alle Kapitel (500 Items)
             </h2>
           </div>
 
@@ -387,7 +387,7 @@
               Kapitelweise
             </button>
             <button type="button" onclick="SurveyRuntime.setViewMode('full')" id="btn-survey-mode-full" class="px-3 py-1.5 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn">
-              Gesamter Bogen (185)
+              Gesamter Bogen (505)
             </button>
           </div>
         </div>
@@ -395,11 +395,11 @@
         <!-- KAPITEL-DROPDOWN & SUCHFELD -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
           <select id="survey-chapter-select" onchange="SurveyRuntime.selectChapter(this.value)" class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white font-sans focus:border-[#c5a880] focus:outline-none">
-            <!-- Dynamisch befüllt mit allen 36 Kapiteln -->
+            <!-- Dynamisch befüllt mit allen Kapiteln -->
           </select>
 
           <div class="relative">
-            <input type="text" id="survey-search-input" oninput="SurveyRuntime.handleSearch(this.value)" placeholder="Suche in allen 185 Fragen..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs font-sans placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" />
+            <input type="text" id="survey-search-input" oninput="SurveyRuntime.handleSearch(this.value)" placeholder="Suche in allen 500 Fragen..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs font-sans placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" />
             <span class="absolute right-3 top-2.5 text-[#94a3b8]/40 pointer-events-none">🔍</span>
           </div>
         </div>
@@ -679,6 +679,7 @@
   <script src="data/scientific_studies.js"></script>
   <script src="data/questions_part1.js"></script>
   <script src="data/questions_part2.js"></script>
+  <script src="data/questions_part3.js"></script>
   <script src="data/equipment_catalog.js"></script>
   <script src="data/toy_combinatorics.js"></script>
   <script src="data/chastity_database.js"></script>
@@ -879,16 +880,28 @@
         } catch (e) {}
 
         const myAns = answers[assignedRole] || {};
+        const p1 = window.surveyChaptersPart1 || [];
+        const p2 = window.surveyChaptersPart2 || [];
+        const p3 = window.surveyChaptersPart3 || [];
+        const allChapters = p1.concat(p2).concat(p3);
+        let totalItemsCount = 0;
         let answeredCount = 0;
-        for (let i = 1; i <= 180; i++) {
-          if (typeof myAns[`it_${i}_r1`] === 'number' || typeof myAns[`it_${i}_r2`] === 'number') answeredCount++;
-        }
-        for (let i = 901; i <= 905; i++) {
-          if (myAns[`choice_${i}`]) answeredCount++;
-        }
+
+        allChapters.forEach(ch => {
+          (ch.items || []).forEach(it => {
+            totalItemsCount++;
+            if (it.type === 'choice') {
+              if (myAns[`choice_${it.id}`]) answeredCount++;
+            } else {
+              if (typeof myAns[`it_${it.id}_r1`] === 'number' || typeof myAns[`it_${it.id}_r2`] === 'number') {
+                answeredCount++;
+              }
+            }
+          });
+        });
 
         const statAnswered = document.getElementById('hub-stat-answered');
-        if (statAnswered) statAnswered.innerText = `${answeredCount} / 185`;
+        if (statAnswered) statAnswered.innerText = `${answeredCount} / ${totalItemsCount || 505}`;
 
         // Resonanz
         try {
@@ -1229,7 +1242,7 @@
       'use strict';
 
       let surveyViewMode = 'chapters'; // 'chapters' | 'full'
-      let activeChapterId = 0;
+      let activeChapterId = 1;
       let activeFilter = 'all';
       let searchQuery = '';
 
@@ -1246,7 +1259,8 @@
       function getAllChapters() {
         const p1 = window.surveyChaptersPart1 || [];
         const p2 = window.surveyChaptersPart2 || [];
-        return p1.concat(p2);
+        const p3 = window.surveyChaptersPart3 || [];
+        return p1.concat(p2).concat(p3);
       }
 
       function getMyAnswers() {
@@ -1411,14 +1425,16 @@
                   </div>
                 </div>
               ` : `
-                <!-- STANDARD: DOPPELBEWERTUNG AKTIV (FÜHREN) & PASSIV (EMPFANGEN) -->
+                <!-- STANDARD: DOPPELBEWERTUNG AKTIV (FÜHREN) & PASSIV (EMPFANGEN) MIT KONTEXTUELLEN LABELS -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 font-mono text-xs">
                   
                   <!-- AKTIV (TOP / FÜHREN) -->
                   <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1.5">
                     <div class="flex items-center justify-between text-[10px]">
-                      <span class="text-[#c5a880] font-bold uppercase">Aktiv (Führen / Tun):</span>
-                      <span class="text-white font-bold">${typeof sLead === 'number' ? sLead + '/5' : 'Offen'}</span>
+                      <span class="text-[#c5a880] font-bold uppercase truncate pr-1" title="${escapeHtml(it.r1Label || "Aktiv (Führen / Tun)")}">
+                        ${escapeHtml(it.r1Label || "Aktiv (Führen / Tun)")}:
+                      </span>
+                      <span class="text-white font-bold flex-shrink-0">${typeof sLead === 'number' ? sLead + '/5' : 'Offen'}</span>
                     </div>
                     <div class="grid grid-cols-6 gap-1 text-center">
                       ${[0, 1, 2, 3, 4, 5].map(star => `
@@ -1432,8 +1448,10 @@
                   <!-- PASSIV (BOTTOM / EMPFANGEN) -->
                   <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1.5">
                     <div class="flex items-center justify-between text-[10px]">
-                      <span class="text-[#b3734a] font-bold uppercase">Passiv (Hingeben / Empfangen):</span>
-                      <span class="text-white font-bold">${typeof sRec === 'number' ? sRec + '/5' : 'Offen'}</span>
+                      <span class="text-[#b3734a] font-bold uppercase truncate pr-1" title="${escapeHtml(it.r2Label || "Passiv (Hingeben / Empfangen)")}">
+                        ${escapeHtml(it.r2Label || "Passiv (Hingeben / Empfangen)")}:
+                      </span>
+                      <span class="text-white font-bold flex-shrink-0">${typeof sRec === 'number' ? sRec + '/5' : 'Offen'}</span>
                     </div>
                     <div class="grid grid-cols-6 gap-1 text-center">
                       ${[0, 1, 2, 3, 4, 5].map(star => `
@@ -1471,12 +1489,12 @@
         const activeTitleEl = document.getElementById('survey-active-chapter-title');
         const activeCh = chapters.find(c => c.id === activeChapterId) || chapters[0];
         if (activeTitleEl) {
-          activeTitleEl.innerText = (surveyViewMode === 'full') ? 'Alle 36 Kapitel (Gesamter Bogen)' : activeCh.title;
+          activeTitleEl.innerText = (surveyViewMode === 'full') ? `Gesamter Bogen (${displayItems.length} Fragen)` : activeCh.title;
         }
         const pageInd = document.getElementById('survey-page-indicator');
         if (pageInd) {
           const idx = chapters.findIndex(c => c.id === activeChapterId);
-          pageInd.innerText = `Kapitel ${idx + 1} von ${chapters.length}`;
+          pageInd.innerText = `Kapitel ${idx >= 0 ? idx + 1 : 1} von ${chapters.length}`;
         }
       }
 
