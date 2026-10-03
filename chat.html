@@ -704,6 +704,8 @@
         checkConditionalBreakGlass();
       }
 
+      // Ein Tipp wechselt, wer gerade führt. Wird wie in den Einstellungen gespeichert und
+      // per Sync auf das Partnergerät übertragen (nicht bei FLR 24/7 und nicht während einer Verschlusszeit).
       function toggleActiveRole() {
         const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
         const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
@@ -719,20 +721,25 @@
           return;
         }
 
-        const roleText = document.getElementById('active-role-text');
-        const roleDot = document.getElementById('role-indicator-dot');
-        if (currentRoleState === 'top') {
-          currentRoleState = 'bottom';
-          if (roleText) roleText.innerText = "Bottom";
-          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#b3734a]";
-          showToast("Perspektive gewechselt: Bottom (Hingabe)");
-        } else {
-          currentRoleState = 'top';
-          if (roleText) roleText.innerText = "Top";
-          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#c5a880]";
-          showToast("Perspektive gewechselt: Top (Führung)");
+        let isLocked = false;
+        try {
+          const raw = localStorage.getItem('tactus_protocol_state') || localStorage.getItem('kompass_protocol_state');
+          if (raw) isLocked = !!JSON.parse(raw).isLocked;
+        } catch (e) {}
+        if (isLocked) {
+          showToast("Während einer aktiven Verschlusszeit bleibt die Führung beim Keyholder.");
+          return;
         }
-        checkConditionalBreakGlass();
+
+        const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const iLead = (localStorage.getItem('kompass_keyholder_role') || 'A') === myRole;
+        const newKeyholder = iLead ? (myRole === 'A' ? 'B' : 'A') : myRole;
+        localStorage.setItem('kompass_keyholder_role', newKeyholder);
+        localStorage.setItem('kompass_caged_role', newKeyholder === 'A' ? 'B' : 'A');
+        if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
+
+        initRoleDisplay();
+        showToast(iLead ? "Rollenwechsel: Du folgst jetzt (Bottom)." : "Rollenwechsel: Du führst jetzt (Top).");
       }
 
       function openAccountModal() {
