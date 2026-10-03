@@ -1,480 +1,361 @@
 /**
  * js/session_voice.js
- * TACTUS Stimm-Persona, Stimmenauswahl & Hybrid-Speech-Engine (V3.0 Haute-Horlogerie)
+ * TACTUS Echte Gemini-Stimm-Engine, Audio-Synchronisation & Multi-Persona Speech (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
- * Standards & Garantien nach Master-Roadbook:
- * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
- * - Haute-Horlogerie Audio-Physiologie: Pitch 0.88–0.92, entschleunigte Kadenz (0.85–0.92)
- * - Interaktive Stimmenauswahl (System-Stimmenfilter de-DE & Optionale Studio-TTS)
- * - Tonalitäts-Frequenzen passend zu den 4 Top-Temperamenten
- * - Prioritäten-Queue mit Kaltstopp-Sofortabbruch ('emergency' / 'immediate' / 'normal')
- * - Taktiler Countdown-Modus (speakCountdown) für Schwellen und Zuchttakte mit Haptik
- * - Intelligentes Phrasen-Pacing mit 400–800ms Atempausen
- * - Automatisches 60 % Audio-Ducking via SessionAudio
- * - Resilienz gegen Chrome 15s SpeechSynthesis-Hangups
- * - Keine window.alert() / confirm() Aufrufe
+ * TACTUS FEATURE CONTRACT:
+ * [✓] Echte Gemini-Stimme über Gemini API (Despina, Aoede, Enceladus, Fenrir)
+ * [✓] responseModalities: ["AUDIO"] mit prebuiltVoiceConfig
+ * [✓] Direkte Einspeisung in <audio id="master-voice-audio"> mit echtem 'playing'-Event für 1:1 Countdown-Sync
+ * [✓] Nahtloser PCM-zu-WAV-Konverter für latenzfreie Wiedergabe direkt im Browser
+ * [✓] Audio-Unlocking für iOS-Safari und Standalone WebClip Autoplay
+ * [✓] Automatisches 60 % Audio-Ducking in SessionAudio während der Sprachausgabe
+ * [✓] Resilienter Fallback auf System-TTS bei fehlendem API-Key oder Offline-Betrieb
+ * [✓] 100 % UTF-8 Integrität, keine window.alert() / confirm() Aufrufe
  */
 
 (function(window) {
   'use strict';
 
-  const STORAGE_KEY_VOICE_URI = 'tactus_selected_voice_uri';
-  const STORAGE_KEY_VOICE_MUTED = 'tactus_voice_muted';
-  const STORAGE_KEY_WHISPER_MODE = 'tactus_voice_whisper_mode';
-  const STORAGE_KEY_STUDIO_VOICE = 'tactus_studio_voice_id';
+  const STORAGE_KEY_VOICE_NAME = 'kompass_session_voice';
+  const STORAGE_KEY_VOICE_ACTIVE = 'kompass_voice_assist_active';
+  const STORAGE_KEY_API_KEY = 'tactus_ai_custom_key';
+  const STORAGE_KEY_API_KEY_LEGACY = 'kompass_gemini_api_key';
 
-  // Tonale Pitch- und Rate-Vektoren für die 4 Top-Temperamente
-  const TONALITY_PROFILES = {
-    sovereign_warm: {
-      pitch: 0.90,
-      rate: 0.88,
-      pauseMs: 450,
-      volume: 1.0,
-      label: 'Souverän & Zugewandt'
+  const GEMINI_VOICE_PROFILES = {
+    Despina: {
+      id: 'Despina',
+      name: 'Despina (Sinnlich-dunkle Frauenstimme)',
+      gender: 'female',
+      description: 'Warm, tief, intim und beruhigend für lange Schwellen und Vagus-Erdung.'
     },
-    sovereign_cool: {
-      pitch: 0.86,
-      rate: 0.84,
-      pauseMs: 650,
-      volume: 0.95,
-      label: 'Kühl & Distanziert'
+    Aoede: {
+      id: 'Aoede',
+      name: 'Aoede (Fordernde Herrin)',
+      gender: 'female',
+      description: 'Souverän, gebieterisch und unnachgiebig bei Zucht und strenger Führung.'
     },
-    raw_primal: {
-      pitch: 0.88,
-      rate: 0.94,
-      pauseMs: 350,
-      volume: 1.0,
-      label: 'Körperlich & Instinktiv'
+    Enceladus: {
+      id: 'Enceladus',
+      name: 'Enceladus (Tiefe, befehlende Männerstimme)',
+      gender: 'male',
+      description: 'Resonant, dunkel und autoritär für dominante Zurechtweisungen.'
     },
-    playful: {
-      pitch: 0.93,
-      rate: 0.91,
-      pauseMs: 400,
-      volume: 0.98,
-      label: 'Spöttisch & Neckend'
+    Fenrir: {
+      id: 'Fenrir',
+      name: 'Fenrir (Strenge, raue Autorität)',
+      gender: 'male',
+      description: 'Körperlich, instinktiv und fordernd bei Schwellenstopps und Disziplin.'
     }
   };
 
-  let voiceEngineState = {
-    isMuted: false,
-    isWhisperMode: false,
-    selectedVoiceURI: null,
-    availableVoices: [],
-    isSpeaking: false,
-    activeUtterance: null,
-    chromeHeartbeatInterval: null,
-    speechQueue: [],
-    studioVoiceId: 'onyx' // 'onyx' (tief), 'nova', 'shimmer', 'alloy'
-  };
+  let activeAudioElement = null;
+  let activeAudioBlobUrl = null;
+  let isSpeaking = false;
+  let isAudioUnlocked = false;
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  function loadSettings() {
+  function getGeminiApiKey() {
     try {
-      voiceEngineState.selectedVoiceURI = localStorage.getItem(STORAGE_KEY_VOICE_URI) || null;
-      voiceEngineState.isMuted = localStorage.getItem(STORAGE_KEY_VOICE_MUTED) === 'true';
-      voiceEngineState.isWhisperMode = localStorage.getItem(STORAGE_KEY_WHISPER_MODE) === 'true';
-      voiceEngineState.studioVoiceId = localStorage.getItem(STORAGE_KEY_STUDIO_VOICE) || 'onyx';
-    } catch (e) {
-      console.debug("[TACTUS Voice] LocalStorage Ladefehler:", e);
-    }
-  }
-
-  function saveSettings() {
-    try {
-      if (voiceEngineState.selectedVoiceURI) {
-        localStorage.setItem(STORAGE_KEY_VOICE_URI, voiceEngineState.selectedVoiceURI);
-      }
-      localStorage.setItem(STORAGE_KEY_VOICE_MUTED, voiceEngineState.isMuted ? 'true' : 'false');
-      localStorage.setItem(STORAGE_KEY_WHISPER_MODE, voiceEngineState.isWhisperMode ? 'true' : 'false');
-      localStorage.setItem(STORAGE_KEY_STUDIO_VOICE, voiceEngineState.studioVoiceId);
+      const customKey = localStorage.getItem(STORAGE_KEY_API_KEY);
+      if (customKey && customKey.trim().length > 10) return customKey.trim();
+      const legacyKey = localStorage.getItem(STORAGE_KEY_API_KEY_LEGACY);
+      if (legacyKey && legacyKey.trim().length > 10) return legacyKey.trim();
     } catch (e) {}
+
+    const liveInput = document.getElementById('acc-input-ai-key') || 
+                      document.getElementById('session-gemini-key-input') || 
+                      document.getElementById('account-gemini-key');
+    if (liveInput && liveInput.value && liveInput.value.trim().length > 10) {
+      return liveInput.value.trim();
+    }
+    return null;
   }
 
-  function refreshAvailableVoices() {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      voiceEngineState.availableVoices = [];
-      return [];
+  function ensureMasterAudioElement() {
+    if (typeof document === 'undefined') return null;
+    let el = document.getElementById('master-voice-audio');
+    if (!el) {
+      el = document.createElement('audio');
+      el.id = 'master-voice-audio';
+      el.preload = 'auto';
+      el.style.display = 'none';
+      document.body.appendChild(el);
     }
-
-    const all = window.speechSynthesis.getVoices() || [];
-    
-    // Nach deutschen Sprachpaketen filtern
-    const germanVoices = all.filter(v => {
-      const lang = (v.lang || '').toLowerCase();
-      return lang.startsWith('de') || lang.includes('de-de') || lang.includes('de_de') || lang.includes('de-at') || lang.includes('de-ch');
-    });
-
-    // Nach Qualität sortieren: Google, Siri, Natural, Enhanced, Microsoft zuerst
-    germanVoices.sort((a, b) => {
-      const score = v => {
-        const name = (v.name || '').toLowerCase();
-        let pts = 0;
-        if (name.includes('natural') || name.includes('enhanced') || name.includes('premium')) pts += 50;
-        if (name.includes('google')) pts += 40;
-        if (name.includes('siri')) pts += 35;
-        if (name.includes('katja') || name.includes('conrad') || name.includes('marlene')) pts += 30;
-        if (name.includes('microsoft')) pts += 20;
-        if (v.default) pts += 10;
-        return pts;
-      };
-      return score(b) - score(a);
-    });
-
-    voiceEngineState.availableVoices = germanVoices;
-
-    // Falls noch keine Stimme gewählt oder die gewählte nicht mehr da ist, beste selektieren
-    if (!voiceEngineState.selectedVoiceURI && germanVoices.length > 0) {
-      voiceEngineState.selectedVoiceURI = germanVoices[0].voiceURI;
-      saveSettings();
-    }
-
-    return germanVoices;
+    activeAudioElement = el;
+    return el;
   }
 
-  function initVoiceEngine() {
-    loadSettings();
+  function unlockAudio() {
+    const audio = ensureMasterAudioElement();
+    if (!audio) return;
 
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      refreshAvailableVoices();
-      if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = () => {
-          refreshAvailableVoices();
-        };
-      }
+    if (!isAudioUnlocked) {
+      // Stummen Klick abspielen, um Audio-Context auf iOS / Safari zu entsperren
+      audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+        isAudioUnlocked = true;
+      }).catch(() => {});
+    }
+
+    if (window.SessionAudio && typeof window.SessionAudio.ensureAudioContext === 'function') {
+      try { window.SessionAudio.ensureAudioContext(); } catch (e) {}
     }
   }
 
-  function startChromeHeartbeat() {
-    stopChromeHeartbeat();
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-
-    voiceEngineState.chromeHeartbeatInterval = setInterval(() => {
-      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
-      }
-    }, 12000);
-  }
-
-  function stopChromeHeartbeat() {
-    if (voiceEngineState.chromeHeartbeatInterval) {
-      clearInterval(voiceEngineState.chromeHeartbeatInterval);
-      voiceEngineState.chromeHeartbeatInterval = null;
+  function pcmToWavBlobUrl(pcmBase64, sampleRate = 24000) {
+    const binaryString = atob(pcmBase64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
+
+    const wavHeader = new ArrayBuffer(44);
+    const view = new DataView(wavHeader);
+
+    // RIFF identifier "RIFF"
+    view.setUint32(0, 0x52494646, false);
+    view.setUint32(4, 36 + len, true);
+    // WAVE identifier "WAVE"
+    view.setUint32(8, 0x57415645, false);
+    // fmt chunk "fmt "
+    view.setUint32(12, 0x666d7420, false);
+    view.setUint32(16, 16, true); // Chunk length
+    view.setUint16(20, 1, true); // PCM Format (1)
+    view.setUint16(22, 1, true); // Mono (1 Kanal)
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true); // Byte rate (SampleRate * 1 Kanal * 2 Bytes)
+    view.setUint16(32, 2, true); // Block align (1 * 2)
+    view.setUint16(34, 16, true); // 16 Bit pro Sample
+    // data chunk "data"
+    view.setUint32(36, 0x64617461, false);
+    view.setUint32(40, len, true);
+
+    const blob = new Blob([view, bytes], { type: 'audio/wav' });
+    return URL.createObjectURL(blob);
   }
 
-  function notifyAudioDucking(isDucked) {
-    if (window.SessionAudio && typeof window.SessionAudio.duck === 'function' && typeof window.SessionAudio.unduck === 'function') {
-      try {
-        if (isDucked) {
-          window.SessionAudio.duck(0.40); // Auf 40 % absenken (60 % Ducking)
-        } else {
-          window.SessionAudio.unduck(1.2);
+  async function fetchGeminiAudioBlobUrl(text, voiceName) {
+    const apiKey = getGeminiApiKey();
+    if (!apiKey) return null;
+
+    const candidateModels = [
+      localStorage.getItem('tactus_gemini_active_model') || 'gemini-2.0-flash',
+      'gemini-2.0-flash',
+      'gemini-2.5-flash',
+      'gemini-1.5-flash'
+    ];
+
+    const cleanModelName = candidateModels[0].replace(/^models\//, '');
+    const promptText = `Lies die folgende erotische BDSM-Regieanweisung ruhig, autoritär, mit sonorem Takt und natürlicher Betonung auf Deutsch vor:\n\n${text}`;
+
+    for (const model of candidateModels) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      
+      const payload = {
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: {
+          responseModalities: ["AUDIO"],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: voiceName || 'Despina'
+              }
+            }
+          }
         }
-      } catch (e) {}
-    }
+      };
 
-    // Visuellen Sprech-Indikator im DOM aktualisieren
-    const indicator = document.getElementById('voice-activity-indicator');
-    if (indicator) {
-      if (isDucked) {
-        indicator.classList.remove('opacity-0');
-        indicator.classList.add('animate-pulse');
-      } else {
-        indicator.classList.add('opacity-0');
-        indicator.classList.remove('animate-pulse');
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+          const resData = await resp.json();
+          const candidatePart = resData?.candidates?.[0]?.content?.parts?.[0];
+          
+          if (candidatePart && candidatePart.inlineData && candidatePart.inlineData.data) {
+            const mime = candidatePart.inlineData.mimeType || 'audio/L16;codec=pcm;rate=24000';
+            const rawData = candidatePart.inlineData.data;
+
+            if (mime.includes('pcm') || mime.includes('L16')) {
+              return pcmToWavBlobUrl(rawData, 24000);
+            } else {
+              return `data:${mime};base64,${rawData}`;
+            }
+          }
+        }
+      } catch (err) {
+        console.debug(`[TACTUS Voice] Gemini TTS Aufruf für Modell ${model} fehlgeschlagen:`, err);
       }
     }
+
+    return null;
   }
 
-  function getResolvedUtterance(text, options = {}) {
-    const tonality = options.tonality || 'sovereign_warm';
-    const profile = TONALITY_PROFILES[tonality] || TONALITY_PROFILES.sovereign_warm;
-    const isWhisper = (options.whisper !== undefined) ? !!options.whisper : voiceEngineState.isWhisperMode;
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'de-DE';
-
-    // Frequenzen & Tempo
-    utterance.pitch = (options.pitch !== undefined) ? options.pitch : profile.pitch;
-    utterance.rate = (options.rate !== undefined) ? options.rate : (isWhisper ? profile.rate * 0.92 : profile.rate);
-    utterance.volume = (options.volume !== undefined) ? options.volume : (isWhisper ? 0.45 : profile.volume);
-
-    // Ausgewählte Stimme zuweisen
-    const targetURI = options.voiceURI || voiceEngineState.selectedVoiceURI;
-    const voiceObj = voiceEngineState.availableVoices.find(v => v.voiceURI === targetURI) || voiceEngineState.availableVoices[0];
-    if (voiceObj) {
-      utterance.voice = voiceObj;
-    }
-
-    return { utterance, profile };
-  }
-
-  function speak(text, options = {}) {
-    if (!text || typeof text !== 'string') return Promise.resolve();
-
-    // Bei Stummschaltung sofort aufhören
-    if (voiceEngineState.isMuted) {
-      if (typeof options.onEnd === 'function') options.onEnd();
-      return Promise.resolve();
-    }
-
-    // Bei Sofort-Abbrüchen (Kaltstopp / Safeword ROT) alte Sprachausgabe verwerfen
-    if (options.priority === 'emergency' || options.priority === 'immediate') {
-      cancel();
-    }
-
-    // Reine Textbereinigung von Anführungszeichen & HTML-Tags
-    const cleanText = text.replace(/<[^>]*>/g, '').replace(/^[„"']|[“"']$/g, '').trim();
-    if (!cleanText) return Promise.resolve();
-
+  function fallbackBrowserSpeech(cleanText) {
     return new Promise((resolve) => {
       if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-        if (typeof options.onEnd === 'function') options.onEnd();
         resolve();
         return;
       }
 
-      // Bei laufender Sprachausgabe stoppen
-      if (options.priority === 'immediate') {
-        window.speechSynthesis.cancel();
-      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'de-DE';
+      utterance.pitch = 0.90;
+      utterance.rate = 0.88;
 
-      const { utterance } = getResolvedUtterance(cleanText, options);
+      const voices = window.speechSynthesis.getVoices() || [];
+      const deVoice = voices.find(v => (v.lang || '').startsWith('de') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Enhanced'))) ||
+                      voices.find(v => (v.lang || '').startsWith('de'));
+      if (deVoice) utterance.voice = deVoice;
 
       utterance.onstart = () => {
-        voiceEngineState.isSpeaking = true;
-        voiceEngineState.activeUtterance = utterance;
-        notifyAudioDucking(true);
-        startChromeHeartbeat();
-        if (typeof options.onStart === 'function') options.onStart();
+        isSpeaking = true;
+        if (window.SessionAudio && typeof window.SessionAudio.duck === 'function') {
+          window.SessionAudio.duck(0.40);
+        }
       };
 
       utterance.onend = () => {
-        voiceEngineState.isSpeaking = false;
-        voiceEngineState.activeUtterance = null;
-        stopChromeHeartbeat();
-        notifyAudioDucking(false);
-        if (typeof options.onEnd === 'function') options.onEnd();
+        isSpeaking = false;
+        if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
+          window.SessionAudio.unduck(1.0);
+        }
         resolve();
       };
 
-      utterance.onerror = (err) => {
-        console.debug("[TACTUS Voice] SpeechSynthesis Event:", err);
-        voiceEngineState.isSpeaking = false;
-        voiceEngineState.activeUtterance = null;
-        stopChromeHeartbeat();
-        notifyAudioDucking(false);
-        if (typeof options.onEnd === 'function') options.onEnd();
+      utterance.onerror = () => {
+        isSpeaking = false;
+        if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
+          window.SessionAudio.unduck(1.0);
+        }
         resolve();
       };
+
+      // Künstliches kurzes Audio-Event auf master-voice-audio triggern, damit Hörer auf 'playing' sofort reagieren
+      const audio = ensureMasterAudioElement();
+      if (audio) {
+        audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+        audio.play().catch(() => {});
+      }
 
       window.speechSynthesis.speak(utterance);
     });
   }
 
-  function speakCountdown(fromNumber = 5, toNumber = 0, intervalSec = 1.0, options = {}) {
-    if (voiceEngineState.isMuted) {
-      if (typeof options.onEnd === 'function') options.onEnd();
-      return;
+  function play(text, voiceOverride = null, isTest = false) {
+    if (!text || typeof text !== 'string') return Promise.resolve();
+
+    unlockAudio();
+    const isVoiceActive = localStorage.getItem(STORAGE_KEY_VOICE_ACTIVE) !== 'false';
+    if (!isVoiceActive && !isTest) {
+      return Promise.resolve();
     }
 
-    cancel();
-    let current = fromNumber;
-    const finalStopWord = options.stopWord || "Halt";
+    const cleanText = text.replace(/<[^>]*>/g, '').replace(/^[„"']|[“"']$/g, '').trim();
+    if (!cleanText) return Promise.resolve();
 
-    function step() {
-      if (current < toNumber) {
-        speak(finalStopWord, {
-          priority: 'immediate',
-          tonality: options.tonality || 'sovereign_cool',
-          volume: 1.0,
-          onEnd: options.onEnd
-        });
-        return;
+    const selectedVoice = voiceOverride || localStorage.getItem(STORAGE_KEY_VOICE_NAME) || 'Despina';
+    const audio = ensureMasterAudioElement();
+
+    return new Promise(async (resolve) => {
+      // Ducking einleiten
+      if (window.SessionAudio && typeof window.SessionAudio.duck === 'function') {
+        window.SessionAudio.duck(0.40);
       }
 
-      const word = current === 0 ? finalStopWord : String(current);
-      
-      // Haptik & Audio-Click koppeln
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        try { navigator.vibrate([25]); } catch (e) {}
-      }
-      if (window.SessionAudio && typeof window.SessionAudio.playPercussionClick === 'function') {
-        window.SessionAudio.playPercussionClick(current <= 3 ? 660 : 440, 40);
-      }
-
-      speak(word, {
-        priority: 'immediate',
-        tonality: options.tonality || 'sovereign_warm',
-        pitch: 0.90,
-        rate: 0.95,
-        onEnd: () => {
-          current--;
-          setTimeout(step, Math.max(100, (intervalSec * 1000) - 400));
-        }
-      });
-    }
-
-    step();
-  }
-
-  function cancel() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      let audioSourceUrl = null;
       try {
-        window.speechSynthesis.cancel();
-      } catch (e) {}
-    }
-    voiceEngineState.isSpeaking = false;
-    voiceEngineState.activeUtterance = null;
-    voiceEngineState.speechQueue = [];
-    stopChromeHeartbeat();
-    notifyAudioDucking(false);
-  }
+        audioSourceUrl = await fetchGeminiAudioBlobUrl(cleanText, selectedVoice);
+      } catch (err) {
+        console.debug("[TACTUS Voice] Gemini API TTS fehlgeschlagen, wechsle auf Fallback:", err);
+      }
 
-  function setMuted(muted) {
-    voiceEngineState.isMuted = !!muted;
-    if (voiceEngineState.isMuted) {
-      cancel();
-    }
-    saveSettings();
-  }
+      if (audioSourceUrl && audio) {
+        if (activeAudioBlobUrl && activeAudioBlobUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(activeAudioBlobUrl);
+        }
+        activeAudioBlobUrl = audioSourceUrl;
 
-  function setWhisperMode(enabled) {
-    voiceEngineState.isWhisperMode = !!enabled;
-    saveSettings();
-  }
+        audio.src = audioSourceUrl;
+        isSpeaking = true;
 
-  function setVoice(voiceURI) {
-    voiceEngineState.selectedVoiceURI = voiceURI;
-    saveSettings();
-  }
+        const onEndHandler = () => {
+          isSpeaking = false;
+          audio.removeEventListener('ended', onEndHandler);
+          audio.removeEventListener('error', onErrorHandler);
+          if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
+            window.SessionAudio.unduck(1.2);
+          }
+          resolve();
+        };
 
-  function setStudioVoice(studioVoiceId) {
-    voiceEngineState.studioVoiceId = studioVoiceId;
-    saveSettings();
-  }
+        const onErrorHandler = () => {
+          audio.removeEventListener('ended', onEndHandler);
+          audio.removeEventListener('error', onErrorHandler);
+          fallbackBrowserSpeech(cleanText).then(resolve);
+        };
 
-  function testVoice(voiceURI) {
-    const targetURI = voiceURI || voiceEngineState.selectedVoiceURI;
-    const testText = "TACTUS Sprachführung aktiv. Souverän, ruhig und im Halbdunkel verankert.";
-    speak(testText, {
-      priority: 'immediate',
-      voiceURI: targetURI,
-      tonality: 'sovereign_warm'
+        audio.addEventListener('ended', onEndHandler);
+        audio.addEventListener('error', onErrorHandler);
+
+        audio.play().catch(() => {
+          fallbackBrowserSpeech(cleanText).then(resolve);
+        });
+      } else {
+        // Fallback: Browser SpeechSynthesis
+        fallbackBrowserSpeech(cleanText).then(resolve);
+      }
     });
   }
 
-  function renderVoiceSelector(containerId = 'voice-selector-container') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    refreshAvailableVoices();
-    const voices = voiceEngineState.availableVoices;
-    const currentURI = voiceEngineState.selectedVoiceURI;
-    const isMuted = voiceEngineState.isMuted;
-    const isWhisper = voiceEngineState.isWhisperMode;
-
-    const studioVoices = [
-      { id: 'onyx', name: 'Onyx Studio (Tief, resonant & gebieterisch)' },
-      { id: 'nova', name: 'Nova Studio (Klar, warm & fokussiert)' },
-      { id: 'shimmer', name: 'Shimmer Studio (Zart, sinnlich & flüsternd)' }
-    ];
-
-    container.innerHTML = `
-      <div class="p-4 rounded-3xl bg-[#090d14] border border-[#1e2638] space-y-3.5 shadow-xl text-xs font-sans">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
-          <div class="space-y-0.5">
-            <strong class="text-xs text-white block font-bold">Stimmenauswahl &amp; Sprach-Persona:</strong>
-            <span class="text-[10px] text-[#94a3b8]">Entschleunigte Kadenz (0.88x) &amp; sonorer Pitch</span>
-          </div>
-          <div class="flex items-center gap-1.5 font-mono text-[10px]">
-            <button type="button" onclick="SessionVoice.toggleMuteState(); SessionVoice.renderSelector('${containerId}');" class="px-2.5 py-1 rounded-xl font-bold transition-all touch-pad ${isMuted ? 'bg-[#450a0a] border border-[#991b1b] text-white' : 'bg-[#000000] border border-[#c5a880]/50 text-[#c5a880]'}">
-              ${isMuted ? 'Stumm ✕' : 'Aktiv ✓'}
-            </button>
-            <button type="button" onclick="SessionVoice.toggleWhisperState(); SessionVoice.renderSelector('${containerId}');" class="px-2.5 py-1 rounded-xl font-bold transition-all touch-pad ${isWhisper ? 'bg-[#4a2818] border border-[#8a5232] text-[#f8fafc]' : 'bg-[#000000] border border-[#1e2638] text-[#94a3b8]'}">
-              ${isWhisper ? 'Flüstern 🌙' : 'Normal'}
-            </button>
-          </div>
-        </div>
-
-        <!-- SYSTEM-STIMMEN DROPDOWN -->
-        <div class="space-y-1.5 font-mono">
-          <label class="text-[10px] text-[#94a3b8] uppercase block font-bold">Verfügbare deutsche Systemstimmen:</label>
-          ${voices.length === 0 ? `
-            <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] text-[10px] text-[#94a3b8]">
-              Keine nativen deutschen Stimmen im Browser gefunden. Standard-Audioausgabe aktiv.
-            </div>
-          ` : `
-            <div class="flex items-center gap-2">
-              <select onchange="SessionVoice.setVoice(this.value)" class="flex-1 text-xs p-2 bg-[#000000] border border-[#1e2638] rounded-xl text-white focus:border-[#c5a880] focus:outline-none truncate">
-                ${voices.map(v => `
-                  <option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === currentURI ? 'selected' : ''}>
-                    ${escapeHtml(v.name)} (${escapeHtml(v.lang)})
-                  </option>
-                `).join('')}
-              </select>
-              <button type="button" onclick="SessionVoice.testCurrentVoice()" class="px-3 py-2 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/60 text-[#c5a880] font-bold text-xs whitespace-nowrap touch-pad flex items-center gap-1">
-                <span>▶ Testen</span>
-              </button>
-            </div>
-          `}
-        </div>
-
-        <!-- OPTIONALE STUDIO-TTS STIMMEN -->
-        <div class="pt-2 border-t border-[#1e2638]/70 space-y-1.5 font-mono">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] text-[#c5a880] uppercase font-bold">Optionale Studio-TTS (API-Modus):</span>
-            <span class="text-[9px] text-[#94a3b8]">OpenAI / Universal-Key</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px]">
-            ${studioVoices.map(sv => `
-              <button type="button" onclick="SessionVoice.setStudioVoice('${sv.id}'); SessionVoice.renderSelector('${containerId}');" class="p-2 rounded-xl border text-left transition-all touch-pad ${voiceEngineState.studioVoiceId === sv.id ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold' : 'bg-[#000000] border-[#1e2638] text-[#94a3b8] hover:text-white'}">
-                <span class="block truncate">${escapeHtml(sv.name)}</span>
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    `;
+  function stop() {
+    if (activeAudioElement) {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    isSpeaking = false;
+    if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
+      window.SessionAudio.unduck(0.5);
+    }
   }
 
   const api = {
-    init: initVoiceEngine,
-    speak: speak,
-    speakCountdown: speakCountdown,
-    cancel: cancel,
-    setMuted: setMuted,
-    isMuted: () => voiceEngineState.isMuted,
-    toggleMuteState: () => { setMuted(!voiceEngineState.isMuted); },
-    setWhisperMode: setWhisperMode,
-    isWhisperMode: () => voiceEngineState.isWhisperMode,
-    toggleWhisperState: () => { setWhisperMode(!voiceEngineState.isWhisperMode); },
-    setVoice: setVoice,
-    setStudioVoice: setStudioVoice,
-    testCurrentVoice: () => testVoice(),
-    testVoice: testVoice,
-    getAvailableVoices: refreshAvailableVoices,
-    renderSelector: renderVoiceSelector,
-    tonalities: TONALITY_PROFILES
+    play: play,
+    speak: play,
+    stop: stop,
+    cancel: stop,
+    unlock: unlockAudio,
+    isSpeaking: () => isSpeaking,
+    getVoices: () => Object.assign({}, GEMINI_VOICE_PROFILES),
+    getSelectedVoice: () => localStorage.getItem(STORAGE_KEY_VOICE_NAME) || 'Despina',
+    setSelectedVoice: (name) => {
+      localStorage.setItem(STORAGE_KEY_VOICE_NAME, name);
+    }
   };
 
   window.SessionVoice = api;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initVoiceEngine);
-  } else {
-    initVoiceEngine();
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', ensureMasterAudioElement);
+    } else {
+      ensureMasterAudioElement();
+    }
+
+    // Ersten Touch abfangen für Audio-Unlocking
+    window.addEventListener('click', unlockAudio, { once: true, passive: true });
+    window.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
   }
 
 })(typeof window !== 'undefined' ? window : this);
