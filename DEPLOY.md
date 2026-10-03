@@ -29,37 +29,47 @@ Der bisherige Schlüssel stand im Chat und gilt deshalb als verbraucht.
 3. Die angezeigte **Database ID** kopieren und in `wrangler.jsonc` bei `database_id` eintragen. Du kannst sie auch mir geben, dann trage ich sie ein.
 4. Mehr ist nicht nötig. Die Tabellen legt der Worker beim ersten Aufruf selbst an (Lizenzen, KI-Kontingent, Testercodes).
 
-## Schritt 3 – Worker mit GitHub verbinden
+## Schritt 3 – Cloudflare-Zugang für GitHub (veröffentlicht automatisch)
 
-1. Dashboard → **Workers & Pages → Create → Import a repository**.
-2. GitHub verbinden und `nils491/tactus` auswählen, Branch `main`.
-3. Einstellungen:
-   - **Project name:** `tactus` (muss zum Namen in `wrangler.jsonc` passen)
-   - **Build command:** `npm run build`
-   - **Deploy command:** `npx wrangler deploy`
-4. **Deploy** drücken.
+Veröffentlicht wird über **GitHub Actions** (`.github/workflows/deploy.yml`). Bei jedem Push auf `main` wird geprüft, gebaut und der Worker samt App, Datenbank-Bindung und Domain veröffentlicht. Die Logs stehen auf GitHub unter **Actions**.
 
-Ab jetzt wird bei jedem Push auf `main` automatisch neu veröffentlicht.
+1. Cloudflare → oben rechts **Profil → API Tokens → Create Token → Vorlage „Edit Cloudflare Workers“**.
+2. Unter **Permissions** zusätzlich hinzufügen:
+   - Account → **D1** → Edit
+   - Zone → **DNS** → Edit
+3. Bei **Zone Resources** die Zone `tactus.digital` auswählen → **Continue → Create Token** und den Token kopieren.
+4. GitHub → Repository `tactus` → **Settings → Secrets and variables → Actions → New repository secret**:
+   - Name `CLOUDFLARE_API_TOKEN`, Wert: der Token
 
-> Der erste Build **bricht absichtlich ab**, solange in den Rechtstexten noch `[BITTE …]` steht (siehe Schritt 6). Das ist ein Schutz, damit nie ein unvollständiges Impressum online geht.
+> **Wichtig:** Die bisherige Cloudflare-Verbindung („Workers Builds“), die bei jedem Versuch sofort scheitert, bitte trennen: Cloudflare → Workers & Pages → `tactus` → **Settings → Build → Disconnect**. Gibt es unter Workers & Pages noch ein weiteres Projekt, das `tactus.digital` als Domain nutzt (z. B. ein Pages-Projekt), dort die Domain unter **Custom domains** entfernen. Sonst kann der Worker die Domain nicht übernehmen.
 
-## Schritt 4 – Geheimnisse hinterlegen
+## Schritt 4 – Geheimnisse hinterlegen (in GitHub)
 
-Worker `tactus` → **Settings → Variables and Secrets → Add**, beide jeweils als Typ **Secret**:
+Ebenfalls unter **GitHub → Settings → Secrets and variables → Actions** als Repository-Secrets anlegen. Der Veröffentlichungs-Workflow überträgt sie automatisch an den Worker:
 
 | Name | Wert |
 |---|---|
-| `GEMINI_API_KEY` | der neue Schlüssel aus Schritt 1 |
-| `ADMIN_TOKEN` | ein langes Zufallspasswort (mindestens 32 Zeichen, aus dem Passwort-Manager) |
+| `GEMINI_API_KEY` | dein Gemini-Schlüssel (Google-Projekt mit aktivierter Abrechnung) |
+| `ADMIN_TOKEN` | langes Zufallspasswort (mindestens 32 Zeichen, aus dem Passwort-Manager) – damit meldest du dich unter `/admin` an |
+| `BREVO_API_KEY` | API-Schlüssel von Brevo (siehe Schritt 5b), für Kündigungsbestätigungen |
 
-Ohne `GEMINI_API_KEY` funktioniert alles außer dem KI-Fallback. Kunden mit eigenem Key können die KI trotzdem nutzen.
+Danach unter **Actions → Veröffentlichen → Run workflow** einmal starten.
 
-**Falls das Speichern nicht klappt:** Häufigste Ursache ist, dass der Worker noch nie erfolgreich veröffentlicht wurde. Secrets lassen sich zuverlässig erst eintragen, wenn der Worker mindestens einmal erfolgreich veröffentlicht wurde. Also zuerst dafür sorgen, dass der Build grün ist (Schritt 3, keine `[BITTE …]`-Platzhalter mehr), dann die Secrets eintragen und einmal **Deployments → Retry/Redeploy** auslösen, damit der Worker sie übernimmt.
+## Schritt 5 – Domain
 
-## Schritt 5 – Domain verbinden
+Die Domain ist in `wrangler.jsonc` fest an den Worker gebunden (`tactus.digital` und `www.tactus.digital`). Cloudflare legt die passenden DNS-Einträge beim Veröffentlichen selbst an.
 
-1. Die Domain `tactus.digital` muss ihr DNS über Cloudflare laufen lassen: **Add a domain**, danach beim Registrar die Nameserver auf die von Cloudflare angezeigten umstellen.
-2. Worker `tactus` → **Settings → Domains & Routes → Add → Custom domain** → `tactus.digital`.
+> Bricht die Veröffentlichung mit einem Hinweis auf bereits vorhandene DNS-Einträge ab: in Cloudflare → **DNS → Records** die bisherigen **A/AAAA-Einträge für `tactus.digital` und `www`** löschen (nicht die MX- und TXT-Einträge von IONOS!) und den Workflow erneut starten.
+
+## Schritt 5b – E-Mails für Kündigungsbestätigungen (Brevo)
+
+1. Kostenloses Konto bei [brevo.com](https://www.brevo.com) anlegen.
+2. **Senders, Domains & Dedicated IPs → Domains → Add a domain** → `tactus.digital`. Brevo zeigt dann einige DNS-Einträge (z. B. `brevo-code`, DKIM). Diese in Cloudflare unter **DNS → Records** genau so anlegen und in Brevo auf **Verify** klicken.
+3. **Senders → Add sender**: `noreply@tactus.digital`, Name „TACTUS“.
+4. **SMTP & API → API Keys → Generate** → als GitHub-Secret `BREVO_API_KEY` speichern.
+5. Empfohlen für bessere Zustellbarkeit: in Cloudflare-DNS einen TXT-Eintrag `_dmarc` mit dem Wert `v=DMARC1; p=none; rua=mailto:kontakt@tactus.digital` anlegen.
+
+Ohne Brevo funktioniert die Kündigung trotzdem: Sie wird gespeichert und auf der Seite bestätigt; nur die E-Mails entfallen. Kündigungen siehst du in `/admin` unter **Kündigungen**.
 
 ## Schritt 6 – Rechtstexte ausfüllen
 

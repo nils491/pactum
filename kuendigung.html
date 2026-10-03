@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Verträge hier kündigen · TACTUS</title>
+  <meta name="rating" content="adult">
+  <meta name="rating" content="RTA-5042-1996-1400-1577-RTA">
+  <link rel="stylesheet" href="assets/fonts.css">
+  <link rel="stylesheet" href="assets/legal.css">
+  <style>
+    form { display: grid; gap: 14px; margin-top: 8px; }
+    label.field { display: grid; gap: 6px; font-weight: 600; color: #f8fafc; }
+    input[type=text], input[type=email], input[type=date], textarea {
+      font: inherit; font-size: 16px; min-height: 48px; padding: 10px 12px; border-radius: 14px;
+      border: 1px solid #2a364f; background: #000; color: #fff; width: 100%; }
+    textarea { min-height: 90px; }
+    input:focus, textarea:focus { outline: none; border-color: #c5a880; }
+    fieldset { border: 1px solid #2a364f; border-radius: 16px; padding: 12px 14px; margin: 0; }
+    legend { padding: 0 6px; font-weight: 600; color: #f8fafc; }
+    .opt { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding: 6px 0; color: #e2e8f0; cursor: pointer; }
+    .opt input { width: 22px; height: 22px; accent-color: #c5a880; flex-shrink: 0; margin-top: 2px; }
+    .hint { font-size: 13px; color: #94a3b8; font-weight: 400; }
+    .submit { min-height: 52px; border-radius: 14px; border: 0; background: #c5a880; color: #000; font: inherit; font-weight: 800; font-size: 17px; cursor: pointer; }
+    .submit:disabled { opacity: .5; }
+    .btn { min-height: 48px; border-radius: 14px; border: 1px solid #2a364f; background: #000; color: #f8fafc; font: inherit; font-weight: 700; cursor: pointer; padding: 0 16px; }
+    .err { color: #f87171; font-size: 14px; min-height: 20px; }
+    pre.receipt { white-space: pre-wrap; word-break: break-word; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px;
+      color: #e2e8f0; background: #000; border: 1px solid #2e5746; border-radius: 14px; padding: 14px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; }
+    [hidden] { display: none !important; }
+    @media print { header, footer, .row, form { display: none !important; } body { background: #fff; color: #000; } pre.receipt { color: #000; border-color: #000; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><a class="brand" href="./">TACTUS</a><a class="back" href="./">Zur App</a></header>
+
+  <h1>Verträge hier kündigen</h1>
+  <p>Hier kannst du dein TACTUS-Abo jederzeit kündigen. Du erhältst sofort eine Bestätigung auf dieser Seite und per E-Mail.</p>
+
+  <form id="cancel-form" novalidate>
+    <fieldset>
+      <legend>Art der Kündigung</legend>
+      <label class="opt"><input type="radio" name="kind" value="ordentlich" checked> <span>Ordentliche Kündigung<br><span class="hint">zum Ende des laufenden Abrechnungszeitraums</span></span></label>
+      <label class="opt"><input type="radio" name="kind" value="ausserordentlich"> <span>Außerordentliche Kündigung<br><span class="hint">aus wichtigem Grund, mit sofortiger Wirkung</span></span></label>
+      <label class="field" id="reason-wrap" hidden>Kündigungsgrund
+        <textarea id="reason" maxlength="1000" placeholder="Bitte beschreibe kurz den wichtigen Grund"></textarea>
+      </label>
+    </fieldset>
+
+    <label class="field">Vor- und Nachname
+      <input type="text" id="name" autocomplete="name" maxlength="120" required>
+    </label>
+
+    <label class="field">E-Mail-Adresse für die Bestätigung
+      <input type="email" id="email" autocomplete="email" maxlength="160" required>
+      <span class="hint">An diese Adresse senden wir die Kündigungsbestätigung.</span>
+    </label>
+
+    <label class="field">Welcher Vertrag?
+      <input type="text" id="contract" maxlength="120" autocapitalize="characters" spellcheck="false" placeholder="Lizenzschlüssel (TACT-…) oder Bestell-/Abo-Nummer" required>
+      <span class="hint">Den Lizenzschlüssel findest du in der App unter Einstellungen → Abo, Partner-Kopplung &amp; KI, die Abo-Nummer in der Kaufbestätigung.</span>
+    </label>
+
+    <fieldset>
+      <legend>Zu welchem Zeitpunkt?</legend>
+      <label class="opt"><input type="radio" name="when" value="naechstmoeglich" checked> <span>Zum nächstmöglichen Zeitpunkt</span></label>
+      <label class="opt"><input type="radio" name="when" value="datum"> <span>Zu einem bestimmten Datum</span></label>
+      <input type="date" id="date" hidden>
+    </fieldset>
+
+    <p class="err" id="err" role="alert"></p>
+    <button type="submit" class="submit" id="submit">Jetzt kündigen</button>
+    <p class="hint">Mit dem Klick auf „Jetzt kündigen“ wird deine Kündigung sofort verbindlich übermittelt.</p>
+  </form>
+
+  <section id="done" hidden>
+    <div class="box">
+      <h2 style="margin-top:0">Deine Kündigung ist eingegangen</h2>
+      <p id="mail-note"></p>
+    </div>
+    <pre class="receipt" id="receipt"></pre>
+    <div class="row">
+      <button type="button" class="btn" id="download">Bestätigung herunterladen</button>
+      <button type="button" class="btn" id="print">Drucken / als PDF speichern</button>
+    </div>
+  </section>
+
+  <footer>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="agb.html">AGB &amp; Widerruf</a>
+    <a href="jugendschutz.html">Jugendschutz</a>
+    <a href="kuendigung.html">Verträge hier kündigen</a>
+  </footer>
+</main>
+<script>
+  (function() {
+    var $ = function(id) { return document.getElementById(id); };
+    var form = $('cancel-form');
+
+    // Lizenzschlüssel aus der App vorbelegen, falls auf diesem Gerät vorhanden
+    try { var lic = localStorage.getItem('tactus_license_key'); if (lic) $('contract').value = lic; } catch (e) {}
+
+    function sync() {
+      var extra = form.querySelector('input[name=kind]:checked').value === 'ausserordentlich';
+      $('reason-wrap').hidden = !extra;
+      $('date').hidden = form.querySelector('input[name=when]:checked').value !== 'datum';
+    }
+    form.addEventListener('change', sync);
+    $('date').min = new Date().toISOString().slice(0, 10);
+
+    var FIELD_TEXT = { name: 'Bitte gib deinen Vor- und Nachnamen an.', email: 'Bitte gib eine gültige E-Mail-Adresse an.',
+      contractRef: 'Bitte gib deinen Lizenzschlüssel oder deine Bestell-/Abo-Nummer an.', reason: 'Bitte nenne den Grund für die außerordentliche Kündigung.' };
+
+    form.addEventListener('submit', function(ev) {
+      ev.preventDefault();
+      var kind = form.querySelector('input[name=kind]:checked').value;
+      var when = form.querySelector('input[name=when]:checked').value;
+      if (when === 'datum' && !$('date').value) { $('err').textContent = 'Bitte wähle ein Datum.'; return; }
+      var body = {
+        kind: kind,
+        reason: $('reason').value,
+        name: $('name').value,
+        email: $('email').value,
+        contractRef: $('contract').value,
+        effective: when === 'datum' ? $('date').value : 'naechstmoeglich'
+      };
+      $('err').textContent = '';
+      $('submit').disabled = true;
+      $('submit').textContent = 'Wird übermittelt …';
+
+      fetch('/api/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function(res) { return res.json().then(function(data) { return { status: res.status, data: data }; }); })
+        .then(function(r) {
+          if (r.status === 400 && r.data.fields) { $('err').textContent = r.data.fields.map(function(f) { return FIELD_TEXT[f]; }).join(' '); return; }
+          if (r.status === 429) { $('err').textContent = 'Zu viele Kündigungen von diesem Anschluss oder für diese E-Mail heute. Bitte schreib uns an kontakt@tactus.digital.'; return; }
+          if (!r.data.id) { $('err').textContent = 'Die Kündigung konnte nicht übermittelt werden. Bitte schreib uns an kontakt@tactus.digital.'; return; }
+          var receipt = 'TACTUS · Bestätigung deiner Kündigung\n\n' + r.data.summary +
+            '\n\nAnbieter: Pixberg Holding UG (haftungsbeschränkt), Grenzweg 5, 42555 Velbert, kontakt@tactus.digital';
+          $('receipt').textContent = receipt;
+          $('mail-note').textContent = r.data.mailStatus === 'sent'
+            ? 'Eine Bestätigung wurde an ' + body.email + ' gesendet. Bitte sieh auch im Spam-Ordner nach.'
+            : 'Die Bestätigungs-E-Mail konnte gerade nicht versendet werden. Bitte speichere diese Bestätigung – deine Kündigung ist trotzdem bei uns eingegangen und wir melden uns per E-Mail.';
+          form.hidden = true;
+          $('done').hidden = false;
+          window.scrollTo(0, 0);
+          $('download').onclick = function() {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([receipt], { type: 'text/plain;charset=utf-8' }));
+            a.download = 'TACTUS-Kuendigung-' + r.data.id + '.txt';
+            document.body.appendChild(a); a.click(); a.remove();
+          };
+          $('print').onclick = function() { window.print(); };
+        })
+        .catch(function() { $('err').textContent = 'Keine Verbindung. Bitte prüfe dein Internet oder schreib uns an kontakt@tactus.digital.'; })
+        .then(function() { $('submit').disabled = false; $('submit').textContent = 'Jetzt kündigen'; });
+    });
+  })();
+</script>
+</body>
+</html>
