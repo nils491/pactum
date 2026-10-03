@@ -132,6 +132,14 @@
           <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
         </button>
 
+        <!-- AirPlay / Android Audio-Routing Button -->
+        <button type="button" onclick="if(window.SessionAudio && window.SessionAudio.triggerSpeakerPicker) window.SessionAudio.triggerSpeakerPicker();" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] text-xs font-mono font-medium flex items-center gap-1.5 touch-pad" style="min-height: 44px;" title="Audio an Lautsprecher übertragen (AirPlay / Cast)">
+          <svg class="w-4 h-4 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+          </svg>
+          <span>AirPlay</span>
+        </button>
+
         <!-- Ausrüstungsschrank Button -->
         <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-pad" style="min-height: 44px;" title="Ausrüstungsschrank öffnen">
           <svg class="w-4 h-4 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
@@ -159,6 +167,11 @@
 
       <!-- Mobile Actions (iPhone 15 Pro optimiert mit Touch-Targets >= 44px) -->
       <div class="flex md:hidden items-center gap-2 flex-shrink-0">
+        <button type="button" onclick="if(window.SessionAudio && window.SessionAudio.triggerSpeakerPicker) window.SessionAudio.triggerSpeakerPicker();" class="w-11 h-11 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center touch-pad" title="AirPlay / Lautsprecher">
+          <svg class="w-5 h-5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+          </svg>
+        </button>
         <button type="button" id="header-btn-break-glass-mobile" onclick="SessionRuntime.openBreakGlass()" style="display: none;" class="w-11 h-11 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white flex items-center justify-center touch-pad animate-pulse" title="Notfall">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
         </button>
@@ -472,7 +485,7 @@
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono text-[#94a3b8]">
               <div>Dauer: <strong class="text-white">${item.durationMinutes || 0} Min.</strong></div>
-              <div>Kanten: <strong class="text-[#c5a880]">${item.edgesCount || 0}</strong></div>
+              <div>Edges: <strong class="text-[#c5a880]">${item.edgesCount || item.edgesCounted || 0}</strong></div>
               <div>Tonalität: <strong class="text-white">${escapeHtml(item.tonality || 'Souverän')}</strong></div>
               <div>Ausgang: <strong class="text-[#b3734a]">${escapeHtml(item.climaxType || 'Standard')}</strong></div>
             </div>
