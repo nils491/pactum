@@ -555,14 +555,14 @@
         </div>
         <div class="space-y-1.5 font-mono">
           <select id="acc-select-ai-provider" class="w-full text-xs p-2 bg-[#090d14] border border-[#1e2638] rounded-xl text-white">
-            <option value="gemini">Google Gemini 2.5 Flash (Empfohlen / Standard)</option>
+            <option value="gemini">Google Gemini (1.5 Flash / 2.0 Flash)</option>
             <option value="claude">Anthropic Claude 3.5 Sonnet</option>
             <option value="openai">OpenAI GPT-4o</option>
             <option value="webgpu">Local Offline WebGPU</option>
           </select>
-          <input type="password" id="acc-input-ai-key" placeholder="API-Key eintragen (oder leer für Universal-Key)..." class="w-full text-xs p-2.5 bg-[#090d14] border border-[#1e2638] rounded-xl text-white placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" />
+          <input type="password" id="acc-input-ai-key" placeholder="API-Key eintragen (oder leer für Universal Offline-Modus)..." class="w-full text-xs p-2.5 bg-[#090d14] border border-[#1e2638] rounded-xl text-white placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" />
         </div>
-        <span id="ai-test-result" class="text-[9.5px] font-mono text-[#94a3b8] block">Universal Default-Key aktiv ab Werk.</span>
+        <span id="ai-test-result" class="text-[9.5px] font-mono text-[#94a3b8] block">Universal Default-Modus aktiv ab Werk.</span>
       </div>
 
       <!-- 6. DATENSCHUTZ & PARTNER-FREIGABE (SHARING-GOVERNANCE) -->
@@ -1117,25 +1117,98 @@
       async function testAiConnection() {
         const btn = document.getElementById('btn-test-ai');
         const result = document.getElementById('ai-test-result');
+        const providerSelect = document.getElementById('acc-select-ai-provider');
+        const keyInput = document.getElementById('acc-input-ai-key');
+
+        const provider = providerSelect ? providerSelect.value : 'gemini';
+        const apiKey = keyInput ? keyInput.value.trim() : '';
+
         if (btn) btn.innerText = "Prüfe...";
 
-        let success = false;
-        if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
+        // Falls kein Key eingetragen ist: Universal-Modus bestätigen
+        if (!apiKey) {
+          if (btn) btn.innerText = "Testen";
+          if (result) {
+            result.innerText = "✓ Universal Offline-Modus aktiv (autark ohne Key).";
+            result.className = "text-[9.5px] font-mono text-[#c5a880] font-bold block";
+          }
+          return;
+        }
+
+        // Nativer Test für Google Gemini mit x-goog-api-key Header (kompatibel mit AQ.- & AIzaSy-Keys)
+        if (provider === 'gemini') {
           try {
-            const res = await window.AIAdapter.generateText({
-              systemPrompt: "Antworte mit 'OK'.",
-              userPrompt: "Verbindungstest TACTUS",
-              temperature: 0.1
+            const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [{ text: "Antworte mit 'OK'." }]
+                }],
+                generationConfig: {
+                  temperature: 0.1,
+                  maxOutputTokens: 5
+                }
+              })
             });
-            if (res && res.trim().length > 0) success = true;
-          } catch (e) {}
+
+            if (res.ok) {
+              localStorage.setItem('tactus_ai_provider', 'gemini');
+              localStorage.setItem('tactus_ai_custom_key', apiKey);
+              if (result) {
+                result.innerText = "✓ Verbindung zu Google Gemini (gemini-1.5-flash) erfolgreich verifiziert!";
+                result.className = "text-[9.5px] font-mono text-[#2e5746] font-bold block";
+              }
+              showToast("✓ Gemini API-Key verifiziert & gespeichert");
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              const errMsg = errData.error ? (errData.error.message || errData.error.status) : `HTTP ${res.status}`;
+              if (result) {
+                if (res.status === 401) {
+                  result.innerText = `⚠️ Google 401: Key ungültig oder nicht für Generative Language freigeschaltet. (${errMsg})`;
+                } else if (res.status === 403) {
+                  result.innerText = `⚠️ Google 403: Quota erschöpft oder Billing-Konto erforderlich. (${errMsg})`;
+                } else if (res.status === 404) {
+                  result.innerText = `⚠️ Google 404: Modell nicht gefunden. (${errMsg})`;
+                } else {
+                  result.innerText = `⚠️ Google Fehler (${res.status}): ${errMsg}`;
+                }
+                result.className = "text-[9.5px] font-mono text-[#991b1b] font-bold block";
+              }
+            }
+          } catch (netErr) {
+            if (result) {
+              result.innerText = `⚠️ Netzwerkfehler beim Verbinden zu Google: ${netErr.message || 'Verbindung blockiert'}`;
+              result.className = "text-[9.5px] font-mono text-[#991b1b] font-bold block";
+            }
+          }
+        } else {
+          // Standard-Test über AIAdapter für andere Provider (Claude, OpenAI, WebGPU)
+          let success = false;
+          if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
+            try {
+              localStorage.setItem('tactus_ai_provider', provider);
+              localStorage.setItem('tactus_ai_custom_key', apiKey);
+              const testRes = await window.AIAdapter.generateText({
+                systemPrompt: "Antworte mit 'OK'.",
+                userPrompt: "Verbindungstest TACTUS",
+                temperature: 0.1
+              });
+              if (testRes && testRes.trim().length > 0) success = true;
+            } catch (e) {}
+          }
+
+          if (result) {
+            result.innerText = success ? `✓ Verbindung zu ${provider.toUpperCase()} erfolgreich!` : `⚠️ Verbindung zu ${provider.toUpperCase()} fehlgeschlagen.`;
+            result.className = success ? "text-[9.5px] font-mono text-[#2e5746] font-bold block" : "text-[9.5px] font-mono text-[#991b1b] font-bold block";
+          }
         }
 
         if (btn) btn.innerText = "Testen";
-        if (result) {
-          result.innerText = success ? "✓ Verbindung erfolgreich!" : "⚠️ Verbindung fehlgeschlagen (Fallback aktiv).";
-          result.className = success ? "text-[9.5px] font-mono text-[#2e5746] font-bold block" : "text-[9.5px] font-mono text-[#991b1b] font-bold block";
-        }
       }
 
       function openMedicalPassModal() {
