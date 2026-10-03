@@ -1,0 +1,26 @@
+name: Syntax-Check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Alle JS-Dateien parsen
+        run: |
+          fail=0
+          for f in js/*.js data/*.js; do
+            node --check "$f" || { echo "::error file=$f::Syntaxfehler"; fail=1; }
+          done
+          exit $fail
+      - name: Fragenkatalog vollständig (505 Items, eindeutige IDs)
+        run: |
+          node -e '
+            global.window = global;
+            for (const p of [1,2,3]) require("./data/questions_part" + p + ".js");
+            const ids = [1,2,3].flatMap(p => window["surveyChaptersPart" + p].flatMap(c => c.items.map(i => i.id)));
+            if (ids.length !== 505 || new Set(ids).size !== 505) { console.error("Items:", ids.length, "eindeutig:", new Set(ids).size); process.exit(1); }
+            console.log("OK: 505 Items");
+          '

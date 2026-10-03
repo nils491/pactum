@@ -169,7 +169,11 @@
       ownedEquipment: safeJsonParse('tactus_owned_equipment', null) || safeJsonParse('kompass_owned_equipment', []),
       toyQuantities: safeJsonParse('tactus_toy_quantities', null) || safeJsonParse('kompass_toy_quantities', {}),
       customEquipment: safeJsonParse('tactus_custom_equipment', null) || safeJsonParse('kompass_custom_equipment', []),
-      chatMessages: safeJsonParse('kompass_chat_messages', [])
+      chatMessages: safeJsonParse('kompass_chat_messages', []),
+      sharing: {
+        A: localStorage.getItem('tactus_individual_shared_A'),
+        B: localStorage.getItem('tactus_individual_shared_B')
+      }
     };
 
     // Fotos aus dem verschlüsselten IndexedDB-Tresor exportieren
@@ -214,6 +218,8 @@
       if (remote.answers && typeof remote.answers === 'object') {
         const localAnswers = safeJsonParse('kompass_answers', {}) || {};
         for (const roleKey of ['A', 'B']) {
+          // Eigene Antworten sind auf diesem Gerät maßgeblich und werden nie vom Partner überschrieben
+          if (roleKey === myRole) continue;
           if (remote.answers[roleKey]) {
             if (!localAnswers[roleKey]) localAnswers[roleKey] = {};
             for (const itemKey in remote.answers[roleKey]) {
@@ -225,6 +231,15 @@
         }
         localStorage.setItem('kompass_answers', JSON.stringify(localAnswers));
         changesMade = true;
+      }
+
+      // 3b. Freigabe-Status des Solo-Profils: Nur der Eigentümer (Sender) bestimmt über seinen Schlüssel
+      if (remote.sharing && typeof remote.sharing === 'object' && remote.senderRole && remote.senderRole !== myRole) {
+        const flag = remote.sharing[remote.senderRole];
+        if (flag === 'true' || flag === 'false') {
+          localStorage.setItem(`tactus_individual_shared_${remote.senderRole}`, flag);
+          changesMade = true;
+        }
       }
 
       // 4. Atomarer Event-Sourcing Merge des Protokoll-Logbuchs
