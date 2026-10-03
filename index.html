@@ -918,11 +918,36 @@
       let currentSetupStep = 1;
       let currentWalkthroughStep = 1;
 
-      // Die 25 repräsentativen Kern-Items für den schnellen Paar-Starter
+      // Die 25 Kern-Items für den schnellen Paar-Starter: je ein aussagekräftiges Einstiegs-Item
+      // pro Dimension, damit das erste Profil die ganze Bandbreite abdeckt (nicht nur Kapitel 1–6)
       const STARTER_ITEM_IDS = [
-        1, 2, 3, 14, 18, 28, 41, 42, 44, 53, 54, 63, 64, 76, 77, 81, 106, 115,
-        131, 161, 198, 241, 262, 336, 348
+        12,  // Körper: sanftes Beißen (Brücke von zärtlich zu intensiv)
+        18,  // Romantik: Dirty Talk & Flüstern
+        29,  // Sinnlichkeit: Feder & Seide
+        52,  // Tempo: von langsam zu fordernd
+        63,  // Oral: Cunnilingus
+        64,  // Oral: Fellatio
+        76,  // Orgasmuskontrolle: Edging
+        81,  // Orgasmuskontrolle: Erlaubnis erbitten
+        115, // Keuschhaltung
+        198, // Halsband & Leine
+        206, // Fesselung am Bett
+        241, // Augenbinde
+        262, // Impact: Handspanking
+        311, // Bratting
+        336, // Dominanz: feste Anweisungsstimme
+        339, // Praise Play
+        348, // Dienen: Knien
+        360, // Disziplin: gemeinsame Hausregeln
+        374, // CNC: gespielter Widerstand
+        405, // Dritte Personen (Grenzfrage)
+        438, // Anal: Einstieg mit kleinem Plug
+        473, // Wachsspiel
+        496, // Verbale Demütigung
+        902, // Sicherheit: Flashback-Trigger
+        904  // Sicherheit: gewünschte Hilfe bei Trigger
       ];
+      const STARTER_SET = new Set(STARTER_ITEM_IDS);
 
       const WALKTHROUGH_STEPS = [
         {
@@ -1175,16 +1200,17 @@
         const allChapters = p1.concat(p2).concat(p3);
         let totalItemsCount = 0;
         let answeredCount = 0;
+        let starterDone = 0;
 
         allChapters.forEach(ch => {
           (ch.items || []).forEach(it => {
             totalItemsCount++;
-            if (it.type === 'choice') {
-              if (myAns[`choice_${it.id}`]) answeredCount++;
-            } else {
-              if (typeof myAns[`it_${it.id}_r1`] === 'number' || typeof myAns[`it_${it.id}_r2`] === 'number') {
-                answeredCount++;
-              }
+            const done = it.type === 'choice'
+              ? Boolean(myAns[`choice_${it.id}`])
+              : (typeof myAns[`it_${it.id}_r1`] === 'number' || typeof myAns[`it_${it.id}_r2`] === 'number');
+            if (done) {
+              answeredCount++;
+              if (STARTER_SET.has(it.id)) starterDone++;
             }
           });
         });
@@ -1193,7 +1219,7 @@
         if (statAnswered) statAnswered.innerText = `${answeredCount} / ${totalItemsCount || 505}`;
 
         // Progressive Disclosure Stufe berechnen (Punkt #4)
-        updateProgressiveDisclosureStage(answeredCount, mode);
+        updateProgressiveDisclosureStage(answeredCount, mode, starterDone);
 
         try {
           const rawAi = localStorage.getItem('tactus_ai_pair_analysis');
@@ -1258,20 +1284,21 @@
         }
       }
 
-      function updateProgressiveDisclosureStage(answeredCount, mode) {
+      function updateProgressiveDisclosureStage(answeredCount, mode, starterDone) {
         const titleEl = document.getElementById('progressive-stage-title');
         const badgeEl = document.getElementById('progressive-stage-badge');
         const barEl = document.getElementById('progressive-progress-bar');
         const descEl = document.getElementById('progressive-stage-desc');
 
-        if (answeredCount < 25) {
+        const starterOpen = STARTER_ITEM_IDS.length - (starterDone || 0);
+        if (starterOpen > 0 && answeredCount < 100) {
           if (titleEl) titleEl.innerText = "Stufe 1: Schlafzimmer & 25-Fragen-Starter";
           if (badgeEl) {
             badgeEl.innerText = "Stufe 1 (Starter)";
             badgeEl.className = "px-2 py-0.5 rounded text-[9px] font-mono bg-[#090d14] text-[#c5a880] border border-[#c5a880]/30 font-bold";
           }
-          if (barEl) barEl.style.width = `${Math.max(10, Math.round((answeredCount / 25) * 33))}%`;
-          if (descEl) descEl.innerText = `Überforderungsschutz aktiv: Beantwortet die ersten 25 Kern-Items, um die Paar-Analyse mit euren Doppel-5er Spitzen freizuschalten (Noch ${25 - answeredCount} Fragen).`;
+          if (barEl) barEl.style.width = `${Math.max(10, Math.round(((starterDone || 0) / STARTER_ITEM_IDS.length) * 33))}%`;
+          if (descEl) descEl.innerText = `Überforderungsschutz aktiv: Beantwortet die 25 Kern-Items aus allen Bereichen, um die Paar-Analyse mit euren Doppel-5er Spitzen freizuschalten (Noch ${starterOpen} Fragen).`;
         } else if (answeredCount < 100 && mode !== 'flr_24_7') {
           if (titleEl) titleEl.innerText = "Stufe 2: Paar-Resonanz & E2EE-Stream";
           if (badgeEl) {
