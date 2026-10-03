@@ -195,6 +195,21 @@
       console.warn("[TACTUS Staging] Fehler beim Laden der Konfiguration:", e);
     }
 
+    // Übernahme des aus dem HubToys-Schrank übergebenen Bundles
+    try {
+      const rawBundle = localStorage.getItem('tactus_staging_bundle');
+      if (rawBundle) {
+        const bundleIds = JSON.parse(rawBundle);
+        if (Array.isArray(bundleIds) && bundleIds.length > 0) {
+          stagingConfig.selectedEquipmentIds = bundleIds;
+          saveStagingState();
+        }
+        localStorage.removeItem('tactus_staging_bundle');
+      }
+    } catch (e) {
+      console.warn("[TACTUS Staging] Fehler beim Auslesen des Staging-Bundles:", e);
+    }
+
     if (!Array.isArray(stagingConfig.selectedEquipmentIds) || stagingConfig.selectedEquipmentIds.length === 0) {
       try {
         const rawOwned = localStorage.getItem(STORAGE_KEY_OWNED) || localStorage.getItem(STORAGE_KEY_OWNED_LEGACY);
@@ -566,9 +581,15 @@ Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöc
       }
 
       generatedScript.sessionMode = 'scripted';
+      generatedScript.leadMotif = activeMotif;
       generatedScript.voiceEnabled = !!stagingConfig.voiceEnabled;
       generatedScript.audioSoundscape = stagingConfig.audioSoundscape || 'dark_drone';
       generatedScript.spotifyPlaylistUrl = stagingConfig.spotifyPlaylistUrl || SPOTIFY_DEFAULT_PLAYLIST;
+    }
+
+    // Sicherstellen, dass das aktive Leitmotiv in jedem Modus für die Live-Regie gesetzt ist
+    if (generatedScript) {
+      generatedScript.leadMotif = activeMotif;
     }
 
     try {
