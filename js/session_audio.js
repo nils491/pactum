@@ -1,611 +1,645 @@
-/**
- * js/session_audio.js
- * TACTUS WebAudio Soundscape-Engine, Hyperdynamische Musik-Matrix & Spotify Premium Connector (V3.0 Haute-Horlogerie)
- * Offizielle Web-Präsenz: tactus.digital
- * 
- * Standards & Garantien nach Master-Roadbook:
- * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
- * - Haute-Horlogerie Audio-Physiologie: 55Hz Subspace Drone, 432Hz Vagus-Harmonie, Tantrischer Puls
- * - Echte Hyperdynamik: 4 kuratierte Musik-Klangwelten passend zu den 4 Top-Temperamenten:
- *     1. sovereign_warm: Melodic Downtempo / 432Hz Ambient
- *     2. sovereign_cool: Dark Ambient / Hypnotic Minimal Noir
- *     3. raw_primal: Dark Shamanic Tribal & Heavy Bass Pulse
- *     4. playful: Trip-Hop Noir / Sultry Beats
- * - Spotify Premium Integration (Paid Account): Werbefreies Streaming via Web Playback SDK & Connect
- * - Automatisches 60 % Audio-Ducking bei Sprachbefehlen (SessionVoice)
- * - Beat-Drop / Mute-Cut bei Kaltstopp (Reizabbruch)
- * - Taktiler Metronom- & Percussion-Clicker für Countdowns und Schwellentaktung
- * - Krisensicherer Multi-Stem WebAudio Synthesizer (100 % offline im Browser)
- * - Keine window.alert() / confirm() Aufrufe
- */
-
-(function(window) {
-  'use strict';
-
-  const STORAGE_KEY_AUDIO_MUTED = 'tactus_audio_muted';
-  const STORAGE_KEY_MASTER_VOL = 'tactus_audio_volume';
-  const STORAGE_KEY_ACTIVE_PRESET = 'tactus_audio_preset';
-  const STORAGE_KEY_SPOTIFY_TOKEN = 'tactus_spotify_premium_token';
-  const STORAGE_KEY_SPOTIFY_CUSTOM_PLAYLIST = 'tactus_spotify_custom_playlist';
-
-  // Kuratierte Spotify-Playlists für die 4 Tonalitäten (Werbefrei für Premium-Nutzer)
-  const TONALITY_PLAYLISTS = {
-    sovereign_warm: {
-      id: 'sovereign_warm',
-      title: 'Souverän & Zugewandt (Melodic Downtempo & 432Hz)',
-      spotifyUri: 'spotify:playlist:37i9dQZF1DXdLEN7aqioXM',
-      webUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXdLEN7aqioXM',
-      artists: 'Tycho, Bonobo, Kiasmos, Olafur Arnalds',
-      tempoBpm: 65,
-      synthProfile: 'vagus_432'
-    },
-    sovereign_cool: {
-      id: 'sovereign_cool',
-      title: 'Kühl & Distanziert (Dark Ambient & Minimal Noir)',
-      spotifyUri: 'spotify:playlist:37i9dQZF1DX6xOPeSOGone',
-      webUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX6xOPeSOGone',
-      artists: 'Haxan Cloak, Bohren & der Club of Gore, Ben Frost',
-      tempoBpm: 55,
-      synthProfile: 'dark_drone'
-    },
-    raw_primal: {
-      id: 'raw_primal',
-      title: 'Körperlich & Instinktiv (Shamanic Tribal & Heavy Pulse)',
-      spotifyUri: 'spotify:playlist:37i9dQZF1DWZqd5JICZI0u',
-      webUrl: 'https://open.spotify.com/playlist/37i9dQZF1DWZqd5JICZI0u',
-      artists: 'Heilung, Danheim, Wardruna, Tiefbässe',
-      tempoBpm: 72,
-      synthProfile: 'tantric_pulse'
-    },
-    playful: {
-      id: 'playful',
-      title: 'Spöttisch & Neckend (Trip-Hop Noir & Sultry Beats)',
-      spotifyUri: 'spotify:playlist:37i9dQZF1DXbSI9G72v6wA',
-      webUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXbSI9G72v6wA',
-      artists: 'Massive Attack, Portishead, Two Feet',
-      tempoBpm: 80,
-      synthProfile: 'tantric_pulse'
-    }
-  };
-
-  let audioEngineState = {
-    ctx: null,
-    masterGain: null,
-    droneGain: null,
-    duckGain: null,
-    filterNode: null,
-    activeNodes: [],
-    activePreset: 'dark_drone',
-    activeTonality: 'sovereign_warm',
-    isPlaying: false,
-    isDucked: false,
-    isMuted: false,
-    masterVolume: 0.75,
-    energyLevel: 'calm', // 'calm' | 'driving'
-    spotifyToken: null,
-    spotifyPlayer: null,
-    spotifyDeviceId: null,
-    isSpotifyConnected: false,
-    currentSpotifyPlaylist: null
-  };
-
-  function loadSettings() {
-    try {
-      audioEngineState.isMuted = localStorage.getItem(STORAGE_KEY_AUDIO_MUTED) === 'true';
-      const savedVol = localStorage.getItem(STORAGE_KEY_MASTER_VOL);
-      if (savedVol !== null) {
-        audioEngineState.masterVolume = Math.max(0.0, Math.min(1.0, parseFloat(savedVol) || 0.75));
-      }
-      audioEngineState.activePreset = localStorage.getItem(STORAGE_KEY_ACTIVE_PRESET) || 'dark_drone';
-      audioEngineState.spotifyToken = localStorage.getItem(STORAGE_KEY_SPOTIFY_TOKEN) || null;
-      audioEngineState.currentSpotifyPlaylist = localStorage.getItem(STORAGE_KEY_SPOTIFY_CUSTOM_PLAYLIST) || null;
-    } catch (e) {
-      console.debug("[TACTUS Audio] Fehler beim Laden der Einstellungen:", e);
-    }
-  }
-
-  function saveSettings() {
-    try {
-      localStorage.setItem(STORAGE_KEY_AUDIO_MUTED, audioEngineState.isMuted ? 'true' : 'false');
-      localStorage.setItem(STORAGE_KEY_MASTER_VOL, audioEngineState.masterVolume.toString());
-      localStorage.setItem(STORAGE_KEY_ACTIVE_PRESET, audioEngineState.activePreset);
-      if (audioEngineState.spotifyToken) {
-        localStorage.setItem(STORAGE_KEY_SPOTIFY_TOKEN, audioEngineState.spotifyToken);
-      } else {
-        localStorage.removeItem(STORAGE_KEY_SPOTIFY_TOKEN);
-      }
-      if (audioEngineState.currentSpotifyPlaylist) {
-        localStorage.setItem(STORAGE_KEY_SPOTIFY_CUSTOM_PLAYLIST, audioEngineState.currentSpotifyPlaylist);
-      }
-    } catch (e) {}
-  }
-
-  function ensureAudioContext() {
-    if (typeof window === 'undefined') return false;
-
-    if (!audioEngineState.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return false;
-
-      audioEngineState.ctx = new AudioCtx();
-
-      // Master Gain Node
-      audioEngineState.masterGain = audioEngineState.ctx.createGain();
-      audioEngineState.masterGain.gain.setValueAtTime(
-        audioEngineState.isMuted ? 0.0 : audioEngineState.masterVolume, 
-        audioEngineState.ctx.currentTime
-      );
-
-      // Ducking Gain Node (für weiches Absenken während Sprachausgabe)
-      audioEngineState.duckGain = audioEngineState.ctx.createGain();
-      audioEngineState.duckGain.gain.setValueAtTime(1.0, audioEngineState.ctx.currentTime);
-
-      // Synthesizer Gain Node
-      audioEngineState.droneGain = audioEngineState.ctx.createGain();
-      audioEngineState.droneGain.gain.setValueAtTime(0.0, audioEngineState.ctx.currentTime);
-
-      // Warmes Resonanzfilter (Lowpass mit leichter Betonung)
-      audioEngineState.filterNode = audioEngineState.ctx.createBiquadFilter();
-      audioEngineState.filterNode.type = 'lowpass';
-      audioEngineState.filterNode.frequency.setValueAtTime(450, audioEngineState.ctx.currentTime);
-      audioEngineState.filterNode.Q.setValueAtTime(2.0, audioEngineState.ctx.currentTime);
-
-      // Graph verknüpfen: Synth -> DroneGain -> DuckGain -> Filter -> Master -> Destination
-      audioEngineState.droneGain.connect(audioEngineState.duckGain);
-      audioEngineState.duckGain.connect(audioEngineState.filterNode);
-      audioEngineState.filterNode.connect(audioEngineState.masterGain);
-      audioEngineState.masterGain.connect(audioEngineState.ctx.destination);
-    }
-
-    if (audioEngineState.ctx.state === 'suspended') {
-      audioEngineState.ctx.resume();
-    }
-
-    return true;
-  }
-
-  function stopActiveNodes(fadeDuration = 0.8) {
-    if (!audioEngineState.ctx || !audioEngineState.droneGain) return;
-
-    try {
-      const now = audioEngineState.ctx.currentTime;
-      audioEngineState.droneGain.gain.cancelScheduledValues(now);
-      audioEngineState.droneGain.gain.setValueAtTime(audioEngineState.droneGain.gain.value, now);
-      audioEngineState.droneGain.gain.linearRampToValueAtTime(0.0001, now + fadeDuration);
-
-      setTimeout(() => {
-        audioEngineState.activeNodes.forEach(node => {
-          try {
-            if (typeof node.stop === 'function') node.stop();
-            node.disconnect();
-          } catch (e) {}
-        });
-        audioEngineState.activeNodes = [];
-      }, (fadeDuration * 1000) + 50);
-    } catch (e) {}
-  }
-
-  function build55HzSubspaceDrone(ctx) {
-    const nodes = [];
-    const now = ctx.currentTime;
-
-    // Basis-Oszillator (55 Hz tiefes A)
-    const osc1 = ctx.createOscillator();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(55, now);
-
-    // Binaurale Schwebung (+4 Hz Theta-Welle für Trance-Induktion)
-    const osc2 = ctx.createOscillator();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(59, now);
-
-    // Sub-Bass Obertongenerator (Dreiecks-Welle 110 Hz für Wärme)
-    const osc3 = ctx.createOscillator();
-    osc3.type = 'triangle';
-    osc3.frequency.setValueAtTime(110, now);
-
-    const subGain = ctx.createGain();
-    subGain.gain.setValueAtTime(0.25, now);
-    osc3.connect(subGain);
-
-    // LFO für sanftes Atmen der Klanglandschaft (0.08 Hz)
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.setValueAtTime(0.08, now);
-
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.setValueAtTime(120, now); // Moduliert das Filter um +/- 120 Hz
-    lfo.connect(lfoGain);
-    lfoGain.connect(audioEngineState.filterNode.frequency);
-
-    osc1.connect(audioEngineState.droneGain);
-    osc2.connect(audioEngineState.droneGain);
-    subGain.connect(audioEngineState.droneGain);
-
-    osc1.start(now);
-    osc2.start(now);
-    osc3.start(now);
-    lfo.start(now);
-
-    nodes.push(osc1, osc2, osc3, lfo, subGain, lfoGain);
-    return nodes;
-  }
-
-  function build432HzVagusHarmony(ctx) {
-    const nodes = [];
-    const now = ctx.currentTime;
-
-    // 432 Hz Grundschwingung (A4)
-    const osc1 = ctx.createOscillator();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(432, now);
-
-    // Harmonische Quinte (288 Hz D4)
-    const osc2 = ctx.createOscillator();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(288, now);
-
-    // Tiefes Vagus-Fundament (108 Hz)
-    const subOsc = ctx.createOscillator();
-    subOsc.type = 'triangle';
-    subOsc.frequency.setValueAtTime(108, now);
-
-    const subGain = ctx.createGain();
-    subGain.gain.setValueAtTime(0.4, now);
-    subOsc.connect(subGain);
-
-    // Zartes analoges Pink-Noise-Rauschen als Atem-Simulation
-    const bufferSize = ctx.sampleRate * 2;
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    let b0 = 0, b1 = 0, b2 = 0;
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      b0 = 0.99886 * b0 + white * 0.0555179;
-      b1 = 0.99332 * b1 + white * 0.0750759;
-      b2 = 0.96900 * b2 + white * 0.1538520;
-      output[i] = (b0 + b1 + b2) * 0.06;
-    }
-
-    const noiseNode = ctx.createBufferSource();
-    noiseNode.buffer = noiseBuffer;
-    noiseNode.loop = true;
-
-    const noiseFilter = ctx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.setValueAtTime(600, now);
-    noiseFilter.Q.setValueAtTime(1.5, now);
-
-    noiseNode.connect(noiseFilter);
-    noiseFilter.connect(audioEngineState.droneGain);
-
-    osc1.connect(audioEngineState.droneGain);
-    osc2.connect(audioEngineState.droneGain);
-    subGain.connect(audioEngineState.droneGain);
-
-    osc1.start(now);
-    osc2.start(now);
-    subOsc.start(now);
-    noiseNode.start(now);
-
-    nodes.push(osc1, osc2, subOsc, noiseNode, subGain, noiseFilter);
-    return nodes;
-  }
-
-  function buildTantricPulse(ctx) {
-    const nodes = [];
-    const now = ctx.currentTime;
-
-    // Sub-Bass (65 Hz Grundton)
-    const bassOsc = ctx.createOscillator();
-    bassOsc.type = 'sine';
-    bassOsc.frequency.setValueAtTime(65, now);
-
-    // Rhythmischer Puls-Verstärker (64 BPM Ruhepuls)
-    const pulseGain = ctx.createGain();
-    pulseGain.gain.setValueAtTime(0.2, now);
-
-    // Pulsierender LFO
-    const pulseLfo = ctx.createOscillator();
-    pulseLfo.type = 'sine';
-    pulseLfo.frequency.setValueAtTime(64 / 60, now); // ~1.06 Hz = 64 BPM
-
-    const lfoDepth = ctx.createGain();
-    lfoDepth.gain.setValueAtTime(0.45, now);
-    pulseLfo.connect(lfoDepth);
-    lfoDepth.connect(pulseGain.gain);
-
-    bassOsc.connect(pulseGain);
-    pulseGain.connect(audioEngineState.droneGain);
-
-    bassOsc.start(now);
-    pulseLfo.start(now);
-
-    nodes.push(bassOsc, pulseGain, pulseLfo, lfoDepth);
-    return nodes;
-  }
-
-  function playDrone(presetId = 'dark_drone') {
-    if (!ensureAudioContext()) return;
-    loadSettings();
-
-    stopActiveNodes(0.5);
-    audioEngineState.activePreset = presetId;
-    saveSettings();
-
-    if (presetId === 'silence') {
-      audioEngineState.isPlaying = false;
-      return;
-    }
-
-    setTimeout(() => {
-      if (!audioEngineState.ctx) return;
-      const now = audioEngineState.ctx.currentTime;
-
-      // Filter-Frequenz je nach Preset einstellen
-      if (presetId === 'vagus_432') {
-        audioEngineState.filterNode.frequency.setValueAtTime(650, now);
-        audioEngineState.activeNodes = build432HzVagusHarmony(audioEngineState.ctx);
-      } else if (presetId === 'tantric_pulse') {
-        audioEngineState.filterNode.frequency.setValueAtTime(500, now);
-        audioEngineState.activeNodes = buildTantricPulse(audioEngineState.ctx);
-      } else {
-        // dark_drone default
-        audioEngineState.filterNode.frequency.setValueAtTime(400, now);
-        audioEngineState.activeNodes = build55HzSubspaceDrone(audioEngineState.ctx);
-      }
-
-      // Weiches Aufblenden (Fade-In über 1.2 Sekunden)
-      audioEngineState.droneGain.gain.cancelScheduledValues(now);
-      audioEngineState.droneGain.gain.setValueAtTime(0.0001, now);
-      audioEngineState.droneGain.gain.linearRampToValueAtTime(0.7, now + 1.2);
-      audioEngineState.isPlaying = true;
-    }, 100);
-  }
-
-  function duck(targetFraction = 0.40, rampSec = 0.25) {
-    if (!audioEngineState.ctx || !audioEngineState.duckGain) return;
-    try {
-      const now = audioEngineState.ctx.currentTime;
-      audioEngineState.duckGain.gain.cancelScheduledValues(now);
-      audioEngineState.duckGain.gain.setValueAtTime(audioEngineState.duckGain.gain.value, now);
-      audioEngineState.duckGain.gain.linearRampToValueAtTime(targetFraction, now + rampSec);
-      audioEngineState.isDucked = true;
-
-      // Falls Spotify Web Playback aktiv ist, Lautstärke ebenfalls absenken
-      if (audioEngineState.spotifyPlayer && typeof audioEngineState.spotifyPlayer.setVolume === 'function') {
-        audioEngineState.spotifyPlayer.setVolume(targetFraction * audioEngineState.masterVolume);
-      }
-    } catch (e) {}
-  }
-
-  function unduck(rampSec = 1.0) {
-    if (!audioEngineState.ctx || !audioEngineState.duckGain) return;
-    try {
-      const now = audioEngineState.ctx.currentTime;
-      audioEngineState.duckGain.gain.cancelScheduledValues(now);
-      audioEngineState.duckGain.gain.setValueAtTime(audioEngineState.duckGain.gain.value, now);
-      audioEngineState.duckGain.gain.linearRampToValueAtTime(1.0, now + rampSec);
-      audioEngineState.isDucked = false;
-
-      // Spotify Lautstärke wiederherstellen
-      if (audioEngineState.spotifyPlayer && typeof audioEngineState.spotifyPlayer.setVolume === 'function') {
-        audioEngineState.spotifyPlayer.setVolume(audioEngineState.masterVolume);
-      }
-    } catch (e) {}
-  }
-
-  function executeColdStopBeatDrop() {
-    if (!audioEngineState.ctx) return;
-    try {
-      const now = audioEngineState.ctx.currentTime;
-      if (audioEngineState.droneGain) {
-        audioEngineState.droneGain.gain.cancelScheduledValues(now);
-        audioEngineState.droneGain.gain.setValueAtTime(audioEngineState.droneGain.gain.value, now);
-        audioEngineState.droneGain.gain.linearRampToValueAtTime(0.0001, now + 0.08); // 80ms Stop-Cut
-      }
-
-      // Filter dramatisch nach unten ziehen
-      if (audioEngineState.filterNode) {
-        audioEngineState.filterNode.frequency.cancelScheduledValues(now);
-        audioEngineState.filterNode.frequency.linearRampToValueAtTime(80, now + 0.1);
-      }
-
-      // Spotify sofort pausieren
-      if (audioEngineState.spotifyPlayer && typeof audioEngineState.spotifyPlayer.pause === 'function') {
-        audioEngineState.spotifyPlayer.pause();
-      }
-    } catch (e) {}
-  }
-
-  function playPercussionClick(freq = 440, durationMs = 40) {
-    if (!ensureAudioContext()) return;
-    try {
-      const ctx = audioEngineState.ctx;
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const clickGain = ctx.createGain();
-
-      osc.type = freq > 500 ? 'triangle' : 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-
-      clickGain.gain.setValueAtTime(0.18, now);
-      clickGain.gain.exponentialRampToValueAtTime(0.001, now + (durationMs / 1000));
-
-      osc.connect(clickGain);
-      clickGain.connect(audioEngineState.masterGain);
-
-      osc.start(now);
-      osc.stop(now + (durationMs / 1000) + 0.01);
-    } catch (e) {}
-  }
-
-  function setEnergyLevel(level = 'calm') {
-    audioEngineState.energyLevel = level;
-    if (!audioEngineState.ctx || !audioEngineState.filterNode) return;
-
-    try {
-      const now = audioEngineState.ctx.currentTime;
-      audioEngineState.filterNode.frequency.cancelScheduledValues(now);
-      audioEngineState.filterNode.frequency.setValueAtTime(audioEngineState.filterNode.frequency.value, now);
-
-      if (level === 'driving') {
-        // Höhere Obertöne & mehr Druck im Raum
-        audioEngineState.filterNode.frequency.linearRampToValueAtTime(950, now + 1.5);
-      } else {
-        // Sanfter Sub-Bass & Beruhigung
-        audioEngineState.filterNode.frequency.linearRampToValueAtTime(380, now + 1.5);
-      }
-    } catch (e) {}
-  }
-
-  function setMasterVolume(volFraction) {
-    const clamped = Math.max(0.0, Math.min(1.0, parseFloat(volFraction) || 0.75));
-    audioEngineState.masterVolume = clamped;
-    saveSettings();
-
-    if (audioEngineState.ctx && audioEngineState.masterGain && !audioEngineState.isMuted) {
-      const now = audioEngineState.ctx.currentTime;
-      audioEngineState.masterGain.gain.cancelScheduledValues(now);
-      audioEngineState.masterGain.gain.linearRampToValueAtTime(clamped, now + 0.1);
-    }
-
-    if (audioEngineState.spotifyPlayer && typeof audioEngineState.spotifyPlayer.setVolume === 'function') {
-      audioEngineState.spotifyPlayer.setVolume(clamped);
-    }
-  }
-
-  function setMuted(muted) {
-    audioEngineState.isMuted = !!muted;
-    saveSettings();
-
-    if (audioEngineState.ctx && audioEngineState.masterGain) {
-      const now = audioEngineState.ctx.currentTime;
-      audioEngineState.masterGain.gain.cancelScheduledValues(now);
-      audioEngineState.masterGain.gain.linearRampToValueAtTime(
-        audioEngineState.isMuted ? 0.0 : audioEngineState.masterVolume, 
-        now + 0.1
-      );
-    }
-
-    if (audioEngineState.isMuted && audioEngineState.spotifyPlayer && typeof audioEngineState.spotifyPlayer.pause === 'function') {
-      audioEngineState.spotifyPlayer.pause();
-    }
-  }
-
-  function setSpotifyPremiumToken(token) {
-    audioEngineState.spotifyToken = token ? token.trim() : null;
-    saveSettings();
-    if (audioEngineState.spotifyToken) {
-      initSpotifyWebPlaybackSDK();
-    }
-  }
-
-  function initSpotifyWebPlaybackSDK() {
-    if (!audioEngineState.spotifyToken || typeof window === 'undefined') return;
-
-    // Spotify SDK Script dynamisch laden falls noch nicht da
-    if (!document.getElementById('spotify-player-sdk-script')) {
-      const script = document.createElement('script');
-      script.id = 'spotify-player-sdk-script';
-      script.src = 'https://sdk.scdn.co/spotify-player.js';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      const player = new window.Spotify.Player({
-        name: 'TACTUS Schlafzimmer-Regie (OLED)',
-        getOAuthToken: cb => { cb(audioEngineState.spotifyToken); },
-        volume: audioEngineState.masterVolume
-      });
-
-      player.addListener('ready', ({ device_id }) => {
-        console.debug("[TACTUS Spotify] Playback SDK Bereit. Device ID:", device_id);
-        audioEngineState.spotifyDeviceId = device_id;
-        audioEngineState.isSpotifyConnected = true;
-        audioEngineState.spotifyPlayer = player;
-      });
-
-      player.addListener('not_ready', ({ device_id }) => {
-        console.debug("[TACTUS Spotify] Device getrennt:", device_id);
-        audioEngineState.isSpotifyConnected = false;
-      });
-
-      player.addListener('initialization_error', ({ message }) => {
-        console.warn("[TACTUS Spotify] Init Fehler:", message);
-      });
-
-      player.addListener('authentication_error', ({ message }) => {
-        console.warn("[TACTUS Spotify] Auth Fehler (Token abgelaufen?):", message);
-        audioEngineState.isSpotifyConnected = false;
-      });
-
-      player.connect();
-    };
-  }
-
-  function playTonalityMusic(tonalityKey = 'sovereign_warm') {
-    const profile = TONALITY_PLAYLISTS[tonalityKey] || TONALITY_PLAYLISTS.sovereign_warm;
-    audioEngineState.activeTonality = tonalityKey;
-
-    // 1. Wenn Spotify Web Playback SDK verbunden ist: Direkt abspielen
-    if (audioEngineState.isSpotifyConnected && audioEngineState.spotifyDeviceId) {
-      const uriToPlay = audioEngineState.currentSpotifyPlaylist || profile.spotifyUri;
-      fetch(`https://api.spotify.com/v1/me/player/play?device_id=${audioEngineState.spotifyDeviceId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ context_uri: uriToPlay }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${audioEngineState.spotifyToken}`
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TACTUS · Schlafzimmer-Staging &amp; Live-Regie</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('kompass_theme') || 'dark';
+      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+      var savedZoom = localStorage.getItem('kompass_text_zoom') || '100';
+      if (savedZoom === '115') document.documentElement.style.fontSize = '115%';
+      else if (savedZoom === '130') document.documentElement.style.fontSize = '130%';
+      else document.documentElement.style.fontSize = '100%';
+    })();
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#000000',
+            graphite: '#090d14',
+            graphiteLight: '#101622',
+            slateBorder: '#1e2638',
+            slateBorderLight: '#2a364f',
+            titan: '#475569',
+            champagne: '#c5a880',
+            champagneLight: '#dfcaa9',
+            feingold: '#d4af37',
+            copperGlow: '#c2410c',
+            amberBronze: '#b45309',
+            bordeaux: '#991b1b',
+            bordeauxDark: '#450a0a',
+            malachite: '#142b24',
+            malachiteLight: '#2e5746',
+            cognac: '#8a5232',
+            cognacLight: '#b3734a',
+            cognacDark: '#4a2818',
+            rackGreen: '#15803d',
+            rackGreenLight: '#22c55e',
+            rackYellow: '#ca8a04',
+            rackYellowLight: '#eab308',
+            rackRed: '#dc2626',
+            rackRedLight: '#ef4444',
+            platinum: '#f8fafc',
+            silverMuted: '#94a3b8'
+          },
+          fontFamily: {
+            serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
         }
-      }).catch(err => {
-        console.debug("[TACTUS Spotify] API Playback Fallback:", err);
-      });
-    }
-
-    // 2. Parallele prozedurale Soundscape aktivieren für lückenlose Raumfüllung
-    playDrone(profile.synthProfile);
-  }
-
-  const api = {
-    init: function() {
-      loadSettings();
-      if (audioEngineState.spotifyToken) {
-        initSpotifyWebPlaybackSDK();
       }
-    },
-    playDrone: playDrone,
-    stopDrone: stopActiveNodes,
-    duck: duck,
-    unduck: unduck,
-    coldStop: executeColdStopBeatDrop,
-    playPercussionClick: playPercussionClick,
-    setEnergyLevel: setEnergyLevel,
-    setMasterVolume: setMasterVolume,
-    getMasterVolume: () => audioEngineState.masterVolume,
-    setMuted: setMuted,
-    isMuted: () => audioEngineState.isMuted,
-    toggleMute: () => { setMuted(!audioEngineState.isMuted); },
-    setSpotifyToken: setSpotifyPremiumToken,
-    getSpotifyToken: () => audioEngineState.spotifyToken,
-    isSpotifyActive: () => audioEngineState.isSpotifyConnected,
-    playTonalityMusic: playTonalityMusic,
-    tonalityPlaylists: TONALITY_PLAYLISTS,
-    getAudioState: () => Object.assign({}, audioEngineState)
-  };
-
-  window.SessionAudio = api;
-
-  // AudioContext beim ersten Touch entsperren (iOS / Chrome Autoplay Fix)
-  if (typeof window !== 'undefined') {
-    const unlockAudio = () => {
-      ensureAudioContext();
-      window.removeEventListener('click', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio);
     };
-    window.addEventListener('click', unlockAudio, { passive: true });
-    window.addEventListener('touchstart', unlockAudio, { passive: true });
-  }
+  </script>
 
-})(typeof window !== 'undefined' ? window : this);
+  <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+    body {
+      background-color: #000000;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-top: var(--sat);
+      padding-bottom: var(--sab);
+      padding-left: var(--sal);
+      padding-right: var(--sar);
+      min-height: 100dvh;
+    }
+    .touch-pad {
+      min-height: 44px;
+      min-width: 44px;
+      transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .touch-pad:active {
+      transform: scale(0.985);
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    #session-live-dimmer-overlay {
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="min-h-[100dvh] flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
+
+  <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 · ZERO PIXEL-JUMPING · COLLISION-FREE) -->
+  <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#1e2638]/60 h-14 flex items-center">
+    <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between gap-2">
+      
+      <!-- Brand-Einheit mit TACTUS Logo & Status (Collision-free mit min-w-0) -->
+      <a href="index.html#view=hub" class="flex items-center space-x-3 cursor-pointer group min-w-0 flex-1 mr-1 touch-pad" style="min-height: 44px;">
+        <div class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#c5a880]/40 flex items-center justify-center p-1 shadow-sm group-hover:border-[#c5a880] transition-colors flex-shrink-0 overflow-hidden">
+          <img src="assets/logo.png" onerror="this.onerror=null; this.src='img/tactus_logo.png'; this.style.display='none'; this.nextElementSibling.style.display='block';" alt="TACTUS Logo" class="w-full h-full object-contain" />
+          <svg class="w-5 h-5 text-[#c5a880] hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5 8c3.5-3 10.5-3 14 0M7 16c2.5 2.5 7.5 2.5 10 0" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" fill-opacity="0.3" stroke="currentColor" />
+          </svg>
+        </div>
+        <div class="min-w-0 truncate">
+          <div class="flex items-center gap-1.5">
+            <span class="font-serif text-sm sm:text-base tracking-widest text-[#f8fafc] font-semibold leading-none truncate">TACTUS</span>
+            <span id="session-header-status-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0">STAGING</span>
+          </div>
+          <span class="text-[9.5px] font-mono text-[#94a3b8] block leading-none mt-1 truncate" id="session-header-subline">Top-First Kalibrierung vor dem Eintreten</span>
+        </div>
+      </a>
+
+      <!-- Desktop Quick Actions -->
+      <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
+        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung bzw. Arretierung bei FLR -->
+        <button type="button" onclick="SessionRuntime.toggleActiveRole()" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#2a364f] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-pad" style="min-height: 44px;" title="Rollenanzeige / Wechsel">
+          <span class="w-2 h-2 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
+          <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
+          <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
+        </button>
+
+        <!-- Ausrüstungsschrank Button -->
+        <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-pad" style="min-height: 44px;" title="Ausrüstungsschrank öffnen">
+          <svg class="w-4 h-4 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+          <span>Schrank</span>
+        </button>
+
+        <!-- Konditionales Break-Glass (Streng rollenspezifisch nur für den verschlossenen Bottom) -->
+        <button type="button" id="header-btn-break-glass" onclick="SessionRuntime.openBreakGlass()" style="display: none;" class="px-3 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-mono text-xs font-bold flex items-center gap-1.5 touch-pad shadow-sm animate-pulse" style="min-height: 44px;" title="RACK Notfall-Öffnung">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+          <span>Notfall</span>
+        </button>
+
+        <!-- 1-Tap 85% OLED Nachttisch-Dimmer -->
+        <button type="button" onclick="SessionRuntime.toggleDimmer()" class="w-11 h-11 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-pad" style="min-height: 44px;" title="Nachttisch-Dimmer (85% OLED-Tiefschwarz)">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+          </svg>
+        </button>
+
+        <!-- Zum Protokoll -->
+        <a href="protocol.html" class="px-3.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] font-mono text-xs font-medium flex items-center gap-1.5 touch-pad" style="min-height: 44px;">
+          <span>Protokoll →</span>
+        </a>
+      </div>
+
+      <!-- Mobile Actions (iPhone 15 Pro optimiert mit Touch-Targets >= 44px) -->
+      <div class="flex md:hidden items-center gap-2 flex-shrink-0">
+        <button type="button" id="header-btn-break-glass-mobile" onclick="SessionRuntime.openBreakGlass()" style="display: none;" class="w-11 h-11 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white flex items-center justify-center touch-pad animate-pulse" title="Notfall">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+        </button>
+        <button type="button" onclick="SessionRuntime.toggleDimmer()" class="w-11 h-11 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center touch-pad" title="Nachttisch-Dimmer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+        </button>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-11 h-11 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#f8fafc] flex items-center justify-center font-bold text-base touch-pad shadow-sm" title="Menü öffnen">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- SUB-NAVIGATION DER 6 HAUPT-COCKPITS (DESKTOP) -->
+  <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
+    <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-mono">
+      <a href="index.html#view=hub" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-pad flex items-center" style="min-height: 40px;">Start-Hub</a>
+      <a href="index.html#view=survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-pad flex items-center" style="min-height: 40px;">Fragebogen (500 Items)</a>
+      <a href="analyse.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-pad flex items-center" style="min-height: 40px;">Paar-Analyse</a>
+      <a href="chat.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-pad flex items-center" style="min-height: 40px;">Paar-Stream</a>
+      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-pad flex items-center" style="min-height: 40px;">Das Protokoll</a>
+      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-pad flex items-center" style="min-height: 40px;">Guide</a>
+      <span class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap cursor-default flex items-center" style="min-height: 40px;">Schlafzimmer-Regie ✓</span>
+    </div>
+  </nav>
+
+  <!-- MOBILE DRAWER MODAL -->
+  <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs font-mono">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#c5a880]/50 flex items-center justify-center p-1">
+            <span class="font-serif text-sm font-bold text-[#c5a880]">T</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-serif text-[#f8fafc]">TACTUS OS</h3>
+            <span class="text-[10px] text-[#94a3b8]">Schlafzimmer-Navigation</span>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-pad">✕</button>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <a href="index.html#view=hub" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+          <span class="text-xs font-bold text-[#f8fafc]">Start-Hub</span>
+          <span class="text-[#94a3b8]">→</span>
+        </a>
+        <a href="index.html#view=survey" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
+          <span class="text-[#94a3b8]">→</span>
+        </a>
+        <a href="analyse.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+          <span class="text-xs font-bold text-[#c5a880]">Paar-Analyse &amp; Synergie</span>
+          <span class="text-[10px] text-[#d4af37] font-bold">Doppel-5er</span>
+        </a>
+        <a href="chat.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+          <span class="text-xs font-bold text-[#94a3b8]">E2EE Paar-Stream</span>
+          <span class="text-[#94a3b8]">→</span>
+        </a>
+        <a href="protocol.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+          <span class="text-xs font-bold text-[#94a3b8]">Das Protokoll &amp; Vertrag</span>
+          <span class="text-[#94a3b8]">→</span>
+        </a>
+        <a href="guide.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+          <span class="text-xs font-bold text-[#94a3b8]">BDSM- &amp; Vertrauens-Guide</span>
+          <span class="text-[#94a3b8]">→</span>
+        </a>
+        <div class="w-full p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880] text-left flex items-center justify-between shadow-md">
+          <span class="text-xs font-bold text-[#c5a880]">Schlafzimmer-Regie</span>
+          <span class="text-[10px] text-[#c5a880] font-bold">Hier aktiv ✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-[#2a364f] text-center pb-[max(env(safe-area-inset-bottom),16px)]">
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-3 bg-[#090d14] text-[#94a3b8] font-bold rounded-xl text-xs touch-pad">Schließen ✕</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER MIT DEN 4 BÜHNEN -->
+  <main class="max-w-4xl mx-auto p-3.5 sm:p-6 flex-1 w-full space-y-4">
+
+    <!-- SUB-NAV TABS DER 4 SCHLAFZIMMER-BÜHNEN (INKLUSIVE LOGBUCH) -->
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs">
+      <button type="button" onclick="SessionRuntime.switchStage('staging')" id="tab-stage-staging" class="px-4 py-2.5 rounded-2xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-pad shadow-sm whitespace-nowrap">
+        1. Staging-Cockpit
+      </button>
+      <button type="button" onclick="SessionRuntime.switchStage('live')" id="tab-stage-live" class="px-4 py-2.5 rounded-2xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-pad whitespace-nowrap flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-[#991b1b]" id="live-stage-indicator"></span>
+        <span>2. Live-Regie</span>
+      </button>
+      <button type="button" onclick="SessionRuntime.switchStage('edging')" id="tab-stage-edging" class="px-4 py-2.5 rounded-2xl font-bold bg-[#090d14] border border-[#2a364f] text-[#b3734a] hover:text-[#f8fafc] touch-pad whitespace-nowrap flex items-center gap-1">
+        <span>3. Schwellen- &amp; JOI-Cockpit</span>
+      </button>
+      <button type="button" onclick="SessionRuntime.switchStage('logbook')" id="tab-stage-logbook" class="px-4 py-2.5 rounded-2xl font-bold bg-[#090d14] border border-[#2a364f] text-[#d4af37] hover:text-[#f8fafc] touch-pad whitespace-nowrap flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-[#d4af37]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+        <span>4. Session-Logbuch</span>
+      </button>
+    </div>
+
+    <!-- BÜHNE 1: STAGING COCKPIT (VORBEREITUNG & DREHBUCH) -->
+    <div id="view-session-staging" class="space-y-4 animate-fade-in">
+      <div id="staging-cockpit-container">
+        <div class="p-8 text-center text-[#94a3b8] text-xs font-mono">
+          Lade Schlafzimmer-Staging Cockpit...
+        </div>
+      </div>
+    </div>
+
+    <!-- BÜHNE 2: LIVE-REGIE (STATE MACHINE, HALBDUNKEL & VAGUS) -->
+    <div id="view-session-live" class="hidden space-y-4 animate-fade-in">
+      <div id="live-session-container">
+        <div class="p-8 text-center text-[#94a3b8] text-xs font-mono">
+          Lade Live-Regie...
+        </div>
+      </div>
+    </div>
+
+    <!-- BÜHNE 3: SCHWELLEN- & PLATEAU-COCKPIT (EDGING & JOI) -->
+    <div id="view-session-edging" class="hidden space-y-4 animate-fade-in">
+      <div id="edging-cockpit-container">
+        <div class="p-8 text-center text-[#94a3b8] text-xs font-mono">
+          Lade Schwellen- &amp; Plateau-Cockpit...
+        </div>
+      </div>
+    </div>
+
+    <!-- BÜHNE 4: DAS TACTUS SESSION-LOGBUCH (PUNKT #7) -->
+    <div id="view-session-logbook" class="hidden space-y-4 animate-fade-in font-sans">
+      <div class="p-5 sm:p-6 rounded-3xl bg-[#090d14] border border-[#2a364f] shadow-2xl space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-3">
+          <div class="space-y-0.5 min-w-0 flex-1">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#d4af37] border border-[#d4af37]/40 inline-block">
+              Intimitäts-Archiv &amp; Paar-Reflexion (§ 4)
+            </span>
+            <h2 class="text-base sm:text-xl font-serif text-white font-normal mt-1">
+              Das TACTUS Session-Logbuch
+            </h2>
+          </div>
+          <span class="text-xs font-mono text-[#c5a880] font-bold" id="logbook-count-badge">0 Einträge</span>
+        </div>
+        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+          Lückenlose Aufzeichnung aller vollzogenen Schlafzimmer-Sessions: Dauer, Kanten-Zahl, eingesetzte Reize, Tonalität und post-somatisches Feedback beider Partner zur kontinuierlichen Verfeinerung eurer Paar-Dynamik.
+        </p>
+      </div>
+
+      <div id="session-logbook-entries-container" class="space-y-3">
+        <div class="p-8 rounded-3xl bg-[#090d14] border border-[#2a364f] text-center text-[#94a3b8] font-mono text-xs">
+          Noch keine dokumentierten Sessions im Logbuch verzeichnet. Schließe deine erste Live-Regie ab.
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 1-TAP 85% OLED NACHTTISCH-DIMMER OVERLAY -->
+  <div id="session-live-dimmer-overlay" class="fixed inset-0 bg-black/85 z-50 pointer-events-none opacity-0 transition-opacity duration-500"></div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
+
+  <!-- EXTERNE DATENQUELLEN & SCRIPTS (ALLE 15 KERN-MODULE IN STRIKTER REIHENFOLGE) -->
+  <script src="data/scientific_studies.js"></script>
+  <script src="data/questions_part1.js"></script>
+  <script src="data/questions_part2.js"></script>
+  <script src="data/questions_part3.js"></script>
+  <script src="data/equipment_catalog.js"></script>
+  <script src="data/toy_combinatorics.js"></script>
+  <script src="data/chastity_database.js"></script>
+  <script src="js/ai_adapter.js"></script>
+  <script src="js/hub_photos.js"></script>
+  <script src="js/hub_toys.js"></script>
+  <script src="js/hub_context.js"></script>
+  <script src="js/cloud_sync.js"></script>
+  <script src="js/protocol_core.js"></script>
+  <script src="js/protocol_ratio.js"></script>
+  <script src="js/protocol_tasks.js"></script>
+  <script src="js/protocol_contract.js"></script>
+  <script src="js/protocol_coach.js"></script>
+  <script src="js/session_voice.js"></script>
+  <script src="js/session_audio.js"></script>
+  <script src="js/session_staging.js"></script>
+  <script src="js/session_live.js"></script>
+  <script src="js/session_edging.js"></script>
+
+  <!-- RUNTIME ORCHESTRATION -->
+  <script>
+    (function(window) {
+      'use strict';
+
+      let currentStage = 'staging';
+
+      function showToast(message) {
+        if (typeof window.showToastNotification === 'function') {
+          window.showToastNotification(message);
+          return;
+        }
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const el = document.createElement('div');
+        el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
+        el.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
+          <span>${String(message).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+        `;
+        container.appendChild(el);
+
+        setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
+        setTimeout(() => {
+          el.classList.add('opacity-0');
+          setTimeout(() => el.remove(), 300);
+        }, 2800);
+      }
+
+      window.showToastNotification = showToast;
+
+      function switchStage(stageKey) {
+        currentStage = stageKey;
+
+        const stages = ['staging', 'live', 'edging', 'logbook'];
+        stages.forEach(st => {
+          const view = document.getElementById(`view-session-${st}`);
+          const btn = document.getElementById(`tab-stage-${st}`);
+          if (view) {
+            if (st === stageKey) view.classList.remove('hidden');
+            else view.classList.add('hidden');
+          }
+          if (btn) {
+            if (st === stageKey) {
+              btn.className = "px-4 py-2.5 rounded-2xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-pad shadow-md whitespace-nowrap";
+            } else {
+              let textCol = (st === 'edging') ? 'text-[#b3734a]' : ((st === 'logbook') ? 'text-[#d4af37]' : 'text-[#94a3b8]');
+              btn.className = `px-4 py-2.5 rounded-2xl font-bold bg-[#090d14] border border-[#2a364f] ${textCol} hover:text-[#f8fafc] touch-pad whitespace-nowrap flex items-center gap-1.5`;
+            }
+          }
+        });
+
+        const badge = document.getElementById('session-header-status-badge');
+        const subline = document.getElementById('session-header-subline');
+
+        if (stageKey === 'staging') {
+          if (badge) {
+            badge.innerText = "STAGING";
+            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0";
+          }
+          if (subline) subline.innerText = "Top-First Kalibrierung vor dem Eintreten";
+          if (window.SessionStaging && typeof window.SessionStaging.render === 'function') {
+            window.SessionStaging.render();
+          }
+        } else if (stageKey === 'live') {
+          if (badge) {
+            badge.innerText = "LIVE REGIE";
+            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#450a0a] border border-[#991b1b] text-[#f8fafc] uppercase font-bold flex-shrink-0 animate-pulse";
+          }
+          if (subline) subline.innerText = "Operative Führung im Halbdunkel";
+          if (window.SessionLive && typeof window.SessionLive.renderCockpit === 'function') {
+            window.SessionLive.renderCockpit();
+          }
+        } else if (stageKey === 'edging') {
+          if (badge) {
+            badge.innerText = "SCHWELLEN";
+            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#4a2818] border border-[#8a5232] text-[#b3734a] uppercase font-bold flex-shrink-0";
+          }
+          if (subline) subline.innerText = "Plateau-Halten & sprachgeführte JOI-Taktung";
+          if (window.SessionEdging && typeof window.SessionEdging.render === 'function') {
+            window.SessionEdging.render('edging-cockpit-container');
+          }
+        } else if (stageKey === 'logbook') {
+          if (badge) {
+            badge.innerText = "LOGBUCH";
+            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#000000] border border-[#d4af37]/60 text-[#d4af37] uppercase font-bold flex-shrink-0";
+          }
+          if (subline) subline.innerText = "Session-Historie & Feedback-Rapport";
+          renderLogbookView();
+        }
+
+        window.location.hash = `view=${stageKey}`;
+      }
+
+      function renderLogbookView() {
+        const container = document.getElementById('session-logbook-entries-container');
+        const badge = document.getElementById('logbook-count-badge');
+        if (!container) return;
+
+        let log = [];
+        try {
+          const raw = localStorage.getItem('tactus_session_logbook');
+          if (raw) log = JSON.parse(raw);
+        } catch (e) {}
+
+        if (badge) badge.innerText = `${log.length} Einträge`;
+
+        if (log.length === 0) {
+          container.innerHTML = `
+            <div class="p-8 rounded-3xl bg-[#090d14] border border-[#2a364f] text-center text-[#94a3b8] font-mono text-xs">
+              Noch keine Sessions im Logbuch verzeichnet. Nach Abschluss einer Session kannst du hier euren Rapport und Feedback einsehen.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = log.map((item, idx) => `
+          <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] space-y-2.5">
+            <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
+              <div>
+                <span class="text-[9.5px] font-mono text-[#c5a880] uppercase font-bold block">${new Date(item.timestamp).toLocaleDateString('de-DE')} · ${new Date(item.timestamp).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
+                <strong class="text-xs sm:text-sm text-white font-serif">${escapeHtml(item.title || 'Schlafzimmer-Session')}</strong>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#000000] border border-[#2e5746] text-[#2e5746] font-bold">Abgeschlossen ✓</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono text-[#94a3b8]">
+              <div>Dauer: <strong class="text-white">${item.durationMinutes || 0} Min.</strong></div>
+              <div>Kanten: <strong class="text-[#c5a880]">${item.edgesCount || 0}</strong></div>
+              <div>Tonalität: <strong class="text-white">${escapeHtml(item.tonality || 'Souverän')}</strong></div>
+              <div>Ausgang: <strong class="text-[#b3734a]">${escapeHtml(item.climaxType || 'Standard')}</strong></div>
+            </div>
+            ${item.feedbackNote ? `
+              <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[11px] text-[#f8fafc] italic">
+                „${escapeHtml(item.feedbackNote)}“
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+      }
+
+      function handleHashRouting() {
+        const hash = window.location.hash || '';
+        if (hash.includes('view=live')) {
+          switchStage('live');
+        } else if (hash.includes('view=edging')) {
+          switchStage('edging');
+        } else if (hash.includes('view=logbook')) {
+          switchStage('logbook');
+        } else {
+          // Prüfen, ob eine Live-Session in sessionStorage aktiv ist
+          let hasActiveSession = false;
+          try {
+            const rawMetrics = sessionStorage.getItem('tactus_live_session_metrics');
+            if (rawMetrics) {
+              const parsed = JSON.parse(rawMetrics);
+              if (parsed && parsed.startedAt && !parsed.finalizedAt) {
+                hasActiveSession = true;
+              }
+            }
+          } catch (e) {}
+
+          if (hasActiveSession) {
+            switchStage('live');
+          } else {
+            switchStage('staging');
+          }
+        }
+      }
+
+      function checkConditionalBreakGlass() {
+        let isLocked = false;
+        if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
+          isLocked = !!window.ProtocolCore.getState().isLocked;
+        } else {
+          try {
+            const raw = localStorage.getItem('tactus_protocol_state') || localStorage.getItem('kompass_protocol_state');
+            if (raw) isLocked = !!JSON.parse(raw).isLocked;
+          } catch (e) {}
+        }
+
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isMeTop = (assignedRole === keyholder);
+        const shouldShow = isLocked && !isMeTop;
+
+        const btnDesktop = document.getElementById('header-btn-break-glass');
+        const btnMobile = document.getElementById('header-btn-break-glass-mobile');
+        if (btnDesktop) btnDesktop.style.display = shouldShow ? 'flex' : 'none';
+        if (btnMobile) btnMobile.style.display = shouldShow ? 'flex' : 'none';
+      }
+
+      function openBreakGlass() {
+        window.location.href = 'protocol.html#tab=dashboard';
+      }
+
+      let isDimmed = false;
+      function toggleNightstandDimmer() {
+        if (window.SessionLive && typeof window.SessionLive.toggleDimmer === 'function') {
+          window.SessionLive.toggleDimmer();
+        } else {
+          let overlay = document.getElementById('session-live-dimmer-overlay');
+          if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'session-live-dimmer-overlay';
+            overlay.className = 'fixed inset-0 bg-black/85 z-50 pointer-events-none transition-opacity duration-500 opacity-0';
+            document.body.appendChild(overlay);
+          }
+          isDimmed = !isDimmed;
+          overlay.style.opacity = isDimmed ? '1' : '0';
+          showToast(isDimmed ? "Nachttisch-Dimmer aktiv (OLED-Halbdunkel)" : "Dimmer deaktiviert");
+        }
+      }
+
+      let currentRoleState = 'top';
+
+      function initRoleDisplay() {
+        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+        const roleText = document.getElementById('active-role-text');
+        const roleDot = document.getElementById('role-indicator-dot');
+        const roleSubline = document.getElementById('role-switch-subline');
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isTop = (assignedRole === keyholder);
+
+        if (mode === 'flr_24_7') {
+          currentRoleState = isTop ? 'top' : 'bottom';
+          if (roleText) roleText.innerText = isTop ? 'Top (FLR)' : 'Bottom (FLR)';
+          if (roleDot) roleDot.className = isTop ? 'w-2 h-2 rounded-full bg-[#c5a880]' : 'w-2 h-2 rounded-full bg-[#b3734a]';
+          if (roleSubline) roleSubline.innerText = '🔒 Fest';
+        } else {
+          currentRoleState = isTop ? 'top' : 'bottom';
+          if (roleText) roleText.innerText = isTop ? 'Top' : 'Bottom';
+          if (roleDot) roleDot.className = isTop ? 'w-2 h-2 rounded-full bg-[#c5a880]' : 'w-2 h-2 rounded-full bg-[#b3734a]';
+          if (roleSubline) roleSubline.innerText = '⇄ Switch';
+        }
+
+        checkConditionalBreakGlass();
+      }
+
+      function toggleActiveRole() {
+        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isTop = (assignedRole === keyholder);
+
+        // Schutz im Modus flr_24_7: Kein eigenmächtiger 1-Tap Wechsel
+        if (mode === 'flr_24_7') {
+          if (!isTop) {
+            showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe erfordert formellen Antrag im Paar-Stream (chat.html).");
+          } else {
+            showToast("Führung ist fest arretiert (FLR 24/7). Übergabe nur über feierliche Zeremonie im Paar-Stream möglich.");
+          }
+          return;
+        }
+
+        // Casual- & Switch-Modus: Freier Rollenwechsel
+        const roleText = document.getElementById('active-role-text');
+        const roleDot = document.getElementById('role-indicator-dot');
+        if (currentRoleState === 'top') {
+          currentRoleState = 'bottom';
+          if (roleText) roleText.innerText = "Bottom";
+          if (roleDot) roleDot.className = "w-2 h-2 rounded-full bg-[#b3734a]";
+          showToast("Perspektive gewechselt: Bottom (Hingabe)");
+        } else if (currentRoleState === 'bottom') {
+          currentRoleState = 'switch';
+          if (roleText) roleText.innerText = "Switch";
+          if (roleDot) roleDot.className = "w-2 h-2 rounded-full bg-[#d4af37]";
+          showToast("Perspektive gewechselt: Switch (Flexibel)");
+        } else {
+          currentRoleState = 'top';
+          if (roleText) roleText.innerText = "Top";
+          if (roleDot) roleDot.className = "w-2 h-2 rounded-full bg-[#c5a880]";
+          showToast("Perspektive gewechselt: Top (Führung)");
+        }
+      }
+
+      window.SessionRuntime = {
+        switchStage: switchStage,
+        toggleDimmer: toggleNightstandDimmer,
+        toggleActiveRole: toggleActiveRole,
+        initRoleDisplay: initRoleDisplay,
+        openBreakGlass: openBreakGlass,
+        checkConditionalBreakGlass: checkConditionalBreakGlass,
+        init: function() {
+          handleHashRouting();
+          initRoleDisplay();
+          window.addEventListener('hashchange', handleHashRouting);
+        }
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+        window.SessionRuntime.init();
+      });
+
+    })(window);
+  </script>
+</body>
+</html>
