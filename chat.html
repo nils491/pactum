@@ -29,9 +29,13 @@
             graphite: '#090d14',
             graphiteLight: '#101622',
             slateBorder: '#1e2638',
+            slateBorderLight: '#2a364f',
+            titan: '#475569',
             champagne: '#c5a880',
             champagneLight: '#dfcaa9',
             feingold: '#d4af37',
+            copperGlow: '#c2410c',
+            amberBronze: '#b45309',
             bordeaux: '#991b1b',
             bordeauxDark: '#450a0a',
             malachite: '#142b24',
@@ -39,6 +43,12 @@
             cognac: '#8a5232',
             cognacLight: '#b3734a',
             cognacDark: '#4a2818',
+            rackGreen: '#15803d',
+            rackGreenLight: '#22c55e',
+            rackYellow: '#ca8a04',
+            rackYellowLight: '#eab308',
+            rackRed: '#dc2626',
+            rackRedLight: '#ef4444',
             platinum: '#f8fafc',
             silverMuted: '#94a3b8'
           },
@@ -68,14 +78,16 @@
       padding-bottom: var(--sab);
       padding-left: var(--sal);
       padding-right: var(--sar);
+      min-height: 100dvh;
     }
     .touch-btn {
       min-height: 44px;
+      min-width: 44px;
       transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
       -webkit-user-select: none;
       user-select: none;
     }
-    .touch-btn:active { transform: scale(0.985); }
+    .touch-btn:active { transform: scale(0.982); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .gold-glow { box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.25); }
@@ -83,14 +95,14 @@
     .bordeaux-glow { box-shadow: 0 0 25px -5px rgba(153, 27, 27, 0.25); }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
+<body class="min-h-[100dvh] flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
 
-  <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 · ZERO PIXEL-JUMPING) -->
+  <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 · ZERO PIXEL-JUMPING · COLLISION-FREE) -->
   <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#1e2638]/60 h-14 flex items-center">
-    <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between">
+    <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between gap-2">
       
-      <!-- Brand-Einheit mit TACTUS Logo & Status -->
-      <a href="index.html#view=hub" class="flex items-center space-x-3 cursor-pointer group min-w-0 flex-1 mr-2 touch-btn" style="min-height: 40px;">
+      <!-- Brand-Einheit mit TACTUS Logo & Status (Collision-free mit min-w-0) -->
+      <a href="index.html#view=hub" class="flex items-center space-x-3 cursor-pointer group min-w-0 flex-1 mr-1 touch-btn" style="min-height: 44px;">
         <div class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#c5a880]/40 flex items-center justify-center p-1 shadow-sm group-hover:border-[#c5a880] transition-colors flex-shrink-0 overflow-hidden">
           <img src="assets/logo.png" onerror="this.onerror=null; this.src='img/tactus_logo.png'; this.style.display='none'; this.nextElementSibling.style.display='block';" alt="TACTUS Logo" class="w-full h-full object-contain" />
           <svg class="w-5 h-5 text-[#c5a880] hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -111,43 +123,60 @@
         </div>
       </a>
 
-      <!-- Desktop Quick Actions -->
+      <!-- Desktop Quick Actions (Kollisionsfrei entzerrt) -->
       <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
-        <!-- 1-Tap Date-Night Trigger -->
-        <button type="button" onclick="ChatApp.triggerDateNightProposal()" class="px-3 py-1.5 rounded-xl bg-[#4a2818] hover:bg-[#8a5232] border border-[#8a5232] text-[#f8fafc] text-xs font-mono font-bold flex items-center gap-1.5 touch-btn shadow-sm" style="min-height: 36px;" title="Date-Night Begehrens-Signal senden">
-          <span>🔥 Date-Night</span>
+        <!-- 1-Tap Date-Night Trigger mit edlem Haute-Horlogerie SVG-Icon (Punkt #6) -->
+        <button type="button" onclick="ChatApp.triggerDateNightProposal()" class="px-3 py-1.5 rounded-xl bg-[#4a2818] hover:bg-[#8a5232] border border-[#8a5232] text-[#f8fafc] text-xs font-mono font-bold flex items-center gap-1.5 touch-btn shadow-sm" style="min-height: 44px;" title="Date-Night Intimitäts-Signal senden">
+          <svg class="w-4 h-4 text-[#c5a880] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-1.333-3.329A3.75 3.75 0 0012 18z" />
+          </svg>
+          <span>Date-Night</span>
         </button>
 
-        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung bzw. Arretierung bei FLR -->
-        <button type="button" onclick="ChatApp.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Rollenanzeige (Top / Bottom)">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
+        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung -->
+        <button type="button" onclick="ChatApp.toggleActiveRole()" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#2a364f] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 44px;" title="Rollenwechsel (Top / Bottom)">
+          <span class="w-2 h-2 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
           <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
-          <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
+          <span class="text-[9px] text-[#94a3b8]/70" id="role-switch-subline">⇄ Switch</span>
         </button>
 
         <!-- E2EE Schlüssel-Handshake Status / Modal -->
-        <button type="button" onclick="ChatApp.openHandshakeModal()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#c5a880] text-xs font-mono font-medium flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="E2EE Schlüssel-Austausch &amp; QR-Code">
-          <svg class="w-3.5 h-3.5 text-[#2e5746]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        <button type="button" onclick="ChatApp.openHandshakeModal()" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#c5a880] text-xs font-mono font-medium flex items-center gap-1.5 touch-btn" style="min-height: 44px;" title="E2EE Schlüssel-Austausch &amp; QR-Code">
+          <svg class="w-4 h-4 text-[#2e5746]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
           <span id="header-handshake-status">Schlüssel ✓</span>
         </button>
 
         <!-- Ausrüstungsschrank Button -->
-        <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-btn" style="min-height: 36px;" title="Ausrüstungsschrank öffnen">
-          <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-btn" style="min-height: 44px;" title="Ausrüstungsschrank öffnen">
+          <svg class="w-4 h-4 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
           <span>Schrank</span>
+        </button>
+
+        <!-- Konditionales Break-Glass (Streng rollenspezifisch nur für den verschlossenen Bottom) -->
+        <button type="button" id="header-btn-break-glass" onclick="ChatApp.openBreakGlass()" style="display: none;" class="px-3 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-mono text-xs font-bold flex items-center gap-1.5 touch-btn shadow-sm animate-pulse" style="min-height: 44px;" title="RACK Notfall-Öffnung">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+          <span>Notfall</span>
         </button>
       </div>
 
-      <!-- Mobile Actions -->
-      <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
-        <button type="button" onclick="ChatApp.triggerDateNightProposal()" class="px-2.5 py-1.5 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-mono text-[10px] font-bold touch-btn">
-          🔥 Date
+      <!-- Mobile Actions (iPhone 15 Pro optimiert mit Touch-Targets >= 44px) -->
+      <div class="flex md:hidden items-center gap-2 flex-shrink-0">
+        <!-- Date-Night Trigger Mobile mit SVG -->
+        <button type="button" onclick="ChatApp.triggerDateNightProposal()" class="w-11 h-11 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] flex items-center justify-center touch-btn" title="Date-Night Signal">
+          <svg class="w-5 h-5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-1.333-3.329A3.75 3.75 0 0012 18z" />
+          </svg>
         </button>
-        <button type="button" onclick="ChatApp.openHandshakeModal()" class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#2e5746] flex items-center justify-center touch-btn">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        <button type="button" id="header-btn-break-glass-mobile" onclick="ChatApp.openBreakGlass()" style="display: none;" class="w-11 h-11 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white flex items-center justify-center touch-btn animate-pulse" title="Notfall">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
         </button>
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#f8fafc] flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        <button type="button" onclick="ChatApp.openHandshakeModal()" class="w-11 h-11 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#2e5746] flex items-center justify-center touch-btn" title="Schlüssel-Status">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        </button>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-11 h-11 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#f8fafc] flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
         </button>
       </div>
 
@@ -156,23 +185,23 @@
 
   <!-- SUB-NAVIGATION DER 6 HAUPT-COCKPITS (DESKTOP) -->
   <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
-    <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-mono">
-      <a href="index.html#view=hub" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Start-Hub</a>
-      <a href="index.html#view=survey" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Fragebogen (500 Items)</a>
-      <a href="analyse.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Paar-Analyse</a>
-      <span class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap cursor-default" style="min-height: 36px;">Paar-Stream ✓</span>
-      <a href="protocol.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Das Protokoll</a>
-      <a href="guide.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Guide</a>
-      <a href="session.html" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#b3734a] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 36px;">Schlafzimmer-Regie</a>
+    <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-mono">
+      <a href="index.html#view=hub" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Start-Hub</a>
+      <a href="index.html#view=survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Fragebogen (500 Items)</a>
+      <a href="analyse.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Paar-Analyse</a>
+      <span class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap cursor-default flex items-center" style="min-height: 40px;">Paar-Stream ✓</span>
+      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Das Protokoll</a>
+      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Guide</a>
+      <a href="session.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#b3734a] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Schlafzimmer-Regie</a>
     </div>
   </nav>
 
   <!-- MOBILE DRAWER -->
   <div id="mobile-menu-drawer" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto animate-fade-in text-xs font-mono">
     <div class="space-y-4">
-      <div class="flex items-center justify-between border-b border-[#1e2638] pb-3">
-        <div class="flex items-center space-x-2.5">
-          <div class="w-8 h-8 rounded-xl bg-[#090d14] border border-[#c5a880]/50 flex items-center justify-center p-1">
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#c5a880]/50 flex items-center justify-center p-1">
             <span class="font-serif text-sm font-bold text-[#c5a880]">T</span>
           </div>
           <div>
@@ -180,69 +209,69 @@
             <span class="text-[10px] text-[#94a3b8]">E2EE Paar-Stream</span>
           </div>
         </div>
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-8 h-8 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
-      <div class="space-y-1.5 pt-1">
-        <a href="index.html#view=hub" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+      <div class="space-y-2 pt-1">
+        <a href="index.html#view=hub" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">Start-Hub</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="index.html#view=survey" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+        <a href="index.html#view=survey" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="analyse.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+        <a href="analyse.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">Paar-Analyse &amp; Synergie</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <div class="w-full p-3 rounded-2xl bg-[#000000] border border-[#c5a880] text-left flex items-center justify-between shadow-md">
+        <div class="w-full p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880] text-left flex items-center justify-between shadow-md">
           <span class="text-xs font-bold text-[#c5a880]">E2EE Paar-Stream</span>
           <span class="text-[10px] text-[#c5a880] font-bold">Hier aktiv ✓</span>
         </div>
-        <a href="protocol.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+        <a href="protocol.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">Das Protokoll &amp; Vertrag</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="guide.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+        <a href="guide.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">BDSM- &amp; Vertrauens-Guide</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="session.html" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] text-left flex items-center justify-between touch-btn block">
+        <a href="session.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#b3734a]">Schlafzimmer-Regie</span>
           <span class="text-[10px] text-[#b3734a] font-bold">Live ↗</span>
         </a>
       </div>
     </div>
-    <div class="pt-4 border-t border-[#1e2638] text-center">
-      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-2.5 bg-[#090d14] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
+    <div class="pt-4 border-t border-[#2a364f] text-center pb-[max(env(safe-area-inset-bottom),16px)]">
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-3 bg-[#090d14] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
     </div>
   </div>
 
   <!-- MAIN CONTAINER -->
-  <main class="max-w-4xl mx-auto p-3 sm:p-6 flex-1 w-full space-y-4 flex flex-col min-h-[calc(100vh-8rem)]">
+  <main class="max-w-4xl mx-auto p-3.5 sm:p-6 flex-1 w-full space-y-4 flex flex-col min-h-[calc(100dvh-7.5rem)]">
 
     <!-- SUB-NAV TABS DES PAAR-STREAMS -->
-    <div class="flex items-center justify-between border-b border-[#1e2638]/80 pb-2 font-mono text-xs">
-      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+    <div class="flex items-center justify-between border-b border-[#2a364f] pb-2 font-mono text-xs gap-2">
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
         <button type="button" onclick="ChatApp.switchTab('stream')" id="tab-btn-stream" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap">
           1. 1:1 Stream &amp; Befehle
         </button>
-        <button type="button" onclick="ChatApp.switchTab('capsules')" id="tab-btn-capsules" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap flex items-center gap-1">
+        <button type="button" onclick="ChatApp.switchTab('capsules')" id="tab-btn-capsules" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap flex items-center gap-1.5">
           <span>2. Zeit-Tresor</span>
           <span id="capsules-count-badge" class="px-1.5 py-0.2 rounded-full text-[9px] bg-[#c5a880] text-black font-bold hidden">0</span>
         </button>
-        <button type="button" onclick="ChatApp.switchTab('handover')" id="tab-btn-handover" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
+        <button type="button" onclick="ChatApp.switchTab('handover')" id="tab-btn-handover" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap">
           3. Handover-Zeremonie
         </button>
       </div>
 
       <!-- Quick Action Buttons für den Bottom -->
-      <div class="hidden sm:flex items-center gap-1.5 font-mono text-[10px]">
-        <button type="button" onclick="ChatApp.sendQuickAck('Gelesen &amp; Gehorcht ✓')" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#c5a880] touch-btn" title="Schnellquittierung">
+      <div class="hidden sm:flex items-center gap-2 font-mono text-[10.5px]">
+        <button type="button" onclick="ChatApp.sendQuickAck('Gelesen &amp; Gehorcht ✓')" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#c5a880] font-bold touch-btn" title="Schnellquittierung">
           ✓ Gehorcht
         </button>
-        <button type="button" onclick="ChatApp.sendQuickAck('Auf dem Weg')" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn">
+        <button type="button" onclick="ChatApp.sendQuickAck('Auf dem Weg')" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn">
           Auf dem Weg
         </button>
       </div>
@@ -252,54 +281,57 @@
     <div id="view-chat-stream" class="flex-1 flex flex-col space-y-3 animate-fade-in font-sans">
       
       <!-- STATUS-LEISTE MIT ZERO-KNOWLEDGE E2EE STATUS -->
-      <div class="p-3 rounded-2xl bg-[#090d14] border border-[#1e2638] flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+      <div class="p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
         <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-[#2e5746] animate-pulse"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#2e5746] animate-pulse"></span>
           <span class="text-[#f8fafc] font-semibold" id="stream-partner-label">Stream mit Partner</span>
           <span class="text-[#94a3b8] text-[10px]">· AES-GCM-256</span>
         </div>
-        <div class="flex items-center gap-2 text-[10px]">
-          <span class="text-[#c5a880]" id="stream-governance-mode">Modus: Switch</span>
+        <div class="flex items-center gap-2.5 text-[10.5px]">
+          <span class="text-[#c5a880] font-bold" id="stream-governance-mode">Modus: Switch</span>
           <span>·</span>
           <button type="button" onclick="ChatApp.clearChatHistory()" class="text-[#94a3b8] hover:text-[#991b1b]">Verlauf leeren</button>
         </div>
       </div>
 
-      <!-- NACHRICHTEN FEED CONTAINER (SCROLLBAR) -->
-      <div id="chat-messages-container" class="flex-1 p-4 rounded-3xl bg-[#090d14] border border-[#1e2638] overflow-y-auto space-y-3 min-h-[380px] max-h-[58vh] shadow-inner text-xs">
+      <!-- DYNAMISCHE SYSTEM-NUDGES & 1-KLICK TASK-RESOLVER (PUNKTE #12 & #13) -->
+      <div id="chat-system-nudges-container" class="space-y-2 hidden"></div>
+
+      <!-- NACHRICHTEN FEED CONTAINER (SCROLLBAR & SAFE-AREA PADDING) -->
+      <div id="chat-messages-container" class="flex-1 p-4 rounded-3xl bg-[#090d14] border border-[#2a364f] overflow-y-auto space-y-3 min-h-[380px] max-h-[56dvh] shadow-inner text-xs">
         <div class="py-12 text-center text-[#94a3b8] font-mono text-xs">
           Verschlüsselter Stream wird geladen...
         </div>
       </div>
 
       <!-- SCHNELLE BEFEHLS-PILLS FÜR DEN TOP -->
-      <div id="top-quick-commands-bar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar font-mono text-[10px]">
-        <span class="text-[#94a3b8] flex-shrink-0">Befehle:</span>
-        <button type="button" onclick="ChatApp.insertDraft('Kniestand vor dem Bett einnehmen. Stillhalten.')" class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#1e2638] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
+      <div id="top-quick-commands-bar" class="flex items-center gap-2 overflow-x-auto no-scrollbar font-mono text-[10.5px] py-1">
+        <span class="text-[#94a3b8] flex-shrink-0 font-bold">Befehle:</span>
+        <button type="button" onclick="ChatApp.insertDraft('Kniestand vor dem Bett einnehmen. Stillhalten.')" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
           Kniestand-Appell
         </button>
-        <button type="button" onclick="ChatApp.insertDraft('Meldung der Pflichterfüllung jetzt einreichen.')" class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#1e2638] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
+        <button type="button" onclick="ChatApp.insertDraft('Meldung der Pflichterfüllung jetzt einreichen.')" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
           Meldung fordern
         </button>
-        <button type="button" onclick="ChatApp.insertDraft('Wasser und frisches Handtuch im Schlafzimmer bereitstellen.')" class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#1e2638] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
+        <button type="button" onclick="ChatApp.insertDraft('Wasser und frisches Handtuch im Schlafzimmer bereitstellen.')" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
           Wasser-Dienst
         </button>
-        <button type="button" onclick="ChatApp.insertDraft('Käfig-Sitz prüfen. Spülung für den Abend vorbereiten.')" class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#1e2638] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
+        <button type="button" onclick="ChatApp.insertDraft('Käfig-Sitz prüfen. Spülung für den Abend vorbereiten.')" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] hover:border-[#c5a880] whitespace-nowrap touch-btn">
           Käfig-Prüfung
         </button>
       </div>
 
       <!-- EINGABE-LEISTE MIT ATTACHMENT & ZEIT-TRESOR -->
-      <form id="chat-input-form" onsubmit="event.preventDefault(); ChatApp.sendMessage();" class="p-2 sm:p-2.5 rounded-2xl bg-[#090d14] border border-[#1e2638] flex items-center gap-2 shadow-2xl">
+      <form id="chat-input-form" onsubmit="event.preventDefault(); ChatApp.sendMessage();" class="p-2 sm:p-2.5 rounded-2xl bg-[#090d14] border border-[#2a364f] flex items-center gap-2 shadow-2xl pb-[max(env(safe-area-inset-bottom),10px)]">
         
         <!-- Foto / Attachment Button -->
-        <button type="button" onclick="ChatApp.openPhotoAttachmentModal()" class="w-10 h-10 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center touch-btn flex-shrink-0" title="Foto aus Tresor senden">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+        <button type="button" onclick="ChatApp.openPhotoAttachmentModal()" class="w-11 h-11 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center touch-btn flex-shrink-0" title="Foto aus Tresor senden">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
         </button>
 
         <!-- Zeit-Tresor Kapsel Button -->
-        <button type="button" onclick="ChatApp.openCreateCapsuleModal()" class="w-10 h-10 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-[#94a3b8] hover:text-[#d4af37] flex items-center justify-center touch-btn flex-shrink-0" title="Timelocked Kapsel senden">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <button type="button" onclick="ChatApp.openCreateCapsuleModal()" class="w-11 h-11 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#d4af37] flex items-center justify-center touch-btn flex-shrink-0" title="Timelocked Kapsel senden">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </button>
 
         <!-- Text Input Field -->
@@ -308,21 +340,22 @@
           id="chat-message-input" 
           placeholder="E2EE verschlüsselte Nachricht oder Befehl..." 
           autocomplete="off" 
-          class="flex-1 bg-[#000000] border border-[#1e2638] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none font-sans" 
+          class="flex-1 bg-[#000000] border border-[#2a364f] rounded-xl px-3.5 py-3 text-xs text-white placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none font-sans" 
+          style="min-height: 44px;"
         />
 
         <!-- Sende Button -->
-        <button type="submit" class="px-4 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono font-bold text-xs flex items-center gap-1.5 touch-btn shadow-md flex-shrink-0">
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono font-bold text-xs flex items-center gap-1.5 touch-btn shadow-md flex-shrink-0" style="min-height: 44px;">
           <span>Senden</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
         </button>
       </form>
     </div>
 
     <!-- VIEW 2: ZEIT-TRESOR (TIMELOCKED KAPSELN) -->
     <div id="view-chat-capsules" class="hidden space-y-4 animate-fade-in font-sans">
-      <div class="p-5 rounded-3xl bg-[#090d14] border border-[#1e2638] shadow-2xl space-y-3">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-3">
+      <div class="p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] shadow-2xl space-y-3">
+        <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-3">
           <div class="space-y-0.5">
             <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#d4af37] border border-[#d4af37]/40 inline-block">
               Kryptographischer Zeit-Tresor
@@ -335,7 +368,7 @@
             + Neue Kapsel
           </button>
         </div>
-        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
+        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
           Verschlüsselte Anweisungen, Zuchtforderungen oder private Fotos, die erst nach Ablauf eines präzisen Countdowns entschlüsselt werden können.
         </p>
       </div>
@@ -346,7 +379,7 @@
     <!-- VIEW 3: FEIERLICHE HANDOVER-ZEREMONIE (FLR 24/7 GOVERNANCE) -->
     <div id="view-chat-handover" class="hidden space-y-4 animate-fade-in font-sans">
       <div class="p-5 rounded-3xl bg-[#090d14] border border-[#c5a880]/60 shadow-2xl space-y-3">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-3">
+        <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-3">
           <div class="space-y-0.5">
             <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
               Governance &amp; Beziehungsverfassung (§ 2)
@@ -364,7 +397,7 @@
         </p>
 
         <!-- STATUS DER AKTUELLEN FÜHRUNG -->
-        <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+        <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
           <div class="space-y-1">
             <span class="text-[10px] text-[#94a3b8] uppercase block">Amtierende Führung (Top / Keyholder):</span>
             <strong class="text-sm text-[#c5a880] block" id="handover-current-top">Partner 1</strong>
@@ -384,9 +417,9 @@
             Der dienende Partner formuliert ein demütiges Ersuchen um Übernahme der Führungsrolle. Die Herrin entscheidet frei über Annahme oder Zurückweisung.
           </p>
           <div class="space-y-2">
-            <textarea id="handover-request-text" rows="2" placeholder="Begründung des Antrags auf Rollentausch (z. B. 'Ersuchen um Wechsel nach 30 Tagen treuem Dienst...')" class="w-full p-2.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-white text-xs font-sans placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none"></textarea>
+            <textarea id="handover-request-text" rows="2" placeholder="Begründung des Antrags auf Rollentausch (z. B. 'Ersuchen um Wechsel nach 30 Tagen treuem Dienst...')" class="w-full p-2.5 rounded-xl bg-[#090d14] border border-[#2a364f] text-white text-xs font-sans placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none"></textarea>
             <div class="flex justify-end">
-              <button type="button" onclick="ChatApp.submitHandoverRequest()" class="px-4 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-btn shadow-md">
+              <button type="button" onclick="ChatApp.submitHandoverRequest()" class="px-4 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-btn shadow-md">
                 Formellen Antrag einreichen ↗
               </button>
             </div>
@@ -395,8 +428,8 @@
       </div>
 
       <!-- ZEREMONIELLE HANDOVER-CHRONIK -->
-      <div class="p-5 rounded-3xl bg-[#090d14] border border-[#1e2638] space-y-3 shadow-md text-xs">
-        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
+      <div class="p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] space-y-3 shadow-md text-xs">
+        <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
           <strong class="text-xs text-white block font-bold">Chronik der Rollenübergaben:</strong>
           <span class="text-[10px] font-mono text-[#c5a880]">Audit-Trail</span>
         </div>
@@ -408,13 +441,13 @@
 
   <!-- MODAL: E2EE SCHLÜSSEL-HANDSHAKE & PAAR-PASSPHRASE -->
   <div id="modal-handshake-e2ee" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
-    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#2e5746] p-5 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#2e5746] p-5 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[88dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
       <div class="flex items-center justify-between border-b border-[#2e5746]/50 pb-2">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-[#2e5746] animate-pulse"></span>
           <h3 class="text-sm font-bold text-white font-serif">E2EE Zero-Knowledge Handshake</h3>
         </div>
-        <button type="button" onclick="document.getElementById('modal-handshake-e2ee').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="document.getElementById('modal-handshake-e2ee').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
@@ -424,10 +457,10 @@
       <div class="space-y-2.5 font-mono">
         <div>
           <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Gemeinsame geheime Paar-Passphrase:</label>
-          <input type="password" id="input-shared-passphrase" placeholder="Mindestens 8 Zeichen (z. B. UnserGeheimnis2026!)..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs focus:border-[#2e5746] focus:outline-none" />
+          <input type="password" id="input-shared-passphrase" placeholder="Mindestens 8 Zeichen (z. B. UnserGeheimnis2026!)..." class="w-full p-3 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs focus:border-[#2e5746] focus:outline-none" style="min-height: 44px;" />
         </div>
 
-        <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
+        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1">
           <span class="text-[9.5px] uppercase text-[#2e5746] font-bold block">Sicherheits-Garantie:</span>
           <p class="text-[10px] text-[#94a3b8] font-sans">
             Weder Server noch Dritte können eure Nachrichten mitlesen. Die Ableitung erfolgt über PBKDF2 mit 100.000 Runden.
@@ -435,34 +468,34 @@
         </div>
       </div>
 
-      <div class="pt-2 border-t border-[#1e2638] flex justify-end gap-2 font-mono">
-        <button type="button" onclick="document.getElementById('modal-handshake-e2ee').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-        <button type="button" onclick="ChatApp.saveHandshakePassphrase()" class="px-5 py-2 bg-[#142b24] hover:bg-[#2e5746] text-white border border-[#2e5746] font-bold rounded-xl text-xs touch-btn shadow-md">Schlüssel generieren ✓</button>
+      <div class="pt-2 border-t border-[#2a364f] flex justify-end gap-2 font-mono">
+        <button type="button" onclick="document.getElementById('modal-handshake-e2ee').style.display='none'" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="ChatApp.saveHandshakePassphrase()" class="px-5 py-2.5 bg-[#142b24] hover:bg-[#2e5746] text-white border border-[#2e5746] font-bold rounded-xl text-xs touch-btn shadow-md">Schlüssel generieren ✓</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: NEUE TIMELOCKED KAPSEL ERSTELLEN -->
   <div id="modal-create-capsule" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
-    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#d4af37]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans">
-      <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#d4af37]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[88dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
         <div class="flex items-center gap-2">
           <svg class="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <h3 class="text-sm font-bold text-white font-serif">Timelocked Kapsel versiegeln</h3>
         </div>
-        <button type="button" onclick="document.getElementById('modal-create-capsule').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="document.getElementById('modal-create-capsule').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <div class="space-y-3 font-mono">
         <div>
           <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Titel der Kapsel:</label>
-          <input type="text" id="capsule-input-title" placeholder="z. B. Belohnung für heute Abend / Geheime Anweisung..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs font-sans focus:border-[#d4af37] focus:outline-none" />
+          <input type="text" id="capsule-input-title" placeholder="z. B. Belohnung für heute Abend / Geheime Anweisung..." class="w-full p-3 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs font-sans focus:border-[#d4af37] focus:outline-none" style="min-height: 44px;" />
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Zeitschloss (Dauer):</label>
-            <select id="capsule-select-duration" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white">
+            <select id="capsule-select-duration" class="w-full text-xs p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white" style="min-height: 44px;">
               <option value="15">15 Minuten</option>
               <option value="60">1 Stunde</option>
               <option value="180">3 Stunden</option>
@@ -472,7 +505,7 @@
           </div>
           <div>
             <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Kapsel-Typ:</label>
-            <select id="capsule-select-type" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white">
+            <select id="capsule-select-type" class="w-full text-xs p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white" style="min-height: 44px;">
               <option value="directive">Befehl / Anweisung</option>
               <option value="reward">Belohnung / Gutschein</option>
               <option value="confession">Intimes Geständnis</option>
@@ -482,45 +515,45 @@
 
         <div>
           <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Geheimer Kapsel-Inhalt (wird verschlüsselt):</label>
-          <textarea id="capsule-input-content" rows="3" placeholder="Der Inhalt bleibt bis zum Ablauf des Timers vollkommen unlesbar..." class="w-full p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white text-xs font-sans focus:border-[#d4af37] focus:outline-none leading-relaxed"></textarea>
+          <textarea id="capsule-input-content" rows="3" placeholder="Der Inhalt bleibt bis zum Ablauf des Timers vollkommen unlesbar..." class="w-full p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs font-sans focus:border-[#d4af37] focus:outline-none leading-relaxed"></textarea>
         </div>
       </div>
 
-      <div class="pt-2 border-t border-[#1e2638] flex justify-end gap-2 font-mono">
-        <button type="button" onclick="document.getElementById('modal-create-capsule').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-        <button type="button" onclick="ChatApp.saveNewCapsule()" class="px-5 py-2 bg-[#d4af37] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Kapsel versiegeln ✓</button>
+      <div class="pt-2 border-t border-[#2a364f] flex justify-end gap-2 font-mono">
+        <button type="button" onclick="document.getElementById('modal-create-capsule').style.display='none'" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="ChatApp.saveNewCapsule()" class="px-5 py-2.5 bg-[#d4af37] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Kapsel versiegeln ✓</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: FOTO-ATTACHMENT AUS DEM SCHRANK/TRESOR -->
   <div id="modal-photo-attachment" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
-    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans">
-      <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[88dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
         <h3 class="text-sm font-bold text-white font-serif">Foto aus Tresor senden</h3>
-        <button type="button" onclick="document.getElementById('modal-photo-attachment').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+        <button type="button" onclick="document.getElementById('modal-photo-attachment').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <p class="text-[10.5px] text-[#94a3b8] leading-snug">
         Wähle ein Foto aus eurem verschlüsselten 1:1 Tresor oder nimm direkt eine Aufnahme für den Stream auf:
       </p>
 
-      <div class="grid grid-cols-2 gap-2 font-mono text-xs">
-        <label class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] hover:border-[#c5a880] cursor-pointer flex flex-col items-center justify-center space-y-2 touch-btn">
+      <div class="grid grid-cols-2 gap-2.5 font-mono text-xs">
+        <label class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] hover:border-[#c5a880] cursor-pointer flex flex-col items-center justify-center space-y-2 touch-btn">
           <svg class="w-6 h-6 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
           <span class="text-[10px] text-white font-bold">Kamera öffnen</span>
           <input type="file" accept="image/*" capture="environment" onchange="ChatApp.handlePhotoUpload(this)" class="hidden" />
         </label>
 
-        <label class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] hover:border-[#c5a880] cursor-pointer flex flex-col items-center justify-center space-y-2 touch-btn">
+        <label class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] hover:border-[#c5a880] cursor-pointer flex flex-col items-center justify-center space-y-2 touch-btn">
           <svg class="w-6 h-6 text-[#94a3b8]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 6v12a2.25 2.25 0 002.25 2.25zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
           <span class="text-[10px] text-white font-bold">Fotogalerie</span>
           <input type="file" accept="image/*" onchange="ChatApp.handlePhotoUpload(this)" class="hidden" />
         </label>
       </div>
 
-      <div class="pt-2 border-t border-[#1e2638] flex justify-end">
-        <button type="button" onclick="document.getElementById('modal-photo-attachment').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen</button>
+      <div class="pt-2 border-t border-[#2a364f] flex justify-end">
+        <button type="button" onclick="document.getElementById('modal-photo-attachment').style.display='none'" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen</button>
       </div>
     </div>
   </div>
@@ -552,7 +585,7 @@
       const STORAGE_KEY_PASSPHRASE = 'tactus_chat_shared_passphrase';
       const STORAGE_KEY_HANDOVER = 'tactus_handover_history';
 
-      let currentActiveTab = 'stream'; // 'stream' | 'capsules' | 'handover'
+      let currentActiveTab = 'stream';
       let currentRoleState = 'top';
       let cryptoKey = null;
 
@@ -670,7 +703,7 @@
             if (handshakeStatus) handshakeStatus.innerText = "Schlüssel ✓";
           } catch (e) {}
         } else {
-          if (handshakeStatus) handshakeStatus.innerText = "Koppeln ⚠️️";
+          if (handshakeStatus) handshakeStatus.innerText = "Koppeln ⚠";
         }
 
         try {
@@ -726,11 +759,227 @@
         };
       }
 
+      function checkConditionalBreakGlass() {
+        let isLocked = false;
+        if (window.ProtocolCore && typeof window.ProtocolCore.getState === 'function') {
+          isLocked = !!window.ProtocolCore.getState().isLocked;
+        } else {
+          try {
+            const raw = localStorage.getItem('tactus_protocol_state') || localStorage.getItem('kompass_protocol_state');
+            if (raw) isLocked = !!JSON.parse(raw).isLocked;
+          } catch (e) {}
+        }
+
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
+        const isMeTop = (assignedRole === keyholder);
+        const shouldShow = isLocked && !isMeTop;
+
+        const btnDesktop = document.getElementById('header-btn-break-glass');
+        const btnMobile = document.getElementById('header-btn-break-glass-mobile');
+        if (btnDesktop) btnDesktop.style.display = shouldShow ? 'flex' : 'none';
+        if (btnMobile) btnMobile.style.display = shouldShow ? 'flex' : 'none';
+      }
+
+      function openBreakGlass() {
+        window.location.href = 'protocol.html#tab=dashboard';
+      }
+
+      function checkPairPendingTasks() {
+        const container = document.getElementById('chat-system-nudges-container');
+        if (!container) return;
+
+        const nudges = [];
+        const names = getPairNames();
+        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
+
+        // 1. Konsens-Katalog: Offene Fragen zählen (Punkt #12)
+        let answers = {};
+        try {
+          const rawAns = localStorage.getItem('kompass_answers');
+          if (rawAns) answers = JSON.parse(rawAns) || {};
+        } catch (e) {}
+
+        const myAns = answers[assignedRole] || {};
+        const p1 = window.surveyChaptersPart1 || [];
+        const p2 = window.surveyChaptersPart2 || [];
+        const p3 = window.surveyChaptersPart3 || [];
+        const allChapters = p1.concat(p2).concat(p3);
+        let unansweredCount = 0;
+
+        allChapters.forEach(ch => {
+          (ch.items || []).forEach(it => {
+            if (it.type === 'choice') {
+              if (!myAns[`choice_${it.id}`]) unansweredCount++;
+            } else {
+              const hasR1 = typeof myAns[`it_${it.id}_r1`] === 'number';
+              const hasR2 = typeof myAns[`it_${it.id}_r2`] === 'number';
+              if (!(hasR1 && hasR2)) unansweredCount++;
+            }
+          });
+        });
+
+        if (unansweredCount > 0) {
+          nudges.push({
+            id: 'nudge_survey',
+            badge: 'Konsens-Katalog',
+            badgeColor: 'border-[#c5a880]/50 text-[#c5a880]',
+            iconColor: 'bg-[#c5a880]',
+            title: `Noch ${unansweredCount} offene Fragen für ${names.myName}`,
+            desc: 'Für eine lückenlose Paar-Analyse und treffsichere Schlafzimmer-Motive fehlen noch Antworten.',
+            btnText: 'Jetzt beantworten (Alle & Offen) →',
+            btnHref: 'index.html#view=survey&mode=full&filter=unanswered',
+            actionType: 'link'
+          });
+        }
+
+        // 2. RACK-Gesundheitspass prüfen
+        let pass = null;
+        try {
+          const rawPass = localStorage.getItem('tactus_medical_pass');
+          if (rawPass) pass = JSON.parse(rawPass);
+        } catch (e) {}
+
+        if (!pass || !pass.updatedAt) {
+          nudges.push({
+            id: 'nudge_medical_pass',
+            badge: 'RACK-Schutzraum',
+            badgeColor: 'border-[#2e5746] text-[#2e5746]',
+            iconColor: 'bg-[#2e5746]',
+            title: 'RACK-Gesundheitspass noch unvollständig',
+            desc: 'Hinterlegt Latex-Allergien, Asthma, Diabetes oder persönliche Traumagrenzen für sichere Sessions.',
+            btnText: 'Gesundheitspass öffnen ↗',
+            btnHref: 'index.html#view=hub&modal=medical_pass',
+            actionType: 'link'
+          });
+        }
+
+        // 3. Ausrüstungsschrank prüfen (Punkt #13: Erinnerung bei 0 Toys)
+        let ownedToys = [];
+        try {
+          const rawOwned = localStorage.getItem('tactus_owned_equipment') || localStorage.getItem('kompass_owned_equipment');
+          if (rawOwned) ownedToys = JSON.parse(rawOwned) || [];
+        } catch (e) {}
+
+        if (ownedToys.length === 0) {
+          nudges.push({
+            id: 'nudge_empty_toys',
+            badge: 'Hardware-Atelier',
+            badgeColor: 'border-[#b3734a] text-[#b3734a]',
+            iconColor: 'bg-[#b3734a]',
+            title: 'Euer Ausrüstungsschrank ist noch leer',
+            desc: 'Hinterlegt eure vorhandenen Toys für die automatische DoF-Konfliktprüfung und den Bundle-Wizard.',
+            btnText: 'Schrank befüllen ↗',
+            btnAction: 'openToysCloset',
+            actionType: 'callback'
+          });
+        }
+
+        // 4. Alltags-Pflichten prüfen
+        let pendingTasksCount = 0;
+        try {
+          const rawProt = localStorage.getItem('tactus_protocol_state') || localStorage.getItem('kompass_protocol_state');
+          if (rawProt) {
+            const pState = JSON.parse(rawProt);
+            if (Array.isArray(pState.tasks)) {
+              pendingTasksCount = pState.tasks.filter(t => !t.completedToday).length;
+            }
+          }
+        } catch (e) {}
+
+        if (pendingTasksCount > 0) {
+          nudges.push({
+            id: 'nudge_chores',
+            badge: 'Pflichten-Register',
+            badgeColor: 'border-[#d4af37]/60 text-[#d4af37]',
+            iconColor: 'bg-[#d4af37]',
+            title: `${pendingTasksCount} Alltags-Pflichten stehen heute noch aus`,
+            desc: 'Der Bottom reicht Erfüllungsmeldungen ein; der Top quittiert mit Belohnung oder Zucht.',
+            btnText: 'Im Protokoll bestätigen ↗',
+            btnHref: 'protocol.html#tab=chores',
+            actionType: 'link'
+          });
+        }
+
+        // 5. Beziehungsvertrag Status prüfen
+        let contractStatus = 'active';
+        try {
+          const rawContract = localStorage.getItem('tactus_contract_state') || localStorage.getItem('kompass_contract_state');
+          if (rawContract) {
+            const cState = JSON.parse(rawContract);
+            contractStatus = cState.status || 'draft';
+          }
+        } catch (e) {}
+
+        if (contractStatus === 'draft') {
+          nudges.push({
+            id: 'nudge_contract',
+            badge: 'Beziehungsverfassung',
+            badgeColor: 'border-[#c5a880]/60 text-[#c5a880]',
+            iconColor: 'bg-[#c5a880]',
+            title: 'Beziehungsvertrag wartet auf Ratifizierung',
+            desc: 'Die 8 Paragraphen (Stufe 0–5) wurden kalibriert und erfordern die Signatur beider Partner.',
+            btnText: 'Vertrag prüfen & signieren ↗',
+            btnHref: 'protocol.html#tab=contract',
+            actionType: 'link'
+          });
+        }
+
+        if (nudges.length === 0) {
+          container.innerHTML = '';
+          container.classList.add('hidden');
+          return;
+        }
+
+        container.classList.remove('hidden');
+        container.innerHTML = nudges.map(n => `
+          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] hover:border-[#c5a880]/50 transition-all space-y-2 shadow-md">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2 h-2 rounded-full ${n.iconColor} flex-shrink-0 animate-pulse"></span>
+                <span class="px-2 py-0.5 rounded text-[8.5px] font-mono uppercase tracking-wider border ${n.badgeColor} font-bold flex-shrink-0">
+                  ${escapeHtml(n.badge)}
+                </span>
+                <strong class="text-xs text-white truncate font-medium">
+                  ${escapeHtml(n.title)}
+                </strong>
+              </div>
+            </div>
+            <p class="text-[10.5px] text-[#94a3b8] leading-snug">
+              ${escapeHtml(n.desc)}
+            </p>
+            <div class="pt-1 flex justify-end">
+              ${n.actionType === 'callback' ? `
+                <button type="button" onclick="ChatApp.resolveNudgeAction('${n.btnAction}')" class="px-3.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#c5a880] text-[#c5a880] font-mono text-[10.5px] font-bold touch-btn shadow-sm flex items-center gap-1.5" style="min-height: 40px;">
+                  <span>${escapeHtml(n.btnText)}</span>
+                </button>
+              ` : `
+                <a href="${escapeHtml(n.btnHref)}" class="px-3.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#c5a880] text-[#c5a880] font-mono text-[10.5px] font-bold touch-btn shadow-sm flex items-center gap-1.5" style="min-height: 40px;">
+                  <span>${escapeHtml(n.btnText)}</span>
+                </a>
+              `}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function resolveNudgeAction(actionKey) {
+        if (actionKey === 'openToysCloset') {
+          if (window.HubToys && typeof window.HubToys.open === 'function') {
+            window.HubToys.open();
+          } else {
+            window.location.href = 'index.html#view=hub';
+          }
+        }
+      }
+
       async function renderMessages() {
         const container = document.getElementById('chat-messages-container');
         if (!container) return;
 
-        const { myName, partnerName, isTop } = getPairNames();
+        checkPairPendingTasks();
+
+        const { myName, partnerName } = getPairNames();
         const partnerLabel = document.getElementById('stream-partner-label');
         if (partnerLabel) partnerLabel.innerText = `Stream: ${myName} & ${partnerName}`;
 
@@ -754,28 +1003,28 @@
 
           if (isSystem) {
             renderedItems.push(`
-              <div class="p-2.5 rounded-2xl bg-[#000000] border border-[#2e5746]/50 text-center space-y-0.5 my-2">
-                <span class="text-[9px] font-mono uppercase tracking-wider text-[#2e5746] font-bold block">TACTUS System-Event · ${timeStr}</span>
-                <p class="text-[10.5px] text-[#f8fafc] leading-snug break-words">${escapeHtml(displayText)}</p>
+              <div class="p-3 rounded-2xl bg-[#000000] border border-[#2e5746]/60 text-center space-y-1 my-2">
+                <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#2e5746] font-bold block">TACTUS System-Event · ${timeStr}</span>
+                <p class="text-[11px] text-[#f8fafc] leading-snug break-words">${escapeHtml(displayText)}</p>
               </div>
             `);
           } else if (msg.type === 'photo') {
             renderedItems.push(`
               <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1">
-                <div class="max-w-[75%] rounded-2xl overflow-hidden border ${isMe ? 'border-[#c5a880]' : 'border-[#1e2638]'} shadow-lg bg-[#000000]">
+                <div class="max-w-[80%] rounded-2xl overflow-hidden border ${isMe ? 'border-[#c5a880]' : 'border-[#2a364f]'} shadow-lg bg-[#000000]">
                   <img src="${msg.photoUrl}" alt="Stream Foto" class="w-full h-auto object-cover max-h-60" />
-                  ${displayText ? `<p class="p-2 text-[10.5px] text-white leading-snug break-words">${escapeHtml(displayText)}</p>` : ''}
+                  ${displayText ? `<p class="p-2.5 text-[11px] text-white leading-snug break-words">${escapeHtml(displayText)}</p>` : ''}
                 </div>
-                <span class="text-[9px] font-mono text-[#94a3b8] px-1">${isMe ? 'Du' : escapeHtml(partnerName)} · ${timeStr}</span>
+                <span class="text-[9.5px] font-mono text-[#94a3b8] px-1">${isMe ? 'Du' : escapeHtml(partnerName)} · ${timeStr}</span>
               </div>
             `);
           } else {
             renderedItems.push(`
               <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1">
-                <div class="max-w-[80%] sm:max-w-[70%] p-3 rounded-2xl ${isMe ? 'bg-[#000000] border border-[#c5a880]/70 text-[#f8fafc]' : 'bg-[#090d14] border border-[#1e2638] text-[#f8fafc]'} shadow-sm space-y-1">
+                <div class="max-w-[82%] sm:max-w-[72%] p-3.5 rounded-2xl ${isMe ? 'bg-[#000000] border border-[#c5a880]/80 text-[#f8fafc]' : 'bg-[#090d14] border border-[#2a364f] text-[#f8fafc]'} shadow-sm space-y-1">
                   <p class="text-[11px] leading-relaxed break-words whitespace-pre-wrap">${escapeHtml(displayText)}</p>
                 </div>
-                <span class="text-[9px] font-mono text-[#94a3b8] px-1">${isMe ? 'Du' : escapeHtml(partnerName)} · ${timeStr}</span>
+                <span class="text-[9.5px] font-mono text-[#94a3b8] px-1">${isMe ? 'Du' : escapeHtml(partnerName)} · ${timeStr}</span>
               </div>
             `);
           }
@@ -825,7 +1074,7 @@
 
       function triggerDateNightProposal() {
         triggerHaptic([80, 50, 80, 50, 200]);
-        const proposalText = "🔥 DATE-NIGHT IMPULS: Einvernehmliche Einladung ins Schlafzimmer ausgesprochen. Bitte um Bestätigung & Vorbereitung im Staging-Cockpit.";
+        const proposalText = "INTIMITÄTS-SIGNAL (DATE-NIGHT): Einvernehmliche Einladung ins Schlafzimmer ausgesprochen. Bitte um Bestätigung & Vorbereitung im Staging-Cockpit.";
         
         chatState.messages.push({
           id: `msg_dn_${Date.now()}`,
@@ -836,7 +1085,7 @@
         saveChatData();
         renderMessages();
 
-        showToast("🔥 Date-Night Begehrens-Signal in den Stream übertragen!");
+        showToast("Date-Night Intimitäts-Signal in den Stream übertragen!");
       }
 
       function renderCapsules() {
@@ -854,7 +1103,7 @@
 
         if (activeCaps.length === 0) {
           container.innerHTML = `
-            <div class="p-8 rounded-3xl bg-[#090d14] border border-[#1e2638] text-center text-[#94a3b8] font-mono text-xs">
+            <div class="p-8 rounded-3xl bg-[#090d14] border border-[#2a364f] text-center text-[#94a3b8] font-mono text-xs">
               Keine versiegelten Kapseln im Zeit-Tresor hinterlegt.
             </div>
           `;
@@ -870,7 +1119,7 @@
 
           return `
             <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border transition-all space-y-3 ${isUnlocked ? 'border-[#2e5746] malachite-glow' : 'border-[#d4af37]/50 gold-glow'}">
-              <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
+              <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
                 <div class="space-y-0.5">
                   <span class="text-[9.5px] font-mono uppercase tracking-wider ${isUnlocked ? 'text-[#2e5746]' : 'text-[#d4af37]'} font-bold block">
                     ${isUnlocked ? 'Entsiegelt ✓ (Bereit zum Lesen)' : `Zeitschloss aktiv (Noch ${diffHours > 0 ? diffHours + 'h ' : ''}${remMins}m)`}
@@ -887,7 +1136,7 @@
                   ${escapeHtml(cap.content)}
                 </div>
               ` : `
-                <div class="p-4 rounded-2xl bg-[#000000] border border-[#1e2638] text-center space-y-1 font-mono text-[10.5px] text-[#94a3b8]">
+                <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] text-center space-y-1 font-mono text-[10.5px] text-[#94a3b8]">
                   <span>🔒 Der Inhalt dieser Kapsel ist kryptographisch versiegelt.</span>
                   <span class="block text-[9.5px] text-[#d4af37]">Öffnet sich automatisch um ${new Date(cap.unlockAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr.</span>
                 </div>
@@ -957,7 +1206,7 @@
       }
 
       function renderHandoverCeremony() {
-        const { myName, partnerName, isTop, keyholder } = getPairNames();
+        const { isTop, keyholder } = getPairNames();
         const topEl = document.getElementById('handover-current-top');
         const subEl = document.getElementById('handover-current-sub');
         const histContainer = document.getElementById('handover-history-container');
@@ -970,7 +1219,7 @@
             histContainer.innerHTML = `<span class="text-[#94a3b8] italic">Noch keine feierlichen Rollenübergaben verzeichnet.</span>`;
           } else {
             histContainer.innerHTML = chatState.handoverHistory.map(h => `
-              <div class="p-2 rounded-xl bg-[#000000] border border-[#1e2638] flex items-center justify-between">
+              <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] flex items-center justify-between">
                 <span>${new Date(h.timestamp).toLocaleDateString('de-DE')}: <strong class="text-[#c5a880]">${escapeHtml(h.from)}</strong> übergab Führung an <strong class="text-white">${escapeHtml(h.to)}</strong></span>
                 <span class="text-[#2e5746] font-bold">Besiegelt ✓</span>
               </div>
@@ -985,7 +1234,6 @@
         const { myName, partnerName, isTop } = getPairNames();
 
         if (isTop) {
-          // Top initiiert direkte Übergabe
           const newKh = (localStorage.getItem('kompass_keyholder_role') || 'A') === 'A' ? 'B' : 'A';
           localStorage.setItem('kompass_keyholder_role', newKh);
           localStorage.setItem('kompass_caged_role', newKh === 'A' ? 'B' : 'A');
@@ -1012,7 +1260,6 @@
           showToast(`✓ Führungs- und Schlüsselgewalt an ${partnerName} übergeben`);
           triggerHaptic([100, 60, 100, 60, 200]);
         } else {
-          // Bottom reicht Antrag ein
           chatState.messages.push({
             id: `msg_ho_req_${Date.now()}`,
             sender: 'system',
@@ -1098,7 +1345,7 @@
             if (t === tabKey) {
               btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap";
             } else {
-              btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap";
+              btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap";
             }
           }
         });
@@ -1120,16 +1367,17 @@
         if (mode === 'flr_24_7') {
           currentRoleState = isTop ? 'top' : 'bottom';
           if (roleText) roleText.innerText = isTop ? 'Top (FLR)' : 'Bottom (FLR)';
-          if (roleDot) roleDot.className = isTop ? 'w-1.5 h-1.5 rounded-full bg-[#c5a880]' : 'w-1.5 h-1.5 rounded-full bg-[#b3734a]';
+          if (roleDot) roleDot.className = isTop ? 'w-2 h-2 rounded-full bg-[#c5a880]' : 'w-2 h-2 rounded-full bg-[#b3734a]';
           if (roleSubline) roleSubline.innerText = '🔒 Fest';
         } else {
           currentRoleState = isTop ? 'top' : 'bottom';
           if (roleText) roleText.innerText = isTop ? 'Top' : 'Bottom';
-          if (roleDot) roleDot.className = isTop ? 'w-1.5 h-1.5 rounded-full bg-[#c5a880]' : 'w-1.5 h-1.5 rounded-full bg-[#b3734a]';
+          if (roleDot) roleDot.className = isTop ? 'w-2 h-2 rounded-full bg-[#c5a880]' : 'w-2 h-2 rounded-full bg-[#b3734a]';
           if (roleSubline) roleSubline.innerText = '⇄ Switch';
         }
 
         if (commandsBar) commandsBar.style.display = isTop ? 'flex' : 'none';
+        checkConditionalBreakGlass();
       }
 
       function toggleActiveRole() {
@@ -1149,12 +1397,12 @@
         if (currentRoleState === 'top') {
           currentRoleState = 'bottom';
           if (roleText) roleText.innerText = "Bottom";
-          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#b3734a]";
+          if (roleDot) roleDot.className = "w-2 h-2 rounded-full bg-[#b3734a]";
           showToast("Perspektive gewechselt: Bottom (Hingabe)");
         } else {
           currentRoleState = 'top';
           if (roleText) roleText.innerText = "Top";
-          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#c5a880]";
+          if (roleDot) roleDot.className = "w-2 h-2 rounded-full bg-[#c5a880]";
           showToast("Perspektive gewechselt: Top (Führung)");
         }
         initRoleDisplay();
@@ -1164,6 +1412,7 @@
         init: async function() {
           await loadChatData();
           initRoleDisplay();
+          checkPairPendingTasks();
           renderMessages();
         },
         sendMessage: sendMessage,
@@ -1181,6 +1430,9 @@
         openPhotoAttachmentModal: openPhotoAttachmentModal,
         handlePhotoUpload: handlePhotoUpload,
         clearChatHistory: clearChatHistory,
+        openBreakGlass: openBreakGlass,
+        checkPairPendingTasks: checkPairPendingTasks,
+        resolveNudgeAction: resolveNudgeAction,
         postSystemEvent: function(eventText, refId) {
           const newEvent = {
             id: `evt_${Date.now()}`,
