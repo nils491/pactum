@@ -230,7 +230,10 @@
     const shameAnchors = [];
     const taboos = [];
 
-    const allChapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+    const p1 = window.surveyChaptersPart1 || [];
+    const p2 = window.surveyChaptersPart2 || [];
+    const p3 = window.surveyChaptersPart3 || [];
+    const allChapters = p1.concat(p2).concat(p3);
     const itemMap = new Map();
     allChapters.forEach(ch => {
       (ch.items || []).forEach(it => {
@@ -452,7 +455,7 @@
 
     saveContractState();
     renderContractDashboard();
-    showToast(`✓ Vertrag aus 185 Fragen synthetisiert (Version ${contractState.version})`);
+    showToast(`✓ Vertrag aus 505 Fragen synthetisiert (Version ${contractState.version})`);
 
     if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
       window.ChatApp.postSystemEvent(`Beziehungsvertrag neu synthetisiert (Version ${contractState.version}). Ratifizierung durch beide Partner erbeten.`);
