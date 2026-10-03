@@ -4,6 +4,11 @@
   "name": "tactus",
   "main": "worker/src/index.js",
   "compatibility_date": "2026-09-01",
+  // Domain direkt an diesen Worker binden (legt die DNS-Einträge bei Cloudflare selbst an)
+  "routes": [
+    { "pattern": "tactus.digital", "custom_domain": true },
+    { "pattern": "www.tactus.digital", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
@@ -24,8 +29,11 @@
   ],
   "vars": {
     "AI_DAILY_TEXT": "150",
-    "AI_DAILY_TTS": "150"
+    "AI_DAILY_TTS": "150",
+    "MAIL_FROM_EMAIL": "noreply@tactus.digital",
+    "MAIL_FROM_NAME": "TACTUS",
+    "MAIL_OPERATOR": "kontakt@tactus.digital"
   },
   "observability": { "enabled": true }
-  // Secrets (nicht hier eintragen!): npx wrangler secret put GEMINI_API_KEY / ADMIN_TOKEN
+  // Secrets (nicht hier eintragen!): GEMINI_API_KEY, ADMIN_TOKEN, BREVO_API_KEY
 }

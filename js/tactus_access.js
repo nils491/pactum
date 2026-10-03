@@ -39,7 +39,8 @@
     <a href="impressum.html">Impressum</a>
     <a href="datenschutz.html">Datenschutz</a>
     <a href="agb.html">AGB</a>
-    <a href="jugendschutz.html">Jugendschutz</a>`;
+    <a href="jugendschutz.html">Jugendschutz</a>
+    <a href="kuendigung.html">Verträge hier kündigen</a>`;
 
   let unlocked = false;
 
@@ -415,7 +416,7 @@
       <p class="tx-text">${lic.valid ? '<span class="tx-badge tx-on">aktiv</span>' : '<span class="tx-badge tx-off">inaktiv</span>'}
         &nbsp;${planName}${lic.expiresAt ? ' · läuft bis ' + formatDate(lic.expiresAt) : ''}${lic.offline ? ' · offline geprüft' : ''}</p>
       <p class="tx-small">Schlüssel: <span style="font-family:'JetBrains Mono',monospace">${getLicense() ? '••••-' + escapeHtml(getLicense().slice(-4)) : '–'}</span></p>
-      ${lic.valid ? '' : planButtons()}
+      ${lic.valid ? '<p class="tx-small"><a href="kuendigung.html" style="color:#c5a880">Abo kündigen (Verträge hier kündigen)</a></p>' : planButtons()}
 
       <hr class="tx-sep">
       <div class="tx-sub">Partner-Kopplung</div>

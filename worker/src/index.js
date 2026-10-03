@@ -11,6 +11,7 @@
  *    weiter – nur mit gültiger Lizenz und innerhalb eines Tageskontingents.
  *    Anfragen werden nicht gespeichert.
  * 4. Lizenzen und Testercodes (/api/license/*, /api/admin/*) in D1.
+ * 5. Kündigungen nach § 312k BGB (/api/cancel) mit E-Mail-Bestätigung über Brevo.
  */
 
 import { DurableObject } from 'cloudflare:workers';
@@ -64,6 +65,36 @@ function timingSafeEqual(a, b) {
   let diff = 0;
   for (let i = 0; i < ea.length; i++) diff |= ea[i] ^ eb[i];
   return diff === 0;
+}
+
+// Tabellen legt der Worker selbst an (idempotent, einmal pro Isolate) –
+// kein manueller Schritt in der D1-Konsole nötig. Entspricht worker/migrations/*.sql.
+const SCHEMA = [
+  `CREATE TABLE IF NOT EXISTS licenses (key_hash TEXT PRIMARY KEY, key_hint TEXT NOT NULL, plan TEXT NOT NULL,
+     status TEXT NOT NULL, expires_at INTEGER, created_at INTEGER NOT NULL, note TEXT, customer_ref TEXT)`,
+  `CREATE TABLE IF NOT EXISTS ai_usage (license_hash TEXT NOT NULL, day TEXT NOT NULL, kind TEXT NOT NULL,
+     count INTEGER NOT NULL, PRIMARY KEY (license_hash, day, kind))`,
+  `CREATE TABLE IF NOT EXISTS invites (code_hash TEXT PRIMARY KEY, code_display TEXT NOT NULL, months INTEGER,
+     max_uses INTEGER NOT NULL, uses INTEGER NOT NULL DEFAULT 0, expires_at INTEGER, active INTEGER NOT NULL DEFAULT 1,
+     created_at INTEGER NOT NULL, note TEXT)`,
+  `CREATE TABLE IF NOT EXISTS redeem_attempts (ip_hash TEXT NOT NULL, day TEXT NOT NULL, count INTEGER NOT NULL,
+     PRIMARY KEY (ip_hash, day))`,
+  `CREATE TABLE IF NOT EXISTS cancellations (id TEXT PRIMARY KEY, received_at INTEGER NOT NULL, name TEXT NOT NULL,
+     email TEXT NOT NULL, contract_ref TEXT NOT NULL, kind TEXT NOT NULL, reason TEXT, effective TEXT NOT NULL,
+     ends_at INTEGER, license_hash TEXT, mail_status TEXT, processed INTEGER NOT NULL DEFAULT 0)`,
+  `CREATE TABLE IF NOT EXISTS cancel_attempts (key TEXT NOT NULL, day TEXT NOT NULL, count INTEGER NOT NULL,
+     PRIMARY KEY (key, day))`
+];
+let schemaReady = null;
+
+function ensureSchema(env) {
+  if (!schemaReady) {
+    schemaReady = env.DB.batch(SCHEMA.map(sql => env.DB.prepare(sql))).catch(err => {
+      schemaReady = null; // beim nächsten Aufruf erneut versuchen
+      throw err;
+    });
+  }
+  return schemaReady;
 }
 
 // Kurzzeit-Cache pro Isolate, damit nicht jeder Sync-Push eine D1-Abfrage kostet
@@ -216,6 +247,124 @@ async function handleRedeem(request, env) {
   return json(license);
 }
 
+// ---------------------------------------------------------------------------
+// Kündigung nach § 312k BGB ("Verträge hier kündigen")
+// ---------------------------------------------------------------------------
+
+const MAX_CANCELS_PER_IP_DAY = 5;
+const MAX_CANCELS_PER_EMAIL_DAY = 3;
+
+function berlinDateTime(ms) {
+  const d = new Date(ms);
+  return {
+    date: d.toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: 'numeric' }),
+    time: d.toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  };
+}
+
+// Versand über Brevo (EU). Ohne BREVO_API_KEY wird nur gespeichert und auf der Seite bestätigt.
+async function sendMail(env, { to, toName, subject, text, replyTo }) {
+  if (!env.BREVO_API_KEY) return 'not_configured';
+  try {
+    const res = await fetch(env.MAIL_API_URL || 'https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'api-key': env.BREVO_API_KEY },
+      body: JSON.stringify({
+        sender: { name: env.MAIL_FROM_NAME || 'TACTUS', email: env.MAIL_FROM_EMAIL || 'noreply@tactus.digital' },
+        to: [{ email: to, name: toName || to }],
+        replyTo: replyTo ? { email: replyTo } : undefined,
+        subject,
+        textContent: text
+      })
+    });
+    return res.ok ? 'sent' : 'failed';
+  } catch (e) {
+    return 'failed';
+  }
+}
+
+async function bumpAttempt(env, key, day) {
+  const row = await env.DB.prepare(
+    `INSERT INTO cancel_attempts (key, day, count) VALUES (?, ?, 1)
+     ON CONFLICT (key, day) DO UPDATE SET count = count + 1 RETURNING count`
+  ).bind(key, day).first();
+  return row ? row.count : 1;
+}
+
+async function handleCancel(request, env) {
+  if (request.method !== 'POST') return json({ error: 'method' }, 405);
+  const input = await request.json().catch(() => ({}));
+  const clean = (v, max) => String(v == null ? '' : v).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, max);
+
+  const name = clean(input.name, 120);
+  const email = clean(input.email, 160).toLowerCase();
+  const contractRef = clean(input.contractRef, 120);
+  const kind = input.kind === 'ausserordentlich' ? 'ausserordentlich' : 'ordentlich';
+  const reason = clean(input.reason, 1000);
+  const effective = /^\d{4}-\d{2}-\d{2}$/.test(input.effective || '') ? input.effective : 'naechstmoeglich';
+
+  const errors = [];
+  if (name.length < 2) errors.push('name');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.push('email');
+  if (contractRef.length < 3) errors.push('contractRef');
+  if (kind === 'ausserordentlich' && reason.length < 3) errors.push('reason');
+  if (errors.length) return json({ error: 'invalid', fields: errors }, 400);
+
+  // Missbrauchsbremse (u. a. gegen das Versenden von Mails an fremde Adressen)
+  const day = new Date().toISOString().slice(0, 10);
+  const ipKey = 'ip:' + await sha256Hex('tactus-ip:' + (request.headers.get('CF-Connecting-IP') || 'local'));
+  const mailKey = 'mail:' + await sha256Hex('tactus-mail:' + email);
+  if (await bumpAttempt(env, ipKey, day) > MAX_CANCELS_PER_IP_DAY || await bumpAttempt(env, mailKey, day) > MAX_CANCELS_PER_EMAIL_DAY) {
+    return json({ error: 'too_many' }, 429);
+  }
+
+  // Ist der Vertrag eine TACTUS-Lizenz, kennen wir das Ende des bezahlten Zeitraums
+  let endsAt = null, licenseHash = null;
+  const keyNorm = normalizeLicenseKey(contractRef);
+  if (/^TACT[A-Z0-9]{16}$/.test(keyNorm)) {
+    licenseHash = await sha256Hex(keyNorm);
+    const lic = await env.DB.prepare('SELECT expires_at FROM licenses WHERE key_hash = ?').bind(licenseHash).first();
+    if (lic) endsAt = lic.expires_at || null;
+    else licenseHash = null;
+  }
+  if (effective !== 'naechstmoeglich') {
+    const wish = Date.parse(effective + 'T23:59:59+01:00');
+    if (!endsAt || (Number.isFinite(wish) && wish > endsAt)) endsAt = Number.isFinite(wish) ? wish : endsAt;
+  }
+
+  const receivedAt = Date.now();
+  const id = 'K-' + receivedAt.toString(36).toUpperCase() + '-' + [...crypto.getRandomValues(new Uint8Array(3))].map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+  const recv = berlinDateTime(receivedAt);
+  const endText = endsAt
+    ? `zum ${berlinDateTime(endsAt).date}${kind === 'ausserordentlich' ? ' bzw. mit sofortiger Wirkung, sofern der außerordentliche Kündigungsgrund besteht' : ''}`
+    : (kind === 'ausserordentlich' ? 'mit sofortiger Wirkung, sofern der außerordentliche Kündigungsgrund besteht, andernfalls zum nächstmöglichen Zeitpunkt' : 'zum nächstmöglichen Zeitpunkt (Ende des laufenden Abrechnungszeitraums)');
+
+  const summary = [
+    `Kündigungsnummer: ${id}`,
+    `Eingang: ${recv.date}, ${recv.time} Uhr (deutsche Zeit)`,
+    `Name: ${name}`,
+    `E-Mail: ${email}`,
+    `Vertrag: TACTUS-Abo (${contractRef})`,
+    `Art der Kündigung: ${kind === 'ausserordentlich' ? 'außerordentlich' : 'ordentlich'}`,
+    kind === 'ausserordentlich' ? `Grund: ${reason}` : null,
+    `Gewünschter Zeitpunkt: ${effective === 'naechstmoeglich' ? 'nächstmöglicher Zeitpunkt' : effective.split('-').reverse().join('.')}`,
+    `Der Vertrag endet ${endText}.`
+  ].filter(Boolean).join('\n');
+
+  const customerText = `Hallo ${name},\n\nwir bestätigen den Eingang deiner Kündigung.\n\n${summary}\n\nBis zum Vertragsende kannst du TACTUS weiter nutzen. Danach wird nichts mehr abgebucht.\n\nFragen? Antworte einfach auf diese E-Mail.\n\n${env.MAIL_FROM_NAME || 'TACTUS'} · tactus.digital\nPixberg Holding UG (haftungsbeschränkt), Grenzweg 5, 42555 Velbert`;
+  const operatorText = `Neue Kündigung über tactus.digital/kuendigung\n\n${summary}\n\nBitte das Abo beim Zahlungsanbieter beenden und in der Admin-Seite als erledigt markieren.`;
+
+  const mailStatus = await sendMail(env, { to: email, toName: name, subject: `Bestätigung deiner Kündigung (${id})`, text: customerText, replyTo: env.MAIL_OPERATOR });
+  if (env.MAIL_OPERATOR) await sendMail(env, { to: env.MAIL_OPERATOR, subject: `Kündigung ${id} – ${name}`, text: operatorText, replyTo: email });
+
+  await env.DB.prepare(
+    `INSERT INTO cancellations (id, received_at, name, email, contract_ref, kind, reason, effective, ends_at, license_hash, mail_status, processed)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
+  ).bind(id, receivedAt, name, email, contractRef, kind, reason || null, effective, endsAt, licenseHash, mailStatus).run();
+
+  return json({ id, receivedAt, received: recv, endsAt, endText, summary, mailStatus });
+}
+
 async function handleLicenseCheck(request, env) {
   if (request.method !== 'POST') return json({ error: 'method' }, 405);
   const { key } = await request.json().catch(() => ({}));
@@ -260,6 +409,22 @@ async function handleAdmin(request, env, url) {
       return json({ error: 'code_exists' }, 409);
     }
     return json({ code: display, months, maxUses, expiresAt });
+  }
+
+  // GET /api/admin/cancellations
+  if (url.pathname === '/api/admin/cancellations' && request.method === 'GET') {
+    const { results } = await env.DB.prepare(
+      'SELECT id, received_at, name, email, contract_ref, kind, reason, effective, ends_at, mail_status, processed FROM cancellations ORDER BY received_at DESC LIMIT 500'
+    ).all();
+    return json({ cancellations: results });
+  }
+
+  // POST /api/admin/cancellations/update { id, processed }
+  if (url.pathname === '/api/admin/cancellations/update' && request.method === 'POST') {
+    const input = await request.json().catch(() => ({}));
+    const res = await env.DB.prepare('UPDATE cancellations SET processed = ? WHERE id = ?').bind(input.processed ? 1 : 0, String(input.id || '')).run();
+    if (!res.meta || !res.meta.changes) return json({ error: 'not_found' }, 404);
+    return json({ ok: true });
   }
 
   // GET /api/admin/invites
@@ -312,10 +477,12 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
+      if (url.pathname.startsWith('/api/')) await ensureSchema(env);
       if (url.pathname.startsWith('/api/relay/')) return await handleRelay(request, env, url);
       if (url.pathname.startsWith('/api/ai/')) return await handleAi(request, env, url);
       if (url.pathname === '/api/license/check') return await handleLicenseCheck(request, env);
       if (url.pathname === '/api/license/redeem') return await handleRedeem(request, env);
+      if (url.pathname === '/api/cancel') return await handleCancel(request, env);
       if (url.pathname.startsWith('/api/admin/')) return await handleAdmin(request, env, url);
       if (url.pathname.startsWith('/api/')) return json({ error: 'not_found' }, 404);
       return env.ASSETS.fetch(request);

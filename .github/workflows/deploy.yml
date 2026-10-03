@@ -1,0 +1,50 @@
+name: Veröffentlichen
+# Baut TACTUS und veröffentlicht den Cloudflare Worker (inkl. App-Dateien, Datenbank-Bindung,
+# Domain und Secrets). Läuft bei jedem Push auf main und manuell über "Run workflow".
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: 76136fdc1a2b6cd750f6eccdb71a010c
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prüfen
+        run: npm run check
+      - name: Bauen (bricht bei offenen [BITTE …]-Platzhaltern ab)
+        run: npm run build
+      - name: Ohne Cloudflare-Token nichts veröffentlichen
+        if: env.CLOUDFLARE_API_TOKEN == ''
+        run: echo "::warning::Secret CLOUDFLARE_API_TOKEN fehlt – Build ok, aber nicht veröffentlicht (siehe DEPLOY.md)."
+      - name: Worker veröffentlichen
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        run: npx wrangler deploy
+      - name: Secrets an den Worker übergeben
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          for name in GEMINI_API_KEY ADMIN_TOKEN BREVO_API_KEY; do
+            value="${!name}"
+            if [ -n "$value" ]; then
+              printf '%s' "$value" | npx wrangler secret put "$name"
+            else
+              echo "::notice::$name ist in GitHub nicht hinterlegt – übersprungen."
+            fi
+          done
