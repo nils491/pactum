@@ -496,9 +496,27 @@
       maxTokens = 2048, 
       provider = null, 
       model = null, 
-      returnJson = false 
+      returnJson = false,
+      safety = false
     }) {
       const activeProv = provider || getActiveProvider();
+      const director = safety ? window.TactusDirector : null;
+
+      // Sicherheits-Regie: Grenzen in den Prompt, Namen pseudonymisieren, Ergebnis prüfen (1 Neuversuch)
+      if (director) {
+        const profile = director.getSafetyProfile();
+        const baseSystem = (systemPrompt || '') + '\n\nNenne die Personen ausschließlich {TOP} und {BOTTOM}.\n' + director.buildConstraintBlock(profile);
+        let prompt = director.pseudonymize(userPrompt);
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const raw = await this.generateText({ systemPrompt: director.pseudonymize(baseSystem), userPrompt: prompt, temperature, maxTokens, provider, model, returnJson });
+          const check = director.validate(raw, profile);
+          if (check.ok) return director.restoreNames(raw);
+          prompt = director.pseudonymize(userPrompt) + '\n\nWICHTIG: Dein letzter Entwurf verletzte diese Grenzen: ' +
+            check.violations.map(v => `${v.label} ("${v.term}")`).join('; ') + '. Erstelle einen neuen Entwurf ohne diese Inhalte.';
+        }
+        throw new Error('Der KI-Vorschlag berührte eure Grenzen und wurde verworfen.');
+      }
+
       let rawResult = '';
 
       if (activeProv === 'gemini') {

@@ -159,8 +159,17 @@
     return combined;
   }
 
-  function setupInitialPlaybook() {
+  function setupInitialPlaybook(forceStatic) {
     ensureNamesAndAnatomyLoaded();
+
+    const script = (!forceStatic && window.TactusDirector) ? window.TactusDirector.getScript() : null;
+    if (script && Array.isArray(script.steps) && script.steps.length) {
+      currentSelectedPlaybook = script.steps;
+      window.currentSelectedPlaybook = currentSelectedPlaybook;
+      renderPlaybookPreview();
+      setDirectorStatus(`Drehbuch für heute geladen: „${script.title}“`);
+      return;
+    }
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
     const anatomy = window.anatomy || { A: 'penis', B: 'vulva' };
 
@@ -211,6 +220,7 @@
       {
         phase: "Phase 2: Machtaufbau & Begrenzung",
         title: `Fixierung mit ${bondageTool}`,
+        tags: ['fessel', 'fixierung'],
         desc: `${topName} fixiert die Hände von ${subName} mit ${bondageTool} sicher vor oder hinter dem Körper.`,
         top: `Schließe ${bondageTool} sicher um die Handgelenke und prüfe den festen Sitz.`,
         sub: "Gib deine Hände bereitwillig ab und spüre das Loslassen der Verantwortung."
@@ -218,6 +228,7 @@
       {
         phase: "Phase 2: Machtaufbau & Begrenzung",
         title: "Demutshaltung am Boden",
+        tags: ['demut', 'knien'],
         desc: `${subName} begibt sich aufrecht in den Kniestand (Nadu/Seiza) zu Füßen des Tops.`,
         top: "Nimm auf dem Sessel Platz und mustere die Haltung deines Partners.",
         sub: "Knie mit aufrechter Wirbelsäule und geneigtem Kopf vor dem Top."
@@ -225,6 +236,7 @@
       {
         phase: "Phase 3: Katharsis & Zucht",
         title: `Fordernde Reizsetzung mit ${impactTool}`,
+        tags: ['spank', 'schläge auf das gesäß'],
         desc: `Gezielte, rhythmische Reize mit ${impactTool} auf das entblößte Gesäß zur Durchwärmung.`,
         top: `Setze dosierte Treffer mit ${impactTool} und achte auf das Mitzählen.`,
         sub: "Zähle jeden Treffer laut und andächtig mit."
@@ -232,6 +244,7 @@
       {
         phase: "Phase 3: Katharsis & Zucht",
         title: `Edging-Führung mit ${arousalTool}`,
+        tags: ['edging'],
         desc: `${topName} nutzt ${arousalTool}, um ${subName} gezielt an die Edge zu treiben – und befiehlt schlagartigen Stillstand.`,
         top: `Führe die Erregung mit ${arousalTool} an die Edge und fordere absolute Reglosigkeit.`,
         sub: "Spüre das Pochen an der Edge und gehorche dem Stopp-Befehl."
@@ -251,6 +264,15 @@
         sub: "Lass alle Muskeln los, versinke im Arm des Tops und trinke warmes Wasser."
       }
     ];
+
+    // Sicherheits-Regie: Schritte, die Tabus, Gesundheitspass oder Trigger berühren, entfallen
+    if (window.TactusDirector && typeof window.TactusDirector.filterSafe === 'function') {
+      const safeSteps = window.TactusDirector.filterSafe(currentSelectedPlaybook);
+      if (safeSteps.length < currentSelectedPlaybook.length) {
+        setDirectorStatus(`${currentSelectedPlaybook.length - safeSteps.length} Standard-Schritt(e) wegen eurer Grenzen entfernt.`);
+      }
+      currentSelectedPlaybook = safeSteps;
+    }
 
     window.currentSelectedPlaybook = currentSelectedPlaybook;
     renderPlaybookPreview();
@@ -618,11 +640,124 @@
   }
 
   function rerollPlaybook() {
-    setupInitialPlaybook();
+    if (window.TactusDirector) window.TactusDirector.clearScript();
+    setupInitialPlaybook(true);
     showToast("Drehbuch neu gewürfelt 🎲");
   }
 
+  // --- Persönliches Drehbuch (Regie-Engine) ---------------------------------------
+  let currentTonality = localStorage.getItem('tactus_session_tonality') || 'sovereign';
+  let directorBusy = false;
+
+  function setDirectorStatus(text, progress) {
+    const st = document.getElementById('director-script-status');
+    if (st) st.textContent = text || '';
+    const wrap = document.getElementById('director-progress');
+    const bar = document.getElementById('director-progress-bar');
+    if (wrap && bar) {
+      if (typeof progress === 'number') {
+        wrap.classList.remove('hidden');
+        bar.style.width = Math.round(Math.max(0, Math.min(1, progress)) * 100) + '%';
+      } else {
+        wrap.classList.add('hidden');
+      }
+    }
+  }
+
+  function updateTonalityUI() {
+    document.querySelectorAll('#director-tonality-group [data-tonality]').forEach(btn => {
+      const active = btn.getAttribute('data-tonality') === currentTonality;
+      btn.style.borderColor = active ? '#c5a880' : '';
+      btn.style.color = active ? '#c5a880' : '';
+      btn.style.background = active ? '#000000' : '';
+    });
+  }
+
+  function selectTonality(t) {
+    if (!['gentle', 'sovereign', 'strict'].includes(t)) return;
+    currentTonality = t;
+    try { localStorage.setItem('tactus_session_tonality', t); } catch (e) {}
+    updateTonalityUI();
+  }
+
+  async function prepareVoiceForScript(script) {
+    const voiceOn = localStorage.getItem(STORAGE_KEY_VOICE_ACTIVE) !== 'false';
+    if (!voiceOn || !window.SessionVoice || typeof window.SessionVoice.prefetch !== 'function') {
+      setDirectorStatus(`„${script.title}“ ist bereit.`);
+      return;
+    }
+    if (typeof window.SessionVoice.setStyle === 'function') window.SessionVoice.setStyle(script.voiceStyle);
+    const lines = window.TactusDirector.getSpokenLines();
+    const countdowns = (window.SessionEdging && typeof window.SessionEdging.getCountdownSpeeches === 'function')
+      ? window.SessionEdging.getCountdownSpeeches() : [];
+    const voice = localStorage.getItem(STORAGE_KEY_VOICE_NAME) || 'Despina';
+    const result = await window.SessionVoice.prefetch(lines.concat(countdowns), voice, (done, total) => {
+      setDirectorStatus(`„${script.title}“ · Stimme wird vorbereitet ${done}/${total}`, total ? done / total : 0);
+    });
+    setDirectorStatus(result.failed
+      ? `„${script.title}“ ist bereit. ${result.ready} von ${result.total} Ansagen vorbereitet, der Rest wird live erzeugt.`
+      : `„${script.title}“ ist bereit. Alle ${result.total} Ansagen liegen vor.`);
+  }
+
+  async function generateDirectorScript() {
+    if (!window.TactusDirector) return generateAiPlaybookLegacy();
+    if (directorBusy) return;
+    if (!window.AIAdapter || !window.AIAdapter.isGeminiAvailable()) {
+      showToast("Kein KI-Zugang: Eigenen Gemini-Key in den Einstellungen eintragen oder TACTUS-Abo aktivieren.");
+      return;
+    }
+    ensureNamesAndAnatomyLoaded();
+    const anatomy = window.anatomy || { A: 'penis', B: 'vulva' };
+    const subAnat = anatomy[subPartner] || 'vulva';
+    const availableToys = getClosetCatalog().filter(i => stagedTonightIds.includes(i.id));
+    const toyBriefing = (window.ToyCombinatorics && typeof window.ToyCombinatorics.generateAiPromptBriefing === 'function')
+      ? window.ToyCombinatorics.generateAiPromptBriefing(availableToys, subAnat)
+      : availableToys.map(t => t.name).join(', ');
+
+    const btn = document.getElementById('btn-director-script');
+    directorBusy = true;
+    if (btn) btn.disabled = true;
+    setDirectorStatus('Drehbuch wird geschrieben …', 0.05);
+
+    try {
+      const res = await window.TactusDirector.generateSessionScript({
+        intensity: sessionDepth,
+        energyTop,
+        energySub,
+        tonality: currentTonality,
+        toyBriefing
+      });
+
+      if (!res.ok) {
+        const messages = {
+          no_ai: 'Kein KI-Zugang verfügbar.',
+          no_consent: 'Ohne Einwilligung zur KI-Übermittlung bleibt es beim Standard-Drehbuch.',
+          quota: 'Das KI-Kontingent für heute ist aufgebraucht.',
+          unsafe: 'Die KI hat zweimal etwas vorgeschlagen, das eure Grenzen berührt. Standard-Drehbuch bleibt aktiv.',
+          invalid_format: 'Die KI-Antwort war unvollständig. Bitte noch einmal versuchen.',
+          ai_failed: 'Die KI ist gerade nicht erreichbar. Bitte noch einmal versuchen.'
+        };
+        setupInitialPlaybook(true);
+        setDirectorStatus(messages[res.reason] || 'Drehbuch konnte nicht erstellt werden.');
+        return;
+      }
+
+      currentSelectedPlaybook = res.script.steps;
+      window.currentSelectedPlaybook = currentSelectedPlaybook;
+      renderPlaybookPreview();
+      showToast(`Drehbuch „${res.script.title}“ erstellt`);
+      await prepareVoiceForScript(res.script);
+    } finally {
+      directorBusy = false;
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function generateAiPlaybook() {
+    return generateDirectorScript();
+  }
+
+  async function generateAiPlaybookLegacy() {
     ensureNamesAndAnatomyLoaded();
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
     const anatomy = window.anatomy || { A: 'penis', B: 'vulva' };
@@ -790,6 +925,8 @@ Antworte AUSSCHLIESSLICH als valides JSON:
     selectMode: selectMode,
     rerollPlaybook: rerollPlaybook,
     generateAiPlaybook: generateAiPlaybook,
+    generateDirectorScript: generateDirectorScript,
+    selectTonality: selectTonality,
     toggleVoiceAssist: toggleVoiceAssist,
     changeVoice: changeVoice,
     testVoiceSample: testVoiceSample,
@@ -813,6 +950,7 @@ Antworte AUSSCHLIESSLICH als valides JSON:
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
       window.addEventListener('DOMContentLoaded', updateRoleSelectionUI);
+      window.addEventListener('DOMContentLoaded', updateTonalityUI);
     } else {
       updateRoleSelectionUI();
     }

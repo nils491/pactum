@@ -192,6 +192,10 @@
       else if (activeArousalLevel <= 9) phrase = (edgingStimulationBy === 'bottom_self') ? "Langsamer werden! Hände kurz anhalten, wenn es zu nah wird." : `Gefahrenzone, ${subName}. Kein Zucken. Du kommst erst auf mein Zeichen.`;
       else phrase = "Stillhalten! Edge erreicht!";
 
+      // Persönliches Drehbuch hat Vorrang vor den festen Sätzen
+      const kind = activeArousalLevel <= 3 ? 'arousal_low' : activeArousalLevel <= 6 ? 'arousal_mid' : activeArousalLevel <= 9 ? 'arousal_high' : 'edge_reached';
+      if (window.TactusDirector) phrase = window.TactusDirector.line(kind, phrase);
+
       window.SessionVoice.play(phrase);
     }
   }
@@ -217,7 +221,7 @@
     startCooldownBreathingTimer();
 
     if (countdownVoiceMode === 'gemini' && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-      window.SessionVoice.play("Edge erreicht! Hände sofort weg und stillhalten!");
+      window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('edge_reached', "Edge erreicht! Hände sofort weg und stillhalten!") : "Edge erreicht! Hände sofort weg und stillhalten!"));
     }
   }
 
@@ -295,7 +299,12 @@
     const name = subName || 'Bottom';
 
     let zeroStep = null;
-    if (goal === 'denial') {
+    const script = window.TactusDirector && window.TactusDirector.getScript ? window.TactusDirector.getScript() : null;
+    const scriptGoalLine = script && script.lines && Array.isArray(script.lines['goal_' + goal]) ? script.lines['goal_' + goal][0] : null;
+    if (scriptGoalLine) {
+      const cues = { denial: "STOPP · DENIAL!", ruined: "RUINED ORGASM!", release: "KOMMEN · RELEASE!" };
+      zeroStep = { num: 0, text: `Null! ${scriptGoalLine}`, cue: cues[goal] || cues.release, durMs: 4000 };
+    } else if (goal === 'denial') {
       zeroStep = { num: 0, text: `Null! Stopp! Hände sofort weg, ${name}! Du bleibst heute ungelöst!`, cue: "STOPP · DENIAL!", durMs: 4000 };
     } else if (goal === 'ruined') {
       zeroStep = { num: 0, text: `Null! Ruined! Hände weg und stillhalten beim Auskrampfen!`, cue: "RUINED ORGASM!", durMs: 4000 };
@@ -414,7 +423,7 @@
     if (countdownVoiceMode === 'self') {
       showToast("🗣️ Sprich jetzt: 'Jetzt! Lass alles los und komm für mich!'");
     } else if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-      window.SessionVoice.play("Jetzt! Lass alles los und komm für mich!");
+      window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('goal_release', "Jetzt! Lass alles los und komm für mich!") : "Jetzt! Lass alles los und komm für mich!"));
     }
 
     if (window.ProtocolRatio && typeof window.ProtocolRatio.record === 'function') {
@@ -690,7 +699,7 @@
       if (countdownVoiceMode === 'self') {
         showToast("🗣️ Sprich jetzt: 'Hände weg! Stillhalten und auskrampfen!'");
       } else if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-        window.SessionVoice.play("Hände weg! Stillhalten und auskrampfen... Vielleicht beim nächsten Mal.");
+        window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('goal_ruined', "Hände weg! Stillhalten und auskrampfen... Vielleicht beim nächsten Mal.") : "Hände weg! Stillhalten und auskrampfen... Vielleicht beim nächsten Mal."));
       }
     } else if (decision === 'denial') {
       logSessionAction("Lustverweigerung (Denial)");
@@ -701,7 +710,7 @@
       if (countdownVoiceMode === 'self') {
         showToast("🗣️ Sprich jetzt: 'Schluss für heute. Du bleibst ungelöst.'");
       } else if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-        window.SessionVoice.play("Schluss für heute. Du bleibst ungelöst.");
+        window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('goal_denial', "Schluss für heute. Du bleibst ungelöst.") : "Schluss für heute. Du bleibst ungelöst."));
       }
     }
 
@@ -924,7 +933,16 @@
     `;
   }
 
+  function getCountdownSpeeches() {
+    const subRole = localStorage.getItem('kompass_caged_role') || 'A';
+    const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
+    const subName = names[subRole] || 'Bottom';
+    return ['release', 'ruined', 'denial'].map(goal =>
+      buildJoiCountdownTimeline(targetEdgingDuration, subName, goal).map(t => t.text).join(' '));
+  }
+
   const api = {
+    getCountdownSpeeches: getCountdownSpeeches,
     render: renderEdgingCockpit,
     setVoiceMode: setCountdownVoiceMode,
     setStimulator: setEdgingStimulator,

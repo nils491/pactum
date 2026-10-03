@@ -137,7 +137,98 @@
     return URL.createObjectURL(blob);
   }
 
-  async function fetchGeminiAudioBlobUrl(text, voiceName) {
+  // --- Audio-Speicher: einmal erzeugte Sätze werden nie erneut erzeugt -----------
+  const VOICE_DB = 'tactus_voice_cache';
+  const VOICE_STORE = 'clips';
+  const VOICE_CACHE_MAX_AGE_MS = 45 * 24 * 3600 * 1000;
+  const STORAGE_KEY_VOICE_STYLE = 'tactus_voice_style';
+  const DEFAULT_VOICE_STYLE = 'ruhig, souverän und bestimmt, mit warmem, sonorem Takt';
+  let voiceDbPromise = null;
+
+  function openVoiceDb() {
+    if (voiceDbPromise) return voiceDbPromise;
+    voiceDbPromise = new Promise((resolve) => {
+      if (!('indexedDB' in window)) { resolve(null); return; }
+      const req = indexedDB.open(VOICE_DB, 1);
+      req.onupgradeneeded = () => {
+        if (!req.result.objectStoreNames.contains(VOICE_STORE)) req.result.createObjectStore(VOICE_STORE);
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        // Alte Einträge aufräumen
+        try {
+          const tx = db.transaction(VOICE_STORE, 'readwrite');
+          const cursorReq = tx.objectStore(VOICE_STORE).openCursor();
+          cursorReq.onsuccess = () => {
+            const cur = cursorReq.result;
+            if (!cur) return;
+            if (!cur.value || !cur.value.ts || cur.value.ts < Date.now() - VOICE_CACHE_MAX_AGE_MS) cur.delete();
+            cur.continue();
+          };
+        } catch (e) {}
+        resolve(db);
+      };
+      req.onerror = () => resolve(null);
+    });
+    return voiceDbPromise;
+  }
+
+  async function cacheGet(key) {
+    const db = await openVoiceDb();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try {
+        const req = db.transaction(VOICE_STORE, 'readonly').objectStore(VOICE_STORE).get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      } catch (e) { resolve(null); }
+    });
+  }
+
+  async function cachePut(key, value) {
+    const db = await openVoiceDb();
+    if (!db) return;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(VOICE_STORE, 'readwrite');
+        tx.objectStore(VOICE_STORE).put(value, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      } catch (e) { resolve(); }
+    });
+  }
+
+  function getVoiceStyle() {
+    return (localStorage.getItem(STORAGE_KEY_VOICE_STYLE) || DEFAULT_VOICE_STYLE).slice(0, 200);
+  }
+
+  function setVoiceStyle(style) {
+    try {
+      if (style) localStorage.setItem(STORAGE_KEY_VOICE_STYLE, String(style).slice(0, 200));
+      else localStorage.removeItem(STORAGE_KEY_VOICE_STYLE);
+    } catch (e) {}
+  }
+
+  function cleanSpeechText(text) {
+    return String(text || '').replace(/<[^>]*>/g, '').replace(/^[„"']|[“"']$/g, '').trim();
+  }
+
+  function clipKey(text, voiceName) {
+    return `${voiceName || 'Despina'}|${getVoiceStyle()}|${text}`;
+  }
+
+  function clipToUrl(clip) {
+    if (!clip || !clip.data) return null;
+    const mime = clip.mime || 'audio/L16;codec=pcm;rate=24000';
+    if (mime.includes('pcm') || mime.includes('L16')) {
+      const rate = parseInt((mime.match(/rate=(\d+)/) || [])[1], 10) || 24000;
+      return pcmToWavBlobUrl(clip.data, rate);
+    }
+    return `data:${mime};base64,${clip.data}`;
+  }
+
+  // Erzeugt Audio für einen Satz über Gemini TTS (ohne Abspielen); liefert {data, mime} oder null
+  async function synthesizeClip(text, voiceName) {
     if (!window.AIAdapter || typeof window.AIAdapter.isGeminiAvailable !== 'function' || !window.AIAdapter.isGeminiAvailable()) return null;
 
     // Sprachausgabe nur über dedizierte TTS-Modelle (normale Textmodelle liefern kein Audio)
@@ -145,50 +236,79 @@
       'gemini-3.8-flash-tts',
       'gemini-2.5-flash-preview-tts'
     ];
-
-    const cleanModelName = candidateModels[0].replace(/^models\//, '');
-    const promptText = `Lies die folgende erotische BDSM-Regieanweisung ruhig, autoritär, mit sonorem Takt und natürlicher Betonung auf Deutsch vor:\n\n${text}`;
+    const promptText = `Sprich den folgenden Satz auf Deutsch, ${getVoiceStyle()}, mit natürlicher Betonung. Sprich ausschließlich den Satz selbst:\n\n${text}`;
 
     for (const model of candidateModels) {
-            
       const payload = {
         contents: [{ parts: [{ text: promptText }] }],
         generationConfig: {
           responseModalities: ["AUDIO"],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: {
-                voiceName: voiceName || 'Despina'
-              }
-            }
-          }
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName || 'Despina' } } }
         }
       };
-
       try {
         const resp = await window.AIAdapter.geminiFetch(model, payload);
-
+        if (resp.status === 403 || resp.status === 429) return null;
         if (resp.ok) {
           const resData = await resp.json();
-          const candidatePart = resData?.candidates?.[0]?.content?.parts?.[0];
-          
-          if (candidatePart && candidatePart.inlineData && candidatePart.inlineData.data) {
-            const mime = candidatePart.inlineData.mimeType || 'audio/L16;codec=pcm;rate=24000';
-            const rawData = candidatePart.inlineData.data;
-
-            if (mime.includes('pcm') || mime.includes('L16')) {
-              return pcmToWavBlobUrl(rawData, 24000);
-            } else {
-              return `data:${mime};base64,${rawData}`;
-            }
+          const part = resData?.candidates?.[0]?.content?.parts?.[0];
+          if (part && part.inlineData && part.inlineData.data) {
+            return { data: part.inlineData.data, mime: part.inlineData.mimeType || 'audio/L16;codec=pcm;rate=24000' };
           }
         }
       } catch (err) {
         console.debug(`[TACTUS Voice] Gemini TTS Aufruf für Modell ${model} fehlgeschlagen:`, err);
       }
     }
-
     return null;
+  }
+
+  async function fetchGeminiAudioBlobUrl(text, voiceName) {
+    const key = clipKey(text, voiceName);
+    const cached = await cacheGet(key);
+    if (cached) return clipToUrl(cached);
+
+    const clip = await synthesizeClip(text, voiceName);
+    if (!clip) return null;
+    await cachePut(key, Object.assign({ ts: Date.now() }, clip));
+    return clipToUrl(clip);
+  }
+
+  /**
+   * Erzeugt alle übergebenen Sätze vorab und legt sie im Audio-Speicher ab.
+   * onProgress(done, total) wird nach jedem Satz aufgerufen.
+   * Liefert { total, ready, failed }.
+   */
+  async function prefetch(texts, voiceName, onProgress) {
+    const voice = voiceName || localStorage.getItem(STORAGE_KEY_VOICE_NAME) || 'Despina';
+    const list = Array.from(new Set((texts || []).map(cleanSpeechText).filter(Boolean)));
+    let done = 0, ready = 0, failed = 0;
+    const report = () => { if (typeof onProgress === 'function') onProgress(done, list.length); };
+    report();
+
+    let index = 0;
+    const worker = async () => {
+      while (index < list.length) {
+        const text = list[index++];
+        const key = clipKey(text, voice);
+        if (await cacheGet(key)) {
+          ready++;
+        } else {
+          const clip = await synthesizeClip(text, voice);
+          if (clip) { await cachePut(key, Object.assign({ ts: Date.now() }, clip)); ready++; }
+          else failed++;
+        }
+        done++;
+        report();
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+    return { total: list.length, ready, failed };
+  }
+
+  async function isCached(text, voiceName) {
+    const voice = voiceName || localStorage.getItem(STORAGE_KEY_VOICE_NAME) || 'Despina';
+    return Boolean(await cacheGet(clipKey(cleanSpeechText(text), voice)));
   }
 
   function fallbackBrowserSpeech(cleanText) {
@@ -252,7 +372,7 @@
       return Promise.resolve();
     }
 
-    const cleanText = text.replace(/<[^>]*>/g, '').replace(/^[„"']|[“"']$/g, '').trim();
+    const cleanText = cleanSpeechText(text);
     if (!cleanText) return Promise.resolve();
 
     const selectedVoice = voiceOverride || localStorage.getItem(STORAGE_KEY_VOICE_NAME) || 'Despina';
@@ -334,7 +454,11 @@
     getSelectedVoice: () => localStorage.getItem(STORAGE_KEY_VOICE_NAME) || 'Despina',
     setSelectedVoice: (name) => {
       localStorage.setItem(STORAGE_KEY_VOICE_NAME, name);
-    }
+    },
+    prefetch: prefetch,
+    isCached: isCached,
+    getStyle: getVoiceStyle,
+    setStyle: setVoiceStyle
   };
 
   window.SessionVoice = api;
