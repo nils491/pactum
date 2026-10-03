@@ -1028,21 +1028,19 @@
 
         container.innerHTML = filtered.map(st => `
           <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] hover:border-[#c5a880]/50 transition-all space-y-3 shadow-md">
-            <div class="flex flex-wrap items-start justify-between gap-2 border-b border-[#2a364f]/60 pb-2.5">
-              <div class="space-y-0.5 min-w-0 flex-1">
-                <span class="text-[9.5px] font-mono text-[#c5a880] font-bold block uppercase">
-                  ${escapeHtml(st.categoryLabel || st.category)} · ${st.year}
-                </span>
-                <h3 class="text-xs sm:text-sm font-bold text-white font-serif leading-snug break-words">
-                  ${escapeHtml(st.title)}
-                </h3>
-                <span class="text-[10px] font-mono text-[#94a3b8] block">
-                  ${escapeHtml(st.authors)} (${escapeHtml(st.journal)}${st.volume ? `, ${escapeHtml(st.volume)}` : ''})
-                </span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#000000] border border-[#2a364f] text-[#d4af37] font-bold flex-shrink-0">
-                ${escapeHtml(st.sampleSize)}
+            <div class="space-y-1 border-b border-[#2a364f]/60 pb-2.5 min-w-0">
+              <span class="text-[9.5px] font-mono text-[#c5a880] font-bold block uppercase">
+                ${escapeHtml(st.categoryLabel || st.category)} · ${st.year}
               </span>
+              <h3 class="text-xs sm:text-sm font-bold text-white font-serif leading-snug break-words">
+                ${escapeHtml(st.title)}
+              </h3>
+              <span class="text-[10px] font-mono text-[#94a3b8] block break-words">
+                ${escapeHtml(st.authors)} (${escapeHtml(st.journal)}${st.volume ? `, ${escapeHtml(st.volume)}` : ''})
+              </span>
+              ${st.sampleSize ? `<span class="inline-block max-w-full mt-1 px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#000000] border border-[#2a364f] text-[#d4af37] font-bold break-words">
+                ${escapeHtml(st.sampleSize)}
+              </span>` : ''}
             </div>
 
             <div class="space-y-2 text-xs">
@@ -1057,23 +1055,19 @@
               </div>
             </div>
 
-            <div class="pt-1 border-t border-[#2a364f]/70 flex flex-wrap items-center justify-between gap-2 font-mono text-[10px]">
-              <div class="flex items-center gap-2 flex-wrap">
-                ${(st.keyMetrics || []).map(m => `
-                  <span class="text-[#94a3b8]">${escapeHtml(m.label)}: <strong class="text-white">${escapeHtml(m.value)}</strong></span>
-                `).join(' · ')}
-              </div>
-              <div class="flex items-center gap-2">
+            <div class="pt-2 border-t border-[#2a364f]/70 space-y-2 font-mono text-[10px] min-w-0">
+              ${(st.keyMetrics || []).length ? `<div class="grid gap-1">
+                ${st.keyMetrics.map(m => `<span class="text-[#94a3b8] break-words">${escapeHtml(m.label)}: <strong class="text-white">${escapeHtml(m.value)}</strong></span>`).join('')}
+              </div>` : ''}
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                 ${st.doiUrl ? `
-                  <a href="${escapeHtml(st.doiUrl)}" target="_blank" rel="noopener noreferrer" class="text-[#c5a880] hover:underline flex items-center gap-0.5 font-bold">
+                  <a href="${escapeHtml(st.doiUrl)}" target="_blank" rel="noopener noreferrer" class="text-[#c5a880] hover:underline inline-flex items-center gap-0.5 font-bold min-w-0 break-all">
                     <span>DOI: ${escapeHtml(st.doi || 'Link')}</span>
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                    <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                   </a>
                 ` : ''}
                 ${st.pubmedUrl ? `
-                  <a href="${escapeHtml(st.pubmedUrl)}" target="_blank" rel="noopener noreferrer" class="text-[#94a3b8] hover:text-white flex items-center gap-0.5">
-                    <span>PubMed ↗</span>
-                  </a>
+                  <a href="${escapeHtml(st.pubmedUrl)}" target="_blank" rel="noopener noreferrer" class="text-[#94a3b8] hover:text-white">PubMed ↗</a>
                 ` : ''}
               </div>
             </div>
