@@ -551,7 +551,7 @@
 
       // Fallback auf Cloud-Provider, falls lokales Modell keine Vision unterstützt
       if (!PROVIDERS[activeProv]?.supportsVision) {
-        if (getApiKeyForProvider('gemini')) activeProv = 'gemini';
+        if (isGeminiAvailable()) activeProv = 'gemini';
         else if (getApiKeyForProvider('anthropic')) activeProv = 'anthropic';
         else if (getApiKeyForProvider('openai')) activeProv = 'openai';
         else {

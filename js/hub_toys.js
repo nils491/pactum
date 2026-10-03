@@ -96,7 +96,10 @@
     }
   }
 
-  function getToyPhotos() {
+  // Fotos liegen verkleinert (800 px, max. ca. 80 KB) im Foto-Tresor von HubPhotos (IndexedDB)
+  // und werden mit dem Partnergerät abgeglichen. Ältere Versionen haben sie in voller Größe im
+  // localStorage abgelegt; die werden beim Start einmalig übernommen.
+  function getLegacyPhotos() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY_TOY_PHOTOS);
       if (raw) return JSON.parse(raw) || {};
@@ -105,30 +108,60 @@
   }
 
   function getPhotoForToy(toyId) {
-    const photos = getToyPhotos();
-    return photos[toyId] || null;
+    const vault = window.HubPhotos;
+    const cached = vault && typeof vault.getCached === 'function' ? vault.getCached(toyId) : null;
+    return cached || getLegacyPhotos()[toyId] || null;
   }
 
-  function savePhotoForToy(toyId, dataUrl) {
-    const photos = getToyPhotos();
-    photos[toyId] = dataUrl;
-    try {
-      localStorage.setItem(STORAGE_KEY_TOY_PHOTOS, JSON.stringify(photos));
-    } catch (e) {
-      console.warn("[TACTUS HubToys] Lokaler Fotospeicher voll, versuche IndexedDB:", e);
-    }
-    // Falls HubPhotos vorhanden ist, dort ebenfalls registrieren
-    if (window.HubPhotos && typeof window.HubPhotos.savePhoto === 'function') {
-      try { window.HubPhotos.savePhoto(`toy_${toyId}`, dataUrl); } catch (e) {}
-    }
+  function dataUrlToBlob(dataUrl) {
+    const [head, data] = String(dataUrl).split(',');
+    const mime = (head.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+    const bin = atob(data || '');
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+
+  // Bild verkleinern; liefert { dataUrl, base64Payload, mimeType, sizeBytes }
+  function processPhoto(fileOrDataUrl) {
+    const blob = typeof fileOrDataUrl === 'string' ? dataUrlToBlob(fileOrDataUrl) : fileOrDataUrl;
+    return window.HubPhotos.processImage(blob);
+  }
+
+  async function savePhotoForToy(toyId, photo) {
+    const processed = photo && photo.dataUrl && photo.base64Payload ? photo : await processPhoto(photo);
+    await window.HubPhotos.savePhoto(toyId, processed);
+    if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
+    return processed;
   }
 
   function removePhotoForToy(toyId) {
-    const photos = getToyPhotos();
-    delete photos[toyId];
-    try {
-      localStorage.setItem(STORAGE_KEY_TOY_PHOTOS, JSON.stringify(photos));
-    } catch (e) {}
+    if (window.HubPhotos && typeof window.HubPhotos.deletePhoto === 'function') window.HubPhotos.deletePhoto(toyId);
+    const legacy = getLegacyPhotos();
+    if (legacy[toyId]) {
+      delete legacy[toyId];
+      try { localStorage.setItem(STORAGE_KEY_TOY_PHOTOS, JSON.stringify(legacy)); } catch (e) {}
+    }
+  }
+
+  let photosReady = null;
+  function loadPhotos() {
+    if (photosReady) return photosReady;
+    if (!window.HubPhotos || typeof window.HubPhotos.loadAll !== 'function') return Promise.resolve();
+    photosReady = window.HubPhotos.loadAll().then(async () => {
+      const legacy = getLegacyPhotos();
+      const ids = Object.keys(legacy);
+      for (const id of ids) {
+        try { await savePhotoForToy(id, legacy[id]); delete legacy[id]; } catch (e) {}
+      }
+      if (ids.length) {
+        try {
+          if (Object.keys(legacy).length) localStorage.setItem(STORAGE_KEY_TOY_PHOTOS, JSON.stringify(legacy));
+          else localStorage.removeItem(STORAGE_KEY_TOY_PHOTOS);
+        } catch (e) {}
+      }
+    }).catch(() => {});
+    return photosReady;
   }
 
   function getAllToysCombined() {
@@ -407,7 +440,10 @@
   function initClosetView(containerId = 'hub-toys-closet-container') {
     window._hubToysContainerId = containerId;
     renderClosetView();
+    loadPhotos().then(() => updateInventoryGridOnly());
   }
+
+  window.addEventListener('tactus:photos-updated', () => updateInventoryGridOnly());
 
   function updateHeaderCounters() {
     const owned = getOwnedToyIds();
@@ -509,6 +545,7 @@
       { id: 'custom', label: '★ Eigene Toys' },
       { id: 'bondage', label: 'Bondage' },
       { id: 'impact', label: 'Impact' },
+      { id: 'stimulation', label: 'Lust-Toys' },
       { id: 'chastity', label: 'Keuschheit' },
       { id: 'sensory', label: 'Sinnesentzug' },
       { id: 'furniture', label: 'Möbel' },
@@ -680,6 +717,7 @@
       { id: 'all', label: 'Alle Toys' },
       { id: 'bondage', label: 'Bondage' },
       { id: 'impact', label: 'Impact' },
+      { id: 'stimulation', label: 'Lust-Toys' },
       { id: 'chastity', label: 'Keuschheit' },
       { id: 'sensory', label: 'Sinnesentzug' },
       { id: 'care', label: 'Aftercare' }
@@ -1079,15 +1117,11 @@
     const file = inputEl.files && inputEl.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      savePhotoForToy(toyId, dataUrl);
+    savePhotoForToy(toyId, file).then(() => {
       showToast("✓ Foto der Ausrüstung gesichert!");
       openToyInspector(toyId);
       updateInventoryGridOnly();
-    };
-    reader.readAsDataURL(file);
+    }).catch(() => showToast("Das Foto konnte nicht verarbeitet werden."));
   }
 
   function deletePhoto(toyId) {
@@ -1108,9 +1142,196 @@
     }
   }
 
+  // --- Toy per Foto anlegen: KI füllt die Felder vor, mehrere Fotos nacheinander -------------
+  const TOY_CATEGORIES = [
+    ['bondage', 'Bondage & Seile'],
+    ['impact', 'Impact & Zucht'],
+    ['stimulation', 'Lust-Toys & Vibration'],
+    ['chastity', 'Keuschheit & Genital'],
+    ['sensory', 'Sinnesentzug & Masken'],
+    ['furniture', 'Möbel & Arretierung'],
+    ['care', 'Pflege & Aftercare']
+  ];
+  const TOY_ZONES = [
+    ['full_body', 'Ganzkörper'],
+    ['head_neck', 'Hals & Nacken'],
+    ['head_mouth', 'Mund (Knebel)'],
+    ['head_eyes', 'Augen (Augenbinde)'],
+    ['chest_nipples', 'Brust & Brustwarzen'],
+    ['torso_skin', 'Haut & Oberkörper'],
+    ['gluteal_pelvis', 'Gesäß & Becken'],
+    ['genital_penile', 'Penis / Schaft'],
+    ['genital_testicles', 'Hoden'],
+    ['genital_vulva_clitoris', 'Vulva & Klitoris'],
+    ['anal_perineum', 'Anal & Damm'],
+    ['limbs_hands_wrists', 'Handgelenke & Hände'],
+    ['limbs_legs', 'Beine & Knöchel']
+  ];
+  const VISION_MODELS = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.5-flash-lite'];
+
+  // Warteschlange der ausgewählten Fotos: [{ file, ready: Promise<{ processed, analysis }> }]
+  let createQueue = [];
+  let createIndex = 0;
+  let createCurrent = null; // { processed, analysis } des angezeigten Fotos
+
+  function buildVisionPrompt() {
+    return [
+      'Du hilfst einem erwachsenen Paar, seine eigene Erotik- und BDSM-Ausrüstung in einer privaten Inventar-App zu erfassen.',
+      'Auf dem Foto ist ein einzelnes Ausrüstungsstück (z. B. Seil, Fessel, Halsband, Paddle, Peitsche, Vibrator, Dildo, Plug, Käfig, Knebel, Augenbinde, Klemmen, Möbel, Pflegeprodukt).',
+      'Bestimme es so genau wie möglich und antworte ausschließlich mit diesem JSON-Objekt:',
+      '{',
+      '  "isEquipment": true,',
+      '  "name": "kurzer deutscher Name mit Farbe/Material, z. B. Schwarzes Leder-Paddle mit Nieten",',
+      '  "category": "' + TOY_CATEGORIES.map(c => c[0]).join(' | ') + '",',
+      '  "somaticZone": "' + TOY_ZONES.map(z => z[0]).join(' | ') + '",',
+      '  "materials": ["deutsche Materialnamen, z. B. Leder, Silikon, Edelstahl, Jute, Nylon"],',
+      '  "isLatex": false,',
+      '  "somaticEffect": "1–2 Sätze auf Deutsch: wie es sich anfühlt bzw. wirkt und wofür es typischerweise genutzt wird"',
+      '}',
+      'Regeln: category und somaticZone müssen exakt einer der genannten Werte sein. "stimulation" für Vibratoren, Dildos, Plugs, Masturbatoren und Massagestäbe.',
+      'isLatex nur true, wenn das Material sichtbar Naturkautschuk/Latex ist. Wenn kein solcher Gegenstand zu sehen ist: {"isEquipment": false}.'
+    ].join('\n');
+  }
+
+  function cleanAnalysis(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    if (raw.isEquipment === false) return { isEquipment: false };
+    const pick = (val, list, fallback) => list.some(e => e[0] === val) ? val : fallback;
+    const text = (val, max) => String(val == null ? '' : val).replace(/\s+/g, ' ').trim().slice(0, max);
+    const materials = (Array.isArray(raw.materials) ? raw.materials : String(raw.materials || '').split(','))
+      .map(m => text(m, 30)).filter(Boolean).slice(0, 6);
+    return {
+      isEquipment: true,
+      name: text(raw.name, 80),
+      category: pick(raw.category, TOY_CATEGORIES, ''),
+      somaticZone: pick(raw.somaticZone, TOY_ZONES, ''),
+      materials,
+      isLatex: raw.isLatex === true,
+      somaticEffect: text(raw.somaticEffect, 400)
+    };
+  }
+
+  async function analyzeToyPhoto(processed) {
+    const ai = window.AIAdapter;
+    if (!ai || typeof ai.isGeminiAvailable !== 'function' || !ai.isGeminiAvailable()) return { ok: false, reason: 'no_ai' };
+    for (const model of VISION_MODELS) {
+      try {
+        const res = await ai.geminiFetch(model, {
+          contents: [{ role: 'user', parts: [
+            { text: buildVisionPrompt() },
+            { inlineData: { mimeType: processed.mimeType || 'image/webp', data: processed.base64Payload } }
+          ] }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 4096, responseMimeType: 'application/json' }
+        });
+        if (res.status === 403) return { ok: false, reason: 'no_consent' };
+        if (res.status === 429) return { ok: false, reason: 'quota' };
+        if (res.status === 401) return { ok: false, reason: 'no_ai' };
+        if (!res.ok) continue;
+        const body = await res.json();
+        const parts = body.candidates && body.candidates[0] && body.candidates[0].content && body.candidates[0].content.parts || [];
+        const data = cleanAnalysis(ai.extractJson(parts.map(p => p.text || '').join('')));
+        if (data) return { ok: true, data };
+      } catch (e) {}
+    }
+    return { ok: false, reason: 'ai_failed' };
+  }
+
+  function prepareQueueItem(i) {
+    const item = createQueue[i];
+    if (!item || item.ready) return;
+    item.ready = processPhoto(item.file)
+      .then(processed => analyzeToyPhoto(processed).then(analysis => ({ processed, analysis })))
+      .catch(() => ({ processed: null, analysis: { ok: false, reason: 'image' } }));
+  }
+
+  function setCreateStatus(text, tone) {
+    const el = document.getElementById('custom-toy-ai-status');
+    if (!el) return;
+    el.textContent = text || '';
+    el.style.color = tone === 'ok' ? '#4ade80' : tone === 'err' ? '#f87171' : '#94a3b8';
+  }
+
+  function setCreateField(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox') el.checked = Boolean(value);
+    else el.value = value || '';
+  }
+
+  function resetCreateForm() {
+    setCreateField('custom-toy-input-name', '');
+    setCreateField('custom-toy-select-category', 'bondage');
+    setCreateField('custom-toy-select-zone', 'full_body');
+    setCreateField('custom-toy-input-materials', '');
+    setCreateField('custom-toy-input-effect', '');
+    setCreateField('custom-toy-chk-latex', false);
+    const img = document.getElementById('custom-toy-preview');
+    if (img) { img.removeAttribute('src'); img.parentElement.style.display = 'none'; }
+  }
+
+  function updateCreateButtons() {
+    const rest = createQueue.length - createIndex - 1;
+    const counter = document.getElementById('custom-toy-queue-counter');
+    if (counter) counter.textContent = createQueue.length > 1 ? `Foto ${createIndex + 1} von ${createQueue.length}` : '';
+    const next = document.getElementById('custom-toy-btn-next');
+    if (next) next.textContent = rest > 0 ? `Anlegen & nächstes (${rest}) →` : 'Anlegen & nächstes Foto 📷';
+    const skip = document.getElementById('custom-toy-btn-skip');
+    if (skip) skip.style.display = rest > 0 ? '' : 'none';
+  }
+
+  async function showQueueItem(i) {
+    createIndex = i;
+    createCurrent = null;
+    resetCreateForm();
+    updateCreateButtons();
+    prepareQueueItem(i);
+    prepareQueueItem(i + 1); // nächstes Foto schon im Hintergrund erkennen
+    setCreateStatus('Foto wird vorbereitet und von der KI erkannt …');
+    const result = await createQueue[i].ready;
+    if (createIndex !== i || !document.getElementById('custom-toy-input-name')) return;
+    createCurrent = result;
+    if (result.processed) {
+      const img = document.getElementById('custom-toy-preview');
+      if (img) { img.src = result.processed.dataUrl; img.parentElement.style.display = ''; }
+    }
+    const a = result.analysis;
+    if (a.ok && a.data.isEquipment) {
+      const d = a.data;
+      setCreateField('custom-toy-input-name', d.name);
+      if (d.category) setCreateField('custom-toy-select-category', d.category);
+      if (d.somaticZone) setCreateField('custom-toy-select-zone', d.somaticZone);
+      setCreateField('custom-toy-input-materials', d.materials.join(', '));
+      setCreateField('custom-toy-input-effect', d.somaticEffect);
+      setCreateField('custom-toy-chk-latex', d.isLatex);
+      setCreateStatus('✓ Von der KI ausgefüllt – kurz prüfen und anlegen.', 'ok');
+      return;
+    }
+    const reasons = {
+      no_ai: 'Ohne KI-Zugang: bitte die Felder selbst ausfüllen. Das Foto wird trotzdem gespeichert.',
+      no_consent: 'KI-Übermittlung nicht freigegeben: bitte die Felder selbst ausfüllen.',
+      quota: 'Das KI-Tageskontingent ist aufgebraucht: bitte die Felder selbst ausfüllen.',
+      image: 'Dieses Bild konnte nicht gelesen werden.',
+      ai_failed: 'Die KI konnte das Foto nicht auswerten: bitte die Felder selbst ausfüllen.'
+    };
+    if (a.ok) setCreateStatus('Auf dem Foto wurde kein Ausrüstungsstück erkannt. Bitte selbst ausfüllen oder überspringen.', 'err');
+    else setCreateStatus(reasons[a.reason] || reasons.ai_failed, 'err');
+  }
+
+  function startPhotoQueue(fileList) {
+    const files = Array.from(fileList || []).filter(f => f && (!f.type || f.type.startsWith('image/'))).slice(0, 50);
+    if (!files.length) return;
+    createQueue = files.map(file => ({ file, ready: null }));
+    showQueueItem(0);
+  }
+
   function openCreateCustomToyModal() {
     const modal = document.getElementById('hub-toys-create-modal');
     if (!modal) return;
+    createQueue = [];
+    createIndex = 0;
+    createCurrent = null;
+
+    const options = (list) => list.map(([v, l]) => `<option value="${v}">${escapeHtml(l)}</option>`).join('');
 
     modal.innerHTML = `
       <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#c5a880]/70 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[92dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
@@ -1120,12 +1341,26 @@
             <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">Hardware-Atelier</span>
             <h3 class="text-sm sm:text-base font-serif text-white font-bold mt-0.5">+ Eigenes Ausrüstungsstück anlegen</h3>
           </div>
-          <button type="button" onclick="document.getElementById('hub-toys-create-modal').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+          <button type="button" onclick="HubToys.closeCreateModal()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
         </div>
 
-        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-          Füge reale Peitschen, Seile, Käfige oder Spezial-Equipment eures Paares hinzu. Das Toy fließt sofort in eure Inventarverwaltung und den Wizard ein.
-        </p>
+        <!-- FOTO ZUERST: DIE KI FÜLLT DIE FELDER AUS -->
+        <div class="p-3 rounded-2xl bg-[#000000] border border-[#c5a880]/50 space-y-2.5">
+          <p class="text-[11px] text-[#94a3b8] leading-relaxed">Fotografiere das Toy – die KI erkennt es und füllt alle Felder aus. Mit mehreren Fotos aus der Galerie legst du viele Toys nacheinander an.</p>
+          <div class="grid grid-cols-2 gap-2 font-mono">
+            <label class="px-3 py-2.5 rounded-xl bg-[#c5a880] text-black font-bold text-xs text-center cursor-pointer touch-btn">📷 Foto aufnehmen
+              <input type="file" id="custom-toy-file-camera" accept="image/*" capture="environment" class="hidden" onchange="HubToys.handleCreatePhotos(this)" />
+            </label>
+            <label class="px-3 py-2.5 rounded-xl bg-[#090d14] border border-[#c5a880] text-[#c5a880] font-bold text-xs text-center cursor-pointer touch-btn">🖼 Mehrere Fotos
+              <input type="file" id="custom-toy-file-photo" accept="image/*" multiple class="hidden" onchange="HubToys.handleCreatePhotos(this)" />
+            </label>
+          </div>
+          <div class="flex items-center gap-3" style="display:none">
+            <img id="custom-toy-preview" alt="Foto des Toys" class="w-20 h-20 rounded-xl object-cover border border-[#2a364f] shrink-0" />
+            <span id="custom-toy-queue-counter" class="text-[10px] font-mono text-[#c5a880] font-bold"></span>
+          </div>
+          <p id="custom-toy-ai-status" class="text-[11px] leading-relaxed min-h-[1em]" role="status"></p>
+        </div>
 
         <div class="space-y-3 font-mono">
           <div>
@@ -1137,28 +1372,14 @@
             <div>
               <label class="text-[10px] text-[#94a3b8] uppercase block mb-1 font-bold">Kategorie:</label>
               <select id="custom-toy-select-category" class="w-full text-xs p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white focus:border-[#c5a880]">
-                <option value="bondage">Bondage &amp; Seile</option>
-                <option value="impact">Impact &amp; Zucht</option>
-                <option value="chastity">Keuschheit &amp; Genital</option>
-                <option value="sensory">Sinnesentzug &amp; Masken</option>
-                <option value="furniture">Möbel &amp; Arretierung</option>
-                <option value="care">Pflege &amp; Aftercare</option>
+                ${options(TOY_CATEGORIES)}
               </select>
             </div>
 
             <div>
               <label class="text-[10px] text-[#94a3b8] uppercase block mb-1 font-bold">Somatische Zone:</label>
               <select id="custom-toy-select-zone" class="w-full text-xs p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white focus:border-[#c5a880]">
-                <option value="full_body">Ganzkörper (full_body)</option>
-                <option value="gluteal_pelvis">Gesäß &amp; Becken (gluteal_pelvis)</option>
-                <option value="genital_penile">Penis / Schaft (genital_penile)</option>
-                <option value="genital_testicles">Hoden (genital_testicles)</option>
-                <option value="genital_vulva_clitoris">Vulva &amp; Klitoris</option>
-                <option value="anal_perineum">Anal &amp; Damm (anal_perineum)</option>
-                <option value="head_mouth">Mund (Knebel)</option>
-                <option value="head_eyes">Augen (Augenbinde)</option>
-                <option value="limbs_hands_wrists">Handgelenke &amp; Hände</option>
-                <option value="limbs_legs">Beine &amp; Knöchel</option>
+                ${options(TOY_ZONES)}
               </select>
             </div>
           </div>
@@ -1178,17 +1399,12 @@
             <span class="text-white text-xs">Enthält Naturkautschuk (Latex):</span>
             <input type="checkbox" id="custom-toy-chk-latex" class="accent-[#991b1b] rounded" />
           </label>
-
-          <!-- DIREKTE FOTO-AUFNAHME BEIM ERSTELLEN -->
-          <div class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] space-y-2">
-            <span class="text-[10px] text-[#c5a880] uppercase block font-bold">Foto der Ausrüstung anfügen (optional):</span>
-            <input type="file" id="custom-toy-file-photo" accept="image/*" class="w-full text-[10px] text-[#94a3b8] file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-mono file:bg-[#090d14] file:text-[#c5a880]" />
-          </div>
         </div>
 
-        <div class="pt-2 border-t border-[#2a364f] flex justify-end gap-2 font-mono">
-          <button type="button" onclick="document.getElementById('hub-toys-create-modal').style.display='none'" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-          <button type="button" onclick="HubToys.submitCreateCustomToy()" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Toy anlegen ✓</button>
+        <div class="pt-2 border-t border-[#2a364f] flex flex-wrap justify-end gap-2 font-mono">
+          <button type="button" id="custom-toy-btn-skip" onclick="HubToys.skipCreatePhoto()" style="display:none" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Überspringen</button>
+          <button type="button" id="custom-toy-btn-next" onclick="HubToys.submitCreateCustomToy('next')" class="px-4 py-2.5 bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold rounded-xl text-xs touch-btn">Anlegen & nächstes Foto 📷</button>
+          <button type="button" onclick="HubToys.submitCreateCustomToy('done')" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Anlegen ✓</button>
         </div>
       </div>
     `;
@@ -1196,18 +1412,29 @@
     modal.style.display = 'flex';
   }
 
-  function submitCreateCustomToy() {
+  function closeCreateModal() {
+    createQueue = [];
+    createCurrent = null;
+    const modal = document.getElementById('hub-toys-create-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function skipCreatePhoto() {
+    if (createIndex + 1 < createQueue.length) showQueueItem(createIndex + 1);
+  }
+
+  // mode: 'done' = anlegen und schließen, 'next' = anlegen und nächstes Foto
+  function submitCreateCustomToy(mode) {
     const nameInput = document.getElementById('custom-toy-input-name');
     const catSelect = document.getElementById('custom-toy-select-category');
     const zoneSelect = document.getElementById('custom-toy-select-zone');
     const matInput = document.getElementById('custom-toy-input-materials');
     const effInput = document.getElementById('custom-toy-input-effect');
     const latexChk = document.getElementById('custom-toy-chk-latex');
-    const fileInput = document.getElementById('custom-toy-file-photo');
 
     const name = nameInput ? nameInput.value.trim() : '';
     if (!name) {
-      showToast("Bitte gib dem Toy eine Bezeichnung.");
+      showToast(createQueue.length && !createCurrent ? "Die KI ist noch nicht fertig – einen Moment." : "Bitte gib dem Toy eine Bezeichnung.");
       return;
     }
 
@@ -1259,27 +1486,27 @@
       saveOwnedToyIds(owned);
     }
 
-    // Foto verarbeiten falls ausgewählt
-    const file = fileInput && fileInput.files && fileInput.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        savePhotoForToy(toyId, e.target.result);
-        finalizeToyCreation(name);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      finalizeToyCreation(name);
-    }
-  }
+    const photo = createCurrent && createCurrent.processed;
+    if (photo) savePhotoForToy(toyId, photo).then(() => updateInventoryGridOnly()).catch(() => {});
 
-  function finalizeToyCreation(toyName) {
-    const modal = document.getElementById('hub-toys-create-modal');
-    if (modal) modal.style.display = 'none';
-
-    showToast(`✓ „${toyName}“ erfolgreich angelegt!`);
+    showToast(`✓ „${name}“ angelegt!`);
     renderClosetView();
     updateHeaderCounters();
+
+    if (mode === 'next' && createIndex + 1 < createQueue.length) {
+      showQueueItem(createIndex + 1);
+    } else if (mode === 'next') {
+      // Kamera direkt wieder öffnen (muss im selben Tipp passieren, sonst blockiert das Handy)
+      createQueue = [];
+      createCurrent = null;
+      resetCreateForm();
+      updateCreateButtons();
+      setCreateStatus('');
+      const cam = document.getElementById('custom-toy-file-camera');
+      if (cam) { cam.value = ''; cam.click(); }
+    } else {
+      closeCreateModal();
+    }
   }
 
   function deleteCustomToy(toyId) {
@@ -1324,6 +1551,43 @@
     renderClosetView();
   }
 
+  // Eingabefenster im TACTUS-Design (statt window.prompt); liefert den Text oder null
+  function askText({ kicker = '', title = '', value = '', placeholder = '', confirmLabel = 'Speichern ✓' }) {
+    return new Promise(resolve => {
+      const wrap = document.createElement('div');
+      wrap.className = 'fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4';
+      wrap.style.zIndex = '2000';
+      wrap.innerHTML = `
+        <div class="bg-[#090d14] rounded-3xl max-w-sm w-full border border-[#c5a880]/70 p-5 space-y-4 shadow-2xl font-sans" role="dialog" aria-modal="true">
+          <div>
+            ${kicker ? `<span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">${escapeHtml(kicker)}</span>` : ''}
+            <h3 class="text-base font-serif text-white font-bold mt-0.5">${escapeHtml(title)}</h3>
+          </div>
+          <input type="text" maxlength="60" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" class="w-full p-3 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-base focus:border-[#c5a880] focus:outline-none" />
+          <div class="flex justify-end gap-2 font-mono">
+            <button type="button" data-act="cancel" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+            <button type="button" data-act="ok" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">${escapeHtml(confirmLabel)}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(wrap);
+      const input = wrap.querySelector('input');
+      const close = (result) => { wrap.remove(); resolve(result); };
+      const submit = () => {
+        const text = input.value.trim();
+        if (!text) { input.focus(); input.style.borderColor = '#f87171'; return; }
+        close(text);
+      };
+      wrap.querySelector('[data-act="ok"]').addEventListener('click', submit);
+      wrap.querySelector('[data-act="cancel"]').addEventListener('click', () => close(null));
+      wrap.addEventListener('click', (ev) => { if (ev.target === wrap) close(null); });
+      input.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') { ev.preventDefault(); submit(); }
+        if (ev.key === 'Escape') close(null);
+      });
+      setTimeout(() => { input.focus(); input.select(); }, 30);
+    });
+  }
+
   function finalizeAndStageBundle() {
     const validIds = wizardState.selectedToyIds.filter(Boolean);
     if (validIds.length === 0) {
@@ -1331,9 +1595,16 @@
       return;
     }
 
-    const bundleName = prompt("Name für dieses Session-Set eingeben:", `Set ${new Date().toLocaleDateString('de-DE')}`);
-    if (!bundleName) return;
+    askText({
+      kicker: 'Toy-Kit Wizard',
+      title: 'Wie soll dieses Set heißen?',
+      value: `Set ${new Date().toLocaleDateString('de-DE')}`,
+      placeholder: 'z. B. Freitagabend, Seil & Feder …',
+      confirmLabel: 'Set speichern ✓'
+    }).then(name => { if (name) saveAndStageBundle(name, validIds); });
+  }
 
+  function saveAndStageBundle(bundleName, validIds) {
     const bundleObj = {
       id: `bundle_${Date.now()}`,
       name: bundleName.trim(),
@@ -1392,7 +1663,7 @@
     },
     setCategoryFilter: function(catId) {
       activeCategoryFilter = catId;
-      ['all', 'custom', 'bondage', 'impact', 'chastity', 'sensory', 'furniture', 'care'].forEach(cid => {
+      ['all', 'custom', 'bondage', 'impact', 'stimulation', 'chastity', 'sensory', 'furniture', 'care'].forEach(cid => {
         const btn = document.getElementById(`cat-filter-btn-${cid}`);
         if (btn) {
           btn.className = (cid === catId)
@@ -1462,6 +1733,9 @@
       wizardSearchQuery = val;
       renderClosetView();
     },
+    handleCreatePhotos: function(inputEl) { startPhotoQueue(inputEl.files); inputEl.value = ''; },
+    skipCreatePhoto: skipCreatePhoto,
+    closeCreateModal: closeCreateModal,
     assignToyToSlot: assignToyToSlot,
     removeToyFromSlot: removeToyFromSlot,
     finalizeAndStageBundle: finalizeAndStageBundle,

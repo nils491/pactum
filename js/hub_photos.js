@@ -402,6 +402,7 @@ Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöc
         }
       }
 
+      if (importedCount > 0) window.dispatchEvent(new CustomEvent('tactus:photos-updated'));
       return importedCount;
     } catch (errSync) {
       console.warn('[TACTUS Vault] Fehler beim Importieren synchronisierter Fotos:', errSync);
@@ -409,8 +410,17 @@ Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöc
     }
   }
 
+  // Alle Fotos einmal in den Speicher holen, damit Listen sie ohne Wartezeit anzeigen können
+  async function loadAllIntoCache() {
+    const list = await exportAllPhotosForSync();
+    list.forEach(item => inMemoryBlobUrlCache.set(item.toyId, item.dataUrl));
+    return list.length;
+  }
+
   const api = {
     init: openVaultDatabase,
+    loadAll: loadAllIntoCache,
+    getCached: (toyId) => inMemoryBlobUrlCache.get(String(toyId || '').trim()) || null,
     processImage: processImageToSquareWebP,
     savePhoto: saveToyPhoto,
     getPhoto: getToyPhoto,
