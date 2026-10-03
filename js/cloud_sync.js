@@ -238,6 +238,10 @@
       }
     };
 
+    // Antrag auf Rollentausch (Zustimmung des Partners nötig, siehe tactus_roles.js)
+    const roleHandover = safeJsonParse('tactus_role_handover', null);
+    if (roleHandover) state.roleHandover = roleHandover;
+
     // Eigener Gemini-Schlüssel gilt für das Paar: wird (Ende-zu-Ende verschlüsselt) mit übertragen,
     // sobald er auf einem Gerät gesetzt oder entfernt wurde
     const aiKeyUpdatedAt = parseInt(localStorage.getItem(AI_KEY_UPDATED_AT) || '0', 10) || 0;
@@ -277,6 +281,15 @@
         if (remote.roles.keyholder) localStorage.setItem('kompass_keyholder_role', remote.roles.keyholder);
         if (remote.roles.caged) localStorage.setItem('kompass_caged_role', remote.roles.caged);
         changesMade = true;
+      }
+
+      // 2a. Antrag auf Rollentausch: der neuere Stand gilt
+      if (remote.roleHandover && typeof remote.roleHandover === 'object') {
+        const localHo = safeJsonParse('tactus_role_handover', null);
+        if (!localHo || (remote.roleHandover.updatedAt || 0) > (localHo.updatedAt || 0)) {
+          localStorage.setItem('tactus_role_handover', JSON.stringify(remote.roleHandover));
+          changesMade = true;
+        }
       }
 
       // 2b. Eigener KI-Schlüssel des Paares: der zuletzt gesetzte gilt
@@ -545,6 +558,8 @@
       if (window.PairAnalysis && typeof window.PairAnalysis.init === 'function') window.PairAnalysis.init();
       if (window.HubToys && typeof window.HubToys.render === 'function') window.HubToys.render();
       if (window.TactusFeedback && typeof window.TactusFeedback.checkPending === 'function') setTimeout(window.TactusFeedback.checkPending, 800);
+      window.dispatchEvent(new CustomEvent('tactus:roles-changed'));
+      if (window.TactusRoles && typeof window.TactusRoles.checkPending === 'function') setTimeout(window.TactusRoles.checkPending, 600);
     } catch (e) {
       console.debug('[TACTUS E2EE] Fehler bei reaktiver UI-Benachrichtigung:', e);
     }
@@ -561,7 +576,7 @@
     climaxRatio: 'history'
   };
   const ITEMIZED_ARRAYS = ['chatMessages', 'chatCapsules', 'customEquipment', 'sessionLogbook', 'feedbackShared'];
-  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals', 'aiOwnKey'];
+  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals', 'aiOwnKey', 'roleHandover'];
   const AI_KEY_SLOTS = ['tactus_api_key_gemini', 'kompass_gemini_api_key', 'tactus_ai_custom_key'];
   const AI_KEY_UPDATED_AT = 'tactus_ai_key_updated_at';
 

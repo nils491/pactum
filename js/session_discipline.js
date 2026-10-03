@@ -115,7 +115,7 @@
 
   function getMasterActionPool(subName, topName) {
     ensureNamesAndAnatomyLoaded();
-    const subRole = window.subPartner || localStorage.getItem('kompass_caged_role') || 'A';
+    const subRole = window.subPartner || localStorage.getItem('kompass_caged_role') || 'B';
     const subAnat = (window.anatomy && window.anatomy[subRole]) ? window.anatomy[subRole] : 'vulva';
     const isVulva = (subAnat === 'vulva');
 
@@ -517,7 +517,7 @@
     if (btnPrev) btnPrev.style.visibility = (wizardCurrentStage === 1) ? 'hidden' : 'visible';
     if (btnNext) btnNext.style.display = (wizardCurrentStage === 5) ? 'none' : 'block';
 
-    const topRole = localStorage.getItem('kompass_keyholder_role') || 'B';
+    const topRole = localStorage.getItem('kompass_keyholder_role') || 'A';
     const subRole = (topRole === 'A') ? 'B' : 'A';
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
     const topName = names[topRole] || 'Top';
@@ -581,7 +581,7 @@
 
   function selectActionItem(id) {
     ensureNamesAndAnatomyLoaded();
-    const topRole = localStorage.getItem('kompass_keyholder_role') || 'B';
+    const topRole = localStorage.getItem('kompass_keyholder_role') || 'A';
     const subRole = (topRole === 'A') ? 'B' : 'A';
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
     const topName = names[topRole] || 'Top';
@@ -825,7 +825,7 @@
 
   function applyDisciplineProtocol() {
     ensureNamesAndAnatomyLoaded();
-    const topRole = localStorage.getItem('kompass_keyholder_role') || 'B';
+    const topRole = localStorage.getItem('kompass_keyholder_role') || 'A';
     const subRole = (topRole === 'A') ? 'B' : 'A';
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
     const subName = names[subRole] || 'Bottom';
@@ -854,7 +854,7 @@
 
   async function generateAiDisciplineProposal() {
     ensureNamesAndAnatomyLoaded();
-    const topRole = localStorage.getItem('kompass_keyholder_role') || 'B';
+    const topRole = localStorage.getItem('kompass_keyholder_role') || 'A';
     const subRole = (topRole === 'A') ? 'B' : 'A';
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
     const topName = names[topRole] || 'Top';

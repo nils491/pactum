@@ -288,6 +288,11 @@
           <span class="text-[10px] text-[#c5a880] font-mono">Cache leeren</span>
         </button>
 
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; if (window.TactusRoles) window.TactusRoles.requestSwitch();" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left space-y-0.5 touch-btn">
+          <strong class="text-xs block font-bold text-[#f8fafc]">⇄ Rollentausch beantragen</strong>
+          <span class="text-[10px] text-[#94a3b8] block" data-role-summary></span>
+        </button>
+
         <button type="button" id="drawer-btn-break-glass" style="display: none;" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; SessionRuntime.openBreakGlass();" class="w-full p-3 rounded-2xl bg-[#450a0a] border border-[#991b1b] text-white text-left space-y-0.5 touch-btn shadow-md">
           <strong class="text-xs block font-bold text-white">Notfall-Öffnung (Break-Glass)</strong>
           <span class="text-[10px] text-white/80 block">Verschluss sofort öffnen bei Schwellung, Taubheit oder Panik</span>
@@ -998,6 +1003,7 @@
   <script src="js/tactus_feedback.js"></script>
   <script src="js/cloud_sync.js"></script>
   <script src="js/protocol_core.js"></script>
+  <script src="js/tactus_roles.js"></script>
   <script src="js/protocol_ratio.js"></script>
   <script src="js/session_voice.js"></script>
   <script src="js/session_discipline.js"></script>
@@ -1109,43 +1115,11 @@
         checkConditionalBreakGlass();
       }
 
-      // Ein Tipp wechselt, wer gerade führt. Wird wie in den Einstellungen gespeichert und
-      // per Sync auf das Partnergerät übertragen (nicht bei FLR 24/7 und nicht während einer Verschlusszeit).
+      // Rollentausch nur mit Zustimmung beider (siehe js/tactus_roles.js)
       function toggleActiveRole() {
-        const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
-        const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
-        const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
-        const isTop = (assignedRole === keyholder);
-
-        if (mode === 'flr_24_7') {
-          if (!isTop) {
-            showToast("Feste Führung aktiv (FLR 24/7). Rollenübergabe erfordert formellen Antrag im Paar-Stream (chat.html).");
-          } else {
-            showToast("Führung ist fest arretiert (FLR 24/7). Übergabe nur über feierliche Zeremonie im Paar-Stream möglich.");
-          }
-          return;
-        }
-
-        let isLocked = false;
-        try {
-          const raw = localStorage.getItem('tactus_protocol_state') || localStorage.getItem('kompass_protocol_state');
-          if (raw) isLocked = !!JSON.parse(raw).isLocked;
-        } catch (e) {}
-        if (isLocked) {
-          showToast("Während einer aktiven Verschlusszeit bleibt die Führung beim Keyholder.");
-          return;
-        }
-
-        const myRole = localStorage.getItem('kompass_assigned_role') || 'A';
-        const iLead = (localStorage.getItem('kompass_keyholder_role') || 'A') === myRole;
-        const newKeyholder = iLead ? (myRole === 'A' ? 'B' : 'A') : myRole;
-        localStorage.setItem('kompass_keyholder_role', newKeyholder);
-        localStorage.setItem('kompass_caged_role', newKeyholder === 'A' ? 'B' : 'A');
-        if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
-
-        initRoleDisplay();
-        showToast(iLead ? "Rollenwechsel: Du folgst jetzt (Bottom)." : "Rollenwechsel: Du führst jetzt (Top).");
+        if (window.TactusRoles) window.TactusRoles.requestSwitch();
       }
+      window.addEventListener('tactus:roles-changed', () => initRoleDisplay());
 
       function openAccountModal() {
         const modal = document.getElementById('modal-account-settings');
@@ -1192,9 +1166,9 @@
         if (myRoleSel) localStorage.setItem('kompass_assigned_role', myRoleSel.value);
 
         const khSel = document.getElementById('acc-select-keyholder');
-        if (khSel) {
-          localStorage.setItem('kompass_keyholder_role', khSel.value);
-          localStorage.setItem('kompass_caged_role', khSel.value === 'A' ? 'B' : 'A');
+        // Führungswechsel nur über den Antrag (Zustimmung des Partners)
+        if (khSel && khSel.value !== (localStorage.getItem('kompass_keyholder_role') || 'A') && window.TactusRoles) {
+          window.TactusRoles.requestSwitch(khSel.value);
         }
 
         const themeSel = document.getElementById('acc-select-theme');

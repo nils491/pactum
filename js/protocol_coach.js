@@ -642,7 +642,16 @@ WICHTIGE LEITPLANKEN (ECHTE HYPERDYNAMIK):
     // 3. Vertrags-Ratifizierung prüfen
     if (window.ProtocolContract && typeof window.ProtocolContract.getActiveContract === 'function') {
       const contract = window.ProtocolContract.getActiveContract();
-      if (contract.status === 'draft' || !contract.signatureTop || !contract.signatureSub) {
+      if (contract.paused) {
+        frictionPoints.push({
+          type: 'contract_paused',
+          severity: 'medium',
+          badge: "Vertrag: ruht",
+          title: "Rollen getauscht – der Vertrag ruht",
+          desc: "Euer Beziehungsvertrag wurde für die umgekehrte Rollenverteilung unterzeichnet. Er gilt wieder, sobald ihr zurücktauscht – oder ihr schließt für die neue Verteilung einen eigenen Vertrag.",
+          actionHtml: `<a href="protocol.html#tab=contract" class="px-2.5 py-1 rounded-xl bg-[#000000] text-[#d4af37] border border-[#d4af37]/60 font-mono text-[9.5px] font-bold touch-btn">Zum Vertrag ↗</a>`
+        });
+      } else if (contract.status === 'draft' || !contract.signatureTop || !contract.signatureSub) {
         frictionPoints.push({
           type: 'contract_draft',
           severity: 'medium',

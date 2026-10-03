@@ -84,7 +84,7 @@
       if (stored) answers = JSON.parse(stored);
     } catch (e) {}
 
-    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'A';
     const subPartner = window.subPartner || localStorage.getItem('kompass_caged_role') || (topPartner === 'A' ? 'B' : 'A');
 
     const uAnswersTop = answers[topPartner] || {};
@@ -169,7 +169,7 @@
 
     const isVoiceAssistActive = localStorage.getItem('kompass_voice_assist_active') !== 'false';
     if (isVoiceAssistActive && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-      const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+      const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'A';
       const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
       const topName = names[topPartner] || 'Top';
 
@@ -503,7 +503,7 @@
       if (raw) diary = JSON.parse(raw);
     } catch (e) {}
 
-    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'A';
     const subPartner = window.subPartner || localStorage.getItem('kompass_caged_role') || (topPartner === 'A' ? 'B' : 'A');
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
 
@@ -636,7 +636,7 @@
       if (stored) answers = JSON.parse(stored);
     } catch (e) {}
 
-    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'A';
     const subPartner = window.subPartner || localStorage.getItem('kompass_caged_role') || (topPartner === 'A' ? 'B' : 'A');
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
 

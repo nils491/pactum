@@ -164,6 +164,10 @@
           contractState = Object.assign({}, contractState, parsed);
           contractState.clauses = Object.assign({}, DEFAULT_CONTRACT_CLAUSES, parsed.clauses || {});
           contractState.customTexts = parsed.customTexts || {};
+          // Ältere gültige Verträge kennen die Rollenverteilung bei Unterzeichnung noch nicht
+          if (contractState.status === 'active' && !contractState.keyholderAtSigning) {
+            contractState.keyholderAtSigning = localStorage.getItem('kompass_keyholder_role') || 'A';
+          }
           return;
         }
       }
@@ -462,6 +466,11 @@
     }
   }
 
+  function isPausedByRoleSwap() {
+    return contractState.status === 'active' && Boolean(contractState.keyholderAtSigning)
+      && contractState.keyholderAtSigning !== (localStorage.getItem('kompass_keyholder_role') || 'A');
+  }
+
   function renderContractDashboard() {
     loadContractState();
     const container = document.getElementById('contract-clauses-container');
@@ -474,10 +483,13 @@
 
     if (statusLabel) {
       const isSigned = contractState.status === 'active' && contractState.signatureTop && contractState.signatureSub;
-      statusLabel.innerText = isSigned 
-        ? `Status: Ratifiziert & Gültig (${new Date(contractState.signedAt || Date.now()).toLocaleDateString('de-DE')})` 
-        : 'Status: Entwurf (Verhandlung aktiv)';
-      statusLabel.className = isSigned ? 'text-[#2e5746] font-bold font-mono' : 'text-[#b3734a] font-bold font-mono';
+      const paused = isSigned && isPausedByRoleSwap();
+      statusLabel.innerText = paused
+        ? `Status: Ruht – die Rollen sind gegenüber der Unterzeichnung getauscht. Tauscht ihr zurück, gilt er wieder.`
+        : isSigned
+          ? `Status: Ratifiziert & Gültig (${new Date(contractState.signedAt || Date.now()).toLocaleDateString('de-DE')})`
+          : 'Status: Entwurf (Verhandlung aktiv)';
+      statusLabel.className = paused ? 'text-[#d4af37] font-bold font-mono' : isSigned ? 'text-[#4ade80] font-bold font-mono' : 'text-[#b3734a] font-bold font-mono';
     }
 
     if (versionLabel) {
@@ -769,6 +781,8 @@
     if (contractState.signatureTop && contractState.signatureSub) {
       contractState.status = 'active';
       contractState.signedAt = Date.now();
+      // Der Vertrag gilt für diese Rollenverteilung; nach einem Rollentausch ruht er
+      contractState.keyholderAtSigning = localStorage.getItem('kompass_keyholder_role') || 'A';
       showToast("✓ Beide Signaturen besiegelt: Der Beziehungsvertrag ist ratifiziert!");
       if (window.TactusChat) {
         window.TactusChat.post(`Beziehungsvertrag vollständig ratifiziert und gültig besiegelt (Version ${contractState.version}).`);
@@ -1098,8 +1112,9 @@
     validateHarmony: validatePsychosomaticHarmony,
     getActiveContract: function() {
       loadContractState();
-      return Object.assign({}, contractState);
-    }
+      return Object.assign({}, contractState, { paused: isPausedByRoleSwap() });
+    },
+    isPaused: function() { loadContractState(); return isPausedByRoleSwap(); }
   };
 
   window.ProtocolContract = api;

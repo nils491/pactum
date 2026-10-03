@@ -29,8 +29,9 @@
   const STORAGE_KEY_VOICE_ACTIVE = 'kompass_voice_assist_active';
   const STORAGE_KEY_VOICE_NAME = 'kompass_session_voice';
 
-  let topPartner = 'B';
-  let subPartner = 'A';
+  // Wer führt, kommt aus der gemeinsamen Rolleneinstellung (Rollen-Knopf / Einstellungen)
+  let topPartner = localStorage.getItem('kompass_keyholder_role') || 'A';
+  let subPartner = topPartner === 'A' ? 'B' : 'A';
   let energyTop = 4;
   let energySub = 4;
   let sessionDepth = 7;
@@ -279,13 +280,18 @@
   }
 
   function selectRoleSetup(choice) {
-    if (choice === 'reversed') {
-      topPartner = 'A';
-      subPartner = 'B';
-    } else {
-      topPartner = 'B';
-      subPartner = 'A';
+    // Ein Rollentausch braucht die Zustimmung beider (js/tactus_roles.js); übernommen wird er über 'tactus:roles-changed'
+    const desiredTop = choice === 'reversed' ? 'A' : 'B';
+    if (desiredTop !== (localStorage.getItem('kompass_keyholder_role') || 'A')) {
+      if (window.TactusRoles) window.TactusRoles.requestSwitch(desiredTop);
+      return;
     }
+    applyGlobalRoles();
+  }
+
+  function applyGlobalRoles() {
+    topPartner = localStorage.getItem('kompass_keyholder_role') || 'A';
+    subPartner = topPartner === 'A' ? 'B' : 'A';
     window.topPartner = topPartner;
     window.subPartner = subPartner;
     updateRoleSelectionUI();
@@ -294,6 +300,10 @@
       window.updateHeaderTabuCounter();
     }
   }
+
+  window.addEventListener('tactus:roles-changed', () => {
+    if ((localStorage.getItem('kompass_keyholder_role') || 'A') !== topPartner) applyGlobalRoles();
+  });
 
   function updateRoleSelectionUI() {
     ensureNamesAndAnatomyLoaded();

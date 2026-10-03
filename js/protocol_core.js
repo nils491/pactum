@@ -123,7 +123,7 @@
   async function postChatEvent(text) {
     try {
       const enc = new TextEncoder();
-      const pass = localStorage.getItem('tactus_e2ee_passphrase') || 'tactus_default_salt_2026';
+      const pass = 'tactus_default_salt_2026';
       const material = await crypto.subtle.importKey('raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveKey']);
       const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: enc.encode('tactus_salt_v3'), iterations: 100000, hash: 'SHA-256' },
         material, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
@@ -148,6 +148,15 @@
     }
   }
   window.TactusChat = { post: postChatEvent };
+
+  // Nach einem Rollentausch (hier oder per Sync) Protokoll und Vertrag neu darstellen
+  window.addEventListener('tactus:roles-changed', () => {
+    if (!document.getElementById('view-ledger-dashboard')) return;
+    try {
+      renderDashboard();
+      if (window.ProtocolContract && typeof window.ProtocolContract.render === 'function') window.ProtocolContract.render();
+    } catch (e) {}
+  });
 
   // Bucht auf den aktuell geladenen Stand. Nicht neu laden: sonst gingen Änderungen verloren,
   // die die aufrufende Funktion kurz zuvor gemacht hat (z. B. das Verriegeln).
@@ -488,10 +497,10 @@
     cancelBreakGlass();
     renderDashboard();
 
-    showToast("Notfall-Öffnung vollzogen. Vertrag ist pausiert zur Schlichtung.");
+    showToast("Notfall-Öffnung vollzogen. Bitte sprecht danach in Ruhe darüber.");
 
     if (window.TactusChat) {
-      window.TactusChat.post(`NOTFALL-ÖFFNUNG: Der Verschluss wurde aus medizinischen/dringenden Gründen geöffnet (${reason}). Vertrag pausiert zur Reflexion.`);
+      window.TactusChat.post(`NOTFALL-ÖFFNUNG: Der Verschluss wurde aus medizinischen/dringenden Gründen geöffnet (${reason}).`);
     }
   }
 
