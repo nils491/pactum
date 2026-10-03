@@ -640,7 +640,7 @@
 
         <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
           <strong class="text-[#d4af37] font-mono text-xs block font-bold">3. Start mit dem 25-Fragen-Starter</strong>
-          <p class="text-[#94a3b8]">Ihr müsst nicht alle 185 Fragen auf einmal beantworten. Startet mit den 25 Kern-Fragen zur Basis-Eichung. Alle weiteren Fragen spielt TACTUS täglich im Stream ein (Daily Drip).</p>
+          <p class="text-[#94a3b8]">Ihr müsst nicht alle 505 Fragen auf einmal beantworten. Startet mit den 25 Kern-Fragen zur Basis-Eichung. Alle weiteren Fragen spielt TACTUS täglich im Stream ein (Daily Drip).</p>
         </div>
       </div>
 
@@ -775,14 +775,18 @@
           if (viewSurvey) viewSurvey.classList.add('hidden');
           if (btnHub) btnHub.className = "px-3 py-1.5 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn";
           if (btnSurvey) btnSurvey.className = "px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn";
-          window.location.hash = 'view=hub';
+          if (!window.location.hash.includes('view=hub')) {
+            window.location.hash = 'view=hub';
+          }
           renderHubTelemetry();
         } else {
           if (viewSurvey) viewSurvey.classList.remove('hidden');
           if (viewHub) viewHub.classList.add('hidden');
           if (btnSurvey) btnSurvey.className = "px-3 py-1.5 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn";
           if (btnHub) btnHub.className = "px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn";
-          window.location.hash = 'view=survey';
+          if (!window.location.hash.includes('view=survey')) {
+            window.location.hash = 'view=survey';
+          }
           if (window.SurveyRuntime) window.SurveyRuntime.init();
         }
       }
@@ -1242,6 +1246,9 @@
         const hash = window.location.hash || '';
         if (hash.includes('view=survey')) {
           switchMainTab('survey');
+          if (window.SurveyRuntime && typeof window.SurveyRuntime.checkDeepLinks === 'function') {
+            window.SurveyRuntime.checkDeepLinks();
+          }
         } else {
           switchMainTab('hub');
         }
@@ -1542,6 +1549,20 @@
 
       function checkDeepLinkItem() {
         const hash = window.location.hash || '';
+
+        // 1. Kapitel-Deeplink auflösen (z. B. #view=survey&chapter=14)
+        const chapterMatch = hash.match(/chapter=(\d+)/);
+        if (chapterMatch && chapterMatch[1]) {
+          const targetChapterId = parseInt(chapterMatch[1], 10);
+          const chapters = getAllChapters();
+          if (chapters.some(c => c.id === targetChapterId)) {
+            activeChapterId = targetChapterId;
+            populateChapterSelect();
+            renderActiveSurveyView();
+          }
+        }
+
+        // 2. Einzelitem-Deeplink auflösen (z. B. #view=survey&item=56)
         const match = hash.match(/item=(\d+)/);
         if (match && match[1]) {
           const targetId = parseInt(match[1], 10);
@@ -1583,6 +1604,7 @@
           renderActiveSurveyView();
           checkDeepLinkItem();
         },
+        checkDeepLinks: checkDeepLinkItem,
         render: renderActiveSurveyView,
         setViewMode: function(mode) {
           surveyViewMode = mode;
