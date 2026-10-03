@@ -255,7 +255,11 @@
 
   function effectiveIntensity(requested, profile) {
     const p = profile || getSafetyProfile();
-    const value = parseInt(requested, 10) || 5;
+    let value = parseInt(requested, 10) || 5;
+    // War es dem heutigen Bottom zuletzt zu viel, eine Stufe sanfter
+    if (window.TactusFeedback && typeof window.TactusFeedback.intensityAdjustment === 'function') {
+      value = Math.max(2, value + window.TactusFeedback.intensityAdjustment(getRoles().bottomRole));
+    }
     return p.lastSessionCaution ? Math.min(value, 6) : value;
   }
 
@@ -402,6 +406,15 @@
     if (curiosity.length) parts.push('Neugier beider (behutsam als neuer Akzent möglich): ' + pick(curiosity, 5));
     if (shame.length) parts.push('Mit Scham besetzt, nur behutsam und nie abwertend: ' + pick(shame, 5));
 
+    if (window.TactusFeedback && typeof window.TactusFeedback.describeForDirector === 'function') {
+      const fb = window.TactusFeedback.describeForDirector(roles);
+      if (fb) parts.push(fb);
+    }
+    if (window.TactusLearning && typeof window.TactusLearning.describeModel === 'function') {
+      const curve = window.TactusLearning.describeModel();
+      if (curve) parts.push(curve);
+    }
+
     const history = (profile && profile.recent) || {};
     (history.recentSessions || []).slice(0, 2).forEach((s, i) => {
       const bits = [`Intensität ${s.intensity}`];
@@ -432,7 +445,7 @@
     const prompt = `Erstelle das persönliche Drehbuch für den heutigen Abend von {TOP} (führt) und {BOTTOM} (empfängt).
 
 HEUTE:
-- Intensität: ${intensity}/10${intensity !== (parseInt(opts.intensity, 10) || 6) ? ' (wegen der letzten Session bewusst gesenkt)' : ''}
+- Intensität: ${intensity}/10${intensity !== (parseInt(opts.intensity, 10) || 6) ? ' (wegen der letzten Rückmeldung bzw. Session bewusst gesenkt)' : ''}
 - Energie: {TOP} ${opts.energyTop || 3}/5, {BOTTOM} ${opts.energySub || 3}/5
 - Dauer: ca. ${opts.durationMin || 45} Minuten
 - Tonlage der Regie: ${TONALITY_TEXT[tonality]}

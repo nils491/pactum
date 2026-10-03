@@ -159,6 +159,7 @@
     }
 
     sessionRemainingSeconds = sessionTotalSeconds = 3600;
+    if (window.TactusLearning) window.TactusLearning.start({ mode: currentSessionMode });
     isSessionPaused = false;
     startSessionTimer();
 
@@ -297,6 +298,7 @@
   }
 
   function triggerSafeword(color) {
+    if (window.TactusLearning) window.TactusLearning.recordSafeword(color);
     const ind = document.getElementById('safeword-red-indicator');
     const time = getFormattedTimeNow();
     const isVoiceAssistActive = localStorage.getItem('kompass_voice_assist_active') !== 'false';
@@ -520,6 +522,13 @@
       timestamp: Date.now()
     };
 
+    // Lernende Kurve: Zeitverlauf der Session (Edges, Erholung, Countdown, Ziel)
+    if (window.TactusLearning) sessionEntry.telemetry = window.TactusLearning.finish();
+    // Was gespielt wurde – Grundlage für die Rückmeldung beider Partner
+    const playedSteps = (window.currentSelectedPlaybook || []).map(st => st && st.title).filter(Boolean).slice(0, 12);
+    const script = window.TactusDirector ? window.TactusDirector.getScript() : null;
+    sessionEntry.plan = { title: script ? script.title : null, steps: currentSessionMode === 'free' ? [] : playedSteps };
+
     diary.unshift(sessionEntry);
     try {
       localStorage.setItem('tactus_session_logbook', JSON.stringify(diary));
@@ -538,6 +547,8 @@
     }
 
     releaseScreenWakeLock();
+    // Rückmeldung direkt nach dem Wechsel zur Analyse anbieten
+    try { localStorage.setItem('tactus_feedback_prompt_now', sessionEntry.id); } catch (e) {}
     window.location.href = "analyse.html";
   }
 

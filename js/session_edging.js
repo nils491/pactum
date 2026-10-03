@@ -173,6 +173,7 @@
 
   function handleArousalSliderTouch(val) {
     activeArousalLevel = parseInt(val, 10);
+    if (window.TactusLearning) window.TactusLearning.recordArousal(activeArousalLevel);
     const badge = document.getElementById('arousal-level-badge');
     const labels = ["", "Ruhig", "Leicht erregt", "Wärme", "Fokus", "Plateau", "Gesteigert", "Intensiv", "Gefahrenzone", "Vor der Edge", "Edge erreicht"];
     if (badge) badge.innerText = `Stufe ${activeArousalLevel} / 10 (${labels[activeArousalLevel] || ''})`;
@@ -207,6 +208,7 @@
 
     edgeCount++;
     lastEdgeTimestamp = Date.now();
+    if (window.TactusLearning) window.TactusLearning.recordEdge();
     const hitsEl = document.getElementById('edging-total-hits');
     if (hitsEl) hitsEl.innerText = edgeCount;
 
@@ -237,9 +239,15 @@
     }, 1000);
   }
 
+  // Gelernte Werte (js/tactus_learning.js); ohne genug Daten bleibt es bei 45 s bzw. 20 s
+  let durationChosenByUser = false;
+  function getLearnedCooldown() {
+    return window.TactusLearning ? window.TactusLearning.getRecommendations().cooldownSec : 45;
+  }
+
   function startCooldownBreathingTimer() {
     if (cooldownTimerInterval) clearInterval(cooldownTimerInterval);
-    cooldownSecondsRemaining = 45;
+    cooldownSecondsRemaining = getLearnedCooldown();
     const btn = document.getElementById('btn-cooldown-timer');
 
     cooldownTimerInterval = setInterval(() => {
@@ -249,7 +257,7 @@
       } else {
         clearInterval(cooldownTimerInterval);
         if (btn) btn.innerText = "Abgekühlt ✓";
-        setTimeout(() => { if (btn) btn.innerText = "45s Abkühlen"; }, 2500);
+        setTimeout(() => { if (btn) btn.innerText = `${getLearnedCooldown()}s Abkühlen`; }, 2500);
       }
     }, 1000);
   }
@@ -273,6 +281,7 @@
   }
 
   function setCountdownDuration(seconds) {
+    durationChosenByUser = true;
     targetEdgingDuration = Math.max(5, Math.min(60, parseInt(seconds, 10) || 20));
     updateDurationStepperUI();
   }
@@ -414,6 +423,7 @@
     if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
       window.SessionVoice.unlock();
     }
+    if (window.TactusLearning) window.TactusLearning.recordGoal('release');
 
     logSessionAction("Orgasmus-Freigabe (Sofort)");
     const panel = document.getElementById('release-choice-subpanel');
@@ -440,6 +450,7 @@
     if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
       window.SessionVoice.unlock();
     }
+    if (window.TactusLearning) window.TactusLearning.recordCountdown(targetEdgingDuration, targetSessionGoal);
 
     const panel = document.getElementById('release-choice-subpanel');
     const wrap = document.getElementById('countdown-wrapper');
@@ -578,6 +589,7 @@
   }
 
   function handleCountdownResolutionAtZero(goal) {
+    if (window.TactusLearning) window.TactusLearning.recordGoal(goal);
     const endDisp = document.getElementById('countdown-display');
     const endCue = document.getElementById('countdown-cue-text');
     const wrap = document.getElementById('countdown-wrapper');
@@ -689,6 +701,7 @@
   }
 
   function finalizeEdgingDecision(decision) {
+    if (window.TactusLearning) window.TactusLearning.recordGoal(decision);
     if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
       window.SessionVoice.unlock();
     }
@@ -734,6 +747,11 @@
   function renderEdgingCockpit(containerId = 'edging-cockpit-container') {
     const container = document.getElementById(containerId);
     if (!container) return;
+
+    if (!durationChosenByUser && window.TactusLearning) {
+      const rec = window.TactusLearning.getRecommendations();
+      if (rec.ready) targetEdgingDuration = rec.countdownSec;
+    }
 
     container.innerHTML = `
       <div id="edging-cockpit-panel" class="theme-card rounded-3xl p-5 border border-[#c5a880]/60 shadow-2xl space-y-4 bg-[#090d14] font-sans">
@@ -931,6 +949,13 @@
 
       </div>
     `;
+
+    const cooldownBtn = document.getElementById('btn-cooldown-timer');
+    if (cooldownBtn && /Abkühlen/.test(cooldownBtn.innerText)) cooldownBtn.innerText = `${getLearnedCooldown()}s Abkühlen`;
+    if (window.TactusLearning) {
+      window.TactusLearning.renderCurveCard();
+      window.TactusLearning.startCardTicker();
+    }
   }
 
   function getCountdownSpeeches() {

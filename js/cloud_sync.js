@@ -229,6 +229,8 @@
       customEquipment: safeJsonParse('tactus_custom_equipment', null) || safeJsonParse('kompass_custom_equipment', []),
       chatMessages: safeJsonParse('kompass_chat_messages', []),
       sessionLogbook: safeJsonParse('tactus_session_logbook', null) || safeJsonParse('kompass_session_diary', []),
+      feedbackShared: safeJsonParse('tactus_feedback_shared', []),
+      feedbackSignals: safeJsonParse('tactus_feedback_signals', null),
       sharing: {
         A: localStorage.getItem('tactus_individual_shared_A'),
         B: localStorage.getItem('tactus_individual_shared_B')
@@ -437,6 +439,28 @@
         changesMade = true;
       }
 
+      // 10c. Geteilte Rückmeldungen (nur was der Partner ausdrücklich teilt)
+      if (Array.isArray(remote.feedbackShared)) {
+        const localShared = safeJsonParse('tactus_feedback_shared', []) || [];
+        const fbMap = new Map();
+        localShared.forEach(f => { if (f && f.id) fbMap.set(f.id, f); });
+        remote.feedbackShared.forEach(f => { if (f && f.id) fbMap.set(f.id, f); });
+        localStorage.setItem('tactus_feedback_shared', JSON.stringify(Array.from(fbMap.values()).slice(-200)));
+        changesMade = true;
+      }
+
+      // 10d. Rückmelde-Tendenzen: nur die des Absenders übernehmen, die eigenen nie überschreiben
+      if (remote.feedbackSignals && typeof remote.feedbackSignals === 'object' && remote.senderRole && remote.senderRole !== myRole) {
+        const incoming = remote.feedbackSignals[remote.senderRole];
+        const localSignals = safeJsonParse('tactus_feedback_signals', {}) || {};
+        const current = localSignals[remote.senderRole];
+        if (incoming && (!current || (incoming.updatedAt || 0) >= (current.updatedAt || 0))) {
+          localSignals[remote.senderRole] = incoming;
+          localStorage.setItem('tactus_feedback_signals', JSON.stringify(localSignals));
+          changesMade = true;
+        }
+      }
+
       // 11. Fototresor-Import (IndexedDB)
       if (Array.isArray(remote.vaultPhotos) && remote.vaultPhotos.length > 0) {
         if (window.HubPhotos && typeof window.HubPhotos.importFromSync === 'function') {
@@ -476,6 +500,7 @@
       if (window.ChatApp && typeof window.ChatApp.renderMessages === 'function') window.ChatApp.renderMessages();
       if (window.PairAnalysis && typeof window.PairAnalysis.init === 'function') window.PairAnalysis.init();
       if (window.HubToys && typeof window.HubToys.render === 'function') window.HubToys.render();
+      if (window.TactusFeedback && typeof window.TactusFeedback.checkPending === 'function') setTimeout(window.TactusFeedback.checkPending, 800);
     } catch (e) {
       console.debug('[TACTUS E2EE] Fehler bei reaktiver UI-Benachrichtigung:', e);
     }
@@ -491,8 +516,8 @@
     tasksState: 'tasks',
     climaxRatio: 'history'
   };
-  const ITEMIZED_ARRAYS = ['chatMessages', 'customEquipment', 'sessionLogbook'];
-  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing'];
+  const ITEMIZED_ARRAYS = ['chatMessages', 'customEquipment', 'sessionLogbook', 'feedbackShared'];
+  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals'];
 
   function stateToUnits(state) {
     const units = [];

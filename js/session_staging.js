@@ -186,18 +186,18 @@
       : { impact: [], bondage: [], clitoral_suction: [], male_stroker: [], wand: [], vibrator: [], clamps: [] };
 
     const bondageTool = (sem.bondage && sem.bondage.length > 0) ? sem.bondage[0] : "Krawatte oder Seidenschal";
-    const impactTool = (sem.impact && sem.impact.length > 0) ? sem.impact[0] : "die flache Hand oder ein Ledergürtel";
+    const impactTool = (sem.impact && sem.impact.length > 0) ? sem.impact[0] : "der flachen Hand oder einem Ledergürtel";
 
     // Strikte anatomische Zuordnung für Phase 3 (Edging)
     let arousalTool = "";
     if (isVulva) {
       arousalTool = (sem.clitoral_suction && sem.clitoral_suction.length > 0)
         ? sem.clitoral_suction[0]
-        : ((sem.wand && sem.wand.length > 0) ? sem.wand[0] : ((sem.vibrator && sem.vibrator.length > 0) ? sem.vibrator[0] : "gezielte Handberührungen an der Klitoris"));
+        : ((sem.wand && sem.wand.length > 0) ? sem.wand[0] : ((sem.vibrator && sem.vibrator.length > 0) ? sem.vibrator[0] : "gezielten Handberührungen an der Klitoris"));
     } else {
       arousalTool = (sem.male_stroker && sem.male_stroker.length > 0)
         ? sem.male_stroker[0]
-        : ((sem.wand && sem.wand.length > 0) ? `${sem.wand[0]} an der Eichel` : "gezielte Griffe am Schaft");
+        : ((sem.wand && sem.wand.length > 0) ? `${sem.wand[0]} an der Eichel` : "gezielten Griffen am Schaft");
     }
 
     const tool1 = availableToys.length > 0 ? availableToys[0].name : "Nackte Hände";
