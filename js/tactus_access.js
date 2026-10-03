@@ -418,6 +418,9 @@
   function setOwnGeminiKey(key) {
     OWN_KEY_SLOTS.forEach(k => { try { if (key) localStorage.setItem(k, key); else localStorage.removeItem(k); } catch (e) {} });
     if (key) { try { localStorage.setItem('tactus_ai_provider', 'gemini'); localStorage.setItem('kompass_ai_provider', 'gemini'); } catch (e) {} }
+    // Gilt für beide: per verschlüsseltem Sync auch auf das Partnergerät
+    try { localStorage.setItem('tactus_ai_key_updated_at', String(Date.now())); } catch (e) {}
+    if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
   }
   async function verifyGeminiKey(key) {
     try {
@@ -487,9 +490,9 @@
       ${hasAiConsent() ? '<button type="button" class="tx-btn" id="tx-ai-revoke">Einwilligung widerrufen</button>' : ''}
       <div style="height:12px"></div>
       <div class="tx-sub">Eigener Gemini-Schlüssel (optional)</div>
-      ${ownKey ? `<p class="tx-small">Gespeichert: <span style="font-family:'JetBrains Mono',monospace">••••${escapeHtml(ownKey.slice(-4))}</span> · nur auf diesem Gerät</p>
+      ${ownKey ? `<p class="tx-small">Gespeichert: <span style="font-family:'JetBrains Mono',monospace">••••${escapeHtml(ownKey.slice(-4))}</span> · gilt für euch beide${sync.paired ? ' (wird auf das Partnergerät übertragen)' : ' (nach der Partner-Kopplung auch auf dem zweiten Gerät)'}</p>
       <button type="button" class="tx-btn" id="tx-key-remove">Eigenen Schlüssel entfernen</button>`
-      : `<p class="tx-small">Ohne eigenen Schlüssel nutzt ihr die TACTUS-KI aus dem Abo. Einen Schlüssel erstellt ihr kostenlos bei <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:#c5a880">Google AI Studio</a>. Er bleibt nur auf diesem Gerät.</p>
+      : `<p class="tx-small">Ohne eigenen Schlüssel nutzt ihr die TACTUS-KI aus dem Abo. Einen Schlüssel erstellt ihr kostenlos bei <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:#c5a880">Google AI Studio</a>. Er gilt für euch beide und wird verschlüsselt auf das Partnergerät übertragen.</p>
       <input type="password" id="tx-key-in" class="tx-input" placeholder="Gemini-API-Schlüssel einfügen" autocomplete="off" autocapitalize="off" spellcheck="false">
       <div style="height:8px"></div>
       <button type="button" class="tx-btn tx-btn-gold" id="tx-key-save">Prüfen &amp; speichern</button>`}

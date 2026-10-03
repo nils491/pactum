@@ -237,6 +237,13 @@
       }
     };
 
+    // Eigener Gemini-Schlüssel gilt für das Paar: wird (Ende-zu-Ende verschlüsselt) mit übertragen,
+    // sobald er auf einem Gerät gesetzt oder entfernt wurde
+    const aiKeyUpdatedAt = parseInt(localStorage.getItem(AI_KEY_UPDATED_AT) || '0', 10) || 0;
+    if (aiKeyUpdatedAt) {
+      state.aiOwnKey = { key: AI_KEY_SLOTS.map(k => (localStorage.getItem(k) || '').trim()).find(Boolean) || '', updatedAt: aiKeyUpdatedAt };
+    }
+
     // Fotos werden separat und einzeln übertragen (siehe collectPhotoUnits)
     return state;
   }
@@ -269,6 +276,19 @@
         if (remote.roles.keyholder) localStorage.setItem('kompass_keyholder_role', remote.roles.keyholder);
         if (remote.roles.caged) localStorage.setItem('kompass_caged_role', remote.roles.caged);
         changesMade = true;
+      }
+
+      // 2b. Eigener KI-Schlüssel des Paares: der zuletzt gesetzte gilt
+      if (remote.aiOwnKey && typeof remote.aiOwnKey === 'object') {
+        const localAt = parseInt(localStorage.getItem(AI_KEY_UPDATED_AT) || '0', 10) || 0;
+        const remoteAt = parseInt(remote.aiOwnKey.updatedAt, 10) || 0;
+        if (remoteAt > localAt) {
+          const key = String(remote.aiOwnKey.key || '').trim();
+          AI_KEY_SLOTS.forEach(k => { if (key) localStorage.setItem(k, key); else localStorage.removeItem(k); });
+          if (key) localStorage.setItem('tactus_ai_provider', 'gemini');
+          localStorage.setItem(AI_KEY_UPDATED_AT, String(remoteAt));
+          changesMade = true;
+        }
       }
 
       // 3. Fragebogen-Antworten feldweise zusammenführen (Kein Überschreiben fremder Rollen)
@@ -517,7 +537,9 @@
     climaxRatio: 'history'
   };
   const ITEMIZED_ARRAYS = ['chatMessages', 'customEquipment', 'sessionLogbook', 'feedbackShared'];
-  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals'];
+  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals', 'aiOwnKey'];
+  const AI_KEY_SLOTS = ['tactus_api_key_gemini', 'kompass_gemini_api_key', 'tactus_ai_custom_key'];
+  const AI_KEY_UPDATED_AT = 'tactus_ai_key_updated_at';
 
   function stateToUnits(state) {
     const units = [];

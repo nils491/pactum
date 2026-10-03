@@ -259,9 +259,9 @@
           <span class="text-[10px] text-[#c5a880] font-mono">Cache leeren</span>
         </button>
 
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; ChatApp.openBreakGlass();" class="w-full p-3 rounded-2xl bg-[#450a0a] border border-[#991b1b] text-white text-left space-y-0.5 touch-btn shadow-md">
+        <button type="button" id="drawer-btn-break-glass" style="display: none;" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; ChatApp.openBreakGlass();" class="w-full p-3 rounded-2xl bg-[#450a0a] border border-[#991b1b] text-white text-left space-y-0.5 touch-btn shadow-md">
           <strong class="text-xs block font-bold text-white">Notfall-Öffnung (Break-Glass)</strong>
-          <span class="text-[10px] text-white/80 block">RACK-Sicherheitsprotokoll bei Schwellung oder Taubheit</span>
+          <span class="text-[10px] text-white/80 block">Verschluss sofort öffnen bei Schwellung, Taubheit oder Panik</span>
         </button>
       </div>
     </div>
@@ -655,6 +655,9 @@
         const btnMobile = document.getElementById('header-btn-break-glass-mobile');
         if (btnDesktop) btnDesktop.style.display = shouldShow ? 'flex' : 'none';
         if (btnMobile) btnMobile.style.display = shouldShow ? 'flex' : 'none';
+        // Menüeintrag für beide Partner, solange ein Keuschheits-Verschluss aktiv ist
+        const btnDrawer = document.getElementById('drawer-btn-break-glass');
+        if (btnDrawer) btnDrawer.style.display = isLocked ? '' : 'none';
       }
 
       function openBreakGlass() {
