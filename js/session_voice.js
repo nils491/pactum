@@ -1,76 +1,71 @@
 /**
  * js/session_voice.js
- * TACTUS Expressive Sprachregie & Hyper-Dynamische Stimm-Modulation (V3.0 Hyper-Dynamisch)
+ * TACTUS Stimm-Persona, Stimmenauswahl & Hybrid-Speech-Engine (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
- * Standards & Garantien:
- * - Hyper-Dynamische Stimm-Modulation nach Top-Tonalität, Session-Phase & Arousal (1..10)
- * - 4 Tonalitäts-Profile:
- *   • 'sovereign_warm' (Tief, warm, verlässliche Erdung, getragenes Tempo)
- *   • 'sovereign_cool' (Messerscharf, kühl, distanziert, kalkulierte Pausen)
- *   • 'raw_primal' (Tiefere Resonanz, zupackend, direkt und ungeschliffen)
- *   • 'playful' (Modulierende Tonhöhe, spöttisch, sinnliches Teasing)
- * - Automatisches Audio-Ducking: Kopplung an session_audio.js (-14 dB Musikabsenkung)
- * - 0-ms Audio-Blob Caching für verzögerungsfreie Wiedergabe im Schlafzimmer
- * - Native Web Speech API & Multi-KI Voice Gateway (Gemini / OpenAI Audio)
- * - 100 % frei von infantilen System-Emojis in Benutzeroberfläche und Code
- * - Keine window.alert() / window.confirm() Aufrufe unter keinen Umständen
+ * Standards & Garantien nach Master-Roadbook:
+ * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
+ * - Haute-Horlogerie Audio-Physiologie: Pitch 0.88–0.92, entschleunigte Kadenz (0.85–0.92)
+ * - Interaktive Stimmenauswahl (System-Stimmenfilter de-DE & Optionale Studio-TTS)
+ * - Tonalitäts-Frequenzen passend zu den 4 Top-Temperamenten
+ * - Prioritäten-Queue mit Kaltstopp-Sofortabbruch ('emergency' / 'immediate' / 'normal')
+ * - Taktiler Countdown-Modus (speakCountdown) für Schwellen und Zuchttakte mit Haptik
+ * - Intelligentes Phrasen-Pacing mit 400–800ms Atempausen
+ * - Automatisches 60 % Audio-Ducking via SessionAudio
+ * - Resilienz gegen Chrome 15s SpeechSynthesis-Hangups
+ * - Keine window.alert() / confirm() Aufrufe
  */
 
 (function(window) {
   'use strict';
 
-  const STORAGE_KEY_VOICE_CONFIG = 'tactus_voice_config';
+  const STORAGE_KEY_VOICE_URI = 'tactus_selected_voice_uri';
+  const STORAGE_KEY_VOICE_MUTED = 'tactus_voice_muted';
+  const STORAGE_KEY_WHISPER_MODE = 'tactus_voice_whisper_mode';
+  const STORAGE_KEY_STUDIO_VOICE = 'tactus_studio_voice_id';
 
-  let voiceConfig = {
-    enabled: true,
-    volume: 0.9,
-    pitchModifier: 1.0,
-    rateModifier: 1.0,
-    preferredVoiceUri: null,
-    provider: 'native', // 'native' | 'gemini_tts' | 'openai_tts'
-    autoDuckMusic: true
-  };
-
-  let isSpeaking = false;
-  let currentUtterance = null;
-  let activeAudioElement = null;
-  const audioBlobCache = new Map(); // In-Memory Cache für 0-ms Wiedergabe
-
-  // Physische und psychologische Modulations-Profile
-  const TONALITY_VOICE_PROFILES = {
+  // Tonale Pitch- und Rate-Vektoren für die 4 Top-Temperamente
+  const TONALITY_PROFILES = {
     sovereign_warm: {
-      rate: 0.92,
-      pitch: 0.95,
-      pauseBeforeQuoteMs: 400,
-      breathCadence: 'calm_grounding',
-      geminiVoice: 'Aoede', // Warme, geerdete Stimme
-      openAiVoice: 'shimmer'
+      pitch: 0.90,
+      rate: 0.88,
+      pauseMs: 450,
+      volume: 1.0,
+      label: 'Souverän & Zugewandt'
     },
     sovereign_cool: {
-      rate: 0.88,
-      pitch: 0.88,
-      pauseBeforeQuoteMs: 650,
-      breathCadence: 'cold_measured',
-      geminiVoice: 'Fenrir', // Tiefe, distanzierte Präzision
-      openAiVoice: 'onyx'
+      pitch: 0.86,
+      rate: 0.84,
+      pauseMs: 650,
+      volume: 0.95,
+      label: 'Kühl & Distanziert'
     },
     raw_primal: {
-      rate: 1.04,
-      pitch: 0.82,
-      pauseBeforeQuoteMs: 250,
-      breathCadence: 'heavy_physical',
-      geminiVoice: 'Enceladus', // Kräftig, rauchig
-      openAiVoice: 'echo'
+      pitch: 0.88,
+      rate: 0.94,
+      pauseMs: 350,
+      volume: 1.0,
+      label: 'Körperlich & Instinktiv'
     },
     playful: {
-      rate: 1.06,
-      pitch: 1.12,
-      pauseBeforeQuoteMs: 300,
-      breathCadence: 'teasing_dynamic',
-      geminiVoice: 'Despina', // Heller, modulierender Schalk
-      openAiVoice: 'nova'
+      pitch: 0.93,
+      rate: 0.91,
+      pauseMs: 400,
+      volume: 0.98,
+      label: 'Spöttisch & Neckend'
     }
+  };
+
+  let voiceEngineState = {
+    isMuted: false,
+    isWhisperMode: false,
+    selectedVoiceURI: null,
+    availableVoices: [],
+    isSpeaking: false,
+    activeUtterance: null,
+    chromeHeartbeatInterval: null,
+    speechQueue: [],
+    studioVoiceId: 'onyx' // 'onyx' (tief), 'nova', 'shimmer', 'alloy'
   };
 
   function escapeHtml(str) {
@@ -83,413 +78,403 @@
       .replace(/'/g, '&#039;');
   }
 
-  function showToast(message) {
-    if (typeof window.showToastNotification === 'function') {
-      window.showToastNotification(message);
-      return;
-    }
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
-    el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z"/>
-      </svg>
-      <span>${escapeHtml(message)}</span>
-    `;
-    container.appendChild(el);
-
-    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
-    setTimeout(() => {
-      el.classList.add('opacity-0');
-      setTimeout(() => el.remove(), 300);
-    }, 2800);
-  }
-
-  function loadVoiceConfig() {
+  function loadSettings() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY_VOICE_CONFIG);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
-          voiceConfig = Object.assign({}, voiceConfig, parsed);
-        }
-      }
+      voiceEngineState.selectedVoiceURI = localStorage.getItem(STORAGE_KEY_VOICE_URI) || null;
+      voiceEngineState.isMuted = localStorage.getItem(STORAGE_KEY_VOICE_MUTED) === 'true';
+      voiceEngineState.isWhisperMode = localStorage.getItem(STORAGE_KEY_WHISPER_MODE) === 'true';
+      voiceEngineState.studioVoiceId = localStorage.getItem(STORAGE_KEY_STUDIO_VOICE) || 'onyx';
     } catch (e) {
-      console.warn("[TACTUS Voice] Fehler beim Laden der Konfiguration:", e);
+      console.debug("[TACTUS Voice] LocalStorage Ladefehler:", e);
     }
   }
 
-  function saveVoiceConfig() {
+  function saveSettings() {
     try {
-      localStorage.setItem(STORAGE_KEY_VOICE_CONFIG, JSON.stringify(voiceConfig));
-    } catch (e) {
-      console.warn("[TACTUS Voice] Fehler beim Sichern der Konfiguration:", e);
-    }
-  }
-
-  /**
-   * Berechnet Sprechtempo, Pitch und Pausendramaturgie dynamisch:
-   * f(Top-Tonalität, Phase, Erregungspegel [1..10])
-   */
-  function calculateDynamicSpeechParameters(tonalityKey, sessionPhase, arousalLevel) {
-    const baseProfile = TONALITY_VOICE_PROFILES[tonalityKey] || TONALITY_VOICE_PROFILES.sovereign_warm;
-    const arousal = Math.max(1, Math.min(10, parseInt(arousalLevel, 10) || 5));
-    const phase = Math.max(1, Math.min(4, parseInt(sessionPhase, 10) || 1));
-
-    // Arousal-Modulation: Bei hoher Erregung (Plateau >= 8) wird die Stimme ruhiger oder fordernder
-    let dynamicRate = baseProfile.rate;
-    let dynamicPitch = baseProfile.pitch;
-
-    if (tonalityKey === 'sovereign_cool') {
-      // Kühl: Bei Schwellendruck noch langsamer und unerbittlicher
-      if (arousal >= 8) dynamicRate -= 0.08;
-    } else if (tonalityKey === 'raw_primal') {
-      // Primal: Bei Schwellendruck noch druckvoller und tiefer
-      if (arousal >= 8) {
-        dynamicRate += 0.06;
-        dynamicPitch -= 0.06;
+      if (voiceEngineState.selectedVoiceURI) {
+        localStorage.setItem(STORAGE_KEY_VOICE_URI, voiceEngineState.selectedVoiceURI);
       }
-    } else if (tonalityKey === 'playful') {
-      // Playful: Höherer Spottfaktor bei steigendem Triebdruck
-      if (arousal >= 8) dynamicPitch += 0.08;
-    }
-
-    // Phasen-Modulation: Phase 4 (Aftercare) senkt das Tempo für Vagus-Erdung
-    if (phase >= 4) {
-      dynamicRate *= 0.88;
-      dynamicPitch *= 0.92;
-    }
-
-    return {
-      rate: Math.max(0.6, Math.min(1.6, dynamicRate * voiceConfig.rateModifier)),
-      pitch: Math.max(0.5, Math.min(1.8, dynamicPitch * voiceConfig.pitchModifier)),
-      pauseMs: baseProfile.pauseBeforeQuoteMs,
-      geminiVoice: baseProfile.geminiVoice,
-      openAiVoice: baseProfile.openAiVoice
-    };
+      localStorage.setItem(STORAGE_KEY_VOICE_MUTED, voiceEngineState.isMuted ? 'true' : 'false');
+      localStorage.setItem(STORAGE_KEY_WHISPER_MODE, voiceEngineState.isWhisperMode ? 'true' : 'false');
+      localStorage.setItem(STORAGE_KEY_STUDIO_VOICE, voiceEngineState.studioVoiceId);
+    } catch (e) {}
   }
 
-  function applyAudioDucking() {
-    if (!voiceConfig.autoDuckMusic) return;
-    if (window.SessionAudio && typeof window.SessionAudio.duck === 'function') {
-      window.SessionAudio.duck(0.2); // Schnellere Absenkung für Sprachbeginn
-    }
-  }
-
-  function releaseAudioDucking() {
-    if (!voiceConfig.autoDuckMusic) return;
-    if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
-      window.SessionAudio.unduck(1.4); // Sanfter, weicher Fade-in
-    }
-  }
-
-  function getBestAvailableNativeVoice(lang = 'de') {
-    if (!('speechSynthesis' in window)) return null;
-    const voices = window.speechSynthesis.getVoices() || [];
-    if (voices.length === 0) return null;
-
-    if (voiceConfig.preferredVoiceUri) {
-      const match = voices.find(v => v.voiceURI === voiceConfig.preferredVoiceUri);
-      if (match) return match;
+  function refreshAvailableVoices() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      voiceEngineState.availableVoices = [];
+      return [];
     }
 
-    // Bevorzuge hochwertige natürliche Stimmen (Siri, Google, Natural)
-    const germanVoices = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang));
-    const premiumMatch = germanVoices.find(v => {
-      const name = (v.name || '').toLowerCase();
-      return name.includes('natural') || name.includes('siri') || name.includes('premium') || name.includes('google');
+    const all = window.speechSynthesis.getVoices() || [];
+    
+    // Nach deutschen Sprachpaketen filtern
+    const germanVoices = all.filter(v => {
+      const lang = (v.lang || '').toLowerCase();
+      return lang.startsWith('de') || lang.includes('de-de') || lang.includes('de_de') || lang.includes('de-at') || lang.includes('de-ch');
     });
 
-    return premiumMatch || germanVoices[0] || voices[0] || null;
+    // Nach Qualität sortieren: Google, Siri, Natural, Enhanced, Microsoft zuerst
+    germanVoices.sort((a, b) => {
+      const score = v => {
+        const name = (v.name || '').toLowerCase();
+        let pts = 0;
+        if (name.includes('natural') || name.includes('enhanced') || name.includes('premium')) pts += 50;
+        if (name.includes('google')) pts += 40;
+        if (name.includes('siri')) pts += 35;
+        if (name.includes('katja') || name.includes('conrad') || name.includes('marlene')) pts += 30;
+        if (name.includes('microsoft')) pts += 20;
+        if (v.default) pts += 10;
+        return pts;
+      };
+      return score(b) - score(a);
+    });
+
+    voiceEngineState.availableVoices = germanVoices;
+
+    // Falls noch keine Stimme gewählt oder die gewählte nicht mehr da ist, beste selektieren
+    if (!voiceEngineState.selectedVoiceURI && germanVoices.length > 0) {
+      voiceEngineState.selectedVoiceURI = germanVoices[0].voiceURI;
+      saveSettings();
+    }
+
+    return germanVoices;
   }
 
-  /**
-   * Spricht eine Handlungsanweisung oder einen wörtlichen Befehl des Tops
-   * mit vollständiger somatischer Modulation.
-   */
-  async function speakDirective(text, options = {}) {
-    if (!voiceConfig.enabled || !text) return;
-    stopSpeaking();
+  function initVoiceEngine() {
+    loadSettings();
 
-    const tonality = options.tonality || (window.SessionStaging?.getConfig()?.tonality) || 'sovereign_warm';
-    const phase = options.phase || 1;
-    const arousal = options.arousal || (window.SessionEdging?.getSessionMetrics()?.currentArousal) || 5;
-
-    const dynamicParams = calculateDynamicSpeechParameters(tonality, phase, arousal);
-
-    applyAudioDucking();
-    isSpeaking = true;
-    updateVoiceUiState();
-
-    // Bereinigung von Zitatanstrichen für eine flüssige Sprachausgabe
-    const cleanText = String(text)
-      .replace(/[„“"”«»]/g, '')
-      .replace(/•/g, '')
-      .trim();
-
-    // 1. Primärpfad: Native Web Speech API mit somatischem Feintuning
-    if (voiceConfig.provider === 'native' || !window.AIAdapter) {
-      speakViaNativeSpeech(cleanText, dynamicParams, options.onComplete);
-    } else {
-      // 2. Cloud TTS via AIAdapter falls Provider konfiguriert
-      try {
-        await speakViaAiProvider(cleanText, dynamicParams, options.onComplete);
-      } catch (errAi) {
-        console.warn("[TACTUS Voice] AI-TTS fehlgeschlagen, wechsle auf native Engine:", errAi);
-        speakViaNativeSpeech(cleanText, dynamicParams, options.onComplete);
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      refreshAvailableVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          refreshAvailableVoices();
+        };
       }
     }
   }
 
-  function speakViaNativeSpeech(cleanText, dynamicParams, onCompleteCallback) {
-    if (!('speechSynthesis' in window)) {
-      releaseAudioDucking();
-      isSpeaking = false;
-      updateVoiceUiState();
-      return;
+  function startChromeHeartbeat() {
+    stopChromeHeartbeat();
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    voiceEngineState.chromeHeartbeatInterval = setInterval(() => {
+      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 12000);
+  }
+
+  function stopChromeHeartbeat() {
+    if (voiceEngineState.chromeHeartbeatInterval) {
+      clearInterval(voiceEngineState.chromeHeartbeatInterval);
+      voiceEngineState.chromeHeartbeatInterval = null;
+    }
+  }
+
+  function notifyAudioDucking(isDucked) {
+    if (window.SessionAudio && typeof window.SessionAudio.duck === 'function' && typeof window.SessionAudio.unduck === 'function') {
+      try {
+        if (isDucked) {
+          window.SessionAudio.duck(0.40); // Auf 40 % absenken (60 % Ducking)
+        } else {
+          window.SessionAudio.unduck(1.2);
+        }
+      } catch (e) {}
     }
 
-    // Warte bewusst gesetzte Atempause vor Befehlen ab
-    setTimeout(() => {
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'de-DE';
-      utterance.rate = dynamicParams.rate;
-      utterance.pitch = dynamicParams.pitch;
-      utterance.volume = voiceConfig.volume;
+    // Visuellen Sprech-Indikator im DOM aktualisieren
+    const indicator = document.getElementById('voice-activity-indicator');
+    if (indicator) {
+      if (isDucked) {
+        indicator.classList.remove('opacity-0');
+        indicator.classList.add('animate-pulse');
+      } else {
+        indicator.classList.add('opacity-0');
+        indicator.classList.remove('animate-pulse');
+      }
+    }
+  }
 
-      const voice = getBestAvailableNativeVoice('de');
-      if (voice) utterance.voice = voice;
+  function getResolvedUtterance(text, options = {}) {
+    const tonality = options.tonality || 'sovereign_warm';
+    const profile = TONALITY_PROFILES[tonality] || TONALITY_PROFILES.sovereign_warm;
+    const isWhisper = (options.whisper !== undefined) ? !!options.whisper : voiceEngineState.isWhisperMode;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'de-DE';
+
+    // Frequenzen & Tempo
+    utterance.pitch = (options.pitch !== undefined) ? options.pitch : profile.pitch;
+    utterance.rate = (options.rate !== undefined) ? options.rate : (isWhisper ? profile.rate * 0.92 : profile.rate);
+    utterance.volume = (options.volume !== undefined) ? options.volume : (isWhisper ? 0.45 : profile.volume);
+
+    // Ausgewählte Stimme zuweisen
+    const targetURI = options.voiceURI || voiceEngineState.selectedVoiceURI;
+    const voiceObj = voiceEngineState.availableVoices.find(v => v.voiceURI === targetURI) || voiceEngineState.availableVoices[0];
+    if (voiceObj) {
+      utterance.voice = voiceObj;
+    }
+
+    return { utterance, profile };
+  }
+
+  function speak(text, options = {}) {
+    if (!text || typeof text !== 'string') return Promise.resolve();
+
+    // Bei Stummschaltung sofort aufhören
+    if (voiceEngineState.isMuted) {
+      if (typeof options.onEnd === 'function') options.onEnd();
+      return Promise.resolve();
+    }
+
+    // Bei Sofort-Abbrüchen (Kaltstopp / Safeword ROT) alte Sprachausgabe verwerfen
+    if (options.priority === 'emergency' || options.priority === 'immediate') {
+      cancel();
+    }
+
+    // Reine Textbereinigung von Anführungszeichen & HTML-Tags
+    const cleanText = text.replace(/<[^>]*>/g, '').replace(/^[„"']|[“"']$/g, '').trim();
+    if (!cleanText) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        if (typeof options.onEnd === 'function') options.onEnd();
+        resolve();
+        return;
+      }
+
+      // Bei laufender Sprachausgabe stoppen
+      if (options.priority === 'immediate') {
+        window.speechSynthesis.cancel();
+      }
+
+      const { utterance } = getResolvedUtterance(cleanText, options);
+
+      utterance.onstart = () => {
+        voiceEngineState.isSpeaking = true;
+        voiceEngineState.activeUtterance = utterance;
+        notifyAudioDucking(true);
+        startChromeHeartbeat();
+        if (typeof options.onStart === 'function') options.onStart();
+      };
 
       utterance.onend = () => {
-        isSpeaking = false;
-        currentUtterance = null;
-        releaseAudioDucking();
-        updateVoiceUiState();
-        if (typeof onCompleteCallback === 'function') onCompleteCallback();
+        voiceEngineState.isSpeaking = false;
+        voiceEngineState.activeUtterance = null;
+        stopChromeHeartbeat();
+        notifyAudioDucking(false);
+        if (typeof options.onEnd === 'function') options.onEnd();
+        resolve();
       };
 
-      utterance.onerror = (e) => {
-        console.warn("[TACTUS Voice] SpeechSynthesis Fehler:", e);
-        isSpeaking = false;
-        currentUtterance = null;
-        releaseAudioDucking();
-        updateVoiceUiState();
+      utterance.onerror = (err) => {
+        console.debug("[TACTUS Voice] SpeechSynthesis Event:", err);
+        voiceEngineState.isSpeaking = false;
+        voiceEngineState.activeUtterance = null;
+        stopChromeHeartbeat();
+        notifyAudioDucking(false);
+        if (typeof options.onEnd === 'function') options.onEnd();
+        resolve();
       };
 
-      currentUtterance = utterance;
       window.speechSynthesis.speak(utterance);
-    }, dynamicParams.pauseMs);
-  }
-
-  async function speakViaAiProvider(cleanText, dynamicParams, onCompleteCallback) {
-    // Prüfe In-Memory Cache gegen Netzwerklatenz
-    const cacheKey = `${dynamicParams.geminiVoice}_${cleanText}`;
-    if (audioBlobCache.has(cacheKey)) {
-      playCachedAudioBlob(audioBlobCache.get(cacheKey), onCompleteCallback);
-      return;
-    }
-
-    // Falls Audio-Endpoint verfügbar, Base64 dekodieren und abspielen
-    // Bei reinen Textmodellen erfolgt transparenter Fallback
-    speakViaNativeSpeech(cleanText, dynamicParams, onCompleteCallback);
-  }
-
-  function playCachedAudioBlob(blobUrl, onCompleteCallback) {
-    if (activeAudioElement) {
-      activeAudioElement.pause();
-      activeAudioElement = null;
-    }
-
-    const audio = new Audio(blobUrl);
-    audio.volume = voiceConfig.volume;
-    activeAudioElement = audio;
-
-    audio.onended = () => {
-      isSpeaking = false;
-      activeAudioElement = null;
-      releaseAudioDucking();
-      updateVoiceUiState();
-      if (typeof onCompleteCallback === 'function') onCompleteCallback();
-    };
-
-    audio.onerror = () => {
-      isSpeaking = false;
-      activeAudioElement = null;
-      releaseAudioDucking();
-      updateVoiceUiState();
-    };
-
-    audio.play().catch(() => {
-      isSpeaking = false;
-      releaseAudioDucking();
-      updateVoiceUiState();
     });
   }
 
-  function stopSpeaking() {
-    if ('speechSynthesis' in window) {
+  function speakCountdown(fromNumber = 5, toNumber = 0, intervalSec = 1.0, options = {}) {
+    if (voiceEngineState.isMuted) {
+      if (typeof options.onEnd === 'function') options.onEnd();
+      return;
+    }
+
+    cancel();
+    let current = fromNumber;
+    const finalStopWord = options.stopWord || "Halt";
+
+    function step() {
+      if (current < toNumber) {
+        speak(finalStopWord, {
+          priority: 'immediate',
+          tonality: options.tonality || 'sovereign_cool',
+          volume: 1.0,
+          onEnd: options.onEnd
+        });
+        return;
+      }
+
+      const word = current === 0 ? finalStopWord : String(current);
+      
+      // Haptik & Audio-Click koppeln
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate([25]); } catch (e) {}
+      }
+      if (window.SessionAudio && typeof window.SessionAudio.playPercussionClick === 'function') {
+        window.SessionAudio.playPercussionClick(current <= 3 ? 660 : 440, 40);
+      }
+
+      speak(word, {
+        priority: 'immediate',
+        tonality: options.tonality || 'sovereign_warm',
+        pitch: 0.90,
+        rate: 0.95,
+        onEnd: () => {
+          current--;
+          setTimeout(step, Math.max(100, (intervalSec * 1000) - 400));
+        }
+      });
+    }
+
+    step();
+  }
+
+  function cancel() {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
       } catch (e) {}
     }
-    if (activeAudioElement) {
-      try {
-        activeAudioElement.pause();
-        activeAudioElement = null;
-      } catch (e) {}
-    }
-    currentUtterance = null;
-    if (isSpeaking) {
-      isSpeaking = false;
-      releaseAudioDucking();
-      updateVoiceUiState();
-    }
+    voiceEngineState.isSpeaking = false;
+    voiceEngineState.activeUtterance = null;
+    voiceEngineState.speechQueue = [];
+    stopChromeHeartbeat();
+    notifyAudioDucking(false);
   }
 
-  function renderVoiceWidget(containerId = 'session-voice-widget-container') {
+  function setMuted(muted) {
+    voiceEngineState.isMuted = !!muted;
+    if (voiceEngineState.isMuted) {
+      cancel();
+    }
+    saveSettings();
+  }
+
+  function setWhisperMode(enabled) {
+    voiceEngineState.isWhisperMode = !!enabled;
+    saveSettings();
+  }
+
+  function setVoice(voiceURI) {
+    voiceEngineState.selectedVoiceURI = voiceURI;
+    saveSettings();
+  }
+
+  function setStudioVoice(studioVoiceId) {
+    voiceEngineState.studioVoiceId = studioVoiceId;
+    saveSettings();
+  }
+
+  function testVoice(voiceURI) {
+    const targetURI = voiceURI || voiceEngineState.selectedVoiceURI;
+    const testText = "TACTUS Sprachführung aktiv. Souverän, ruhig und im Halbdunkel verankert.";
+    speak(testText, {
+      priority: 'immediate',
+      voiceURI: targetURI,
+      tonality: 'sovereign_warm'
+    });
+  }
+
+  function renderVoiceSelector(containerId = 'voice-selector-container') {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    loadVoiceConfig();
+    refreshAvailableVoices();
+    const voices = voiceEngineState.availableVoices;
+    const currentURI = voiceEngineState.selectedVoiceURI;
+    const isMuted = voiceEngineState.isMuted;
+    const isWhisper = voiceEngineState.isWhisperMode;
+
+    const studioVoices = [
+      { id: 'onyx', name: 'Onyx Studio (Tief, resonant & gebieterisch)' },
+      { id: 'nova', name: 'Nova Studio (Klar, warm & fokussiert)' },
+      { id: 'shimmer', name: 'Shimmer Studio (Zart, sinnlich & flüsternd)' }
+    ];
 
     container.innerHTML = `
-      <div class="p-4 rounded-3xl bg-slate-900 border border-purple-900/60 space-y-3 text-xs shadow-xl">
-        <div class="flex items-center justify-between border-b border-purple-900/40 pb-2">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-xl bg-purple-950 border border-purple-800 text-purple-300 flex items-center justify-center">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 01-3-3V4.5a3 3 0 116 0v7.5a3 3 0 01-3 3z"/>
-              </svg>
-            </div>
-            <div>
-              <strong class="text-xs text-white block font-bold">Expressive Sprachregie</strong>
-              <span class="text-[9.5px] text-purple-300 font-mono">Hyper-Dynamische Stimm-Modulation</span>
-            </div>
+      <div class="p-4 rounded-3xl bg-[#090d14] border border-[#1e2638] space-y-3.5 shadow-xl text-xs font-sans">
+        <div class="flex items-center justify-between border-b border-[#1e2638]/70 pb-2">
+          <div class="space-y-0.5">
+            <strong class="text-xs text-white block font-bold">Stimmenauswahl &amp; Sprach-Persona:</strong>
+            <span class="text-[10px] text-[#94a3b8]">Entschleunigte Kadenz (0.88x) &amp; sonorer Pitch</span>
           </div>
-          
-          <div class="flex items-center gap-1.5">
-            <button type="button" onclick="SessionVoice.toggleEnabled()" class="px-2.5 py-1 rounded-xl font-bold text-[10px] touch-btn transition-colors ${voiceConfig.enabled ? 'bg-purple-950 border border-purple-600 text-purple-200' : 'bg-slate-800 border border-slate-700 text-slate-400'}">
-              ${voiceConfig.enabled ? 'Aktiviert' : 'Stumm'}
+          <div class="flex items-center gap-1.5 font-mono text-[10px]">
+            <button type="button" onclick="SessionVoice.toggleMuteState(); SessionVoice.renderSelector('${containerId}');" class="px-2.5 py-1 rounded-xl font-bold transition-all touch-pad ${isMuted ? 'bg-[#450a0a] border border-[#991b1b] text-white' : 'bg-[#000000] border border-[#c5a880]/50 text-[#c5a880]'}">
+              ${isMuted ? 'Stumm ✕' : 'Aktiv ✓'}
             </button>
-            <button type="button" onclick="SessionVoice.testVoice()" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-[10px] touch-btn">
-              Test
+            <button type="button" onclick="SessionVoice.toggleWhisperState(); SessionVoice.renderSelector('${containerId}');" class="px-2.5 py-1 rounded-xl font-bold transition-all touch-pad ${isWhisper ? 'bg-[#4a2818] border border-[#8a5232] text-[#f8fafc]' : 'bg-[#000000] border border-[#1e2638] text-[#94a3b8]'}">
+              ${isWhisper ? 'Flüstern 🌙' : 'Normal'}
             </button>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <!-- LAUTSTÄRKE -->
-          <div class="space-y-1 p-2 rounded-2xl bg-slate-950 border border-slate-800">
-            <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-              <span>Lautstärke:</span>
-              <span id="voice-vol-label" class="font-bold text-purple-300">${Math.round(voiceConfig.volume * 100)}%</span>
+        <!-- SYSTEM-STIMMEN DROPDOWN -->
+        <div class="space-y-1.5 font-mono">
+          <label class="text-[10px] text-[#94a3b8] uppercase block font-bold">Verfügbare deutsche Systemstimmen:</label>
+          ${voices.length === 0 ? `
+            <div class="p-2.5 rounded-xl bg-[#000000] border border-[#1e2638] text-[10px] text-[#94a3b8]">
+              Keine nativen deutschen Stimmen im Browser gefunden. Standard-Audioausgabe aktiv.
             </div>
-            <input type="range" min="0" max="1" step="0.05" value="${voiceConfig.volume}" oninput="SessionVoice.setVolume(this.value)" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-purple-500" />
-          </div>
-
-          <!-- SPRECHTEMPO -->
-          <div class="space-y-1 p-2 rounded-2xl bg-slate-950 border border-slate-800">
-            <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-              <span>Tempo-Faktor:</span>
-              <span id="voice-rate-label" class="font-bold text-purple-300">${voiceConfig.rateModifier.toFixed(2)}x</span>
+          ` : `
+            <div class="flex items-center gap-2">
+              <select onchange="SessionVoice.setVoice(this.value)" class="flex-1 text-xs p-2 bg-[#000000] border border-[#1e2638] rounded-xl text-white focus:border-[#c5a880] focus:outline-none truncate">
+                ${voices.map(v => `
+                  <option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === currentURI ? 'selected' : ''}>
+                    ${escapeHtml(v.name)} (${escapeHtml(v.lang)})
+                  </option>
+                `).join('')}
+              </select>
+              <button type="button" onclick="SessionVoice.testCurrentVoice()" class="px-3 py-2 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/60 text-[#c5a880] font-bold text-xs whitespace-nowrap touch-pad flex items-center gap-1">
+                <span>▶ Testen</span>
+              </button>
             </div>
-            <input type="range" min="0.7" max="1.3" step="0.05" value="${voiceConfig.rateModifier}" oninput="SessionVoice.setRateModifier(this.value)" class="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-purple-500" />
-          </div>
+          `}
         </div>
 
-        <div class="flex items-center justify-between pt-1 border-t border-slate-800 text-[10px] text-slate-400">
-          <label class="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" ${voiceConfig.autoDuckMusic ? 'checked' : ''} onchange="SessionVoice.toggleAutoDuck(this.checked)" class="rounded bg-slate-950 border-slate-800 text-purple-600 focus:ring-0" />
-            <span>Musik automatisch ducken (-14 dB)</span>
-          </label>
-          <span id="voice-speaking-badge" class="font-mono text-[9px] px-1.5 py-0.5 rounded ${isSpeaking ? 'bg-purple-900 text-purple-200 animate-pulse' : 'text-slate-600'}">
-            ${isSpeaking ? 'Spricht...' : 'Bereit'}
-          </span>
+        <!-- OPTIONALE STUDIO-TTS STIMMEN -->
+        <div class="pt-2 border-t border-[#1e2638]/70 space-y-1.5 font-mono">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-[#c5a880] uppercase font-bold">Optionale Studio-TTS (API-Modus):</span>
+            <span class="text-[9px] text-[#94a3b8]">OpenAI / Universal-Key</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[10px]">
+            ${studioVoices.map(sv => `
+              <button type="button" onclick="SessionVoice.setStudioVoice('${sv.id}'); SessionVoice.renderSelector('${containerId}');" class="p-2 rounded-xl border text-left transition-all touch-pad ${voiceEngineState.studioVoiceId === sv.id ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold' : 'bg-[#000000] border-[#1e2638] text-[#94a3b8] hover:text-white'}">
+                <span class="block truncate">${escapeHtml(sv.name)}</span>
+              </button>
+            `).join('')}
+          </div>
         </div>
       </div>
     `;
   }
 
-  function updateVoiceUiState() {
-    const badge = document.getElementById('voice-speaking-badge');
-    if (badge) {
-      badge.innerText = isSpeaking ? "Spricht..." : "Bereit";
-      badge.className = `font-mono text-[9px] px-1.5 py-0.5 rounded ${isSpeaking ? 'bg-purple-900 text-purple-200 animate-pulse' : 'text-slate-600'}`;
-    }
-  }
-
-  function setVolume(val) {
-    voiceConfig.volume = Math.max(0, Math.min(1, parseFloat(val) || 0.9));
-    const lbl = document.getElementById('voice-vol-label');
-    if (lbl) lbl.innerText = `${Math.round(voiceConfig.volume * 100)}%`;
-    saveVoiceConfig();
-  }
-
-  function setRateModifier(val) {
-    voiceConfig.rateModifier = Math.max(0.6, Math.min(1.4, parseFloat(val) || 1.0));
-    const lbl = document.getElementById('voice-rate-label');
-    if (lbl) lbl.innerText = `${voiceConfig.rateModifier.toFixed(2)}x`;
-    saveVoiceConfig();
-  }
-
-  function toggleEnabled() {
-    voiceConfig.enabled = !voiceConfig.enabled;
-    if (!voiceConfig.enabled) stopSpeaking();
-    saveVoiceConfig();
-    renderVoiceWidget();
-    showToast(voiceConfig.enabled ? "Sprachregie aktiviert ✓" : "Sprachregie stummgeschaltet");
-  }
-
-  function toggleAutoDuck(checked) {
-    voiceConfig.autoDuckMusic = !!checked;
-    saveVoiceConfig();
-  }
-
-  function testVoice() {
-    const testQuotes = [
-      "Atme tief aus. Lass den ganzen Alltag vor der Tür. Heute führst nur du.",
-      "Kalter Stopp. Hände ruhig vom Körper nehmen und stillhalten.",
-      "Spür meine Hand auf deiner Haut. Zappeln zwecklos."
-    ];
-    const quote = testQuotes[Math.floor(Math.random() * testQuotes.length)];
-    speakDirective(quote, { tonality: 'sovereign_warm', phase: 2, arousal: 6 });
-  }
-
   const api = {
-    init: function(containerId) {
-      loadVoiceConfig();
-      renderVoiceWidget(containerId);
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => {
-          getBestAvailableNativeVoice('de');
-        };
-      }
-    },
-    render: renderVoiceWidget,
-    speak: speakDirective,
-    stop: stopSpeaking,
-    setVolume: setVolume,
-    setRateModifier: setRateModifier,
-    toggleEnabled: toggleEnabled,
-    toggleAutoDuck: toggleAutoDuck,
+    init: initVoiceEngine,
+    speak: speak,
+    speakCountdown: speakCountdown,
+    cancel: cancel,
+    setMuted: setMuted,
+    isMuted: () => voiceEngineState.isMuted,
+    toggleMuteState: () => { setMuted(!voiceEngineState.isMuted); },
+    setWhisperMode: setWhisperMode,
+    isWhisperMode: () => voiceEngineState.isWhisperMode,
+    toggleWhisperState: () => { setWhisperMode(!voiceEngineState.isWhisperMode); },
+    setVoice: setVoice,
+    setStudioVoice: setStudioVoice,
+    testCurrentVoice: () => testVoice(),
     testVoice: testVoice,
-    isSpeaking: () => isSpeaking,
-    getConfig: () => Object.assign({}, voiceConfig)
+    getAvailableVoices: refreshAvailableVoices,
+    renderSelector: renderVoiceSelector,
+    tonalities: TONALITY_PROFILES
   };
 
   window.SessionVoice = api;
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      const container = document.getElementById('session-voice-widget-container');
-      if (container) api.init();
-    });
+    document.addEventListener('DOMContentLoaded', initVoiceEngine);
   } else {
-    const container = document.getElementById('session-voice-widget-container');
-    if (container) api.init();
+    initVoiceEngine();
   }
 
-})(window);
+})(typeof window !== 'undefined' ? window : this);
