@@ -27,7 +27,7 @@ Der bisherige Schlüssel stand im Chat und gilt deshalb als verbraucht.
 1. Cloudflare-Dashboard → **Storage & Databases → D1 SQL Database → Create**.
 2. Name: `tactus` → **Create**.
 3. Die angezeigte **Database ID** kopieren und in `wrangler.jsonc` bei `database_id` eintragen. Du kannst sie auch mir geben, dann trage ich sie ein.
-4. In der Datenbank auf **Console** gehen, nacheinander den kompletten Inhalt von `worker/migrations/0001_init.sql` und `worker/migrations/0002_invites.sql` einfügen und jeweils **Execute** drücken.
+4. Mehr ist nicht nötig. Die Tabellen legt der Worker beim ersten Aufruf selbst an (Lizenzen, KI-Kontingent, Testercodes).
 
 ## Schritt 3 – Worker mit GitHub verbinden
 
@@ -53,6 +53,8 @@ Worker `tactus` → **Settings → Variables and Secrets → Add**, beide jeweil
 | `ADMIN_TOKEN` | ein langes Zufallspasswort (mindestens 32 Zeichen, aus dem Passwort-Manager) |
 
 Ohne `GEMINI_API_KEY` funktioniert alles außer dem KI-Fallback. Kunden mit eigenem Key können die KI trotzdem nutzen.
+
+**Falls das Speichern nicht klappt:** Häufigste Ursache ist, dass der Worker noch nie erfolgreich veröffentlicht wurde. Secrets lassen sich zuverlässig erst eintragen, wenn der Worker mindestens einmal erfolgreich veröffentlicht wurde. Also zuerst dafür sorgen, dass der Build grün ist (Schritt 3, keine `[BITTE …]`-Platzhalter mehr), dann die Secrets eintragen und einmal **Deployments → Retry/Redeploy** auslösen, damit der Worker sie übernimmt.
 
 ## Schritt 5 – Domain verbinden
 

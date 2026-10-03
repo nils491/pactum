@@ -66,6 +66,31 @@ function timingSafeEqual(a, b) {
   return diff === 0;
 }
 
+// Tabellen legt der Worker selbst an (idempotent, einmal pro Isolate) –
+// kein manueller Schritt in der D1-Konsole nötig. Entspricht worker/migrations/*.sql.
+const SCHEMA = [
+  `CREATE TABLE IF NOT EXISTS licenses (key_hash TEXT PRIMARY KEY, key_hint TEXT NOT NULL, plan TEXT NOT NULL,
+     status TEXT NOT NULL, expires_at INTEGER, created_at INTEGER NOT NULL, note TEXT, customer_ref TEXT)`,
+  `CREATE TABLE IF NOT EXISTS ai_usage (license_hash TEXT NOT NULL, day TEXT NOT NULL, kind TEXT NOT NULL,
+     count INTEGER NOT NULL, PRIMARY KEY (license_hash, day, kind))`,
+  `CREATE TABLE IF NOT EXISTS invites (code_hash TEXT PRIMARY KEY, code_display TEXT NOT NULL, months INTEGER,
+     max_uses INTEGER NOT NULL, uses INTEGER NOT NULL DEFAULT 0, expires_at INTEGER, active INTEGER NOT NULL DEFAULT 1,
+     created_at INTEGER NOT NULL, note TEXT)`,
+  `CREATE TABLE IF NOT EXISTS redeem_attempts (ip_hash TEXT NOT NULL, day TEXT NOT NULL, count INTEGER NOT NULL,
+     PRIMARY KEY (ip_hash, day))`
+];
+let schemaReady = null;
+
+function ensureSchema(env) {
+  if (!schemaReady) {
+    schemaReady = env.DB.batch(SCHEMA.map(sql => env.DB.prepare(sql))).catch(err => {
+      schemaReady = null; // beim nächsten Aufruf erneut versuchen
+      throw err;
+    });
+  }
+  return schemaReady;
+}
+
 // Kurzzeit-Cache pro Isolate, damit nicht jeder Sync-Push eine D1-Abfrage kostet
 const licenseCache = new Map();
 
@@ -312,6 +337,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
+      if (url.pathname.startsWith('/api/')) await ensureSchema(env);
       if (url.pathname.startsWith('/api/relay/')) return await handleRelay(request, env, url);
       if (url.pathname.startsWith('/api/ai/')) return await handleAi(request, env, url);
       if (url.pathname === '/api/license/check') return await handleLicenseCheck(request, env);
