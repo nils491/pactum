@@ -97,6 +97,7 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .gold-glow { box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.25); }
+    .malachite-glow { box-shadow: 0 0 25px -5px rgba(46, 87, 70, 0.25); }
     .item-highlight { animation: highlightPulse 2.5s ease-out; }
     @keyframes highlightPulse {
       0% { box-shadow: 0 0 0 3px #c5a880, 0 0 25px #c5a880; }
@@ -107,11 +108,10 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
 
-  <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 · ZERO PIXEL-JUMPING · COLLISION-FREE) -->
   <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#1e2638]/60 h-14 flex items-center">
     <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between gap-2">
       
-      <!-- Brand-Einheit mit TACTUS Logo & Status (Clean, statisches HUB-Badge, keine Textüberlagerung) -->
+      <!-- Brand-Einheit mit TACTUS Logo & Status -->
       <a href="index.html#view=hub" class="flex items-center space-x-3 cursor-pointer group min-w-0 flex-1 mr-1 touch-btn" style="min-height: 44px;">
         <div class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#c5a880]/40 flex items-center justify-center p-1 shadow-sm group-hover:border-[#c5a880] transition-colors flex-shrink-0 overflow-hidden">
           <img src="assets/logo.png" onerror="this.onerror=null; this.src='img/tactus_logo.png'; this.style.display='none'; this.nextElementSibling.style.display='block';" alt="TACTUS Logo" class="w-full h-full object-contain" />
@@ -123,7 +123,6 @@
         <div class="min-w-0 truncate">
           <div class="flex items-center gap-1.5">
             <span class="font-serif text-sm sm:text-base tracking-widest text-[#f8fafc] font-semibold leading-none truncate">TACTUS</span>
-            <!-- Festes Cockpit-Badge (HUB), analog zu GUIDE, E2EE, SYNERGIE -->
             <span class="px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0">HUB</span>
           </div>
           <span class="text-[9.5px] font-mono text-[#94a3b8] block leading-none mt-1 truncate" id="hub-header-roles">Partner 1 &amp; Partner 2</span>
@@ -190,13 +189,13 @@
   <!-- SUB-NAVIGATION DER 6 HAUPT-COCKPITS (DESKTOP) -->
   <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
     <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-mono">
-      <button type="button" onclick="IndexRuntime.switchMainTab('hub')" id="tab-nav-hub" class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn" style="min-height: 40px;">Start-Hub ✓</button>
-      <button type="button" onclick="IndexRuntime.switchMainTab('survey')" id="tab-nav-survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn" style="min-height: 40px;">Fragebogen (500 Items)</button>
-      <a href="analyse.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Paar-Analyse</a>
-      <a href="chat.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Paar-Stream</a>
-      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Das Protokoll</a>
-      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Guide</a>
-      <a href="session.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#b3734a] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center" style="min-height: 40px;">Schlafzimmer-Regie</a>
+      <button type="button" onclick="IndexRuntime.switchMainTab('hub')" id="tab-nav-hub" class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn shrink-0 flex-shrink-0" style="min-height: 40px;">Start-Hub ✓</button>
+      <button type="button" onclick="IndexRuntime.switchMainTab('survey')" id="tab-nav-survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn shrink-0 flex-shrink-0" style="min-height: 40px;">Fragebogen (505 Items)</button>
+      <a href="analyse.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center shrink-0 flex-shrink-0" style="min-height: 40px;">Paar-Analyse</a>
+      <a href="chat.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center shrink-0 flex-shrink-0" style="min-height: 40px;">Paar-Stream</a>
+      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center shrink-0 flex-shrink-0" style="min-height: 40px;">Das Protokoll</a>
+      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center shrink-0 flex-shrink-0" style="min-height: 40px;">Guide</a>
+      <a href="session.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#b3734a] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn flex items-center shrink-0 flex-shrink-0" style="min-height: 40px;">Schlafzimmer-Regie</a>
     </div>
   </nav>
 
@@ -222,7 +221,7 @@
           <span class="text-[10px] text-[#c5a880]">Hier aktiv ✓</span>
         </button>
         <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; IndexRuntime.switchMainTab('survey');" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn">
-          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (505 Items)</span>
           <span class="text-[#94a3b8]">→</span>
         </button>
         <a href="analyse.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
@@ -254,15 +253,13 @@
 
   <main class="max-w-4xl mx-auto p-3.5 sm:p-6 flex-1 w-full space-y-4">
 
-    <!-- =========================================================================
-         BÜHNE 1: DER START-HUB (#view=hub)
-         ========================================================================= -->
+    <!-- BÜHNE 1: DER START-HUB (#view=hub) -->
     <div id="view-index-hub" class="space-y-4 animate-fade-in font-sans">
       
-      <!-- HERO COCKPIT CARD (DAUERHAFT COLLISION-FREE DURCH FLEX-COL AUF MOBILE) -->
+      <!-- HERO COCKPIT CARD (DAUERHAFT COLLISION-FREE) -->
       <div class="rounded-3xl p-4 sm:p-6 border border-[#2a364f] shadow-2xl bg-[#090d14] space-y-4">
         
-        <!-- HEADER-BEREICH: AUF MOBILE SAUBER GESTAPELT (100% BREITE FÜR TITEL, DARUNTER 2-SPALTIGE BUTTONS) -->
+        <!-- HEADER-BEREICH: AUF MOBILE SAUBER GESTAPELT -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2a364f]/70 pb-3">
           <div class="space-y-1 min-w-0">
             <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
@@ -273,13 +270,13 @@
             </h2>
           </div>
 
-          <!-- AKTIONEN: AUF MOBILE ALS SAUBERES 2-SPALTIGES GRID MIT VOLLER BREITE, AUF DESKTOP KOMPAKT RECHTS -->
+          <!-- AKTIONEN: 2-SPALTIGES GRID AUF MOBILE -->
           <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 font-mono text-xs w-full sm:w-auto flex-shrink-0 pt-1 sm:pt-0">
-            <button type="button" onclick="IndexRuntime.openWelcomeTutorial()" class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#2a364f] text-[#c5a880] font-bold touch-btn flex items-center justify-center gap-1.5 shadow-sm">
-              <span>✨ Einführung</span>
+            <button type="button" onclick="IndexRuntime.openWalkthroughModal()" class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#2a364f] text-[#c5a880] font-bold touch-btn flex items-center justify-center gap-1.5 shadow-sm">
+              <span>✨ Tour (6 Schritte)</span>
             </button>
-            <button type="button" onclick="IndexRuntime.openAccountModal()" class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md text-center">
-              Profil &amp; Setup
+            <button type="button" onclick="IndexRuntime.openSetupWizard()" class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md text-center">
+              Setup-Wizard
             </button>
           </div>
         </div>
@@ -287,6 +284,23 @@
         <p class="text-[11px] text-[#94a3b8] leading-relaxed">
           Das somatische Betriebssystem für Intimität, Führung, Vertrauen und Hingabe. Verbindet psychometrische Konsens-Kalibrierung mit Echtzeit-Regie im Halbdunkel des Schlafzimmers.
         </p>
+
+        <!-- PROGRESSIVE DISCLOSURE STUFEN-LEISTE (PUNKT #4) -->
+        <div id="hub-progressive-stage-card" class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#c5a880] animate-pulse"></span>
+              <strong class="text-white font-serif" id="progressive-stage-title">Stufe 1: Schlafzimmer &amp; 25-Fragen-Starter</strong>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[9px] font-mono bg-[#090d14] text-[#c5a880] border border-[#c5a880]/30 font-bold" id="progressive-stage-badge">Starter aktiv</span>
+          </div>
+          <div class="w-full h-1.5 bg-[#090d14] rounded-full overflow-hidden border border-[#2a364f]">
+            <div id="progressive-progress-bar" class="h-full bg-gradient-to-r from-[#8a5232] to-[#c5a880] transition-all duration-500" style="width: 25%;"></div>
+          </div>
+          <p class="text-[10px] text-[#94a3b8] leading-snug" id="progressive-stage-desc">
+            Überforderungsschutz aktiv: Beginnt entspannt mit dem 25-Fragen-Starter. Größere Governance-Verträge und Zuchtkataloge schalten sich schrittweise mit wachsender Vertrautheit frei.
+          </p>
+        </div>
 
         <!-- BEZIEHUNGS-MODUS STATUS-BANNER -->
         <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
@@ -352,19 +366,6 @@
           </p>
         </a>
 
-        <a href="protocol.html" class="p-4 rounded-3xl bg-[#090d14] border border-[#2a364f] hover:border-[#d4af37]/60 transition-all space-y-2 touch-btn shadow-md block">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#d4af37]"></span>
-              <strong class="text-sm text-white font-serif">Das Protokoll &amp; Vertrag</strong>
-            </div>
-            <span class="text-[10px] font-mono text-[#d4af37] font-bold">Kodex &amp; Pflichten ↗</span>
-          </div>
-          <p class="text-[10.5px] text-[#94a3b8] leading-snug">
-            Orgasmus-Ratio, urologische Hygiene, Zuchtkatalog, Beziehungsvertrag (Stufe 0–5) und Break-Glass Notfall.
-          </p>
-        </a>
-
         <a href="analyse.html" class="p-4 rounded-3xl bg-[#090d14] border border-[#2e5746]/60 transition-all space-y-2 touch-btn shadow-md block">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -375,6 +376,19 @@
           </div>
           <p class="text-[10.5px] text-[#94a3b8] leading-snug">
             Doppel-5er Spitzen, bdsmtest.org Δ D/s Quotient, 3-Spalten psychodynamisches Dossier und KI-Gutachten.
+          </p>
+        </a>
+
+        <a href="protocol.html" class="p-4 rounded-3xl bg-[#090d14] border border-[#2a364f] hover:border-[#d4af37]/60 transition-all space-y-2 touch-btn shadow-md block">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#d4af37]"></span>
+              <strong class="text-sm text-white font-serif">Das Protokoll &amp; Vertrag</strong>
+            </div>
+            <span class="text-[10px] font-mono text-[#d4af37] font-bold">Kodex &amp; Pflichten ↗</span>
+          </div>
+          <p class="text-[10.5px] text-[#94a3b8] leading-snug">
+            Orgasmus-Ratio, urologische Hygiene, Zuchtkatalog, Beziehungsvertrag (Stufe 0–5) und Break-Glass Notfall.
           </p>
         </a>
       </div>
@@ -395,7 +409,7 @@
         </p>
       </div>
 
-      <!-- AUSRÜSTUNGSSCHRANK & HARDWARE-ATELIER KOMPAKTE TEASER-KACHEL (PUNKT #13) -->
+      <!-- AUSRÜSTUNGSSCHRANK & HARDWARE-ATELIER KOMPAKTE TEASER-KACHEL -->
       <div class="rounded-3xl p-5 bg-[#090d14] border border-[#2a364f] hover:border-[#c5a880]/60 transition-all space-y-3 shadow-md">
         <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
           <div class="flex items-center gap-2">
@@ -407,7 +421,7 @@
           </button>
         </div>
         <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">
-          Verwaltet reale BDSM- &amp; Erotik-Ausrüstung, Stückzahlen, Passformen, individuelle Reize, Community Wisdom und automatische DoF-Konfliktprüfungen.
+          Verwaltet reale BDSM- &amp; Erotik-Ausrüstung, Stückzahlen, Passformen, individuelle Reize, Community Wisdom und den neuen 3–6 Toy-Kit Wizard.
         </p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-[10px] pt-1">
           <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f]">
@@ -427,12 +441,9 @@
 
     </div>
 
-    <!-- =========================================================================
-         BÜHNE 2: DER VOLLSTÄNDIGE FRAGEBOGEN-RUNNER (#view=survey)
-         ========================================================================= -->
     <div id="view-index-survey" class="hidden space-y-4 animate-fade-in font-sans">
       
-      <!-- SURVEY CONTROL BAR (DAUERHAFT COLLISION-FREE) -->
+      <!-- SURVEY CONTROL BAR -->
       <div class="rounded-3xl p-4 sm:p-5 bg-[#090d14] border border-[#2a364f] shadow-2xl space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-3">
           <div class="space-y-0.5 min-w-0">
@@ -440,7 +451,7 @@
               Psychometrischer Konsens-Katalog
             </span>
             <h2 class="text-base sm:text-lg font-serif text-white mt-1" id="survey-active-chapter-title">
-              Alle Kapitel (500 Items)
+              Alle Kapitel (505 Items)
             </h2>
           </div>
 
@@ -462,29 +473,32 @@
           </select>
 
           <div class="relative">
-            <input type="text" id="survey-search-input" oninput="SurveyRuntime.handleSearch(this.value)" placeholder="Suche in allen 500 Fragen..." class="w-full p-3 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs font-sans placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" style="min-height: 44px;" />
+            <input type="text" id="survey-search-input" oninput="SurveyRuntime.handleSearch(this.value)" placeholder="Suche in allen 505 Fragen..." class="w-full p-3 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs font-sans placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" style="min-height: 44px;" />
             <span class="absolute right-3.5 top-3.5 text-[#94a3b8]/40 pointer-events-none">🔍</span>
           </div>
         </div>
 
-        <!-- FILTER-PILLS -->
+        <!-- FILTER-PILLS (INKLUSIVE 25-FRAGEN-STARTER) -->
         <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 border-t border-[#2a364f]/70 font-mono text-[10.5px]">
-          <button type="button" onclick="SurveyRuntime.setFilter('all')" id="survey-filter-all" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shadow-sm">
-            Alle
+          <button type="button" onclick="SurveyRuntime.setFilter('starter')" id="survey-filter-starter" class="px-3 py-1.5 rounded-xl font-bold bg-[#000000] border border-[#d4af37] text-[#d4af37] touch-btn whitespace-nowrap shrink-0 flex-shrink-0 shadow-sm">
+            ✨ 25-Starter (Basis)
           </button>
-          <button type="button" onclick="SurveyRuntime.setFilter('unanswered')" id="survey-filter-unanswered" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap">
+          <button type="button" onclick="SurveyRuntime.setFilter('all')" id="survey-filter-all" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+            Alle (505)
+          </button>
+          <button type="button" onclick="SurveyRuntime.setFilter('unanswered')" id="survey-filter-unanswered" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
             Offen
           </button>
-          <button type="button" onclick="SurveyRuntime.setFilter('notes')" id="survey-filter-notes" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#c5a880] hover:text-white touch-btn whitespace-nowrap">
+          <button type="button" onclick="SurveyRuntime.setFilter('notes')" id="survey-filter-notes" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#c5a880] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
             Mit Notizen
           </button>
-          <button type="button" onclick="SurveyRuntime.setFilter('shame')" id="survey-filter-shame" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap">
-            Scham-Schutzanker (🙈)
+          <button type="button" onclick="SurveyRuntime.setFilter('shame')" id="survey-filter-shame" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#dfcaa9] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
+            Schutzanker (🙈)
           </button>
-          <button type="button" onclick="SurveyRuntime.setFilter('favorites')" id="survey-filter-favorites" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#d4af37] hover:text-white touch-btn whitespace-nowrap">
+          <button type="button" onclick="SurveyRuntime.setFilter('favorites')" id="survey-filter-favorites" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#d4af37] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
             Favoriten (4 &amp; 5)
           </button>
-          <button type="button" onclick="SurveyRuntime.setFilter('taboos')" id="survey-filter-taboos" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap">
+          <button type="button" onclick="SurveyRuntime.setFilter('taboos')" id="survey-filter-taboos" class="px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#991b1b] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
             Tabus (Note 1)
           </button>
         </div>
@@ -512,7 +526,157 @@
 
   </main>
 
-  <!-- MODAL: AUSRÜSTUNGSSCHRANK MODAL-CONTAINER (PUNKT #13) -->
+  <!-- MODAL: GEFÜHRTER 4-SCHRITTE COLD-START SETUP-WIZARD (PUNKT #2) -->
+  <div id="modal-setup-wizard" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#c5a880]/70 p-5 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[92dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
+      
+      <!-- Wizard Kopfzeile -->
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#000000] border border-[#c5a880]/50 flex items-center justify-center font-serif text-sm font-bold text-[#c5a880]">T</div>
+          <div>
+            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block" id="setup-step-label">Schritt 1 von 4</span>
+            <h3 class="text-sm sm:text-base font-serif font-bold text-white" id="setup-step-title">Erstinbetriebnahme: Wer seid ihr?</h3>
+          </div>
+        </div>
+        <button type="button" onclick="IndexRuntime.skipSetupWizard()" class="text-[#94a3b8] hover:text-white font-mono text-[10px] touch-btn">Überspringen ✕</button>
+      </div>
+
+      <!-- SCHRITT 1: IDENTITÄT & NAMEN -->
+      <div id="setup-content-step-1" class="space-y-3 font-mono">
+        <p class="text-[11px] text-[#94a3b8] font-sans leading-relaxed">
+          Willkommen bei TACTUS. Tragt eure Namen ein, damit das System euch in allen Analysen und Verträgen persönlich ansprechen kann.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[10px] uppercase text-[#c5a880] font-bold block mb-1">Partner 1 (Name A):</label>
+            <input type="text" id="setup-input-name-a" placeholder="z. B. Alex" class="w-full p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs font-sans focus:border-[#c5a880] focus:outline-none" />
+          </div>
+          <div>
+            <label class="text-[10px] uppercase text-[#b3734a] font-bold block mb-1">Partner 2 (Name B):</label>
+            <input type="text" id="setup-input-name-b" placeholder="z. B. Sam" class="w-full p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs font-sans focus:border-[#b3734a] focus:outline-none" />
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] uppercase text-[#94a3b8] block mb-1">Wer bedient dieses Smartphone?</label>
+          <select id="setup-select-device-owner" class="w-full p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs focus:border-[#c5a880]">
+            <option value="A">Ich bin Partner 1 (Name A)</option>
+            <option value="B">Ich bin Partner 2 (Name B)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SCHRITT 2: BEZIEHUNGS-MODUS -->
+      <div id="setup-content-step-2" style="display: none;" class="space-y-3 font-sans">
+        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+          Wählt die passende Beziehungs-Governance für den Start. Ihr könnt den Modus später jederzeit im Menü anpassen.
+        </p>
+        <div class="space-y-2">
+          <label class="p-3 rounded-2xl border border-[#2a364f] bg-[#000000] flex items-start gap-3 cursor-pointer">
+            <input type="radio" name="setup-rel-mode" value="switch_flexible" checked class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">1. Switch &amp; Flexibel (Empfohlen für Einsteiger)</strong>
+              <span class="text-[10px] text-[#94a3b8] block">Freier 1-Tap Rollenwechsel im Header. Ideal für wechselnde Führung und gemeinsames Erkunden.</span>
+            </div>
+          </label>
+          <label class="p-3 rounded-2xl border border-[#2a364f] bg-[#000000] flex items-start gap-3 cursor-pointer">
+            <input type="radio" name="setup-rel-mode" value="casual_bedroom" class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">2. Casual &amp; Schlafzimmer-Paare</strong>
+              <span class="text-[10px] text-[#94a3b8] block">Fokus rein auf Erotik, Staging, Live-Regie &amp; Edging. Pflichten und Strafen bleiben inaktiv.</span>
+            </div>
+          </label>
+          <label class="p-3 rounded-2xl border border-[#2a364f] bg-[#000000] flex items-start gap-3 cursor-pointer">
+            <input type="radio" name="setup-rel-mode" value="flr_24_7" class="mt-0.5 accent-[#c5a880]" />
+            <div>
+              <strong class="text-xs text-white block">3. Feste Führung (FLR / 24/7 D/s)</strong>
+              <span class="text-[10px] text-[#94a3b8] block">Feste Rollenverteilung. Header-Wechsel arretiert; Übergabe nur per formeller Zeremonie.</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- SCHRITT 3: RACK-SCHUTZ & LATEX-RADAR -->
+      <div id="setup-content-step-3" style="display: none;" class="space-y-3 font-mono">
+        <p class="text-[11px] text-[#94a3b8] font-sans leading-relaxed">
+          Das RACK-Prinzip (Risk-Aware Consensual Kink): Kurzer Sicherheits-Check, um euren Ausrüstungsschrank vor Fehlkäufen zu schützen.
+        </p>
+        <div class="space-y-2 text-xs">
+          <label class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] flex items-center justify-between cursor-pointer">
+            <span class="text-white">Latex-Allergie bei einem Partner:</span>
+            <input type="checkbox" id="setup-chk-latex" class="accent-[#991b1b] rounded" />
+          </label>
+          <label class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] flex items-center justify-between cursor-pointer">
+            <span class="text-white">Asthma / Atemeinschränkung:</span>
+            <input type="checkbox" id="setup-chk-asthma" class="accent-[#c5a880] rounded" />
+          </label>
+          <label class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] flex items-center justify-between cursor-pointer">
+            <span class="text-white">Diabetes (Traubenzucker am Bett):</span>
+            <input type="checkbox" id="setup-chk-diabetes" class="accent-[#c5a880] rounded" />
+          </label>
+        </div>
+        <span class="text-[9.5px] text-[#2e5746] block font-sans">
+          ✓ Keine Sorge: Weitere Details könnt ihr jederzeit im RACK-Gesundheitspass hinterlegen.
+        </span>
+      </div>
+
+      <!-- SCHRITT 4: DER 25-FRAGEN-STARTER -->
+      <div id="setup-content-step-4" style="display: none;" class="space-y-3 font-sans">
+        <div class="p-4 rounded-2xl bg-[#000000] border border-[#d4af37]/60 space-y-2 text-center">
+          <div class="w-10 h-10 rounded-full bg-[#142b24] border border-[#2e5746] flex items-center justify-center mx-auto text-[#2e5746]">
+            ✓
+          </div>
+          <strong class="text-sm font-serif text-white block">Euer TACTUS-Fundament ist bereit</strong>
+          <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+            Ihr müsst nicht alle 505 Fragen auf einmal beantworten. Startet jetzt mit den <strong>25 Kern-Items</strong>, um in ca. 10 Minuten eure ersten gemeinsamen Doppel-5er Spitzen in der Paar-Analyse zu sehen.
+          </p>
+        </div>
+      </div>
+
+      <!-- Wizard Navigation Fußleiste -->
+      <div class="pt-3 border-t border-[#2a364f] flex items-center justify-between font-mono text-xs">
+        <button type="button" onclick="IndexRuntime.prevSetupStep()" id="btn-setup-prev" style="display: none;" class="px-4 py-2 bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white rounded-xl touch-btn">
+          ← Zurück
+        </button>
+        <span class="text-[10px] text-[#94a3b8]" id="setup-step-counter">1 / 4</span>
+        <button type="button" onclick="IndexRuntime.nextSetupStep()" id="btn-setup-next" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl touch-btn shadow-md">
+          Weiter →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: INTERAKTIVES 6-SCHRITTE SYSTEM-WALKTHROUGH (PUNKT #3) -->
+  <div id="modal-system-walkthrough" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[88dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
+      
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#c5a880] animate-pulse"></span>
+          <h3 class="text-sm font-bold text-white font-serif" id="walkthrough-title">TACTUS Tour (Schritt 1/6)</h3>
+        </div>
+        <button type="button" onclick="document.getElementById('modal-system-walkthrough').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <div id="walkthrough-step-content" class="space-y-2 text-[11px] leading-relaxed font-sans">
+        <!-- Dynamisch befüllt via Walkthrough Engine -->
+      </div>
+
+      <div class="pt-3 border-t border-[#2a364f] flex items-center justify-between font-mono text-xs">
+        <button type="button" onclick="IndexRuntime.prevWalkthroughStep()" id="btn-walkthrough-prev" class="px-3.5 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn">
+          ← Zurück
+        </button>
+        <span class="text-[10px] text-[#94a3b8]" id="walkthrough-step-indicator">1 von 6</span>
+        <button type="button" onclick="IndexRuntime.nextWalkthroughStep()" id="btn-walkthrough-next" class="px-4 py-2 rounded-xl bg-[#c5a880] text-black font-bold touch-btn shadow-md">
+          Weiter →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: AUSRÜSTUNGSSCHRANK MODAL-CONTAINER -->
   <div id="hub-toys-modal" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
     <div class="bg-[#090d14] rounded-3xl max-w-4xl w-full border border-[#c5a880]/60 p-4 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[92dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
       <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
@@ -539,7 +703,7 @@
         <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'" class="w-9 h-9 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
-      <!-- 1. ERSCHEINUNGSBILD: THEME & TEXT-ZOOM -->
+      <!-- 1. ERSCHEINUNGSBILD -->
       <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2.5">
         <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">1. Erscheinungsbild &amp; Ergonomie:</span>
         <div class="grid grid-cols-2 gap-2 text-xs font-mono">
@@ -561,7 +725,7 @@
         </div>
       </div>
 
-      <!-- 2. PARTNER-NAMEN & ROLLEN -->
+      <!-- 2. PARTNER-NAMEN & IDENTITÄT -->
       <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2.5">
         <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">2. Partner &amp; Identität:</span>
         <div class="grid grid-cols-2 gap-2">
@@ -592,7 +756,7 @@
         </div>
       </div>
 
-      <!-- 3. DIE 3 BEZIEHUNGS-MODI (GESETZ 12) -->
+      <!-- 3. BEZIEHUNGS-MODUS -->
       <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2.5">
         <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">3. Beziehungsmodus (Governance):</span>
         <div class="space-y-1.5 font-sans">
@@ -620,29 +784,10 @@
         </div>
       </div>
 
-      <!-- 4. PROGRESSIVE MODUL-SCHALTER -->
-      <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2">
-        <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">4. Aktive Module (Schutz vor Überforderung):</span>
-        <div class="space-y-1.5 text-[11px] font-mono">
-          <label class="flex items-center gap-2.5 cursor-pointer py-0.5">
-            <input type="checkbox" id="mod-chores" checked class="accent-[#c5a880] rounded" />
-            <span class="text-white">Pflichten-Register &amp; Alltags-Service</span>
-          </label>
-          <label class="flex items-center gap-2.5 cursor-pointer py-0.5">
-            <input type="checkbox" id="mod-contract" checked class="accent-[#c5a880] rounded" />
-            <span class="text-white">Formaler Beziehungsvertrag (Stufe 0–5)</span>
-          </label>
-          <label class="flex items-center gap-2.5 cursor-pointer py-0.5">
-            <input type="checkbox" id="mod-coach" checked class="accent-[#c5a880] rounded" />
-            <span class="text-white">Top-Führungsassistent &amp; Coaching</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- 5. KI-SCHLÜSSEL & LIVE-TEST -->
+      <!-- 4. KI-SCHLÜSSEL & LIVE-TEST -->
       <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold">5. KI-Verbindung &amp; API-Schlüssel:</span>
+          <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold">4. KI-Verbindung &amp; API-Schlüssel:</span>
           <button type="button" onclick="IndexRuntime.testAiConnection()" id="btn-test-ai" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#c5a880]/60 text-[#c5a880] font-mono text-[10px] font-bold touch-btn">
             Testen
           </button>
@@ -659,39 +804,17 @@
         <span id="ai-test-result" class="text-[9.5px] font-mono text-[#94a3b8] block">Universal Default-Modus aktiv ab Werk.</span>
       </div>
 
-      <!-- 6. DATENSCHUTZ & PARTNER-FREIGABE -->
-      <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2.5">
-        <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">6. Transparenz &amp; Partner-Freigabe (Sharing):</span>
-        <div class="space-y-1.5 font-sans">
-          <label class="p-3 rounded-xl border border-[#2a364f] bg-[#090d14] flex items-start gap-3 cursor-pointer">
-            <input type="radio" name="acc-sharing-mode" value="full_open" checked class="mt-0.5 accent-[#c5a880]" />
-            <div>
-              <strong class="text-xs text-white block">1. Volle Transparenz (Standard &amp; Empfohlen)</strong>
-              <span class="text-[10px] text-[#94a3b8] block">Alle 505 Antworten, Notizen und das Solo-Dossier sind für deinen Partner sichtbar. Schafft tiefstes Vertrauen ohne Geheimnisse.</span>
-            </div>
-          </label>
-          <label class="p-3 rounded-xl border border-[#2a364f] bg-[#090d14] flex items-start gap-3 cursor-pointer">
-            <input type="radio" name="acc-sharing-mode" value="blind_match" class="mt-0.5 accent-[#c5a880]" />
-            <div>
-              <strong class="text-xs text-white block">2. Blind-Match Modus</strong>
-              <span class="text-[10px] text-[#94a3b8] block">Partner sieht nur Fragen, bei denen beide mindestens Note 3 gewählt haben (Doppel-Spitzen &amp; Synergien). Einseitige Wünsche bleiben verborgen.</span>
-            </div>
-          </label>
-          <label class="p-3 rounded-xl border border-[#2a364f] bg-[#090d14] flex items-start gap-3 cursor-pointer">
-            <input type="radio" name="acc-sharing-mode" value="strict_private" class="mt-0.5 accent-[#c5a880]" />
-            <div>
-              <strong class="text-xs text-white block">3. Streng privat (Selektiv freigeben)</strong>
-              <span class="text-[10px] text-[#94a3b8] block">Dein Solo-Profil bleibt geschützt, bis du es in der Analyse manuell freigibst.</span>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- 7. TUTORIAL-RELAUNCH & DATENSICHERUNG -->
+      <!-- 5. RE-LAUNCH ONBOARDING & EXPORT -->
       <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] flex flex-wrap items-center justify-between gap-2 font-mono text-[10px]">
-        <button type="button" onclick="IndexRuntime.openWelcomeTutorial()" class="text-[#c5a880] hover:underline font-bold py-1">
-          ✨ Tutorial erneut starten
-        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="IndexRuntime.openSetupWizard()" class="text-[#c5a880] hover:underline font-bold py-1">
+            ↺ Setup-Wizard
+          </button>
+          <span>·</span>
+          <button type="button" onclick="IndexRuntime.openWalkthroughModal()" class="text-[#c5a880] hover:underline font-bold py-1">
+            ✨ Tour
+          </button>
+        </div>
         <div class="flex items-center gap-2">
           <button type="button" onclick="IndexRuntime.exportAllDataJson()" class="text-[#94a3b8] hover:text-white py-1">Export (JSON)</button>
           <span>·</span>
@@ -704,44 +827,6 @@
         <button type="button" onclick="IndexRuntime.saveAccountSettings()" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Speichern ✓</button>
       </div>
 
-    </div>
-  </div>
-
-  <!-- MODAL: WILLKOMMENS-TUTORIAL & ONBOARDING -->
-  <div id="modal-welcome-tutorial" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
-    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[88dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
-      <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-[#000000] border border-[#c5a880]/40 flex items-center justify-center font-serif text-sm font-bold text-[#c5a880]">T</div>
-          <div>
-            <h3 class="text-sm font-serif font-bold text-white">Willkommen bei TACTUS</h3>
-            <span class="text-[9.5px] font-mono text-[#94a3b8]">Einführung &amp; RACK-Schutzraum</span>
-          </div>
-        </div>
-        <button type="button" onclick="document.getElementById('modal-welcome-tutorial').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
-      </div>
-
-      <div class="space-y-3 leading-relaxed text-[11px] text-[#f8fafc]">
-        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-1">
-          <strong class="text-[#2e5746] font-mono text-xs block font-bold">1. Das RACK-Prinzip (Risk-Aware Consensual Kink)</strong>
-          <p class="text-[#94a3b8]">Echte Sicherheit basiert nicht auf Verdrängung, sondern auf gegenseitiger Kenntnis der Grenzen, Safewords (Grün/Gelb/Rot) und Notfall-Regeln.</p>
-        </div>
-
-        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-1">
-          <strong class="text-[#c5a880] font-mono text-xs block font-bold">2. Scham-Schutzanker (🙈 Spottverbot)</strong>
-          <p class="text-[#94a3b8]">Verletzliche Sehnsüchte sind schützenswert. Markierte Wünsche stehen unter vertraglichem Spottverbot im Alltag (§ 1 Abs. 2).</p>
-        </div>
-
-        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1">
-          <strong class="text-[#d4af37] font-mono text-xs block font-bold">3. Start mit dem 25-Fragen-Starter</strong>
-          <p class="text-[#94a3b8]">Ihr müsst nicht alle 505 Fragen auf einmal beantworten. Startet mit den 25 Kern-Fragen zur Basis-Eichung. Alle weiteren Fragen spielt TACTUS täglich im Stream ein (Daily Drip).</p>
-        </div>
-      </div>
-
-      <div class="pt-2 border-t border-[#2a364f] flex items-center justify-between font-mono">
-        <button type="button" onclick="IndexRuntime.completeTutorial(false)" class="text-[#94a3b8] hover:text-white text-[10.5px] py-1">Später ansehen</button>
-        <button type="button" onclick="IndexRuntime.completeTutorial(true)" class="px-5 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md">Starter starten (25) →</button>
-      </div>
     </div>
   </div>
 
@@ -797,7 +882,6 @@
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
 
-  <!-- EXTERNE DATENQUELLEN & SCRIPTS -->
   <script src="data/scientific_studies.js"></script>
   <script src="data/questions_part1.js"></script>
   <script src="data/questions_part2.js"></script>
@@ -816,13 +900,47 @@
   <script src="js/protocol_contract.js"></script>
   <script src="js/protocol_coach.js"></script>
 
-  <!-- INDEX RUNTIME CONTROLLER -->
   <script>
     (function(window) {
       'use strict';
 
       let currentMainTab = 'hub';
       let currentRoleState = 'top';
+      let currentSetupStep = 1;
+      let currentWalkthroughStep = 1;
+
+      // Die 25 repräsentativen Kern-Items für den schnellen Paar-Starter
+      const STARTER_ITEM_IDS = [
+        1, 2, 3, 14, 18, 28, 41, 42, 44, 53, 54, 63, 64, 76, 77, 81, 106, 115,
+        131, 161, 198, 241, 262, 336, 348
+      ];
+
+      const WALKTHROUGH_STEPS = [
+        {
+          title: "1. Start-Hub & Telemetrie",
+          html: `<p>Hier schlägt der Puls eures Systems: Auf einen Blick seht ihr euren Beziehungsmodus, beantwortete Fragen, die Paar-Resonanz und den Schrank-Status. Über <strong>Profil & Setup</strong> könnt ihr jederzeit Namen und Rollen wechseln.</p>`
+        },
+        {
+          title: "2. Der Konsens-Katalog (505 Items)",
+          html: `<p>Das Herzstück von TACTUS: 505 psychometrische Fragen in 37 Kapiteln. Bewertet Handlungen als Führender (r1) und Hingebender (r2). Nutzt den Scham-Schutzanker (🙈), um verletzliche Sehnsüchte unter vertragliches Alltags-Spottverbot zu stellen.</p>`
+        },
+        {
+          title: "3. Die Paar-Analyse & KI-Dossiers",
+          html: `<p>Berechnet aus euren Antworten vollautomatisch eure 5/5 Doppel-Spitzen, Erkundungs-Brücken und den $\\Delta_{D/s}$-Quotienten. Schreibt tiefenpsychologische Gutachten, die auch reale Schlafzimmer-Sessions aus eurem Logbuch berücksichtigen.</p>`
+        },
+        {
+          title: "4. E2EE Paar-Stream (Verschlüsselt)",
+          html: `<p>Euer privater digitaler Rückzugsort: 1:1 Chat mit echter AES-GCM-256 Verschlüsselung, 1-Tap Date-Night Signalen, zeitgesteuerten Kapseln und formellen Anträgen zur Handover-Zeremonie.</p>`
+        },
+        {
+          title: "5. Das Protokoll & Beziehungsvertrag",
+          html: `<p>Machtasymmetrie und Disziplin im Alltag: Orgasmus-Ratio-Tracking, urologische Hygiene-Timer, Zuchtkatalog und ein 8-Paragraphen-Beziehungsvertrag mit digitaler Signatur und Urkunden-Export.</p>`
+        },
+        {
+          title: "6. Schlafzimmer-Regie (Live-Cockpit)",
+          html: `<p>Für das Halbdunkel entwickelt: Top-First Staging, 4-Phasen-Drehbuch oder Freies Spiel (Flow), RACK-Ampeltaster (Grün/Gelb/Rot), Schwellen-Metronom mit Kaltstopp-Beat-Drop und WebAudio-Soundscapes mit AirPlay-Routing.</p>`
+        }
+      ];
 
       function escapeHtml(str) {
         if (!str) return '';
@@ -874,8 +992,8 @@
         if (tabKey === 'hub') {
           if (viewHub) viewHub.classList.remove('hidden');
           if (viewSurvey) viewSurvey.classList.add('hidden');
-          if (btnHub) btnHub.className = "px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn";
-          if (btnSurvey) btnSurvey.className = "px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn";
+          if (btnHub) btnHub.className = "px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn shrink-0 flex-shrink-0";
+          if (btnSurvey) btnSurvey.className = "px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn shrink-0 flex-shrink-0";
           if (!window.location.hash.includes('view=hub')) {
             window.location.hash = 'view=hub';
           }
@@ -883,8 +1001,8 @@
         } else {
           if (viewSurvey) viewSurvey.classList.remove('hidden');
           if (viewHub) viewHub.classList.add('hidden');
-          if (btnSurvey) btnSurvey.className = "px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn";
-          if (btnHub) btnHub.className = "px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn";
+          if (btnSurvey) btnSurvey.className = "px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap touch-btn shrink-0 flex-shrink-0";
+          if (btnHub) btnHub.className = "px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap touch-btn shrink-0 flex-shrink-0";
           if (!window.location.hash.includes('view=survey')) {
             window.location.hash = 'view=survey';
           }
@@ -1065,6 +1183,9 @@
         const statAnswered = document.getElementById('hub-stat-answered');
         if (statAnswered) statAnswered.innerText = `${answeredCount} / ${totalItemsCount || 505}`;
 
+        // Progressive Disclosure Stufe berechnen (Punkt #4)
+        updateProgressiveDisclosureStage(answeredCount, mode);
+
         try {
           const rawAi = localStorage.getItem('tactus_ai_pair_analysis');
           if (rawAi) {
@@ -1096,7 +1217,6 @@
           if (statBal) statBal.innerText = `${balance} P`;
         } catch (e) {}
 
-        // Teaser-Kachel Statistiken aktualisieren (Punkt #13)
         const teaserCount = document.getElementById('hub-toys-teaser-count');
         const teaserBundles = document.getElementById('hub-toys-teaser-bundles');
         const teaserAllergy = document.getElementById('hub-toys-teaser-allergy');
@@ -1104,7 +1224,6 @@
         if (teaserCount) teaserCount.innerText = `${ownedIds.length} Toys`;
         if (teaserBundles) teaserBundles.innerText = `${savedBundles.length} aktiv`;
 
-        // Medical Pass Summary & Latex-Radar
         let pass = {};
         try {
           const rawPass = localStorage.getItem('tactus_medical_pass');
@@ -1130,19 +1249,185 @@
         }
       }
 
-      function openWelcomeTutorial() {
-        const modal = document.getElementById('modal-welcome-tutorial');
+      function updateProgressiveDisclosureStage(answeredCount, mode) {
+        const titleEl = document.getElementById('progressive-stage-title');
+        const badgeEl = document.getElementById('progressive-stage-badge');
+        const barEl = document.getElementById('progressive-progress-bar');
+        const descEl = document.getElementById('progressive-stage-desc');
+
+        if (answeredCount < 25) {
+          if (titleEl) titleEl.innerText = "Stufe 1: Schlafzimmer & 25-Fragen-Starter";
+          if (badgeEl) {
+            badgeEl.innerText = "Stufe 1 (Starter)";
+            badgeEl.className = "px-2 py-0.5 rounded text-[9px] font-mono bg-[#090d14] text-[#c5a880] border border-[#c5a880]/30 font-bold";
+          }
+          if (barEl) barEl.style.width = `${Math.max(10, Math.round((answeredCount / 25) * 33))}%`;
+          if (descEl) descEl.innerText = `Überforderungsschutz aktiv: Beantwortet die ersten 25 Kern-Items, um die Paar-Analyse mit euren Doppel-5er Spitzen freizuschalten (Noch ${25 - answeredCount} Fragen).`;
+        } else if (answeredCount < 100 && mode !== 'flr_24_7') {
+          if (titleEl) titleEl.innerText = "Stufe 2: Paar-Resonanz & E2EE-Stream";
+          if (badgeEl) {
+            badgeEl.innerText = "Stufe 2 (Resonanz)";
+            badgeEl.className = "px-2 py-0.5 rounded text-[9px] font-mono bg-[#142b24] text-[#2e5746] border border-[#2e5746] font-bold";
+          }
+          if (barEl) barEl.style.width = `${Math.min(66, 33 + Math.round((answeredCount / 100) * 33))}%`;
+          if (descEl) descEl.innerText = "Hervorragend: Eure ersten Synergien stehen in analyse.html bereit! Nutzt den Paar-Stream für Date-Nights und die Schlafzimmer-Regie.";
+        } else {
+          if (titleEl) titleEl.innerText = "Stufe 3: Governance, Pflichten & Vertrag";
+          if (badgeEl) {
+            badgeEl.innerText = "Stufe 3 (Full Master)";
+            badgeEl.className = "px-2 py-0.5 rounded text-[9px] font-mono bg-[#000000] text-[#d4af37] border border-[#d4af37]/60 font-bold";
+          }
+          if (barEl) barEl.style.width = "100%";
+          if (descEl) descEl.innerText = "Volle System-Reife: Alle 8 Vertragsparagraphen, der Zuchtkatalog und die urologische Hygiene-Governance stehen euch uneingeschränkt zur Verfügung.";
+        }
+      }
+
+      // 4-Schritte Setup-Wizard Controller (Punkt #2)
+      function openSetupWizard() {
+        currentSetupStep = 1;
+        updateSetupWizardUI();
+        const modal = document.getElementById('modal-setup-wizard');
         if (modal) modal.style.display = 'flex';
       }
 
-      function completeTutorial(startStarter) {
-        localStorage.setItem('tactus_setup_completed', 'true');
-        const modal = document.getElementById('modal-welcome-tutorial');
-        if (modal) modal.style.display = 'none';
-        if (startStarter) {
+      function updateSetupWizardUI() {
+        const stepLabel = document.getElementById('setup-step-label');
+        const stepTitle = document.getElementById('setup-step-title');
+        const stepCounter = document.getElementById('setup-step-counter');
+        const btnPrev = document.getElementById('btn-setup-prev');
+        const btnNext = document.getElementById('btn-setup-next');
+
+        for (let i = 1; i <= 4; i++) {
+          const el = document.getElementById(`setup-content-step-${i}`);
+          if (el) el.style.display = (i === currentSetupStep) ? 'block' : 'none';
+        }
+
+        if (stepCounter) stepCounter.innerText = `${currentSetupStep} / 4`;
+        if (btnPrev) btnPrev.style.display = (currentSetupStep > 1) ? 'block' : 'none';
+
+        if (currentSetupStep === 1) {
+          if (stepLabel) stepLabel.innerText = "Schritt 1 von 4";
+          if (stepTitle) stepTitle.innerText = "Erstinbetriebnahme: Wer seid ihr?";
+          if (btnNext) btnNext.innerText = "Weiter →";
+        } else if (currentSetupStep === 2) {
+          if (stepLabel) stepLabel.innerText = "Schritt 2 von 4";
+          if (stepTitle) stepTitle.innerText = "Beziehungs-Governance wählen";
+          if (btnNext) btnNext.innerText = "Weiter →";
+        } else if (currentSetupStep === 3) {
+          if (stepLabel) stepLabel.innerText = "Schritt 3 von 4";
+          if (stepTitle) stepTitle.innerText = "RACK-Sicherheitsanker & Gesundheit";
+          if (btnNext) btnNext.innerText = "Weiter →";
+        } else if (currentSetupStep === 4) {
+          if (stepLabel) stepLabel.innerText = "Schritt 4 von 4";
+          if (stepTitle) stepTitle.innerText = "Der 25-Fragen-Starter";
+          if (btnNext) btnNext.innerText = "25-Starter beginnen ↗";
+        }
+      }
+
+      function nextSetupStep() {
+        if (currentSetupStep === 1) {
+          const inputA = document.getElementById('setup-input-name-a');
+          const inputB = document.getElementById('setup-input-name-b');
+          const devOwner = document.getElementById('setup-select-device-owner');
+
+          const nameA = (inputA && inputA.value.trim()) ? inputA.value.trim() : 'Partner 1';
+          const nameB = (inputB && inputB.value.trim()) ? inputB.value.trim() : 'Partner 2';
+          localStorage.setItem('kompass_names', JSON.stringify({ A: nameA, B: nameB }));
+          if (devOwner) localStorage.setItem('kompass_assigned_role', devOwner.value);
+        } else if (currentSetupStep === 2) {
+          const checked = document.querySelector('input[name="setup-rel-mode"]:checked');
+          if (checked) {
+            localStorage.setItem('tactus_relationship_mode', checked.value);
+          }
+        } else if (currentSetupStep === 3) {
+          const chkLatex = document.getElementById('setup-chk-latex');
+          const chkAsthma = document.getElementById('setup-chk-asthma');
+          const chkDia = document.getElementById('setup-chk-diabetes');
+
+          let pass = {};
+          try {
+            const raw = localStorage.getItem('tactus_medical_pass');
+            if (raw) pass = JSON.parse(raw) || {};
+          } catch (e) {}
+
+          pass.hasLatexAllergy = chkLatex ? chkLatex.checked : false;
+          pass.hasAsthma = chkAsthma ? chkAsthma.checked : false;
+          pass.hasDiabetes = chkDia ? chkDia.checked : false;
+          pass.updatedAt = Date.now();
+          localStorage.setItem('tactus_medical_pass', JSON.stringify(pass));
+        } else if (currentSetupStep === 4) {
+          localStorage.setItem('tactus_setup_completed', 'true');
+          const modal = document.getElementById('modal-setup-wizard');
+          if (modal) modal.style.display = 'none';
+
+          // Direkt zum 25-Fragen-Starter im Runner springen
           switchMainTab('survey');
+          if (window.SurveyRuntime) {
+            window.SurveyRuntime.setFilter('starter');
+          }
+          showToast("✓ Willkommen! 25-Starter aktiv geschaltet");
+          return;
+        }
+
+        currentSetupStep++;
+        updateSetupWizardUI();
+      }
+
+      function prevSetupStep() {
+        if (currentSetupStep > 1) {
+          currentSetupStep--;
+          updateSetupWizardUI();
+        }
+      }
+
+      function skipSetupWizard() {
+        localStorage.setItem('tactus_setup_completed', 'true');
+        const modal = document.getElementById('modal-setup-wizard');
+        if (modal) modal.style.display = 'none';
+        showToast("Setup übersprungen. Du kannst es jederzeit über das Menü starten.");
+      }
+
+      // 6-Schritte Walkthrough Tutorial Controller (Punkt #3)
+      function openWalkthroughModal() {
+        currentWalkthroughStep = 1;
+        updateWalkthroughUI();
+        const modal = document.getElementById('modal-system-walkthrough');
+        if (modal) modal.style.display = 'flex';
+      }
+
+      function updateWalkthroughUI() {
+        const step = WALKTHROUGH_STEPS[currentWalkthroughStep - 1];
+        if (!step) return;
+
+        const titleEl = document.getElementById('walkthrough-title');
+        const contentEl = document.getElementById('walkthrough-step-content');
+        const indicatorEl = document.getElementById('walkthrough-step-indicator');
+        const btnPrev = document.getElementById('btn-walkthrough-prev');
+        const btnNext = document.getElementById('btn-walkthrough-next');
+
+        if (titleEl) titleEl.innerText = `TACTUS Tour: ${step.title}`;
+        if (contentEl) contentEl.innerHTML = step.html;
+        if (indicatorEl) indicatorEl.innerText = `${currentWalkthroughStep} von 6`;
+
+        if (btnPrev) btnPrev.style.display = (currentWalkthroughStep > 1) ? 'block' : 'none';
+        if (btnNext) btnNext.innerText = (currentWalkthroughStep === 6) ? 'Tour beenden ✓' : 'Weiter →';
+      }
+
+      function nextWalkthroughStep() {
+        if (currentWalkthroughStep < 6) {
+          currentWalkthroughStep++;
+          updateWalkthroughUI();
         } else {
-          showToast("✓ Willkommen bei TACTUS");
+          const modal = document.getElementById('modal-system-walkthrough');
+          if (modal) modal.style.display = 'none';
+          showToast("✓ Rundgang abgeschlossen");
+        }
+      }
+
+      function prevWalkthroughStep() {
+        if (currentWalkthroughStep > 1) {
+          currentWalkthroughStep--;
+          updateWalkthroughUI();
         }
       }
 
@@ -1171,22 +1456,6 @@
         const relMode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
         const radio = document.querySelector(`input[name="acc-rel-mode"][value="${relMode}"]`);
         if (radio) radio.checked = true;
-
-        const sharingMode = localStorage.getItem('tactus_sharing_governance') || 'full_open';
-        const shareRadio = document.querySelector(`input[name="acc-sharing-mode"][value="${sharingMode}"]`);
-        if (shareRadio) shareRadio.checked = true;
-
-        let activeModules = { chores: true, contract: true, coach: true };
-        try {
-          const rawMod = localStorage.getItem('tactus_active_modules');
-          if (rawMod) activeModules = Object.assign({}, activeModules, JSON.parse(rawMod));
-        } catch (e) {}
-        const modChores = document.getElementById('mod-chores');
-        const modContract = document.getElementById('mod-contract');
-        const modCoach = document.getElementById('mod-coach');
-        if (modChores) modChores.checked = activeModules.chores !== false;
-        if (modContract) modContract.checked = activeModules.contract !== false;
-        if (modCoach) modCoach.checked = activeModules.coach !== false;
 
         const aiProvider = document.getElementById('acc-select-ai-provider');
         const aiKey = document.getElementById('acc-input-ai-key');
@@ -1232,26 +1501,6 @@
           localStorage.setItem('tactus_relationship_mode', checkedRadio.value);
         }
 
-        const checkedSharing = document.querySelector('input[name="acc-sharing-mode"]:checked');
-        if (checkedSharing) {
-          localStorage.setItem('tactus_sharing_governance', checkedSharing.value);
-          if (checkedSharing.value === 'full_open') {
-            localStorage.setItem('tactus_individual_shared_dossier', 'true');
-          } else if (checkedSharing.value === 'strict_private') {
-            localStorage.setItem('tactus_individual_shared_dossier', 'false');
-          }
-        }
-
-        const modChores = document.getElementById('mod-chores');
-        const modContract = document.getElementById('mod-contract');
-        const modCoach = document.getElementById('mod-coach');
-        const activeModules = {
-          chores: modChores ? modChores.checked : true,
-          contract: modContract ? modContract.checked : true,
-          coach: modCoach ? modCoach.checked : true
-        };
-        localStorage.setItem('tactus_active_modules', JSON.stringify(activeModules));
-
         const aiProvider = document.getElementById('acc-select-ai-provider');
         const aiKey = document.getElementById('acc-input-ai-key');
         if (aiProvider) localStorage.setItem('tactus_ai_provider', aiProvider.value);
@@ -1295,9 +1544,7 @@
             const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`;
             const listRes = await fetch(listUrl, {
               method: 'GET',
-              headers: {
-                'x-goog-api-key': apiKey
-              }
+              headers: { 'x-goog-api-key': apiKey }
             });
 
             if (listRes.ok) {
@@ -1313,7 +1560,6 @@
                                   availableModels[0];
 
                 const cleanModelName = preferred.name.replace(/^models\//, '');
-
                 const genUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
                 const genRes = await fetch(genUrl, {
                   method: 'POST',
@@ -1336,7 +1582,7 @@
                 }
               } else {
                 lastStatus = 404;
-                lastErrorMsg = 'Projekt besitzt Zugriff, aber keine Modelle mit generateContent gelistet.';
+                lastErrorMsg = 'Keine Modelle mit generateContent gefunden.';
               }
             } else {
               lastStatus = listRes.status;
@@ -1346,43 +1592,6 @@
           } catch (netErr) {
             lastStatus = 0;
             lastErrorMsg = netErr.message || 'Verbindung blockiert / CORS';
-          }
-
-          if (!verifiedModel && (lastStatus === 404 || lastStatus === 403 || lastStatus === 0)) {
-            const fallbackCandidates = [
-              'gemini-2.0-flash',
-              'gemini-2.5-flash',
-              'gemini-1.5-flash-latest',
-              'gemini-flash-latest',
-              'gemini-1.5-pro'
-            ];
-
-            for (const candidate of fallbackCandidates) {
-              try {
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${candidate}:generateContent?key=${encodeURIComponent(apiKey)}`;
-                const res = await fetch(endpoint, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': apiKey
-                  },
-                  body: JSON.stringify({
-                    contents: [{ parts: [{ text: "Antworte mit 'OK'." }] }],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 5 }
-                  })
-                });
-
-                if (res.ok) {
-                  verifiedModel = candidate;
-                  break;
-                } else if (res.status === 401) {
-                  lastStatus = 401;
-                  const errData = await res.json().catch(() => ({}));
-                  lastErrorMsg = errData.error ? (errData.error.message || errData.error.status) : 'Unauthorized';
-                  break;
-                }
-              } catch (e) {}
-            }
           }
 
           if (verifiedModel) {
@@ -1397,36 +1606,9 @@
             showToast(`✓ Gemini (${verifiedModel}) verifiziert & gespeichert`);
           } else {
             if (result) {
-              if (lastStatus === 401) {
-                result.innerText = `⚠️ Google 401: Key ungültig oder Projekt nicht berechtigt. (${lastErrorMsg})`;
-              } else if (lastStatus === 403) {
-                result.innerText = `⚠️ Google 403: Quota erschöpft oder Billing-Aktivierung noch ausstehend. (${lastErrorMsg})`;
-              } else if (lastStatus === 404) {
-                result.innerText = `⚠️ Google 404: API meldet kein aktives Modell für diesen Key. (${lastErrorMsg})`;
-              } else {
-                result.innerText = `⚠️ Verbindungsfehler (${lastStatus || 'Netzwerk'}): ${lastErrorMsg || 'Prüfe Internetverbindung'}`;
-              }
+              result.innerText = `⚠️ Verbindungsfehler (${lastStatus || 'Netzwerk'}): ${lastErrorMsg || 'Prüfe Key'}`;
               result.className = "text-[9.5px] font-mono text-[#991b1b] font-bold block";
             }
-          }
-        } else {
-          let success = false;
-          if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-            try {
-              localStorage.setItem('tactus_ai_provider', provider);
-              localStorage.setItem('tactus_ai_custom_key', apiKey);
-              const testRes = await window.AIAdapter.generateText({
-                systemPrompt: "Antworte mit 'OK'.",
-                userPrompt: "Verbindungstest TACTUS",
-                temperature: 0.1
-              });
-              if (testRes && testRes.trim().length > 0) success = true;
-            } catch (e) {}
-          }
-
-          if (result) {
-            result.innerText = success ? `✓ Verbindung zu ${provider.toUpperCase()} erfolgreich!` : `⚠️ Verbindung zu ${provider.toUpperCase()} fehlgeschlagen.`;
-            result.className = success ? "text-[9.5px] font-mono text-[#2e5746] font-bold block" : "text-[9.5px] font-mono text-[#991b1b] font-bold block";
           }
         }
 
@@ -1557,20 +1739,27 @@
         testAiConnection,
         openMedicalPassModal,
         saveMedicalPass,
-        openWelcomeTutorial,
-        completeTutorial,
+        openSetupWizard,
+        nextSetupStep,
+        prevSetupStep,
+        skipSetupWizard,
+        openWalkthroughModal,
+        nextWalkthroughStep,
+        prevWalkthroughStep,
         openBreakGlass,
         exportAllDataJson,
         importDataJson,
         forceAppReload,
+        starterItemIds: STARTER_ITEM_IDS,
         init: function() {
           handleHashRouting();
           initRoleDisplay();
           renderHubTelemetry();
           window.addEventListener('hashchange', handleHashRouting);
 
+          // Erststart Cold-Start Prüfung: Zeigt den 4-Schritte Setup-Wizard
           if (!localStorage.getItem('tactus_setup_completed')) {
-            setTimeout(openWelcomeTutorial, 400);
+            setTimeout(openSetupWizard, 350);
           }
         }
       };
@@ -1580,7 +1769,6 @@
     })(window);
   </script>
 
-  <!-- SURVEY RUNTIME ENGINE -->
   <script>
     (function(window) {
       'use strict';
@@ -1697,7 +1885,8 @@
         const { pAns } = getMyAnswers();
         let displayItems = [];
 
-        if (surveyViewMode === 'full') {
+        // Im Starter-Modus oder Gesamt-Modus alle Kapitel durchsuchen
+        if (surveyViewMode === 'full' || activeFilter === 'starter') {
           chapters.forEach(ch => {
             (ch.items || []).forEach(it => {
               displayItems.push(Object.assign({}, it, { chapterTitle: ch.title, chapterId: ch.id }));
@@ -1719,7 +1908,10 @@
           );
         }
 
-        if (activeFilter === 'unanswered') {
+        if (activeFilter === 'starter') {
+          const starterSet = new Set(IndexRuntime.starterItemIds || []);
+          displayItems = displayItems.filter(it => starterSet.has(it.id));
+        } else if (activeFilter === 'unanswered') {
           displayItems = displayItems.filter(it => {
             if (it.type === 'choice') return !pAns[`choice_${it.id}`];
             const hasR1 = typeof pAns[`it_${it.id}_r1`] === 'number';
@@ -1839,12 +2031,18 @@
 
         const pag = document.getElementById('survey-chapter-pagination');
         if (pag) {
-          pag.style.display = (surveyViewMode === 'chapters') ? 'flex' : 'none';
+          pag.style.display = (surveyViewMode === 'chapters' && activeFilter !== 'starter') ? 'flex' : 'none';
         }
         const activeTitleEl = document.getElementById('survey-active-chapter-title');
         const activeCh = chapters.find(c => c.id === activeChapterId) || chapters[0];
         if (activeTitleEl) {
-          activeTitleEl.innerText = (surveyViewMode === 'full') ? `Gesamter Bogen (${displayItems.length} Fragen)` : activeCh.title;
+          if (activeFilter === 'starter') {
+            activeTitleEl.innerText = `Der 25-Fragen-Starter (${displayItems.length} Kern-Items)`;
+          } else if (surveyViewMode === 'full') {
+            activeTitleEl.innerText = `Gesamter Bogen (${displayItems.length} Fragen)`;
+          } else {
+            activeTitleEl.innerText = activeCh.title;
+          }
         }
         const pageInd = document.getElementById('survey-page-indicator');
         if (pageInd) {
@@ -1914,11 +2112,11 @@
           const btnCh = document.getElementById('btn-survey-mode-chapters');
           const btnFull = document.getElementById('btn-survey-mode-full');
           if (mode === 'chapters') {
-            if (btnCh) btnCh.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn";
-            if (btnFull) btnFull.className = "px-3.5 py-2 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn";
+            if (btnCh) btnCh.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn text-center";
+            if (btnFull) btnFull.className = "px-3.5 py-2 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn text-center";
           } else {
-            if (btnFull) btnFull.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn";
-            if (btnCh) btnCh.className = "px-3.5 py-2 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn";
+            if (btnFull) btnFull.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#c5a880] text-[#c5a880] shadow-sm touch-btn text-center";
+            if (btnCh) btnCh.className = "px-3.5 py-2 rounded-xl font-bold text-[#94a3b8] hover:text-white touch-btn text-center";
           }
           renderActiveSurveyView();
         },
@@ -1948,13 +2146,14 @@
         },
         setFilter: function(filterKey) {
           activeFilter = filterKey;
-          ['all', 'unanswered', 'notes', 'shame', 'favorites', 'taboos'].forEach(f => {
+          ['starter', 'all', 'unanswered', 'notes', 'shame', 'favorites', 'taboos'].forEach(f => {
             const btn = document.getElementById(`survey-filter-${f}`);
             if (btn) {
               if (f === filterKey) {
-                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shadow-sm";
+                const borderCol = (f === 'starter') ? 'border-[#d4af37] text-[#d4af37]' : 'border-[#c5a880] text-[#c5a880]';
+                btn.className = `px-3 py-1.5 rounded-xl font-bold bg-[#000000] border ${borderCol} touch-btn whitespace-nowrap shrink-0 flex-shrink-0 shadow-sm`;
               } else {
-                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap";
+                btn.className = "px-3 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
               }
             }
           });
