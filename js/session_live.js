@@ -1,53 +1,62 @@
 /**
  * js/session_live.js
- * TACTUS Schlafzimmer-Live-Regie, RACK-Ampel Zustandstracking & Session-Logbuch Engine (V3.0 Haute-Horlogerie)
+ * TACTUS Schlafzimmer-Live-Regie, Organischer 4-7-8 Vagus-Atemkreis & Session-Tagebuch (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
- * Standards & Garantien nach Master-Roadbook:
- * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
- * - Haute-Horlogerie Palette: OLED-Tiefschwarz, Graphit, Champagner-Gold, Malachit, Cognac, Bordeaux
- * - 4-Phasen State Machine (Transition, Reizaufbau, Top-Lust, Reverse Aftercare) & Somatischer Flow-Modus
- * - 72px Blind-Touch Bedienelemente für 0,2s Glanceability aus 2m Distanz im Halbdunkel
- * - RACK-Ampel Taster für vegetatives Zustandstracking (Grün, Bernstein-Gelb, Karmesin-Rot)
- * - 1-Tap 85% OLED-Nachttisch-Dimmer (Tiefschwarz-Overlay)
- * - 4-7-8 Vagus-Atemkreis zur Kreislaufberuhigung und Kältezittern-Prävention
- * - Audio- & Sprachintegration: 60% Ducking, Beat-Drop bei Kaltstopp, Soundscape-Drones
- * - TACTUS Session-Logbuch: Post-Session Finalize-Modal mit Metriken & Feedback
- * - 1-Klick Feedback-Event im Paar-Stream (chat.html) zur nahtlosen Nachbesprechung
- * - 100 % frei von infantilen System-Emojis, keine window.alert() / confirm() Aufrufe
+ * TACTUS FEATURE CONTRACT:
+ * [✓] Strikte Terminologie: Ausschließlich "Edge", "Edges", "Edging" (Keine "Kanten" / "Schwellen"!)
+ * [✓] Echte Gemini-Stimmführung via SessionVoice.play()
+ * [✓] Organisch fließende 4-7-8 Vagus-Atmung mit stetig atmendem Kreis (scale 1.48, Glow & weiche Transition)
+ * [✓] Safeword-Ampel: GRÜN, GELB (Audio-Ducking 40% & Tempo drosseln), ROT (Beat-Drop Kaltstopp & Stillstand)
+ * [✓] Screen WakeLock (Bildschirm bleibt im Halbdunkel aktiv)
+ * [✓] Zwei Spielmodi: Geführtes 4-Phasen-Drehbuch vs. Freier Flow
+ * [✓] Guided Edging Callout: Automatisches Hervorheben des Edging-Cockpits bei Schwellenschritten
+ * [✓] Aftercare-Modal & Session-Tagebuch mit Top- und Bottom-Feedback
+ * [✓] Tabu-Zähler & Tabu-Modal mit klickbaren Fragebogen-Deeplinks
+ * [✓] 100 % UTF-8 Integrität, Haute-Horlogerie Design tokens, keine window.alert() Aufrufe
  */
 
 (function(window) {
   'use strict';
 
-  const STORAGE_KEY_ACTIVE_SCRIPT = 'tactus_active_session_script';
-  const STORAGE_KEY_LIVE_METRICS = 'tactus_live_session_metrics';
-  const STORAGE_KEY_LOGBOOK = 'tactus_session_logbook';
-  const STORAGE_KEY_CHAT_MESSAGES = 'tactus_chat_messages_e2ee';
+  let sessionRemainingSeconds = 3600;
+  let sessionTotalSeconds = 3600;
+  let isSessionPaused = false;
+  let sessionTimerInterval = null;
+  let screenWakeLock = null;
 
-  let liveState = {
-    isRunning: false,
-    sessionMode: 'scripted', // 'scripted' | 'flow'
-    currentPhaseIndex: 1,
-    phaseStartTime: null,
-    sessionStartTime: null,
-    elapsedSecondsTotal: 0,
-    elapsedSecondsPhase: 0,
-    sessionTimerInterval: null,
-    vagusTimerInterval: null,
-    vagusPhase: 'idle', // 'inhale' (4s) | 'hold' (7s) | 'exhale' (8s)
-    vagusSecondsLeft: 0,
-    edgesCounted: 0,
-    bottomStateTrafficLight: 'green', // 'green' | 'yellow' | 'red'
-    isDimmed: false,
-    scriptData: null,
-    leadMotif: null,
-    tonality: 'sovereign_warm',
-    climaxTypeSub: 'pending', // 'pending' | 'denial' | 'ruined' | 'prostate' | 'full'
-    lastStatusCheckSeconds: 0,
-    checkInIntervalSeconds: 600, // Alle 10 Minuten Erinnerung an Status-Check
-    isCheckInDue: false
-  };
+  let currentSessionMode = 'guided'; // 'guided' | 'free'
+  let liveStepIndex = 0;
+  let currentSessionLog = [];
+
+  let breathPhase = 0; // 0: Einatmen (4s), 1: Halten (7s), 2: Ausatmen (8s)
+  let breathTimerInterval = null;
+  let breathSecondsLeft = 4;
+
+  function showToast(msg) {
+    if (typeof window.showToastNotification === 'function') {
+      window.showToastNotification(msg);
+      return;
+    }
+    const c = document.getElementById('toast-container');
+    if (!c) return;
+    const el = document.createElement('div');
+    el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
+    el.innerHTML = `
+      <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
+      <span>${escapeHtml(msg)}</span>
+    `;
+    c.appendChild(el);
+    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
+    setTimeout(() => {
+      el.classList.add('opacity-0');
+      setTimeout(() => el.remove(), 300);
+    }, 2500);
+  }
+
+  function getFormattedTimeNow() {
+    return new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  }
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -59,819 +68,666 @@
       .replace(/'/g, '&#039;');
   }
 
-  function triggerHaptic(pattern) {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      try { navigator.vibrate(pattern); } catch (e) {}
-    }
-  }
+  function updateHeaderTabuCounter() {
+    const counterEl = document.getElementById('session-tabu-counter');
+    const mobCountEl = document.getElementById('session-tabu-counter-mobile');
+    if (!counterEl && !mobCountEl) return;
 
-  function showToast(message) {
-    if (typeof window.showToastNotification === 'function') {
-      window.showToastNotification(message);
-      return;
-    }
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+    const p1 = window.surveyChaptersPart1 || [];
+    const p2 = window.surveyChaptersPart2 || [];
+    const p3 = window.surveyChaptersPart3 || [];
+    const allChapters = p1.concat(p2).concat(p3);
 
-    const el = document.createElement('div');
-    el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
-    el.innerHTML = `
-      <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
-      <span>${escapeHtml(message)}</span>
-    `;
-    container.appendChild(el);
-    setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
-    setTimeout(() => {
-      el.classList.add('opacity-0');
-      setTimeout(() => el.remove(), 300);
-    }, 2800);
-  }
-
-  function loadSessionData() {
+    let answers = { A: {}, B: {} };
     try {
-      const rawScript = sessionStorage.getItem(STORAGE_KEY_ACTIVE_SCRIPT);
-      if (rawScript) {
-        liveState.scriptData = JSON.parse(rawScript);
-        liveState.sessionMode = liveState.scriptData.sessionMode || 'scripted';
-        liveState.tonality = liveState.scriptData.tonality || 'sovereign_warm';
-        liveState.leadMotif = liveState.scriptData.leadMotif || null;
+      const stored = localStorage.getItem('kompass_answers');
+      if (stored) answers = JSON.parse(stored);
+    } catch (e) {}
+
+    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+    const subPartner = window.subPartner || localStorage.getItem('kompass_caged_role') || (topPartner === 'A' ? 'B' : 'A');
+
+    const uAnswersTop = answers[topPartner] || {};
+    const uAnswersSub = answers[subPartner] || {};
+
+    let count = 0;
+    allChapters.forEach(ch => {
+      (ch.items || []).forEach(it => {
+        if (it.type !== 'choice') {
+          if (uAnswersTop['it_' + it.id + '_r1'] === 1) count++;
+          if (uAnswersSub['it_' + it.id + '_r2'] === 1) count++;
+        }
+      });
+    });
+
+    if (counterEl) counterEl.innerText = count.toString();
+    if (mobCountEl) mobCountEl.innerText = count.toString();
+  }
+
+  async function acquireScreenWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        screenWakeLock = await navigator.wakeLock.request('screen');
       }
     } catch (e) {
-      console.warn("[TACTUS Live] Fehler beim Laden des Drehbuchs:", e);
+      console.debug("[TACTUS Live] WakeLock nicht verfügbar:", e);
     }
+  }
 
-    try {
-      const rawMetrics = sessionStorage.getItem(STORAGE_KEY_LIVE_METRICS);
-      if (rawMetrics) {
-        const metrics = JSON.parse(rawMetrics);
-        if (metrics.startedAt && !metrics.finalizedAt) {
-          liveState.isRunning = true;
-          liveState.sessionStartTime = metrics.startedAt;
-          liveState.currentPhaseIndex = metrics.currentPhaseIndex || 1;
-          liveState.edgesCounted = metrics.edgesCounted || 0;
-          liveState.bottomStateTrafficLight = metrics.trafficLight || 'green';
-        }
+  function releaseScreenWakeLock() {
+    if (screenWakeLock) {
+      screenWakeLock.release().catch(() => {});
+      screenWakeLock = null;
+    }
+  }
+
+  function startLiveSession() {
+    if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
+      window.SessionVoice.unlock();
+    }
+    if (window.SessionAudio && typeof window.SessionAudio.ensureAudioContext === 'function') {
+      window.SessionAudio.ensureAudioContext();
+    }
+    acquireScreenWakeLock();
+
+    const pContainer = document.getElementById('portal-setup-container');
+    const cContainer = document.getElementById('cockpit-live-container');
+    const badge = document.getElementById('session-active-badge');
+    const gContainer = document.getElementById('guided-step-container');
+    const freeFlowBanner = document.getElementById('free-flow-info-banner');
+    const phasePill = document.getElementById('session-phase-pill');
+
+    if (pContainer) pContainer.classList.add('hidden');
+    if (cContainer) cContainer.classList.remove('hidden');
+    if (badge) badge.classList.remove('hidden');
+
+    if (currentSessionMode === 'free') {
+      if (gContainer) gContainer.classList.add('hidden');
+      if (freeFlowBanner) freeFlowBanner.classList.remove('hidden');
+      if (phasePill) {
+        phasePill.innerText = "Freier Flow";
+        phasePill.className = "px-2 py-0.5 rounded text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/60 inline-block";
       }
-    } catch (e) {}
-
-    // Kanten aus dem Edging-Cockpit synchronisieren falls vorhanden
-    try {
-      const rawEdging = sessionStorage.getItem('tactus_edging_metrics');
-      if (rawEdging) {
-        const parsed = JSON.parse(rawEdging);
-        if (parsed.edgesCounted) liveState.edgesCounted = Math.max(liveState.edgesCounted, parsed.edgesCounted);
+      showToast("Freier Flow aktiv: Regiepult ohne feste Schritte gestartet 🌊");
+    } else {
+      if (gContainer) gContainer.classList.remove('hidden');
+      if (freeFlowBanner) freeFlowBanner.classList.add('hidden');
+      if (phasePill) {
+        phasePill.className = "px-2 py-0.5 rounded text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#450a0a] text-[#f8fafc] border border-[#991b1b] inline-block";
       }
-    } catch (e) {}
-  }
-
-  function saveLiveMetrics() {
-    try {
-      const payload = {
-        startedAt: liveState.sessionStartTime,
-        currentPhaseIndex: liveState.currentPhaseIndex,
-        elapsedSecondsTotal: liveState.elapsedSecondsTotal,
-        edgesCounted: liveState.edgesCounted,
-        trafficLight: liveState.bottomStateTrafficLight,
-        climaxTypeSub: liveState.climaxTypeSub,
-        sessionMode: liveState.sessionMode,
-        finalizedAt: null
-      };
-      sessionStorage.setItem(STORAGE_KEY_LIVE_METRICS, JSON.stringify(payload));
-    } catch (e) {}
-  }
-
-  function formatTime(totalSeconds) {
-    const s = Math.max(0, Math.floor(totalSeconds));
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${mins < 10 ? '0' + mins : mins}:${secs < 10 ? '0' + secs : secs}`;
-  }
-
-  function startTimers() {
-    stopTimers();
-    if (!liveState.sessionStartTime) {
-      liveState.sessionStartTime = Date.now();
+      renderLiveStep();
     }
-    if (!liveState.phaseStartTime) {
-      liveState.phaseStartTime = Date.now();
+
+    sessionRemainingSeconds = sessionTotalSeconds = 3600;
+    isSessionPaused = false;
+    startSessionTimer();
+
+    currentSessionLog = [
+      { type: "system", time: getFormattedTimeNow(), label: "Session gestartet (" + (currentSessionMode === 'free' ? "Freier Flow" : "Geführt") + ")" }
+    ];
+
+    const isVoiceAssistActive = localStorage.getItem('kompass_voice_assist_active') !== 'false';
+    if (isVoiceAssistActive && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+      const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+      const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
+      const topName = names[topPartner] || 'Top';
+
+      const introSpeech = (currentSessionMode === 'free')
+        ? `Freier Flow begonnen. ${topName} führt nach eigenem Ermessen.`
+        : `Session begonnen. ${topName} übernimmt ab jetzt die Führung.`;
+
+      window.SessionVoice.play(introSpeech);
     }
-    liveState.isRunning = true;
 
-    liveState.sessionTimerInterval = setInterval(() => {
-      const now = Date.now();
-      liveState.elapsedSecondsTotal = Math.floor((now - liveState.sessionStartTime) / 1000);
-      liveState.elapsedSecondsPhase = Math.floor((now - liveState.phaseStartTime) / 1000);
+    if (window.SessionEdging && typeof window.SessionEdging.resetState === 'function') {
+      window.SessionEdging.resetState();
+    }
+  }
 
-      // Periodische Prüfung für den vegetativen Status-Check beim Bottom
-      checkPeriodicStatusInquiry();
-
-      updateTimerDisplays();
-      saveLiveMetrics();
+  function startSessionTimer() {
+    if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+    sessionTimerInterval = setInterval(() => {
+      if (!isSessionPaused && sessionRemainingSeconds > 0) {
+        sessionRemainingSeconds--;
+        updateTimerDisplay();
+      } else if (sessionRemainingSeconds <= 0) {
+        clearInterval(sessionTimerInterval);
+        endSessionToAftercare();
+      }
     }, 1000);
   }
 
-  function checkPeriodicStatusInquiry() {
-    const elapsedSinceLastCheck = liveState.elapsedSecondsTotal - liveState.lastStatusCheckSeconds;
-    if (elapsedSinceLastCheck >= liveState.checkInIntervalSeconds && !liveState.isCheckInDue) {
-      liveState.isCheckInDue = true;
-      triggerHaptic([40, 30, 40]);
-      
-      const isGagged = checkIfBottomIsGagged();
-      if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-        const promptText = isGagged 
-          ? "Status-Check beim Bottom fällig. Handdruck-Signal oder Display-Ampel abfragen."
-          : "Status-Check fällig. Ampel-Zustand beim Bottom abfragen.";
-        window.SessionVoice.speak(promptText, { priority: 'normal', tonality: liveState.tonality });
-      }
-
-      showToast("RACK Status-Check fällig! Zustand beim Bottom einholen.");
-      renderCockpit();
-    }
+  function updateTimerDisplay() {
+    const disp = document.getElementById('session-timer-display');
+    if (!disp) return;
+    const m = Math.floor(sessionRemainingSeconds / 60);
+    const s = sessionRemainingSeconds % 60;
+    disp.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
   }
 
-  function checkIfBottomIsGagged() {
-    const script = liveState.scriptData;
-    const motif = liveState.leadMotif || (script ? script.leadMotif : null);
-    if (motif) {
-      const titleLower = (motif.title || '').toLowerCase();
-      const tags = motif.equipmentTags || [];
-      if (tags.includes('gag') || motif.somaticZone === 'head_mouth' || titleLower.includes('knebel')) {
-        return true;
-      }
-    }
-    return false;
+  function togglePauseTimer() {
+    isSessionPaused = !isSessionPaused;
+    const btn = document.getElementById('btn-pause-timer');
+    if (btn) btn.innerText = isSessionPaused ? "Weiter" : "Pause";
+    showToast(isSessionPaused ? "Session pausiert ⏸" : "Session fortgesetzt ▶");
   }
 
-  function acknowledgeStatusCheck(colorChosen = null) {
-    liveState.lastStatusCheckSeconds = liveState.elapsedSecondsTotal;
-    liveState.isCheckInDue = false;
-    if (colorChosen) {
-      setBottomTrafficLight(colorChosen);
+  function addSessionMinutes(mins) {
+    sessionRemainingSeconds += mins * 60;
+    sessionTotalSeconds += mins * 60;
+    updateTimerDisplay();
+    showToast(`+${mins} Minuten Spielzeit hinzugefügt ⏱`);
+  }
+
+  function renderLiveStep() {
+    const playbook = window.currentSelectedPlaybook || [];
+    const step = playbook[liveStepIndex];
+    if (!step) return;
+
+    const badge = document.getElementById('live-step-badge');
+    const title = document.getElementById('live-step-title');
+    const phase = document.getElementById('live-step-phase');
+    const desc = document.getElementById('live-step-desc');
+    const topRole = document.getElementById('live-step-top-role');
+    const subRole = document.getElementById('live-step-sub-role');
+    const phasePill = document.getElementById('session-phase-pill');
+
+    if (badge) badge.innerText = `Schritt ${liveStepIndex + 1} / ${playbook.length}`;
+    if (title) title.innerText = step.title;
+    if (phase) phase.innerText = step.phase ? step.phase.split(':')[0] : 'Phase';
+    if (desc) desc.innerText = step.desc;
+    if (topRole) topRole.innerText = step.top;
+    if (subRole) subRole.innerText = step.sub;
+    if (phasePill && currentSessionMode !== 'free') {
+      phasePill.innerText = step.phase ? step.phase.split(':')[0] : 'Phase';
+    }
+
+    const lowerTitle = (step.title || '').toLowerCase();
+    const isEdgingStep = (lowerTitle.includes('edging') || lowerTitle.includes('edge') || lowerTitle.includes('höhepunkt'));
+    
+    const edgingBanner = document.getElementById('guided-edging-callout');
+    const edgingFocusBadge = document.getElementById('edging-focus-badge');
+    const edgingCockpitPanel = document.getElementById('edging-cockpit-panel');
+
+    if (isEdgingStep) {
+      if (edgingBanner) edgingBanner.classList.remove('hidden');
+      if (edgingFocusBadge) edgingFocusBadge.classList.remove('hidden');
+      if (edgingCockpitPanel) {
+        edgingCockpitPanel.classList.add('ring-2', 'ring-[#c5a880]', 'border-[#c5a880]');
+      }
     } else {
-      renderCockpit();
+      if (edgingBanner) edgingBanner.classList.add('hidden');
+      if (edgingFocusBadge) edgingFocusBadge.classList.add('hidden');
+      if (edgingCockpitPanel) {
+        edgingCockpitPanel.classList.remove('ring-2', 'ring-[#c5a880]', 'border-[#c5a880]');
+      }
     }
   }
 
-  function stopTimers() {
-    if (liveState.sessionTimerInterval) {
-      clearInterval(liveState.sessionTimerInterval);
-      liveState.sessionTimerInterval = null;
+  function nextLiveStep() {
+    const playbook = window.currentSelectedPlaybook || [];
+    if (liveStepIndex < playbook.length - 1) {
+      liveStepIndex++;
+      renderLiveStep();
+    } else {
+      endSessionToAftercare();
     }
   }
 
-  function updateTimerDisplays() {
-    const totalEl = document.getElementById('live-total-timer-digits');
-    const phaseEl = document.getElementById('live-phase-timer-digits');
-    const flowEl = document.getElementById('live-flow-timer-digits');
-
-    const formattedTotal = formatTime(liveState.elapsedSecondsTotal);
-    const formattedPhase = formatTime(liveState.elapsedSecondsPhase);
-
-    if (totalEl) totalEl.innerText = formattedTotal;
-    if (phaseEl) phaseEl.innerText = formattedPhase;
-    if (flowEl) flowEl.innerText = formattedTotal;
+  function prevLiveStep() {
+    if (liveStepIndex > 0) {
+      liveStepIndex--;
+      renderLiveStep();
+    }
   }
 
-  function setBottomTrafficLight(color) {
-    liveState.bottomStateTrafficLight = color;
-    liveState.lastStatusCheckSeconds = liveState.elapsedSecondsTotal;
-    liveState.isCheckInDue = false;
-    saveLiveMetrics();
+  function speakCurrentLiveStep() {
+    const playbook = window.currentSelectedPlaybook || [];
+    const step = playbook[liveStepIndex];
+    if (!step) return;
+    if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+      window.SessionVoice.play(`${step.title}. ${step.desc}`);
+    }
+  }
 
-    const indicatorDot = document.getElementById('traffic-light-status-dot');
-    const indicatorText = document.getElementById('traffic-light-status-text');
+  function triggerSafeword(color) {
+    const ind = document.getElementById('safeword-red-indicator');
+    const time = getFormattedTimeNow();
+    const isVoiceAssistActive = localStorage.getItem('kompass_voice_assist_active') !== 'false';
 
     if (color === 'green') {
-      triggerHaptic([25]);
-      if (window.SessionAudio && typeof window.SessionAudio.playPercussionClick === 'function') {
-        window.SessionAudio.playPercussionClick(550, 30);
+      currentSessionLog.push({ type: "safeword", time: time, label: "Safeword GRÜN: Bestätigung" });
+      showToast("GRÜN bestätigt: Alles in bester Ordnung ✓");
+      if (isVoiceAssistActive && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+        window.SessionVoice.play("Grün. Sehr gut.");
       }
-      if (indicatorDot) indicatorDot.className = "w-3 h-3 rounded-full bg-[#15803d] animate-pulse";
-      if (indicatorText) indicatorText.innerText = "Grün · Reiz im stabilen Bereich";
-      showToast("RACK-Ampel: GRÜN (Vegetativ stabil)");
     } else if (color === 'yellow') {
-      triggerHaptic([60, 40, 60]);
+      currentSessionLog.push({ type: "safeword", time: time, label: "Safeword GELB: Tempo drosseln" });
+      showToast("⚠️ GELB ausgelöst: Tempo drosseln!");
       if (window.SessionAudio && typeof window.SessionAudio.duck === 'function') {
-        window.SessionAudio.duck(0.40, 0.2);
-        setTimeout(() => window.SessionAudio.unduck(1.5), 3000);
+        window.SessionAudio.duck(0.40);
+        setTimeout(() => {
+          if (window.SessionAudio && typeof window.SessionAudio.unduck === 'function') {
+            window.SessionAudio.unduck(1.5);
+          }
+        }, 3500);
       }
-      if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-        window.SessionVoice.speak("Gelb registriert. Intensität drosseln, Haltung lockern.", {
-          priority: 'immediate',
-          tonality: liveState.tonality
-        });
+      if (isVoiceAssistActive && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+        window.SessionVoice.play("Gelb registriert. Tempo drosseln und durchatmen.");
       }
-      if (indicatorDot) indicatorDot.className = "w-3 h-3 rounded-full bg-[#ca8a04] animate-ping";
-      if (indicatorText) indicatorText.innerText = "Gelb · Grenzbereich naht (Drosseln)";
-      showToast("RACK-Ampel: GELB (Grenzbereich naht / Intensität drosseln)");
-    } else if (color === 'red') {
-      triggerHaptic([100, 50, 100, 50, 300]);
+    } else {
+      currentSessionLog.push({ type: "safeword", time: time, label: "Safeword ROT: Sofort-Abbruch" });
+      if (ind) ind.classList.add('animate-ping');
+      isSessionPaused = true;
       if (window.SessionAudio && typeof window.SessionAudio.coldStop === 'function') {
         window.SessionAudio.coldStop();
       }
-      if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-        window.SessionVoice.speak("Rot! Kaltstopp. Sofortiger Handlungsstillstand. Hände wegnehmen.", {
-          priority: 'emergency',
-          tonality: 'sovereign_cool'
-        });
+      showToast("🛑 ROT AUSGELÖST: Sofortiger Stillstand!");
+      if (isVoiceAssistActive && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+        window.SessionVoice.play("Halt. Sofortiger Stopp aller Handlungen.");
       }
-      if (indicatorDot) indicatorDot.className = "w-3 h-3 rounded-full bg-[#dc2626] animate-ping";
-      if (indicatorText) indicatorText.innerText = "ROT · KALTSTOPP / HANDLUNGSSTILLSTAND";
-      showToast("RACK-Ampel: ROT (SOFORTIGER HANDLUNGSSTILLSTAND!)");
-
-      // Wenn Rot: Dimmer abschalten, damit man voll handlungsfähig ist
-      if (liveState.isDimmed) toggleDimmer();
+      setTimeout(() => {
+        if (ind) ind.classList.remove('animate-ping');
+      }, 4000);
     }
-
-    renderCockpit();
   }
 
-  function startVagusBreathing() {
-    stopVagusBreathing();
-    liveState.vagusPhase = 'inhale';
-    liveState.vagusSecondsLeft = 4;
-
-    if (window.SessionAudio && typeof window.SessionAudio.playDrone === 'function') {
-      window.SessionAudio.playDrone('vagus_432');
+  function openZenAtemModal() {
+    const m = document.getElementById('modal-session-zen');
+    if (m) {
+      m.classList.remove('hidden');
+      m.style.display = 'flex';
+      startVagusBreathingAnimation();
     }
+  }
 
-    if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-      window.SessionVoice.speak("Vagus-Atmung beginnt. Vier Sekunden durch die Nase einatmen.", {
-        priority: 'normal',
-        tonality: liveState.tonality
-      });
+  function closeZenAtemModal() {
+    const m = document.getElementById('modal-session-zen');
+    if (m) {
+      m.classList.add('hidden');
+      m.style.display = 'none';
     }
+    stopVagusBreathingAnimation();
+  }
 
-    updateVagusDisplay();
+  function selectZenMode(mode) {
+    const bBreath = document.getElementById('btn-zen-mode-breath');
+    const bTrance = document.getElementById('btn-zen-mode-trance');
+    const vBreath = document.getElementById('zen-view-breath');
+    const vTrance = document.getElementById('zen-view-trance');
 
-    liveState.vagusTimerInterval = setInterval(() => {
-      liveState.vagusSecondsLeft--;
+    if (mode === 'breath') {
+      if (bBreath) bBreath.className = "p-2.5 rounded-xl border bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold text-center touch-btn shadow-sm";
+      if (bTrance) bTrance.className = "p-2.5 rounded-xl border bg-[#090d14] border-[#2a364f] text-[#94a3b8] font-bold text-center touch-btn";
+      if (vBreath) vBreath.classList.remove('hidden');
+      if (vTrance) vTrance.classList.add('hidden');
+      startVagusBreathingAnimation();
+    } else {
+      if (bTrance) bTrance.className = "p-2.5 rounded-xl border bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold text-center touch-btn shadow-sm";
+      if (bBreath) bBreath.className = "p-2.5 rounded-xl border bg-[#090d14] border-[#2a364f] text-[#94a3b8] font-bold text-center touch-btn";
+      if (vTrance) vTrance.classList.remove('hidden');
+      if (vBreath) vBreath.classList.add('hidden');
+      stopVagusBreathingAnimation();
+    }
+  }
 
-      if (liveState.vagusSecondsLeft <= 0) {
-        if (liveState.vagusPhase === 'inhale') {
-          liveState.vagusPhase = 'hold';
-          liveState.vagusSecondsLeft = 7;
-          triggerHaptic([40]);
-          if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-            window.SessionVoice.speak("Sieben Sekunden Atem sanft anhalten.", { priority: 'normal', tonality: liveState.tonality });
-          }
-        } else if (liveState.vagusPhase === 'hold') {
-          liveState.vagusPhase = 'exhale';
-          liveState.vagusSecondsLeft = 8;
-          triggerHaptic([25, 25]);
-          if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-            window.SessionVoice.speak("Acht Sekunden langsam durch den Mund ausatmen.", { priority: 'normal', tonality: liveState.tonality });
-          }
-        } else if (liveState.vagusPhase === 'exhale') {
-          liveState.vagusPhase = 'inhale';
-          liveState.vagusSecondsLeft = 4;
-          triggerHaptic([35]);
-          if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-            window.SessionVoice.speak("Wieder vier Sekunden einatmen.", { priority: 'normal', tonality: liveState.tonality });
-          }
-        }
+  function applyBreathingCirclePhase(phase) {
+    const circle = document.getElementById('breath-circle');
+    if (!circle) return;
+
+    if (phase === 0) {
+      // 4s Einatmen
+      circle.style.transition = "transform 4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 4s ease, border-color 4s ease";
+      circle.style.transform = "scale(1.48)";
+      circle.style.boxShadow = "0 0 65px rgba(197, 168, 128, 0.65), inset 0 0 30px rgba(197, 168, 128, 0.35)";
+      circle.style.borderColor = "#c5a880";
+    } else if (phase === 1) {
+      // 7s Halten
+      circle.style.transition = "transform 1.5s ease-in-out, box-shadow 1.5s ease-in-out";
+      circle.style.transform = "scale(1.50)";
+      circle.style.boxShadow = "0 0 75px rgba(223, 202, 169, 0.8), inset 0 0 40px rgba(223, 202, 169, 0.5)";
+      circle.style.borderColor = "#dfcaa9";
+    } else {
+      // 8s Ausatmen
+      circle.style.transition = "transform 8s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 8s ease, border-color 8s ease";
+      circle.style.transform = "scale(1.0)";
+      circle.style.boxShadow = "0 0 15px rgba(197, 168, 128, 0.2)";
+      circle.style.borderColor = "rgba(197, 168, 128, 0.4)";
+    }
+  }
+
+  function updateBreathingText(phase, secondsLeft) {
+    const text = document.getElementById('breath-text');
+    if (!text) return;
+
+    if (phase === 0) {
+      text.innerText = `Einatmen (${secondsLeft}s)`;
+      text.className = "absolute text-xs sm:text-sm font-black font-serif text-[#dfcaa9] pointer-events-none drop-shadow-md text-center px-2";
+    } else if (phase === 1) {
+      text.innerText = `Atem halten (${secondsLeft}s)`;
+      text.className = "absolute text-xs sm:text-sm font-black font-serif text-white pointer-events-none drop-shadow-md text-center px-2";
+    } else {
+      text.innerText = `Langsam ausatmen (${secondsLeft}s)`;
+      text.className = "absolute text-xs sm:text-sm font-black font-serif text-[#94a3b8] pointer-events-none drop-shadow-md text-center px-2";
+    }
+  }
+
+  function startVagusBreathingAnimation() {
+    stopVagusBreathingAnimation();
+    breathPhase = 0;
+    breathSecondsLeft = 4;
+
+    applyBreathingCirclePhase(breathPhase);
+    updateBreathingText(breathPhase, breathSecondsLeft);
+
+    breathTimerInterval = setInterval(() => {
+      breathSecondsLeft--;
+      if (breathSecondsLeft <= 0) {
+        breathPhase = (breathPhase + 1) % 3;
+        if (breathPhase === 0) breathSecondsLeft = 4;
+        else if (breathPhase === 1) breathSecondsLeft = 7;
+        else breathSecondsLeft = 8;
+
+        applyBreathingCirclePhase(breathPhase);
       }
-
-      updateVagusDisplay();
+      updateBreathingText(breathPhase, breathSecondsLeft);
     }, 1000);
   }
 
-  function stopVagusBreathing() {
-    if (liveState.vagusTimerInterval) {
-      clearInterval(liveState.vagusTimerInterval);
-      liveState.vagusTimerInterval = null;
+  function stopVagusBreathingAnimation() {
+    if (breathTimerInterval) {
+      clearInterval(breathTimerInterval);
+      breathTimerInterval = null;
     }
-    liveState.vagusPhase = 'idle';
-    liveState.vagusSecondsLeft = 0;
-  }
-
-  function updateVagusDisplay() {
-    const textEl = document.getElementById('vagus-phase-title');
-    const secEl = document.getElementById('vagus-seconds-display');
-    const circleEl = document.getElementById('vagus-animated-circle');
-
-    if (!secEl) return;
-    secEl.innerText = liveState.vagusSecondsLeft > 0 ? `${liveState.vagusSecondsLeft}s` : 'Bereit';
-
-    if (textEl) {
-      if (liveState.vagusPhase === 'inhale') textEl.innerText = "Einatmen (4s Nase)";
-      else if (liveState.vagusPhase === 'hold') textEl.innerText = "Halten (7s Stillstehen)";
-      else if (liveState.vagusPhase === 'exhale') textEl.innerText = "Ausatmen (8s Mund)";
-      else textEl.innerText = "4-7-8 Vagus-Erdung";
-    }
-
-    if (circleEl) {
-      if (liveState.vagusPhase === 'inhale') {
-        circleEl.style.transform = "scale(1.35)";
-        circleEl.style.borderColor = "#2e5746";
-      } else if (liveState.vagusPhase === 'hold') {
-        circleEl.style.transform = "scale(1.35)";
-        circleEl.style.borderColor = "#c5a880";
-      } else if (liveState.vagusPhase === 'exhale') {
-        circleEl.style.transform = "scale(1.0)";
-        circleEl.style.borderColor = "#1e2638";
-      } else {
-        circleEl.style.transform = "scale(1.0)";
-        circleEl.style.borderColor = "#2a364f";
-      }
+    const circle = document.getElementById('breath-circle');
+    if (circle) {
+      circle.style.transition = "none";
+      circle.style.transform = "scale(1.0)";
+      circle.style.boxShadow = "none";
     }
   }
 
-  function nextPhase() {
-    if (!liveState.scriptData || !Array.isArray(liveState.scriptData.phases)) return;
-    const maxPhase = liveState.scriptData.phases.length;
-
-    if (liveState.currentPhaseIndex < maxPhase) {
-      liveState.currentPhaseIndex++;
-      liveState.phaseStartTime = Date.now();
-      liveState.elapsedSecondsPhase = 0;
-
-      const newPhase = liveState.scriptData.phases[liveState.currentPhaseIndex - 1];
-      triggerHaptic([60, 40, 100]);
-      showToast(`Wechsel zu ${newPhase.title}`);
-
-      // Sprachbefehl der neuen Phase ankündigen
-      if (window.SessionVoice && typeof window.SessionVoice.speak === 'function' && newPhase.topDialogueQuote) {
-        window.SessionVoice.speak(newPhase.topDialogueQuote, {
-          priority: 'normal',
-          tonality: liveState.tonality
-        });
-      }
-
-      // Bei Erreichen von Phase 4 (Reverse Aftercare): Vagus-Atmung anregen
-      if (liveState.currentPhaseIndex === 4) {
-        startVagusBreathing();
-      }
-
-      saveLiveMetrics();
-      renderCockpit();
-    } else {
-      openFinalizeModal();
+  function playGuidedTranceInduction() {
+    if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
+      window.SessionVoice.unlock();
+    }
+    if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+      window.SessionVoice.play("Schließe die Augen. Atme tief in den Bauchraum aus. Lass die Schultern sinken und spüre das feste Gehaltensein.");
     }
   }
 
-  function prevPhase() {
-    if (liveState.currentPhaseIndex > 1) {
-      liveState.currentPhaseIndex--;
-      liveState.phaseStartTime = Date.now();
-      liveState.elapsedSecondsPhase = 0;
-      saveLiveMetrics();
-      renderCockpit();
+  function endSessionToAftercare() {
+    isSessionPaused = true;
+    const m = document.getElementById('modal-session-aftercare');
+    if (m) {
+      m.classList.remove('hidden');
+      m.style.display = 'flex';
     }
   }
 
-  function toggleDimmer() {
-    let overlay = document.getElementById('session-live-dimmer-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'session-live-dimmer-overlay';
-      overlay.className = 'fixed inset-0 bg-black/85 z-50 pointer-events-none transition-opacity duration-500 opacity-0';
-      document.body.appendChild(overlay);
+  function closeAftercareModal() {
+    const m = document.getElementById('modal-session-aftercare');
+    if (m) {
+      m.classList.add('hidden');
+      m.style.display = 'none';
     }
-
-    liveState.isDimmed = !liveState.isDimmed;
-    overlay.style.opacity = liveState.isDimmed ? '1' : '0';
-    showToast(liveState.isDimmed ? "Nachttisch-Dimmer aktiv (85% OLED-Halbdunkel)" : "Dimmer deaktiviert");
   }
 
-  function triageSub(typeKey) {
-    liveState.climaxTypeSub = typeKey;
-    saveLiveMetrics();
-    showToast(`Ausgang des Subs registriert: ${typeKey.toUpperCase()}`);
-    renderCockpit();
-  }
+  function completeSessionAndExit() {
+    const topFeedEl = document.getElementById('aftercare-top-feedback');
+    const subFeedEl = document.getElementById('aftercare-sub-feedback');
+    const topFeed = (topFeedEl ? topFeedEl.value : '') || '';
+    const subFeed = (subFeedEl ? subFeedEl.value : '') || '';
 
-  function openFinalizeModal() {
-    stopTimers();
-    stopVagusBreathing();
+    const edgeHits = (window.SessionEdging && typeof window.SessionEdging.getEdgeCount === 'function')
+      ? window.SessionEdging.getEdgeCount()
+      : 0;
 
-    let modal = document.getElementById('modal-session-finalize');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'modal-session-finalize';
-      modal.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
-      document.body.appendChild(modal);
-    }
-
-    const durationMins = Math.max(1, Math.round(liveState.elapsedSecondsTotal / 60));
-    const motifTitle = liveState.leadMotif ? liveState.leadMotif.title : 'Schlafzimmer-Session';
-
-    modal.innerHTML = `
-      <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#c5a880]/60 p-5 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[90dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
-        
-        <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
-          <div>
-            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#d4af37] font-bold block">Session-Abschluss &amp; Logbuch-Eintrag</span>
-            <h3 class="text-base sm:text-lg font-serif text-white font-bold mt-0.5">${escapeHtml(motifTitle)}</h3>
-          </div>
-          <button type="button" onclick="SessionLive.closeFinalizeModal()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-pad">✕</button>
-        </div>
-
-        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-          Großartige Führung. Dokumentiere eure Session für das gemeinsame Logbuch und sende automatisch eine 1-Klick Feedback-Aufforderung in euren Paar-Stream.
-        </p>
-
-        <!-- KENNZAHLEN DER SESSION -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Dauer:</span>
-            <strong class="text-sm font-bold text-white">${durationMins} Min.</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Edges (Plateaus):</span>
-            <strong class="text-sm font-bold text-[#c5a880]">${liveState.edgesCounted}</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Tonalität:</span>
-            <strong class="text-xs font-bold text-white truncate block mt-0.5">${escapeHtml(liveState.tonality)}</strong>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-            <span class="text-[9.5px] text-[#94a3b8] block">Ausgang Sub:</span>
-            <strong class="text-xs font-bold text-[#b3734a] truncate block mt-0.5">${escapeHtml(liveState.climaxTypeSub)}</strong>
-          </div>
-        </div>
-
-        <!-- POST-SESSION FEEDBACK & REFLEXION -->
-        <div class="space-y-2">
-          <label class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">Post-somatisches Feedback / Notiz für euer Tagebuch:</label>
-          <textarea id="finalize-input-feedback" rows="3" placeholder="Wie war die Verbindung? Was hat besonders berührt, wo gab es Zögern? (z. B. 'Sehr tiefer Kniestand, ruhiges Loslassen...')" class="w-full p-3 rounded-xl bg-[#000000] border border-[#2a364f] text-white text-xs font-sans placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none leading-relaxed"></textarea>
-        </div>
-
-        <div class="pt-2 border-t border-[#2a364f] flex justify-end gap-2 font-mono">
-          <button type="button" onclick="SessionLive.closeFinalizeModal()" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-pad">Zurück zur Regie</button>
-          <button type="button" onclick="SessionLive.confirmFinalizeSession()" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-pad shadow-md">
-            Ins Logbuch speichern &amp; Stream benachrichtigen ↗
-          </button>
-        </div>
-      </div>
-    `;
-
-    modal.style.display = 'flex';
-  }
-
-  function closeFinalizeModal() {
-    const modal = document.getElementById('modal-session-finalize');
-    if (modal) modal.style.display = 'none';
-    if (liveState.isRunning) startTimers();
-  }
-
-  function confirmFinalizeSession() {
-    const feedbackInput = document.getElementById('finalize-input-feedback');
-    const feedbackText = feedbackInput ? feedbackInput.value.trim() : '';
-
-    const durationMins = Math.max(1, Math.round(liveState.elapsedSecondsTotal / 60));
-    const motifTitle = liveState.leadMotif ? liveState.leadMotif.title : 'Schlafzimmer-Session';
-
-    // 1. Logbuch-Eintrag erstellen & speichern
-    let logbook = [];
+    let diary = [];
     try {
-      const raw = localStorage.getItem(STORAGE_KEY_LOGBOOK);
-      if (raw) logbook = JSON.parse(raw);
+      const raw = localStorage.getItem('tactus_session_logbook') || localStorage.getItem('kompass_session_diary');
+      if (raw) diary = JSON.parse(raw);
     } catch (e) {}
 
-    const newEntry = {
-      id: `session_${Date.now()}`,
-      timestamp: Date.now(),
-      title: motifTitle,
-      durationMinutes: durationMins,
-      edgesCounted: liveState.edgesCounted,
-      tonality: liveState.tonality,
-      climaxType: liveState.climaxTypeSub,
-      feedbackNote: feedbackText,
-      trafficLightFinal: liveState.bottomStateTrafficLight
+    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+    const subPartner = window.subPartner || localStorage.getItem('kompass_caged_role') || (topPartner === 'A' ? 'B' : 'A');
+    const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
+
+    const sessionEntry = {
+      id: "sess_" + Date.now(),
+      date: new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      mode: currentSessionMode === 'guided' ? 'Geführt' : 'Freier Flow',
+      intensity: window.sessionDepth || 7,
+      top: names[topPartner] || 'Top',
+      bottom: names[subPartner] || 'Bottom',
+      durationMinutes: Math.max(1, Math.round((sessionTotalSeconds - sessionRemainingSeconds) / 60)),
+      edgeCount: edgeHits,
+      topFeedback: topFeed,
+      bottomFeedback: subFeed,
+      events: currentSessionLog,
+      timestamp: Date.now()
     };
 
-    logbook.unshift(newEntry);
+    diary.unshift(sessionEntry);
     try {
-      localStorage.setItem(STORAGE_KEY_LOGBOOK, JSON.stringify(logbook));
+      localStorage.setItem('tactus_session_logbook', JSON.stringify(diary));
+      localStorage.setItem('kompass_session_diary', JSON.stringify(diary));
     } catch (e) {}
 
-    // 2. Im Paar-Stream (chat.html) den System-Event mit 1-Klick Feedback posten
-    postSessionFeedbackToChat(newEntry);
+    if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+      window.CloudSync.trigger();
+    }
 
-    // 3. Metriken zurücksetzen
-    liveState.isRunning = false;
-    sessionStorage.removeItem(STORAGE_KEY_LIVE_METRICS);
-    sessionStorage.removeItem('tactus_edging_metrics');
+    if (window.SessionAudio && typeof window.SessionAudio.stopDrone === 'function') {
+      window.SessionAudio.stopDrone();
+    }
+    if (window.SessionVoice && typeof window.SessionVoice.stop === 'function') {
+      window.SessionVoice.stop();
+    }
 
-    const modal = document.getElementById('modal-session-finalize');
-    if (modal) modal.style.display = 'none';
+    releaseScreenWakeLock();
+    window.location.href = "analyse.html";
+  }
 
-    showToast("✓ Session im Logbuch archiviert & Stream benachrichtigt!");
-
-    // Automatisch auf das Logbuch in session.html umschalten
-    if (window.SessionRuntime && typeof window.SessionRuntime.switchStage === 'function') {
-      window.SessionRuntime.switchStage('logbook');
+  function openSessionDiaryModal() {
+    renderSessionDiaryEntries();
+    const m = document.getElementById('modal-session-diary');
+    if (m) {
+      m.classList.remove('hidden');
+      m.style.display = 'flex';
     }
   }
 
-  function postSessionFeedbackToChat(sessionEntry) {
+  function closeSessionDiaryModal() {
+    const m = document.getElementById('modal-session-diary');
+    if (m) {
+      m.classList.add('hidden');
+      m.style.display = 'none';
+    }
+  }
+
+  function renderSessionDiaryEntries() {
+    const c = document.getElementById('session-diary-entries-container');
+    if (!c) return;
+
+    let diary = [];
     try {
-      let chatMsgs = [];
-      const raw = localStorage.getItem(STORAGE_KEY_CHAT_MESSAGES);
-      if (raw) chatMsgs = JSON.parse(raw);
+      const raw = localStorage.getItem('tactus_session_logbook') || localStorage.getItem('kompass_session_diary');
+      if (raw) diary = JSON.parse(raw);
+    } catch (e) {}
 
-      const noticeText = `SCHLAFZIMMER-SESSION ABGESCHLOSSEN: „${sessionEntry.title}“ (${sessionEntry.durationMinutes} Min. · ${sessionEntry.edgesCounted} Edges · Tonalität: ${sessionEntry.tonality}). Bitte um eure somatische Reflexion im Session-Logbuch.`;
+    if (diary.length === 0) {
+      c.innerHTML = '<p class="text-[#94a3b8] italic text-center py-6 text-xs font-mono">Noch keine Sessions im Logbuch verzeichnet.</p>';
+      return;
+    }
 
-      const newMsg = {
-        id: `msg_session_${Date.now()}`,
-        sender: 'system',
-        text: noticeText,
-        sessionRefId: sessionEntry.id,
-        timestamp: Date.now()
-      };
+    c.innerHTML = diary.map(entry => {
+      return `
+        <div class="p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] space-y-2 font-sans">
+          <div class="flex items-center justify-between border-b border-[#2a364f] pb-1.5 font-mono text-xs">
+            <span class="font-bold text-white text-xs">${escapeHtml(entry.date)} (${escapeHtml(entry.mode || 'Session')})</span>
+            <span class="text-[#c5a880] font-bold text-xs">Stufe ${entry.intensity || 7}/10</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[10.5px] text-[#94a3b8] font-mono">
+            <div>👑 Top: <strong class="text-white">${escapeHtml(entry.top || 'Top')}</strong></div>
+            <div>🧎 Bottom: <strong class="text-[#c5a880]">${escapeHtml(entry.bottom || 'Bottom')}</strong></div>
+            <div>⏱️ Dauer: <strong class="text-white">${entry.durationMinutes || 1} Min</strong></div>
+            <div>⚡ Edges: <strong class="text-[#c5a880]">${entry.edgeCount || 0}</strong></div>
+          </div>
+          ${entry.topFeedback ? `<div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[10.5px] text-[#f8fafc]"><strong class="text-[#c5a880] font-mono">Top:</strong> ${escapeHtml(entry.topFeedback)}</div>` : ''}
+          ${entry.bottomFeedback ? `<div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[10.5px] text-[#f8fafc]"><strong class="text-[#b3734a] font-mono">Bottom:</strong> ${escapeHtml(entry.bottomFeedback)}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
 
-      chatMsgs.push(newMsg);
-      localStorage.setItem(STORAGE_KEY_CHAT_MESSAGES, JSON.stringify(chatMsgs.slice(-100)));
-
-      if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
-        window.CloudSync.trigger();
-      }
-    } catch (e) {
-      console.warn("[TACTUS Live] Konnte Chat-Meldung nicht absetzen:", e);
+  function openSessionTabuModal() {
+    renderSessionTabuList();
+    const m = document.getElementById('modal-session-tabus');
+    if (m) {
+      m.classList.remove('hidden');
+      m.style.display = 'flex';
     }
   }
 
-  function renderCockpit(containerId = 'live-session-container') {
-    loadSessionData();
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    if (!liveState.isRunning && liveState.scriptData) {
-      startTimers();
+  function closeSessionTabuModal() {
+    const m = document.getElementById('modal-session-tabus');
+    if (m) {
+      m.classList.add('hidden');
+      m.style.display = 'none';
     }
+  }
 
-    const script = liveState.scriptData;
-    const isFlow = liveState.sessionMode === 'flow' || !script;
-    const currentPhase = (script && Array.isArray(script.phases)) 
-      ? script.phases[liveState.currentPhaseIndex - 1] 
-      : null;
+  function renderSessionTabuList() {
+    const c = document.getElementById('session-tabu-list-container');
+    if (!c) return;
 
-    const totalPhases = (script && Array.isArray(script.phases)) ? script.phases.length : 1;
-    const motifTitle = liveState.leadMotif ? liveState.leadMotif.title : (script ? script.sessionTitle : 'Freies Spiel (Somatischer Flow)');
-    const light = liveState.bottomStateTrafficLight;
-    const isGagged = checkIfBottomIsGagged();
+    const p1 = window.surveyChaptersPart1 || [];
+    const p2 = window.surveyChaptersPart2 || [];
+    const p3 = window.surveyChaptersPart3 || [];
+    const allChapters = p1.concat(p2).concat(p3);
 
-    container.innerHTML = `
-      <div class="space-y-4 max-w-2xl mx-auto text-xs font-sans animate-fade-in select-none">
-        
-        <!-- HEADER STATUS & REGIE-LEISTE -->
-        <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] shadow-2xl space-y-3">
-          <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-3 gap-2">
-            <div class="space-y-0.5 min-w-0 flex-1">
-              <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block truncate">
-                Operative Live-Regie im Halbdunkel
-              </span>
-              <h2 class="text-sm sm:text-base font-serif text-white font-bold truncate">
-                ${escapeHtml(motifTitle)}
-              </h2>
-            </div>
-            
-            <div class="flex items-center gap-1.5 font-mono text-xs flex-shrink-0">
-              <span class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] font-bold">
-                ${isFlow ? 'Flow-Modus' : `Phase ${liveState.currentPhaseIndex} von ${totalPhases}`}
-              </span>
-              <button type="button" onclick="SessionLive.openFinalizeModal()" class="px-3 py-1 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-bold touch-pad shadow-sm" title="Session beenden & archivieren">
-                Beenden ✕
-              </button>
-            </div>
+    let answers = { A: {}, B: {} };
+    try {
+      const stored = localStorage.getItem('kompass_answers');
+      if (stored) answers = JSON.parse(stored);
+    } catch (e) {}
+
+    const topPartner = window.topPartner || localStorage.getItem('kompass_keyholder_role') || 'B';
+    const subPartner = window.subPartner || localStorage.getItem('kompass_caged_role') || (topPartner === 'A' ? 'B' : 'A');
+    const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
+
+    const uAnswersTop = answers[topPartner] || {};
+    const uAnswersSub = answers[subPartner] || {};
+
+    const topTabus = [];
+    const subTabus = [];
+
+    allChapters.forEach(ch => {
+      (ch.items || []).forEach(it => {
+        if (it.type !== 'choice') {
+          if (uAnswersTop['it_' + it.id + '_r1'] === 1) topTabus.push({ item: it, role: it.r1Label || 'Führen' });
+          if (uAnswersSub['it_' + it.id + '_r2'] === 1) subTabus.push({ item: it, role: it.r2Label || 'Empfangen' });
+        }
+      });
+    });
+
+    c.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-sans">
+        <div class="p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] space-y-2">
+          <div class="flex items-center justify-between border-b border-[#2a364f] pb-1.5 font-mono">
+            <strong class="text-white block text-xs">Ausführungs-Grenzen (${escapeHtml(names[topPartner] || 'Top')}):</strong>
+            <span class="text-[10px] text-[#c5a880] font-bold">${topTabus.length}</span>
           </div>
-
-          <!-- 72px GLANCEABLE TIMER KACHEL (AUS 2M DISTANZ LESBAR) -->
-          <div class="grid grid-cols-2 gap-2 text-center">
-            <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-              <span class="text-[9.5px] font-mono text-[#94a3b8] uppercase tracking-wider block">Session Gesamt:</span>
-              <div id="live-total-timer-digits" class="text-4xl sm:text-5xl font-mono font-bold text-white tracking-tight leading-none pt-1">
-                ${formatTime(liveState.elapsedSecondsTotal)}
-              </div>
-            </div>
-            <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-0.5">
-              <span class="text-[9.5px] font-mono text-[#c5a880] uppercase tracking-wider block">${isFlow ? 'Laufzeit' : `Phase ${liveState.currentPhaseIndex}:`}</span>
-              <div id="live-phase-timer-digits" class="text-4xl sm:text-5xl font-mono font-bold text-[#c5a880] tracking-tight leading-none pt-1">
-                ${formatTime(liveState.elapsedSecondsPhase)}
-              </div>
-            </div>
+          <div class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+            ${topTabus.length > 0 ? topTabus.map(t => {
+              return `
+                <a href="index.html#view=survey&item=${t.item.id}" target="_blank" class="block p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] hover:border-[#c5a880] transition group touch-btn">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white block font-bold text-[10.5px] group-hover:text-[#c5a880]">${escapeHtml(t.item.title)}</span>
+                    <span class="text-[9px] px-2 py-0.5 rounded bg-[#090d14] text-[#c5a880] border border-[#2a364f] font-mono font-bold">Ändern ↗</span>
+                  </div>
+                  <span class="text-[#991b1b] text-[9.5px] font-mono block mt-0.5">⛔ Ausführung abgelehnt</span>
+                </a>
+              `;
+            }).join('') : '<p class="text-[#94a3b8] italic text-[10.5px] text-center py-3 font-mono">Keine Ausführungs-Limits hinterlegt.</p>'}
           </div>
         </div>
 
-        <!-- PERIODISCHE STATUS-CHECK ERINNERUNG (RACK INTERVALL) -->
-        ${liveState.isCheckInDue ? `
-          <div class="p-4 rounded-3xl bg-[#4a2818]/60 border-2 border-[#b3734a] space-y-2 shadow-2xl animate-pulse">
-            <div class="flex items-center justify-between border-b border-[#b3734a]/60 pb-1.5">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#d4af37] animate-ping"></span>
-                <strong class="text-xs text-white font-bold">RACK-Check-in fällig (10-Minuten-Intervall)</strong>
-              </div>
-              <span class="text-[9.5px] font-mono text-[#d4af37] font-bold">Top-Pflicht</span>
-            </div>
-            <p class="text-[11px] text-[#f8fafc] leading-snug">
-              ${isGagged ? `
-                <strong>Mund des Bottoms geknebelt!</strong> Kein verbales Safeword möglich. Frage den Status nonverbal ab: 
-                <span class="text-[#c5a880]">2x Handdruck = Grün</span> · <span class="text-[#ca8a04]">3x = Gelb</span> · <span class="text-[#dc2626]">Loslassen = Kaltstopp</span> (oder Bottom tippt auf den Bildschirm).
-              ` : `
-                Erfrage den aktuellen Zustand des Bottoms: Fühlt sich der Reiz stabil an oder naht die Belastungsgrenze?
-              `}
-            </p>
-            <div class="pt-1 flex justify-end gap-2 font-mono text-[10px]">
-              <button type="button" onclick="SessionLive.acknowledgeStatusCheck('green')" class="px-3 py-1.5 rounded-xl bg-[#15803d] text-white font-bold touch-pad">
-                ✓ Grün bestätigt
-              </button>
-              <button type="button" onclick="SessionLive.acknowledgeStatusCheck('yellow')" class="px-3 py-1.5 rounded-xl bg-[#ca8a04] text-black font-bold touch-pad">
-                ⚠ Gelb drosseln
-              </button>
-            </div>
+        <div class="p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] space-y-2">
+          <div class="flex items-center justify-between border-b border-[#2a364f] pb-1.5 font-mono">
+            <strong class="text-white block text-xs">Schutz-Schranken (${escapeHtml(names[subPartner] || 'Bottom')}):</strong>
+            <span class="text-[10px] text-[#991b1b] font-bold">${subTabus.length}</span>
           </div>
-        ` : ''}
-
-        <!-- RACK-AMPEL TASTER FÜR VEGETATIVES ZUSTANDSTRACKING -->
-        <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] space-y-3 shadow-2xl">
-          <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full ${light === 'green' ? 'bg-[#15803d]' : (light === 'yellow' ? 'bg-[#ca8a04]' : 'bg-[#dc2626]')} animate-pulse" id="traffic-light-status-dot"></span>
-              <strong class="text-xs text-white block font-bold" id="traffic-light-status-text">
-                ${light === 'green' ? 'Grün · Reiz im stabilen Bereich' : (light === 'yellow' ? 'Gelb · Grenzbereich naht (Drosseln)' : 'ROT · KALTSTOPP!')}
-              </strong>
-            </div>
-            <span class="text-[9.5px] font-mono text-[#94a3b8]">Vegetative Ampel</span>
+          <div class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+            ${subTabus.length > 0 ? subTabus.map(t => {
+              return `
+                <a href="index.html#view=survey&item=${t.item.id}" target="_blank" class="block p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] hover:border-[#991b1b] transition group touch-btn">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white block font-bold text-[10.5px] group-hover:text-red-300">${escapeHtml(t.item.title)}</span>
+                    <span class="text-[9px] px-2 py-0.5 rounded bg-[#090d14] text-[#991b1b] border border-[#2a364f] font-mono font-bold">Ändern ↗</span>
+                  </div>
+                  <span class="text-[#991b1b] text-[9.5px] font-mono block mt-0.5">🛑 Sofort-ROT bei Empfang</span>
+                </a>
+              `;
+            }).join('') : '<p class="text-[#94a3b8] italic text-[10.5px] text-center py-3 font-mono">Keine Schutz-Schranken hinterlegt.</p>'}
           </div>
-
-          <div class="grid grid-cols-3 gap-2 text-center font-mono">
-            <button 
-              type="button" 
-              onclick="SessionLive.setBottomTrafficLight('green')" 
-              class="min-h-[56px] p-3 rounded-2xl border-2 flex flex-col items-center justify-center transition-all touch-pad ${light === 'green' ? 'bg-[#15803d] border-[#22c55e] text-white shadow-lg' : 'bg-[#000000] border-[#15803d]/40 text-[#22c55e] hover:border-[#22c55e]'}"
-            >
-              <strong class="text-xs sm:text-sm font-bold block">1. GRÜN</strong>
-              <span class="text-[9px] opacity-80 block">Stabil / Weiter</span>
-            </button>
-
-            <button 
-              type="button" 
-              onclick="SessionLive.setBottomTrafficLight('yellow')" 
-              class="min-h-[56px] p-3 rounded-2xl border-2 flex flex-col items-center justify-center transition-all touch-pad ${light === 'yellow' ? 'bg-[#ca8a04] border-[#eab308] text-black shadow-lg' : 'bg-[#000000] border-[#ca8a04]/40 text-[#eab308] hover:border-[#eab308]'}"
-            >
-              <strong class="text-xs sm:text-sm font-bold block">2. GELB</strong>
-              <span class="text-[9px] opacity-90 block">Drosseln</span>
-            </button>
-
-            <button 
-              type="button" 
-              onclick="SessionLive.setBottomTrafficLight('red')" 
-              class="min-h-[56px] p-3 rounded-2xl border-2 flex flex-col items-center justify-center transition-all touch-pad ${light === 'red' ? 'bg-[#dc2626] border-[#ef4444] text-white shadow-lg' : 'bg-[#000000] border-[#dc2626]/40 text-[#ef4444] hover:border-[#ef4444]'}"
-            >
-              <strong class="text-xs sm:text-sm font-bold block">3. ROT</strong>
-              <span class="text-[9px] opacity-80 block">Kaltstopp!</span>
-            </button>
-          </div>
-          <span class="text-[9.5px] font-mono text-[#94a3b8] text-center block">
-            ${isGagged ? 'Mund geknebelt: 1-Tap auf Taster oder 2x/3x Handdruck' : '1-Fingertipp Rückmeldung des Bottoms im Halbdunkel (Haptik, Audio-Ducking &amp; Kaltstopp)'}
-          </span>
         </div>
-
-        <!-- PHASEN-INHALTE & ANWEISUNGEN -->
-        ${!isFlow && currentPhase ? `
-          <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] space-y-3 shadow-xl">
-            <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
-              <strong class="text-xs sm:text-sm text-white font-serif font-bold block">
-                ${escapeHtml(currentPhase.title)}
-              </strong>
-              <span class="text-[9.5px] font-mono text-[#c5a880]">Zone: ${escapeHtml(currentPhase.somaticZone || 'Körper')}</span>
-            </div>
-
-            <p class="text-[11px] text-[#f8fafc] leading-relaxed">
-              ${escapeHtml(currentPhase.instruction)}
-            </p>
-
-            ${currentPhase.topDialogueQuote ? `
-              <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/50 text-xs text-[#c5a880] italic leading-relaxed">
-                ${escapeHtml(currentPhase.topDialogueQuote)}
-              </div>
-            ` : ''}
-
-            <!-- PHASEN STEUERUNG -->
-            <div class="pt-2 flex items-center justify-between font-mono text-xs">
-              <button type="button" onclick="SessionLive.prevPhase()" ${liveState.currentPhaseIndex === 1 ? 'disabled class="opacity-30 cursor-not-allowed px-3 py-2 rounded-xl bg-[#000000] text-[#94a3b8]"' : 'class="px-3 py-2 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white touch-pad"'}>
-                ← Vorherige
-              </button>
-              <button type="button" onclick="SessionLive.nextPhase()" class="px-5 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-pad shadow-md">
-                ${liveState.currentPhaseIndex === totalPhases ? 'Session abschließen ✓' : 'Nächste Phase →'}
-              </button>
-            </div>
-          </div>
-        ` : `
-          <!-- FLOW-MODUS BEDIENTABLEAU -->
-          <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] space-y-3 shadow-xl">
-            <strong class="text-xs sm:text-sm text-white font-serif font-bold block">
-              Freies Spiel &amp; Somatischer Flow
-            </strong>
-            <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-              Kein starres Drehbuch. Du bestimmst Reiz, Kadenz und Dauer nach eigenem Rhythmus. Nutze das Schwellen-Cockpit für Kantenführung und das Vagus-Panel für die Landung.
-            </p>
-            <div class="pt-1 flex items-center justify-between font-mono text-xs">
-              <button type="button" onclick="SessionRuntime.switchStage('edging')" class="px-4 py-2.5 rounded-xl bg-[#000000] border border-[#b3734a] text-[#b3734a] font-bold touch-pad">
-                Schwellen-Cockpit ↗
-              </button>
-              <button type="button" onclick="SessionLive.openFinalizeModal()" class="px-5 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-pad shadow-md">
-                Session abschließen ✓
-              </button>
-            </div>
-          </div>
-        `}
-
-        <!-- 4-7-8 VAGUS-ATMUNG & DECKENRUHE -->
-        <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#142b24] space-y-3 shadow-xl">
-          <div class="flex items-center justify-between border-b border-[#2e5746]/50 pb-2">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#2e5746] animate-pulse"></span>
-              <strong class="text-xs text-white font-bold" id="vagus-phase-title">
-                4-7-8 Vagus-Erdung (Kreislaufstabilisierung)
-              </strong>
-            </div>
-            <button type="button" onclick="SessionLive.startVagusBreathing()" class="px-3 py-1 rounded-xl bg-[#142b24] hover:bg-[#2e5746] text-white border border-[#2e5746] font-mono text-[10px] font-bold touch-pad">
-              Atemtakt starten
-            </button>
-          </div>
-
-          <div class="flex items-center justify-center py-2">
-            <div id="vagus-animated-circle" class="w-28 h-28 rounded-full border-4 border-[#2a364f] flex flex-col items-center justify-center text-center transition-all duration-700">
-              <span id="vagus-seconds-display" class="font-mono text-2xl font-bold text-white">Bereit</span>
-              <span class="text-[8.5px] font-mono text-[#94a3b8] mt-0.5">Vagus-Puls</span>
-            </div>
-          </div>
-          <span class="text-[9.5px] font-mono text-[#94a3b8] text-center block">
-            4s Einatmen (Nase) ➔ 7s Halten ➔ 8s Ausatmen (Mund). Verhindert den Subdrop.
-          </span>
-        </div>
-
       </div>
     `;
-
-    updateTimerDisplays();
   }
 
   const api = {
-    init: function() {
-      loadSessionData();
-    },
-    startWithScript: function(scriptObj) {
-      liveState.scriptData = scriptObj;
-      liveState.sessionMode = scriptObj.sessionMode || 'scripted';
-      liveState.tonality = scriptObj.tonality || 'sovereign_warm';
-      liveState.leadMotif = scriptObj.leadMotif || null;
-      liveState.currentPhaseIndex = 1;
-      liveState.elapsedSecondsTotal = 0;
-      liveState.elapsedSecondsPhase = 0;
-      liveState.sessionStartTime = Date.now();
-      liveState.phaseStartTime = Date.now();
-      liveState.edgesCounted = 0;
-      liveState.bottomStateTrafficLight = 'green';
-      liveState.climaxTypeSub = 'pending';
-      liveState.lastStatusCheckSeconds = 0;
-      liveState.isCheckInDue = false;
-
-      sessionStorage.setItem(STORAGE_KEY_ACTIVE_SCRIPT, JSON.stringify(scriptObj));
-      saveLiveMetrics();
-
-      startTimers();
-      renderCockpit();
-
-      // Erste Phase ankündigen
-      if (scriptObj.phases && scriptObj.phases[0] && scriptObj.phases[0].topDialogueQuote) {
-        if (window.SessionVoice && typeof window.SessionVoice.speak === 'function') {
-          window.SessionVoice.speak(scriptObj.phases[0].topDialogueQuote, {
-            priority: 'normal',
-            tonality: liveState.tonality
-          });
-        }
-      }
-    },
-    renderCockpit: renderCockpit,
-    nextPhase: nextPhase,
-    prevPhase: prevPhase,
-    toggleDimmer: toggleDimmer,
-    setBottomTrafficLight: setBottomTrafficLight,
-    acknowledgeStatusCheck: acknowledgeStatusCheck,
-    startVagusBreathing: startVagusBreathing,
-    stopVagusBreathing: stopVagusBreathing,
-    triageSub: triageSub,
-    openFinalizeModal: openFinalizeModal,
-    closeFinalizeModal: closeFinalizeModal,
-    confirmFinalizeSession: confirmFinalizeSession,
-    getState: function() {
-      return Object.assign({}, liveState);
-    }
+    startSession: startLiveSession,
+    selectMode: (m) => { currentSessionMode = m; },
+    togglePause: togglePauseTimer,
+    addMinutes: addSessionMinutes,
+    triggerSafeword: triggerSafeword,
+    nextStep: nextLiveStep,
+    prevStep: prevLiveStep,
+    speakStep: speakCurrentLiveStep,
+    openZen: openZenAtemModal,
+    closeZen: closeZenAtemModal,
+    selectZenMode: selectZenMode,
+    playTrance: playGuidedTranceInduction,
+    endToAftercare: endSessionToAftercare,
+    closeAftercare: closeAftercareModal,
+    completeExit: completeSessionAndExit,
+    openDiary: openSessionDiaryModal,
+    closeDiary: closeSessionDiaryModal,
+    openTabus: openSessionTabuModal,
+    closeTabus: closeSessionTabuModal,
+    updateTabuCounter: updateHeaderTabuCounter
   };
 
   window.SessionLive = api;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      const el = document.getElementById('live-session-container');
-      if (el) api.renderCockpit();
-    });
-  } else {
-    const el = document.getElementById('live-session-container');
-    if (el) api.renderCockpit();
+  window.startLiveSessionWrapper = startLiveSession;
+  window.togglePauseTimer = togglePauseTimer;
+  window.addSessionMinutes = addSessionMinutes;
+  window.triggerSafewordWrapper = triggerSafeword;
+  window.nextLiveStep = nextLiveStep;
+  window.prevLiveStep = prevLiveStep;
+  window.speakCurrentLiveStep = speakCurrentLiveStep;
+  window.openZenAtemModal = openZenAtemModal;
+  window.closeZenAtemModal = closeZenAtemModal;
+  window.selectZenMode = selectZenMode;
+  window.playGuidedTranceInduction = playGuidedTranceInduction;
+  window.endSessionToAftercare = endSessionToAftercare;
+  window.closeAftercareModal = closeAftercareModal;
+  window.completeSessionAndExit = completeSessionAndExit;
+  window.openSessionDiaryModal = openSessionDiaryModal;
+  window.closeSessionDiaryModal = closeSessionDiaryModal;
+  window.openSessionTabuModal = openSessionTabuModal;
+  window.closeSessionTabuModal = closeSessionTabuModal;
+  window.updateHeaderTabuCounter = updateHeaderTabuCounter;
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', updateHeaderTabuCounter);
+    } else {
+      setTimeout(updateHeaderTabuCounter, 50);
+    }
   }
 
 })(typeof window !== 'undefined' ? window : this);
