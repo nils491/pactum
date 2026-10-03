@@ -1,21 +1,19 @@
 /**
  * js/hub_toys.js
- * TACTUS Der Intelligente Ausrüstungsschrank, Hardware-Atelier & 3-Stufen-Bundle-Wizard (V3.0 Haute-Horlogerie)
+ * TACTUS Ausrüstungsschrank, Hardware-Atelier & Evolvierter Toy-Kit Wizard (V3.0 Haute-Horlogerie)
  * Offizielle Web-Präsenz: tactus.digital
  * 
  * Standards & Garantien nach Master-Roadbook:
  * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
- * - Haute-Horlogerie Palette: OLED-Schwarz (#000000), Graphit (#090d14), Champagner-Gold (#c5a880),
- *   Feingold (#d4af37), Imperial Malachit (#142b24/#2e5746), Cognac (#8a5232/#b3734a) und Bordeaux (#991b1b)
- * - Interaktiver 3-Stufen Bundle-Wizard: Manuelle Auswahl des Paares kombiniert mit KI- und DoF-Vorschlägen
- * - Vollautomatische Generierung von Community Wisdom (Top- vs. Bottom-Perspektive) direkt beim Anlegen
- * - 0–5 Sterne-Rating und persönliche Reiz-Definition getrennt für Top und Bottom pro realem Werkzeug
- * - Visual Toy-Inspector mit übersichtlichem 3-Reiter-Cockpit (Hardware/RACK, Community Wisdom, Paar-Reiz & Rating)
- * - Mengenskalierung ($N$ Stück / quantity) & Passform-Zuordnung (both / A / B)
- * - RACK-Allergie-Radar (Automatischer Abgleich mit dem Gesundheitspass des Partners)
- * - Materialscharfe Desinfektionsprotokolle für die Reverse Aftercare
- * - Multimodale 1:1 Foto-Kamera Erfassung via HubPhotos
- * - Sichere modale Lösch-Rückfrage (Kein window.confirm)
+ * - Haute-Horlogerie Palette: OLED-Tiefschwarz, Graphit, Champagner-Gold, Malachit, Cognac & Bordeaux
+ * - Punkt #9 (Evolvierter Toy-Kit Wizard):
+ *     • Dynamische Slot-Anzahl: Wählbar 3 bis 6 Toys pro Session-Set
+ *     • Duale Navigation: Weiterschaltung per [Weiter →]/[← Zurück] UND direkt über anklickbare Schritt-Tabs
+ *     • Psychometrische Live-KI-Vorschläge: Priorisiert Toys passend zu euren 505 Fragebogen-Antworten
+ *     • Ausschluss anatomischer Redundanzen: Verhindert DoF-Kollisionen (z. B. niemals zwei Knebel oder zwei Käfige)
+ * - Umfassende Inventar-Verwaltung: Besitztümer, individuelle Ringgrößen/Notizen & Latex-Allergie-Radar
+ * - Direkte Staging-Kopplung: 1-Klick Übergabe an tactus_staging_bundle & session.html
+ * - Keine window.alert() / confirm() Aufrufe, sichere Toasts
  */
 
 (function(window) {
@@ -23,63 +21,24 @@
 
   const STORAGE_KEY_OWNED = 'tactus_owned_equipment';
   const STORAGE_KEY_OWNED_LEGACY = 'kompass_owned_equipment';
-  const STORAGE_KEY_QUANTITIES = 'tactus_toy_quantities';
-  const STORAGE_KEY_ASSIGNMENTS = 'tactus_toy_assignments';
-  const STORAGE_KEY_CUSTOM = 'tactus_custom_equipment';
-  const STORAGE_KEY_RATINGS = 'tactus_toy_ratings';       // { [toyId]: { top: 0..5, sub: 0..5 } }
-  const STORAGE_KEY_APPEAL = 'tactus_toy_appeal';         // { [toyId]: { top: "...", sub: "..." } }
-  const STORAGE_KEY_COMMUNITY = 'tactus_toy_community';   // { [toyId]: { top: "...", sub: "...", generatedAt } }
+  const STORAGE_KEY_CUSTOM_NOTES = 'tactus_toy_custom_notes';
   const STORAGE_KEY_SAVED_BUNDLES = 'tactus_saved_bundles';
+  const STORAGE_KEY_STAGING_BUNDLE = 'tactus_staging_bundle';
   const STORAGE_KEY_MEDICAL_PASS = 'tactus_medical_pass';
-  const STORAGE_KEY_ACTIVE_BUNDLE = 'tactus_staging_bundle';
+  const STORAGE_KEY_ANSWERS = 'kompass_answers';
 
-  let closetState = {
-    ownedIds: [],
-    quantities: {},
-    assignments: {},
-    customToys: [],
-    ratings: {},
-    appealNotes: {},
-    communityWisdom: {},
-    savedBundles: [],
-    activeCategoryFilter: 'all',
-    activeInspectorToyId: null,
-    activeInspectorTab: 'specs', // 'specs' | 'wisdom' | 'couple'
-    isInspectorOpen: false,
-    isWizardOpen: false
-  };
+  let currentMainTab = 'inventory'; // 'inventory' | 'wizard' | 'bundles'
+  let activeCategoryFilter = 'all';
+  let activeSearchQuery = '';
+  let activeInspectorToyId = null;
 
+  // Wizard State (Punkt #9)
   let wizardState = {
-    step: 1,
-    step1ToyId: null,
-    step2ToyId: null,
-    step3ToyId: null,
-    bundleTitle: '',
-    selectedCategory: 'all',
-    rationale: ''
-  };
-
-  const PRESEEDED_WISDOM_FALLBACKS = {
-    bondage: {
-      top: "Ruhige, tragende Kontrolle über die motorische Handlungsfähigkeit des Partners. Schafft einen klaren Fokus im Raum.",
-      sub: "Das Abgeben aller Verantwortung entlastet das vegetative Nervensystem. Fester Tiefendruck erdet und stoppt das Grübeln."
-    },
-    impact: {
-      top: "Akustische Resonanz, satter Kontakt und die sichtbare Haltungsdisziplin des Partners schenken erotische Entschlossenheit.",
-      sub: "Flächige Hitzewellen schütten körpereigene Endorphine aus und holen die Wahrnehmung vollständig in den gegenwärtigen Moment."
-    },
-    chastity: {
-      top: "Ausschließliche Verfügungsgewalt über die Lust. Die ungeteilte Aufmerksamkeit und Hingabe des Partners richtet sich voll auf die Führung.",
-      sub: "Befreiung vom ständigen Ejakulationsdruck. Die sexuelle Energie kanalisiert sich in tiefe Ehrerbietung und freudigen Dienst."
-    },
-    sensory: {
-      top: "Gezielte Führung der sensorischen Sinneskanäle. Der Partner reagiert hochsensibel auf die leiseste Berührung.",
-      sub: "Der Wegfall des Sehsinns intensiviert Geräusche, Atem und Hautkontakte zu einem tranceartigen Rauscherlebnis."
-    },
-    care: {
-      top: "Schenkt das warme Gefühl von Verantwortung und Schutz nach intensiver Anspannung.",
-      sub: "Körperliche Geborgenheit, Wärme und das sichere Gefühl, nach der Grenzerfahrung behutsam aufgefangen zu werden."
-    }
+    targetSlotCount: 4, // 3, 4, 5, 6 Slots
+    currentStepIndex: 0,
+    selectedToyIds: [],
+    customBundleName: 'Session-Set',
+    suggestedToyIds: []
   };
 
   function escapeHtml(str) {
@@ -107,6 +66,7 @@
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(el);
+
     setTimeout(() => el.classList.remove('translate-y-2', 'opacity-0'), 10);
     setTimeout(() => {
       el.classList.add('opacity-0');
@@ -114,818 +74,763 @@
     }, 2800);
   }
 
-  function loadClosetState() {
+  function getOwnedToyIds() {
     try {
-      const rawOwned = localStorage.getItem(STORAGE_KEY_OWNED) || localStorage.getItem(STORAGE_KEY_OWNED_LEGACY);
-      closetState.ownedIds = rawOwned ? (JSON.parse(rawOwned) || []) : [];
-
-      const rawQty = localStorage.getItem(STORAGE_KEY_QUANTITIES);
-      closetState.quantities = rawQty ? (JSON.parse(rawQty) || {}) : {};
-
-      const rawAssign = localStorage.getItem(STORAGE_KEY_ASSIGNMENTS);
-      closetState.assignments = rawAssign ? (JSON.parse(rawAssign) || {}) : {};
-
-      const rawCustom = localStorage.getItem(STORAGE_KEY_CUSTOM);
-      closetState.customToys = rawCustom ? (JSON.parse(rawCustom) || []) : [];
-
-      const rawRatings = localStorage.getItem(STORAGE_KEY_RATINGS);
-      closetState.ratings = rawRatings ? (JSON.parse(rawRatings) || {}) : {};
-
-      const rawAppeal = localStorage.getItem(STORAGE_KEY_APPEAL);
-      closetState.appealNotes = rawAppeal ? (JSON.parse(rawAppeal) || {}) : {};
-
-      const rawComm = localStorage.getItem(STORAGE_KEY_COMMUNITY);
-      closetState.communityWisdom = rawComm ? (JSON.parse(rawComm) || {}) : {};
-
-      const rawBundles = localStorage.getItem(STORAGE_KEY_SAVED_BUNDLES);
-      closetState.savedBundles = rawBundles ? (JSON.parse(rawBundles) || []) : [];
-    } catch (e) {
-      console.warn("[TACTUS Closet] Fehler beim Laden des States:", e);
-    }
+      const raw = localStorage.getItem(STORAGE_KEY_OWNED) || localStorage.getItem(STORAGE_KEY_OWNED_LEGACY);
+      if (raw) return JSON.parse(raw) || [];
+    } catch (e) {}
+    return [];
   }
 
-  function saveClosetState() {
+  function saveOwnedToyIds(ids) {
     try {
-      localStorage.setItem(STORAGE_KEY_OWNED, JSON.stringify(closetState.ownedIds));
-      localStorage.setItem(STORAGE_KEY_OWNED_LEGACY, JSON.stringify(closetState.ownedIds));
-      localStorage.setItem(STORAGE_KEY_QUANTITIES, JSON.stringify(closetState.quantities));
-      localStorage.setItem(STORAGE_KEY_ASSIGNMENTS, JSON.stringify(closetState.assignments));
-      localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(closetState.customToys));
-      localStorage.setItem(STORAGE_KEY_RATINGS, JSON.stringify(closetState.ratings));
-      localStorage.setItem(STORAGE_KEY_APPEAL, JSON.stringify(closetState.appealNotes));
-      localStorage.setItem(STORAGE_KEY_COMMUNITY, JSON.stringify(closetState.communityWisdom));
-      localStorage.setItem(STORAGE_KEY_SAVED_BUNDLES, JSON.stringify(closetState.savedBundles));
-    } catch (e) {
-      console.warn("[TACTUS Closet] Konnte State nicht sichern:", e);
-    }
-
+      localStorage.setItem(STORAGE_KEY_OWNED, JSON.stringify(ids));
+      localStorage.setItem(STORAGE_KEY_OWNED_LEGACY, JSON.stringify(ids));
+    } catch (e) {}
     if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
       window.CloudSync.trigger();
     }
   }
 
-  function getPairContext() {
-    let names = { A: 'Partner 1', B: 'Partner 2' };
+  function toggleToyOwned(toyId) {
+    const owned = getOwnedToyIds();
+    const idx = owned.indexOf(toyId);
+    if (idx !== -1) {
+      owned.splice(idx, 1);
+      saveOwnedToyIds(owned);
+      showToast("Aus dem Schrank-Inventar entfernt");
+    } else {
+      owned.push(toyId);
+      saveOwnedToyIds(owned);
+      showToast("Im Schrank-Inventar hinterlegt ✓");
+    }
+    renderClosetView();
+  }
+
+  function getToyCustomNotes() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_CUSTOM_NOTES);
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e) {}
+    return {};
+  }
+
+  function saveToyCustomNote(toyId, text) {
+    const notes = getToyCustomNotes();
+    notes[toyId] = text.trim();
+    try {
+      localStorage.setItem(STORAGE_KEY_CUSTOM_NOTES, JSON.stringify(notes));
+    } catch (e) {}
+  }
+
+  function getSavedBundles() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_SAVED_BUNDLES);
+      if (raw) return JSON.parse(raw) || [];
+    } catch (e) {}
+    return [];
+  }
+
+  function saveBundleToStorage(bundleObj) {
+    const bundles = getSavedBundles();
+    bundles.unshift(bundleObj);
+    try {
+      localStorage.setItem(STORAGE_KEY_SAVED_BUNDLES, JSON.stringify(bundles));
+    } catch (e) {}
+    if (window.CloudSync && typeof window.CloudSync.trigger === 'function') {
+      window.CloudSync.trigger();
+    }
+  }
+
+  function deleteSavedBundle(index) {
+    const bundles = getSavedBundles();
+    bundles.splice(index, 1);
+    try {
+      localStorage.setItem(STORAGE_KEY_SAVED_BUNDLES, JSON.stringify(bundles));
+    } catch (e) {}
+    showToast("Session-Set gelöscht");
+    renderClosetView();
+  }
+
+  function computePsychometricToySuggestions() {
     let topRole = 'A';
     let bottomRole = 'B';
-
     if (window.HubContext && typeof window.HubContext.getRoles === 'function') {
       const r = window.HubContext.getRoles();
       topRole = r.topRole;
       bottomRole = r.bottomRole;
-      names = window.HubContext.getNames();
     }
 
-    let medicalPass = {};
+    let answers = {};
     try {
-      const rawPass = localStorage.getItem(STORAGE_KEY_MEDICAL_PASS);
-      if (rawPass) medicalPass = JSON.parse(rawPass) || {};
+      const raw = localStorage.getItem(STORAGE_KEY_ANSWERS);
+      if (raw) answers = JSON.parse(raw) || {};
     } catch (e) {}
 
-    return {
-      topName: names[topRole] || 'Top',
-      bottomName: names[bottomRole] || 'Bottom',
-      topRole,
-      bottomRole,
-      hasLatexAllergy: !!medicalPass.hasLatexAllergy
-    };
-  }
+    const ansTop = answers[topRole] || {};
+    const ansBottom = answers[bottomRole] || {};
 
-  function getAllCatalogToys() {
-    let standard = [];
+    let catalog = [];
     if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
-      standard = window.EquipmentCatalog.getAll();
-    }
-    return standard.concat(closetState.customToys);
-  }
-
-  function getToyById(toyId) {
-    const all = getAllCatalogToys();
-    return all.find(t => t.id === toyId) || null;
-  }
-
-  function getToyRatingData(toyId) {
-    const pair = getPairContext();
-    const r = closetState.ratings[toyId] || {};
-    const topScore = (typeof r.top === 'number') ? r.top : 0;
-    const subScore = (typeof r.sub === 'number') ? r.sub : 0;
-
-    let avg = 0;
-    let count = 0;
-    if (topScore > 0) { avg += topScore; count++; }
-    if (subScore > 0) { avg += subScore; count++; }
-    const finalAvg = count > 0 ? (avg / count).toFixed(1) : null;
-
-    return {
-      topScore,
-      subScore,
-      average: finalAvg,
-      topName: pair.topName,
-      bottomName: pair.bottomName
-    };
-  }
-
-  function ensureModalsInDom() {
-    let inspectorEl = document.getElementById('modal-toy-inspector');
-    if (!inspectorEl) {
-      inspectorEl = document.createElement('div');
-      inspectorEl.id = 'modal-toy-inspector';
-      inspectorEl.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
-      inspectorEl.style.display = 'none';
-      document.body.appendChild(inspectorEl);
+      catalog = window.EquipmentCatalog.getAll();
     }
 
-    let wizardEl = document.getElementById('modal-bundle-wizard');
-    if (!wizardEl) {
-      wizardEl = document.createElement('div');
-      wizardEl.id = 'modal-bundle-wizard';
-      wizardEl.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
-      wizardEl.style.display = 'none';
-      document.body.appendChild(wizardEl);
-    }
+    const scoredToys = catalog.map(toy => {
+      let matchScore = 0;
+      let matchedReason = 'Vielseitige Basisausstattung';
 
-    let customEl = document.getElementById('modal-add-custom-toy');
-    if (!customEl) {
-      customEl = document.createElement('div');
-      customEl.id = 'modal-add-custom-toy';
-      customEl.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
-      customEl.style.display = 'none';
-      document.body.appendChild(customEl);
-    }
+      // 1. Bondage / Shibari Präferenz (Kapitel 10 & 13)
+      if (toy.category === 'bondage') {
+        const sRopeTop = ansTop['it_52_r1'] || 0;
+        const sRopeSub = ansBottom['it_52_r2'] || 0;
+        const sCuffsTop = ansTop['it_51_r1'] || 0;
+        const sCuffsSub = ansBottom['it_51_r2'] || 0;
+
+        if (sRopeTop >= 4 && sRopeSub >= 4) {
+          matchScore += 8;
+          matchedReason = 'Hohe Synergie bei Shibari & Seilen (Kap. 10)';
+        } else if (sCuffsTop >= 4 && sCuffsSub >= 4) {
+          matchScore += 6;
+          matchedReason = 'Hohe Resonanz auf feste Fesseln';
+        }
+      }
+
+      // 2. Impact / Spanking Präferenz (Kapitel 11, 16)
+      if (toy.category === 'impact') {
+        const sPaddleTop = ansTop['it_62_r1'] || 0;
+        const sPaddleSub = ansBottom['it_62_r2'] || 0;
+        const sFloggerTop = ansTop['it_61_r1'] || 0;
+        const sFloggerSub = ansBottom['it_61_r2'] || 0;
+
+        if (sPaddleTop >= 4 && sPaddleSub >= 4) {
+          matchScore += 9;
+          matchedReason = '5/5 Spitzenpräferenz für Paddles & Zucht (Kap. 16)';
+        } else if (sFloggerTop >= 4 && sFloggerSub >= 4) {
+          matchScore += 7;
+          matchedReason = 'Hohe Resonanz auf sanfte Flogger-Hiebe';
+        }
+      }
+
+      // 3. Keuschheit (Kapitel 7, 8)
+      if (toy.category === 'chastity') {
+        const sCageTop = ansTop['it_41_r1'] || 0;
+        const sCageSub = ansBottom['it_41_r2'] || 0;
+        if (sCageTop >= 4 && sCageSub >= 3) {
+          matchScore += 10;
+          matchedReason = 'Schlüsselgewalt & Keuschheit befürwortet (Kap. 8)';
+        }
+      }
+
+      // 4. Sensorik / Augenbinde (Kapitel 13, 15)
+      if (toy.category === 'sensory') {
+        const sBlindTop = ansTop['it_66_r1'] || 0;
+        const sBlindSub = ansBottom['it_66_r2'] || 0;
+        const sWaxTop = ansTop['it_67_r1'] || 0;
+        const sWaxSub = ansBottom['it_67_r2'] || 0;
+
+        if (sBlindTop >= 4 && sBlindSub >= 4) {
+          matchScore += 8;
+          matchedReason = 'Doppel-Spitze bei Sinnesentzug & Blindfold';
+        } else if (sWaxTop >= 4 && sWaxSub >= 4) {
+          matchScore += 7;
+          matchedReason = 'Hohe Resonanz auf Temperatur- & Wachsreize';
+        }
+      }
+
+      // 5. Care / Nachsorge (Kapitel 18)
+      if (toy.category === 'care') {
+        matchScore += 5;
+        matchedReason = 'Empfohlene Vagus-Erdung & Aftercare';
+      }
+
+      return {
+        toyId: toy.id,
+        score: matchScore,
+        reason: matchedReason
+      };
+    });
+
+    scoredToys.sort((a, b) => b.score - a.score);
+    return scoredToys;
   }
 
-  function renderClosetView(containerId = 'hub-toys-closet-container') {
-    loadClosetState();
-    ensureModalsInDom();
+  function checkBundleRedundancy(selectedIds, candidateToyId) {
+    let catalog = [];
+    if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
+      catalog = window.EquipmentCatalog.getAll();
+    }
 
+    const candidateToy = catalog.find(t => t.id === candidateToyId);
+    if (!candidateToy) return { hasConflict: false };
+
+    // 1. Latex-Allergie prüfen
+    let pass = {};
+    try {
+      const rawPass = localStorage.getItem(STORAGE_KEY_MEDICAL_PASS);
+      if (rawPass) pass = JSON.parse(rawPass) || {};
+    } catch (e) {}
+
+    if (pass.hasLatexAllergy && candidateToy.isLatex) {
+      return {
+        hasConflict: true,
+        reason: 'RACK-Konflikt: Dein Partner hat eine Latex-Allergie hinterlegt!'
+      };
+    }
+
+    // 2. Anatomische Redundanzen prüfen
+    const selectedToys = catalog.filter(t => selectedIds.includes(t.id));
+
+    // Keine zwei verschiedenen Knebel gleichzeitig
+    const candidateIsGag = candidateToy.tags.includes('gag') || candidateToy.somaticZone === 'head_mouth';
+    if (candidateIsGag) {
+      const existingGag = selectedToys.find(t => t.tags.includes('gag') || t.somaticZone === 'head_mouth');
+      if (existingGag && existingGag.id !== candidateToy.id) {
+        return {
+          hasConflict: true,
+          reason: `Anatomischer Konflikt: Mund ist bereits durch „${existingGag.name}“ belegt!`
+        };
+      }
+    }
+
+    // Keine zwei verschiedenen Peniskäfige gleichzeitig
+    const candidateIsCage = candidateToy.tags.includes('chastity_cage') || candidateToy.category === 'chastity';
+    if (candidateIsCage && candidateToy.somaticZone === 'genital_penile') {
+      const existingCage = selectedToys.find(t => (t.tags.includes('chastity_cage') || t.category === 'chastity') && t.somaticZone === 'genital_penile');
+      if (existingCage && existingCage.id !== candidateToy.id) {
+        return {
+          hasConflict: true,
+          reason: `Anatomischer Konflikt: Penis ist bereits durch „${existingCage.name}“ verriegelt!`
+        };
+      }
+    }
+
+    // Keine zwei Augenbinden / Vollmasken gleichzeitig
+    const candidateIsBlindfold = candidateToy.tags.includes('blindfold') || candidateToy.somaticZone === 'head_eyes';
+    if (candidateIsBlindfold) {
+      const existingBlind = selectedToys.find(t => t.tags.includes('blindfold') || t.somaticZone === 'head_eyes');
+      if (existingBlind && existingBlind.id !== candidateToy.id) {
+        return {
+          hasConflict: true,
+          reason: `Visueller Konflikt: Augen sind bereits durch „${existingBlind.name}“ verdeckt!`
+        };
+      }
+    }
+
+    return { hasConflict: false };
+  }
+
+  function openClosetModal() {
+    let modal = document.getElementById('hub-toys-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'hub-toys-modal';
+      modal.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
+      modal.innerHTML = `
+        <div class="bg-[#090d14] rounded-3xl max-w-4xl w-full border border-[#c5a880]/60 p-4 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[92dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
+          <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white">TACTUS Ausrüstungsschrank &amp; Hardware-Atelier</h3>
+            </div>
+            <button type="button" onclick="document.getElementById('hub-toys-modal').style.display='none'" class="w-9 h-9 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+          </div>
+          <div id="hub-toys-closet-container" class="w-full"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    modal.style.display = 'flex';
+    initClosetView('hub-toys-closet-container');
+  }
+
+  function initClosetView(containerId = 'hub-toys-closet-container') {
+    window._hubToysContainerId = containerId;
+    renderClosetView();
+  }
+
+  function renderClosetView() {
+    const containerId = window._hubToysContainerId || 'hub-toys-closet-container';
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const pair = getPairContext();
-    const allToys = getAllCatalogToys();
-    const ownedToys = allToys.filter(t => closetState.ownedIds.includes(t.id));
+    const owned = getOwnedToyIds();
+    const savedBundles = getSavedBundles();
 
-    const categories = [
-      { id: 'all', label: 'Alle' },
-      { id: 'bondage', label: 'Fesselung' },
-      { id: 'impact', label: 'Zucht & Schlag' },
-      { id: 'chastity', label: 'Keuschheit' },
-      { id: 'sensory', label: 'Sensorik' },
-      { id: 'care', label: 'Nachsorge' }
-    ];
-
-    const filteredToys = (closetState.activeCategoryFilter === 'all')
-      ? ownedToys
-      : ownedToys.filter(t => t.category === closetState.activeCategoryFilter);
+    let pass = {};
+    try {
+      const rawPass = localStorage.getItem(STORAGE_KEY_MEDICAL_PASS);
+      if (rawPass) pass = JSON.parse(rawPass) || {};
+    } catch (e) {}
 
     container.innerHTML = `
       <div class="space-y-4 font-sans text-xs">
         
-        <!-- HEADER KACHEL MIT BUNDLE WIZARD BUTTON -->
-        <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#1e2638] shadow-2xl space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2638]/70 pb-3">
-            <div class="space-y-0.5 min-w-0 flex-1">
-              <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
-                Hardware-Atelier &amp; Inventar
+        <!-- HEADER KACHEL MIT SCHRANK-TELEMETRIE & LATEX-RADAR -->
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-[#000000] border border-[#2a364f] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="space-y-0.5">
+            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">
+              Hardware-Inventar &amp; Session-Sets
+            </span>
+            <div class="flex items-center gap-2">
+              <strong class="text-xs sm:text-sm text-white font-serif">${owned.length} Gegenstände im Paar-Besitz</strong>
+              <span class="text-[#94a3b8]">·</span>
+              <span class="text-[10px] font-mono text-[#d4af37] font-bold">${savedBundles.length} gespeicherte Sets</span>
+            </div>
+          </div>
+
+          <!-- LATEX ALLERGIE STATUS RADAR -->
+          <div class="flex items-center gap-2">
+            ${pass.hasLatexAllergy ? `
+              <span class="px-2.5 py-1 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white font-mono text-[9.5px] font-bold flex items-center gap-1.5 animate-pulse">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
+                <span>Latex-Radar aktiv: Kautschuk gesperrt</span>
               </span>
-              <h2 class="text-base sm:text-xl font-serif text-[#f8fafc] font-normal mt-0.5 truncate">
-                Der Intelligente Ausrüstungsschrank
-              </h2>
-            </div>
-            
-            <div class="flex items-center gap-1.5 flex-wrap font-mono">
-              <button type="button" onclick="HubToys.openBundleWizard()" class="px-3.5 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-                <span>✨ Bundle-Wizard (3 Steps)</span>
-              </button>
-              <button type="button" onclick="HubToys.openAddCustomModal()" class="px-3 py-2 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#1e2638] text-[#c5a880] font-bold text-xs touch-btn">
-                + Neues Toy
-              </button>
-            </div>
+            ` : `
+              <span class="px-2.5 py-1 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] font-mono text-[9.5px] font-bold flex items-center gap-1">
+                <span>Latex-Radar: Keine Allergie bekannt ✓</span>
+              </span>
+            `}
           </div>
-
-          <div class="flex flex-wrap items-center justify-between text-[11px] text-[#94a3b8] gap-2">
-            <p class="leading-relaxed flex-1 min-w-[200px]">
-              Verwaltet reale Ausrüstung, Stückzahlen, Passformen, individuelle Paar-Reize und materialscharfe Desinfektionsprotokolle.
-            </p>
-            <div class="flex items-center gap-3 font-mono text-[10.5px]">
-              <span class="text-[#c5a880] font-bold">${ownedToys.length} Gegenstände im Schrank</span>
-              ${closetState.savedBundles.length > 0 ? `<span class="text-[#d4af37] font-bold">· ${closetState.savedBundles.length} Bundles</span>` : ''}
-            </div>
-          </div>
-
-          <!-- ALLERGIE-RADAR STATUS -->
-          ${pair.hasLatexAllergy ? `
-            <div class="p-2.5 rounded-2xl bg-[#450a0a]/30 border border-[#991b1b] flex items-center justify-between text-[10.5px]">
-              <div class="flex items-center gap-2 text-white">
-                <span class="w-2 h-2 rounded-full bg-[#991b1b] animate-ping"></span>
-                <strong>RACK-Allergie-Radar: Latex-Allergie von ${escapeHtml(pair.bottomName)} aktiv!</strong>
-              </div>
-              <span class="text-[9.5px] font-mono text-[#b3734a]">Latex-Artikel werden markiert</span>
-            </div>
-          ` : ''}
         </div>
 
-        <!-- GESPEICHERTE EIGENE BUNDLES -->
-        ${closetState.savedBundles.length > 0 ? `
-          <div class="p-4 rounded-3xl bg-[#090d14] border border-[#c5a880]/40 space-y-2.5 shadow-md">
-            <div class="flex items-center justify-between border-b border-[#1e2638] pb-1.5">
-              <span class="text-[10px] font-mono uppercase tracking-wider text-[#c5a880] font-bold">Eure gespeicherten Session-Bundles:</span>
-              <span class="text-[9px] font-mono text-[#94a3b8]">${closetState.savedBundles.length} vorkonfiguriert</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-              ${closetState.savedBundles.map((b, idx) => `
-                <div class="p-2.5 rounded-2xl bg-[#000000] border border-[#1e2638] flex flex-col justify-between space-y-2">
-                  <div>
-                    <strong class="text-xs text-white block truncate">${escapeHtml(b.title)}</strong>
-                    <span class="text-[9.5px] text-[#94a3b8] font-mono block">${(b.toyIds || []).length} Gegenstände</span>
-                  </div>
-                  <div class="flex items-center justify-between pt-1 border-t border-[#1e2638]">
-                    <button type="button" onclick="HubToys.applyBundleToStaging('${encodeURIComponent(JSON.stringify(b.toyIds))}')" class="text-[10px] font-mono text-[#c5a880] hover:underline font-bold">
-                      Ins Staging ↗
-                    </button>
-                    <button type="button" onclick="HubToys.deleteBundle(${idx})" class="text-[9px] font-mono text-[#991b1b] hover:underline">
-                      Löschen
-                    </button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-
-        <!-- FILTER-LEISTE DER KATEGORIEN -->
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#1e2638] font-mono text-xs">
-          ${categories.map(c => `
-            <button type="button" onclick="HubToys.setCategoryFilter('${c.id}')" class="px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all touch-btn ${closetState.activeCategoryFilter === c.id ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border border-[#1e2638] text-[#94a3b8] hover:text-[#f8fafc]'}">
-              ${escapeHtml(c.label)}
-            </button>
-          `).join('')}
+        <!-- 3 HAUPT-TABS DES ATELIERS (SHRINK-0 GESCHÜTZT) -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs w-full">
+          <button type="button" onclick="HubToys.switchMainTab('inventory')" class="px-3.5 py-2 rounded-xl font-bold transition-all touch-btn whitespace-nowrap shrink-0 flex-shrink-0 ${currentMainTab === 'inventory' ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white'}">
+            1. Schrank-Inventar (${owned.length})
+          </button>
+          <button type="button" onclick="HubToys.switchMainTab('wizard')" class="px-3.5 py-2 rounded-xl font-bold transition-all touch-btn whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1.5 ${currentMainTab === 'wizard' ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border border-[#2a364f] text-[#d4af37] hover:text-white'}">
+            <span>✨ 2. Toy-Kit Wizard (3–6 Toys)</span>
+          </button>
+          <button type="button" onclick="HubToys.switchMainTab('bundles')" class="px-3.5 py-2 rounded-xl font-bold transition-all touch-btn whitespace-nowrap shrink-0 flex-shrink-0 ${currentMainTab === 'bundles' ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880] shadow-sm' : 'bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white'}">
+            3. Gespeicherte Sets (${savedBundles.length})
+          </button>
         </div>
 
-        <!-- TOY CARDS GRID -->
-        ${filteredToys.length === 0 ? `
-          <div class="p-8 rounded-3xl bg-[#090d14] border border-[#1e2638] text-center space-y-2 text-[#94a3b8] font-mono">
-            <p>Keine Gegenstände in dieser Kategorie im Schrank hinterlegt.</p>
-            <button type="button" onclick="HubToys.openAddCustomModal()" class="px-4 py-2 rounded-xl bg-[#000000] border border-[#c5a880]/60 text-[#c5a880] font-bold text-xs touch-btn">
-              + Ersten Gegenstand erfassen
-            </button>
+        <!-- TAB-INHALTE -->
+        <div id="hub-toys-tab-content" class="animate-fade-in">
+          ${currentMainTab === 'inventory' ? renderInventoryTabHtml() : ''}
+          ${currentMainTab === 'wizard' ? renderWizardTabHtml() : ''}
+          ${currentMainTab === 'bundles' ? renderBundlesTabHtml() : ''}
+        </div>
+
+      </div>
+    `;
+
+    attachInspectorModal();
+  }
+
+  function renderInventoryTabHtml() {
+    let catalog = [];
+    if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
+      catalog = window.EquipmentCatalog.getAll();
+    }
+
+    const owned = getOwnedToyIds();
+    const categories = [
+      { id: 'all', label: 'Alle' },
+      { id: 'bondage', label: 'Bondage & Seile' },
+      { id: 'impact', label: 'Impact & Zucht' },
+      { id: 'chastity', label: 'Keuschheit' },
+      { id: 'sensory', label: 'Sinnesentzug' },
+      { id: 'furniture', label: 'Möbel & Arretierung' },
+      { id: 'care', label: 'Pflege & Aftercare' }
+    ];
+
+    let filtered = (activeCategoryFilter === 'all')
+      ? catalog
+      : catalog.filter(t => t.category === activeCategoryFilter);
+
+    if (activeSearchQuery.trim().length > 0) {
+      const q = activeSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(t => 
+        t.name.toLowerCase().includes(q) || 
+        t.somaticEffect.toLowerCase().includes(q) ||
+        (t.materials || []).some(m => m.toLowerCase().includes(q))
+      );
+    }
+
+    return `
+      <div class="space-y-3">
+        <!-- FILTER & SUCHE LEISTE -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 font-mono text-[10.5px]">
+            ${categories.map(cat => `
+              <button type="button" onclick="HubToys.setCategoryFilter('${cat.id}')" class="px-2.5 py-1.5 rounded-xl font-bold whitespace-nowrap shrink-0 flex-shrink-0 transition-all touch-btn ${activeCategoryFilter === cat.id ? 'bg-[#000000] border border-[#c5a880] text-[#c5a880]' : 'bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white'}">
+                ${escapeHtml(cat.label)}
+              </button>
+            `).join('')}
           </div>
-        ` : `
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            ${filteredToys.map(toy => {
-              const qty = closetState.quantities[toy.id] || 1;
-              const assign = closetState.assignments[toy.id] || 'both';
-              const rData = getToyRatingData(toy.id);
-              const isLatex = (toy.materials || []).includes('latex');
-              const hasAllergyConflict = isLatex && pair.hasLatexAllergy;
 
-              let assignLabel = "Beide (Unisex)";
-              if (assign === 'A') assignLabel = `Nur ${escapeHtml(pair.topName)}`;
-              else if (assign === 'B') assignLabel = `Nur ${escapeHtml(pair.bottomName)}`;
+          <div class="relative sm:w-56 font-mono text-xs">
+            <input 
+              type="text" 
+              value="${escapeHtml(activeSearchQuery)}" 
+              oninput="HubToys.setSearchQuery(this.value)" 
+              placeholder="Toy oder Material suchen..." 
+              class="w-full px-3 py-1.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-[11px] placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" 
+            />
+          </div>
+        </div>
 
-              return `
-                <div class="p-4 rounded-3xl bg-[#090d14] border transition-all space-y-3 flex flex-col justify-between shadow-md ${hasAllergyConflict ? 'border-[#991b1b] bg-[#450a0a]/10' : 'border-[#1e2638] hover:border-[#c5a880]/50'}">
-                  
-                  <div class="space-y-2.5">
-                    <!-- OBEN: MENGE, PASSFORM & RATING -->
-                    <div class="flex items-center justify-between gap-1.5 font-mono text-[10px]">
-                      <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="px-2 py-0.5 rounded-lg bg-[#000000] text-[#c5a880] border border-[#c5a880]/30 font-bold">
-                          ${qty} Stück
-                        </span>
-                        <span class="text-[#94a3b8]">${escapeHtml(assignLabel)}</span>
-                      </div>
-                      ${rData.average ? `
-                        <span class="px-1.5 py-0.5 rounded bg-[#000000] text-[#d4af37] border border-[#d4af37]/40 font-bold flex items-center gap-0.5">
-                          <span>★</span>
-                          <span>${rData.average}</span>
-                        </span>
-                      ` : `
-                        <span class="text-[9px] text-[#94a3b8]/60 font-mono">Unbewertet</span>
-                      `}
-                    </div>
-
-                    <!-- FOTO / ICON PLATZHALTER -->
-                    <div onclick="HubToys.openToyInspector('${toy.id}')" class="h-28 w-full rounded-2xl bg-[#000000] border border-[#1e2638] relative overflow-hidden flex items-center justify-center cursor-pointer group touch-btn">
-                      <div id="toy-thumb-${toy.id}" class="w-full h-full flex items-center justify-center">
-                        <svg class="w-10 h-10 text-[#c5a880]/40 group-hover:text-[#c5a880] transition-colors" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
-                      </div>
-                      <span class="absolute bottom-1.5 right-2 text-[9px] font-mono text-[#94a3b8]/70 bg-black/80 px-1.5 py-0.5 rounded">
-                        Inspector ↗
+        <!-- LISTE DER AUSRÜSTUNGS-KARTEN -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          ${filtered.map(toy => {
+            const isOwned = owned.includes(toy.id);
+            return `
+              <div class="p-3.5 rounded-2xl bg-[#090d14] border transition-all space-y-2 flex flex-col justify-between ${isOwned ? 'border-[#c5a880]/60 bg-[#000000]' : 'border-[#2a364f]'}">
+                <div class="space-y-1">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                      <span class="text-[9px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">
+                        ${escapeHtml(toy.category)} · Zone: ${escapeHtml(toy.somaticZone)}
                       </span>
-                    </div>
-
-                    <!-- TITEL & ALLERGIE-WARNUNG -->
-                    <div>
-                      <strong onclick="HubToys.openToyInspector('${toy.id}')" class="text-xs text-[#f8fafc] font-bold block cursor-pointer hover:text-[#c5a880] transition-colors leading-tight">
+                      <strong class="text-xs text-white block font-bold leading-tight break-words">
                         ${escapeHtml(toy.name)}
                       </strong>
-                      <p class="text-[10px] text-[#94a3b8] leading-snug mt-1 line-clamp-2">
-                        ${escapeHtml(toy.somaticEffect || toy.desc || 'Ausrüstungsgegenstand')}
-                      </p>
                     </div>
 
-                    ${hasAllergyConflict ? `
-                      <div class="p-1.5 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white text-[9.5px] font-mono font-bold text-center">
-                        ⚠️ Enthält Latex (Allergie-Gefahr!)
-                      </div>
+                    ${toy.isLatex ? `
+                      <span class="px-1.5 py-0.5 rounded text-[8.5px] font-mono bg-[#450a0a] text-white border border-[#991b1b] font-bold flex-shrink-0">
+                        Latex
+                      </span>
                     ` : ''}
                   </div>
 
-                  <!-- UNTEN: SCHNELLAUSWAHL & INSPECTOR BUTTON -->
-                  <div class="pt-2 border-t border-[#1e2638] flex items-center justify-between gap-1 font-mono text-[10px]">
-                    <span class="text-[#94a3b8] truncate">Zone: ${escapeHtml(toy.somaticZone || 'Körper')}</span>
-                    <button type="button" onclick="HubToys.openToyInspector('${toy.id}')" class="px-2.5 py-1 rounded-xl bg-[#000000] hover:bg-[#101622] border border-[#c5a880]/50 text-[#c5a880] font-bold touch-btn">
-                      Details
-                    </button>
+                  <p class="text-[10px] text-[#94a3b8] leading-snug line-clamp-2">
+                    ${escapeHtml(toy.somaticEffect)}
+                  </p>
+                </div>
+
+                <div class="pt-2 border-t border-[#2a364f]/70 flex items-center justify-between font-mono text-[10px]">
+                  <button type="button" onclick="HubToys.inspectToy('${toy.id}')" class="text-[#94a3b8] hover:text-[#c5a880] hover:underline flex items-center gap-1 font-bold">
+                    <span>Details &amp; RACK-Pflege</span>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                  </button>
+
+                  <button type="button" onclick="HubToys.toggleOwned('${toy.id}')" class="px-2.5 py-1 rounded-xl font-bold transition-all touch-btn ${isOwned ? 'bg-[#142b24] border border-[#2e5746] text-[#2e5746]' : 'bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white'}">
+                    ${isOwned ? 'Im Besitz ✓' : '+ Besitze ich'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderWizardTabHtml() {
+    let catalog = [];
+    if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
+      catalog = window.EquipmentCatalog.getAll();
+    }
+
+    const owned = getOwnedToyIds();
+    const suggestions = computePsychometricToySuggestions();
+    const totalSlots = wizardState.targetSlotCount;
+    const currentStep = wizardState.currentStepIndex;
+    const selectedIds = wizardState.selectedToyIds;
+
+    // Slot-Labels nach somatischen Dimensionen
+    const slotLabels = [
+      '1. Basis & Fesselung',
+      '2. Reiz & Zucht',
+      '3. Sinnesfokus / Blindfold',
+      '4. Lust & Keuschheit',
+      '5. Spezial-Equipment',
+      '6. Vagus & Aftercare'
+    ];
+
+    const currentSlotTitle = slotLabels[currentStep] || `Slot ${currentStep + 1}`;
+
+    return `
+      <div class="space-y-4 font-sans">
+        
+        <!-- WIZARD KOPFZEILE MIT DYNAMISCHER SLOT-WAHL (3 BIS 6 SLOTS) -->
+        <div class="p-4 rounded-2xl bg-[#000000] border border-[#d4af37]/60 space-y-3 shadow-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#2a364f] pb-2.5">
+            <div>
+              <strong class="text-xs sm:text-sm text-white font-serif block">
+                Session-Kit Konfigurator (3 bis 6 Ausrüstungs-Slots)
+              </strong>
+              <p class="text-[10px] text-[#94a3b8]">
+                Stellt das ideale Ausrüstungs-Set zusammen – anatomisch redundant-frei und auf eure 505 Fragen kalibriert.
+              </p>
+            </div>
+
+            <!-- SLOT-ANZAHL WÄHLEN (3, 4, 5, 6) -->
+            <div class="flex items-center gap-1 font-mono text-[10px] self-start sm:self-auto">
+              <span class="text-[#94a3b8] mr-1">Umfang:</span>
+              ${[3, 4, 5, 6].map(count => `
+                <button type="button" onclick="HubToys.setWizardSlotCount(${count})" class="w-7 h-7 rounded-xl font-bold flex items-center justify-center transition-all touch-btn ${totalSlots === count ? 'bg-[#d4af37] text-black shadow-md' : 'bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white'}">
+                  ${count}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- SCHRITT-TABS MIT DIREKT-WEITERSCHALTUNG (PUNKT #9) -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 font-mono text-[10.5px]">
+            ${Array.from({ length: totalSlots }).map((_, idx) => {
+              const isCurrent = idx === currentStep;
+              const isFilled = !!selectedIds[idx];
+              const filledToy = isFilled ? catalog.find(t => t.id === selectedIds[idx]) : null;
+
+              return `
+                <button 
+                  type="button" 
+                  onclick="HubToys.goToWizardStep(${idx})" 
+                  class="px-3 py-1.5 rounded-xl border text-left transition-all touch-btn whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1.5 ${isCurrent ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold shadow-sm' : (isFilled ? 'bg-[#090d14] border-[#2e5746] text-[#2e5746]' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white')}"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-[#c5a880] animate-pulse' : (isFilled ? 'bg-[#2e5746]' : 'bg-[#2a364f]')}"></span>
+                  <span>${escapeHtml(slotLabels[idx] || `Slot ${idx + 1}`)}</span>
+                  ${filledToy ? `<span class="text-[9px] text-[#f8fafc] font-normal truncate max-w-[80px]">(${escapeHtml(filledToy.name)})</span>` : ''}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- AKTIVER SCHRITT: AUSWAHL FÜR DIESEN SLOT -->
+        <div class="p-4 rounded-2xl bg-[#090d14] border border-[#2a364f] space-y-3 shadow-md">
+          <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
+            <div>
+              <strong class="text-xs text-white block font-bold">Auswahl für ${escapeHtml(currentSlotTitle)}:</strong>
+              <span class="text-[10px] text-[#94a3b8]">Tippe auf ein Werkzeug, um es diesem Slot zuzuweisen</span>
+            </div>
+            <span class="text-[9.5px] font-mono text-[#c5a880] font-bold">
+              Schritt ${currentStep + 1} von ${totalSlots}
+            </span>
+          </div>
+
+          <!-- EMPFEHLUNGSLISTE FÜR DIESEN SLOT -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            ${catalog.map(toy => {
+              const isSelectedForThisSlot = selectedIds[currentStep] === toy.id;
+              const isSelectedInOtherSlot = selectedIds.includes(toy.id) && !isSelectedForThisSlot;
+              const redundancyCheck = checkBundleRedundancy(selectedIds.filter((_, i) => i !== currentStep), toy.id);
+              const isBlocked = redundancyCheck.hasConflict;
+
+              const sugg = suggestions.find(s => s.toyId === toy.id);
+              const isHighSugg = sugg && sugg.score >= 7;
+
+              return `
+                <div class="p-3 rounded-2xl border transition-all flex flex-col justify-between ${isSelectedForThisSlot ? 'bg-[#000000] border-[#c5a880] shadow-md' : (isBlocked ? 'opacity-40 border-[#450a0a] bg-[#000000]' : 'bg-[#000000] border-[#2a364f] hover:border-slate-600')}">
+                  <div class="space-y-1">
+                    <div class="flex items-start justify-between gap-1.5">
+                      <strong class="text-xs text-white block font-bold leading-tight break-words">
+                        ${escapeHtml(toy.name)}
+                      </strong>
+                      ${isHighSugg ? `
+                        <span class="px-1.5 py-0.2 rounded text-[8.5px] font-mono bg-[#142b24] text-[#2e5746] border border-[#2e5746] font-bold flex-shrink-0">
+                          ★ Resonanz
+                        </span>
+                      ` : ''}
+                    </div>
+
+                    <p class="text-[10px] text-[#94a3b8] leading-snug line-clamp-2">
+                      ${escapeHtml(toy.somaticEffect)}
+                    </p>
+
+                    ${sugg && isHighSugg ? `
+                      <span class="text-[9px] font-mono text-[#c5a880] block">
+                        Psychometrie: ${escapeHtml(sugg.reason)}
+                      </span>
+                    ` : ''}
+
+                    ${isBlocked ? `
+                      <span class="text-[9px] font-mono text-[#ef4444] block">
+                        ⚠️ ${escapeHtml(redundancyCheck.reason)}
+                      </span>
+                    ` : ''}
                   </div>
 
+                  <div class="pt-2 border-t border-[#2a364f]/60 flex items-center justify-between font-mono text-[10px]">
+                    <span class="text-[#94a3b8]">${escapeHtml(toy.category)}</span>
+                    
+                    ${isBlocked ? `
+                      <span class="text-[#94a3b8] italic">Blockiert</span>
+                    ` : (isSelectedForThisSlot ? `
+                      <button type="button" onclick="HubToys.removeToyFromSlot(${currentStep})" class="px-2.5 py-1 rounded-xl bg-[#4a2818] border border-[#8a5232] text-[#f8fafc] font-bold touch-btn">
+                        Entfernen ✕
+                      </button>
+                    ` : `
+                      <button type="button" onclick="HubToys.assignToyToSlot(${currentStep}, '${toy.id}')" class="px-2.5 py-1 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#c5a880] hover:border-[#c5a880] font-bold touch-btn">
+                        Zuweisen +
+                      </button>
+                    `)}
+                  </div>
                 </div>
               `;
             }).join('')}
           </div>
-        `}
+        </div>
+
+        <!-- WIZARD STEUERUNGSLEISTE (DUALE NAVIGATION MIT WEITER-BUTTON) -->
+        <div class="p-4 rounded-2xl bg-[#000000] border border-[#2a364f] flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button 
+              type="button" 
+              onclick="HubToys.prevWizardStep()" 
+              ${currentStep === 0 ? 'disabled class="opacity-30 cursor-not-allowed px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8]"' : 'class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-white hover:border-[#c5a880] touch-btn"'}
+            >
+              ← Vorheriger Slot
+            </button>
+
+            ${currentStep < totalSlots - 1 ? `
+              <button type="button" onclick="HubToys.nextWizardStep()" class="px-4 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md">
+                Nächster Slot →
+              </button>
+            ` : ''}
+          </div>
+
+          <!-- BUNDLE FERTIGSTELLEN & SPEICHERN -->
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button type="button" onclick="HubToys.finalizeAndStageBundle()" class="px-4 py-2 rounded-xl bg-[#d4af37] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md whitespace-nowrap flex items-center gap-1.5">
+              <span>Set für Session übernehmen ↗</span>
+            </button>
+          </div>
+        </div>
 
       </div>
     `;
-
-    filteredToys.forEach(t => {
-      loadThumbPhoto(t.id);
-    });
   }
 
-  async function loadThumbPhoto(toyId) {
-    if (!window.HubPhotos || typeof window.HubPhotos.getPhoto !== 'function') return;
-    try {
-      const dataUrl = await window.HubPhotos.getPhoto(toyId);
-      const container = document.getElementById(`toy-thumb-${toyId}`);
-      if (container && dataUrl) {
-        container.innerHTML = `<img src="${dataUrl}" alt="Foto" class="w-full h-full object-cover rounded-2xl" />`;
-      }
-    } catch (e) {}
+  function renderBundlesTabHtml() {
+    const bundles = getSavedBundles();
+    let catalog = [];
+    if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
+      catalog = window.EquipmentCatalog.getAll();
+    }
+
+    if (bundles.length === 0) {
+      return `
+        <div class="p-8 rounded-3xl bg-[#000000] border border-[#2a364f] text-center space-y-2 font-mono text-xs">
+          <span class="text-[#94a3b8] block">Noch keine Session-Sets gespeichert.</span>
+          <button type="button" onclick="HubToys.switchMainTab('wizard')" class="text-[#c5a880] underline font-bold">
+            Jetzt mit dem Toy-Kit Wizard ein Set erstellen ↗
+          </button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="space-y-3 font-sans">
+        ${bundles.map((b, idx) => {
+          const toyList = (b.toyIds || []).map(id => catalog.find(t => t.id === id)).filter(Boolean);
+
+          return `
+            <div class="p-4 rounded-2xl bg-[#090d14] border border-[#2a364f] hover:border-[#c5a880]/50 transition-all space-y-2.5 shadow-md">
+              <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
+                <div>
+                  <strong class="text-xs sm:text-sm text-white font-serif block">${escapeHtml(b.name)}</strong>
+                  <span class="text-[9.5px] font-mono text-[#94a3b8]">
+                    ${new Date(b.createdAt).toLocaleDateString('de-DE')} · ${toyList.length} Gegenstände
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-1.5 font-mono text-[10px]">
+                  <button type="button" onclick="HubToys.stageExistingBundle(${idx})" class="px-3 py-1.5 rounded-xl bg-[#c5a880] text-black font-bold touch-btn shadow-sm">
+                    In Session laden ↗
+                  </button>
+                  <button type="button" onclick="HubToys.deleteBundle(${idx})" class="p-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#991b1b] hover:text-white" title="Löschen">
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- TOY-PILLS -->
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                ${toyList.map(t => `
+                  <span class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#2a364f] text-white font-mono text-[10px]">
+                    ${escapeHtml(t.name)}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  function attachInspectorModal() {
+    let modal = document.getElementById('hub-toys-inspector-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'hub-toys-inspector-modal';
+      modal.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none";
+      modal.style.display = 'none';
+      document.body.appendChild(modal);
+    }
   }
 
   function openToyInspector(toyId) {
-    loadClosetState();
-    ensureModalsInDom();
-
-    const toy = getToyById(toyId);
+    activeInspectorToyId = toyId;
+    let catalog = [];
+    if (window.EquipmentCatalog && typeof window.EquipmentCatalog.getAll === 'function') {
+      catalog = window.EquipmentCatalog.getAll();
+    }
+    const toy = catalog.find(t => t.id === toyId);
     if (!toy) return;
 
-    closetState.activeInspectorToyId = toyId;
-    closetState.isInspectorOpen = true;
-
-    renderToyInspectorContent();
-
-    const modal = document.getElementById('modal-toy-inspector');
-    if (modal) modal.style.display = 'flex';
-  }
-
-  function closeToyInspector() {
-    closetState.isInspectorOpen = false;
-    closetState.activeInspectorToyId = null;
-    const modal = document.getElementById('modal-toy-inspector');
-    if (modal) modal.style.display = 'none';
-    renderClosetView();
-  }
-
-  function setInspectorTab(tabId) {
-    closetState.activeInspectorTab = tabId;
-    renderToyInspectorContent();
-  }
-
-  function renderToyInspectorContent() {
-    const modal = document.getElementById('modal-toy-inspector');
-    if (!modal || !closetState.activeInspectorToyId) return;
-
-    const toyId = closetState.activeInspectorToyId;
-    const toy = getToyById(toyId);
-    if (!toy) return;
-
-    const pair = getPairContext();
-    const qty = closetState.quantities[toyId] || 1;
-    const assign = closetState.assignments[toyId] || 'both';
-    const rData = getToyRatingData(toyId);
-    const activeTab = closetState.activeInspectorTab || 'specs';
-    const appeal = closetState.appealNotes[toyId] || {};
-    const wisdom = closetState.communityWisdom[toyId] || (toy.communityWisdom || PRESEEDED_WISDOM_FALLBACKS[toy.category] || PRESEEDED_WISDOM_FALLBACKS.bondage);
-    const isLatex = (toy.materials || []).includes('latex');
-
-    modal.innerHTML = `
-      <div class="bg-[#090d14] rounded-3xl max-w-xl w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[92vh] overflow-y-auto">
-        
-        <!-- HEADER MIT TITEL & CLOSE -->
-        <div class="flex items-center justify-between border-b border-[#1e2638] pb-3 gap-2">
-          <div class="space-y-0.5 min-w-0 flex-1">
-            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">
-              Visual Toy-Inspector &amp; Hardware-Profil
-            </span>
-            <h3 class="text-sm sm:text-base font-serif text-white font-bold truncate">
-              ${escapeHtml(toy.name)}
-            </h3>
-          </div>
-          <button type="button" onclick="HubToys.closeToyInspector()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
-        </div>
-
-        <!-- 3-REITER NAVIGATION IM INSPECTOR -->
-        <div class="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[#1e2638] font-mono text-[10px]">
-          <button type="button" onclick="HubToys.setInspectorTab('specs')" class="py-2 rounded-xl font-bold transition-all touch-btn ${activeTab === 'specs' ? 'bg-[#090d14] text-[#c5a880] border border-[#c5a880]/40 shadow-sm' : 'text-[#94a3b8] hover:text-white'}">
-            1. Hardware &amp; RACK
-          </button>
-          <button type="button" onclick="HubToys.setInspectorTab('wisdom')" class="py-2 rounded-xl font-bold transition-all touch-btn ${activeTab === 'wisdom' ? 'bg-[#090d14] text-[#c5a880] border border-[#c5a880]/40 shadow-sm' : 'text-[#94a3b8] hover:text-white'}">
-            2. Community Wisdom
-          </button>
-          <button type="button" onclick="HubToys.setInspectorTab('couple')" class="py-2 rounded-xl font-bold transition-all touch-btn ${activeTab === 'couple' ? 'bg-[#090d14] text-[#c5a880] border border-[#c5a880]/40 shadow-sm' : 'text-[#94a3b8] hover:text-white'}">
-            3. Unser Reiz (Rating)
-          </button>
-        </div>
-
-        <!-- REITER 1: HARDWARE & RACK SPEZIFIKATION -->
-        ${activeTab === 'specs' ? `
-          <div class="space-y-3.5 animate-fade-in">
-            <!-- FOTO BEREICH MIT KAMERA-BUTTON -->
-            <div class="h-44 w-full rounded-2xl bg-[#000000] border border-[#1e2638] relative overflow-hidden flex items-center justify-center">
-              <div id="inspector-main-photo" class="w-full h-full flex items-center justify-center">
-                <svg class="w-12 h-12 text-[#c5a880]/30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 6v12a2.25 2.25 0 002.25 2.25zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-              </div>
-              <button type="button" onclick="HubToys.triggerPhotoCapture('${toyId}')" class="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-xl bg-black/80 hover:bg-black border border-[#c5a880]/60 text-[#c5a880] font-mono text-[10px] font-bold touch-btn flex items-center gap-1.5 shadow-md">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
-                <span>Foto erfassen (Vision)</span>
-              </button>
-            </div>
-
-            <!-- EINSTELLUNGEN: MENGE, PASSFORM, LAGERORT -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 font-mono text-xs">
-              <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
-                <label class="text-[9.5px] uppercase text-[#94a3b8] block font-bold">Vorhandene Stückzahl:</label>
-                <div class="flex items-center gap-2">
-                  <button type="button" onclick="HubToys.adjustQuantity('${toyId}', -1)" class="w-8 h-8 rounded-xl bg-[#090d14] border border-[#1e2638] text-white font-bold flex items-center justify-center touch-btn">-</button>
-                  <span class="text-sm font-bold text-[#c5a880] w-8 text-center">${qty}</span>
-                  <button type="button" onclick="HubToys.adjustQuantity('${toyId}', 1)" class="w-8 h-8 rounded-xl bg-[#090d14] border border-[#1e2638] text-white font-bold flex items-center justify-center touch-btn">+</button>
-                </div>
-              </div>
-
-              <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-1">
-                <label class="text-[9.5px] uppercase text-[#94a3b8] block font-bold">Passform &amp; Zuordnung:</label>
-                <select onchange="HubToys.setAssignment('${toyId}', this.value)" class="w-full text-xs p-1.5 bg-[#090d14] border border-[#1e2638] rounded-xl text-white">
-                  <option value="both" ${assign === 'both' ? 'selected' : ''}>Beide (Unisex)</option>
-                  <option value="A" ${assign === 'A' ? 'selected' : ''}>Passt nur ${escapeHtml(pair.topName)}</option>
-                  <option value="B" ${assign === 'B' ? 'selected' : ''}>Passt nur ${escapeHtml(pair.bottomName)}</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- KINETISCHE SPEZIFIKATIONEN -->
-            <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2 text-[11px]">
-              <div class="grid grid-cols-2 gap-2 font-mono text-[10px]">
-                <div><span class="text-[#94a3b8]">Anatomische Zone:</span> <strong class="text-white block">${escapeHtml(toy.somaticZone || 'Körper')}</strong></div>
-                <div><span class="text-[#94a3b8]">Restraint-Layer:</span> <strong class="text-[#c5a880] block">Layer ${toy.restraintLayer !== undefined ? toy.restraintLayer : 0}</strong></div>
-              </div>
-              <div class="pt-1 border-t border-[#1e2638] font-mono text-[10px]">
-                <span class="text-[#94a3b8]">Materialien:</span> <strong class="text-[#f8fafc]">${escapeHtml((toy.materials || ['Leder/Metall']).join(', '))}</strong>
-              </div>
-              ${isLatex ? `<p class="text-[10px] text-[#b3734a] font-mono">⚠️ Enthält Naturkautschuk/Latex (Allergietest beachten).</p>` : ''}
-            </div>
-
-            <!-- REVERSE AFTERCARE DESINFEKTION -->
-            <div class="p-3 rounded-2xl bg-[#142b24]/40 border border-[#2e5746] space-y-1">
-              <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#2e5746] font-bold block">
-                RACK-Desinfektionsprotokoll (Reverse Aftercare):
-              </span>
-              <p class="text-[10.5px] text-[#f8fafc]">
-                ${escapeHtml((toy.safetyProtocol && toy.safetyProtocol.disinfectionMethod) ? toy.safetyProtocol.disinfectionMethod.replace(/_/g, ' ') : 'Antiseptisches Pflegespray oder milde Seife')}
-              </p>
-            </div>
-          </div>
-        ` : ''}
-
-        <!-- REITER 2: COMMUNITY WISDOM (DIREKT BEIM ANLEGEN BEREIT) -->
-        ${activeTab === 'wisdom' ? `
-          <div class="space-y-3.5 animate-fade-in">
-            <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
-              <span class="text-[10px] font-mono text-[#94a3b8]">Erotische Psychologie &amp; Community Wisdom:</span>
-              <button type="button" onclick="HubToys.generateAiWisdom('${toyId}', false)" class="px-2.5 py-1 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono text-[9.5px] font-bold touch-btn">
-                ✨ Neu recherchieren
-              </button>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/40 space-y-1.5">
-                <strong class="text-[#c5a880] text-xs font-mono font-bold block">
-                  Top-Perspektive (Warum es anmacht):
-                </strong>
-                <p class="text-[11px] text-[#f8fafc] leading-relaxed">
-                  ${escapeHtml(wisdom.top || 'Verlässliche Dominanz, akustische Resonanz und sichtbare Haltungsdisziplin des Partners.')}
-                </p>
-              </div>
-
-              <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-1.5">
-                <strong class="text-[#b3734a] text-xs font-mono font-bold block">
-                  Bottom-Perspektive (Warum es anmacht):
-                </strong>
-                <p class="text-[11px] text-[#f8fafc] leading-relaxed">
-                  ${escapeHtml(wisdom.sub || 'Körperliche Begrenzung, Abschalten des Alltags-Grübelns und tiefe somatische Hingabe.')}
-                </p>
-              </div>
-            </div>
-
-            <p class="text-[10px] text-[#94a3b8] italic text-center">
-              Recherchiert aus somatischen BDSM-Fallstudien &amp; Community-Erfahrungen.
-            </p>
-          </div>
-        ` : ''}
-
-        <!-- REITER 3: UNSER PAAR-REIZ & 0-5 STERNE RATING -->
-        ${activeTab === 'couple' ? `
-          <div class="space-y-3.5 animate-fade-in">
-            <p class="text-[10.5px] text-[#94a3b8] leading-snug">
-              Zusätzlich zum allgemeinen Fragebogen: Bewertet hier <em>dieses konkrete physische Werkzeug</em> und haltet euren ganz persönlichen Reiz daran fest.
-            </p>
-
-            <!-- PARTNER 1 (TOP) BEWERTUNG -->
-            <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/50 space-y-2">
-              <div class="flex items-center justify-between">
-                <strong class="text-xs text-[#c5a880] font-mono font-bold">
-                  [${escapeHtml(pair.topName)} · Top]:
-                </strong>
-                <!-- 0-5 STERNE -->
-                <div class="flex items-center gap-1 text-sm cursor-pointer select-none">
-                  ${[1, 2, 3, 4, 5].map(star => `
-                    <span onclick="HubToys.setRating('${toyId}', 'top', ${star})" class="transition-transform hover:scale-125 ${rData.topScore >= star ? 'text-[#d4af37]' : 'text-[#1e2638]'}">★</span>
-                  `).join('')}
-                  <span class="text-[10px] font-mono text-[#94a3b8] ml-1">(${rData.topScore}/5)</span>
-                </div>
-              </div>
-              <textarea id="input-appeal-top-${toyId}" rows="2" placeholder="Was macht dich an diesem spezifischen Werkzeug besonders an? (z. B. Haptik, Schwere, Ton...)" class="w-full p-2.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-white text-[11px] focus:border-[#c5a880] focus:outline-none leading-relaxed">${escapeHtml(appeal.top || '')}</textarea>
-            </div>
-
-            <!-- PARTNER 2 (BOTTOM) BEWERTUNG -->
-            <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-2">
-              <div class="flex items-center justify-between">
-                <strong class="text-xs text-[#b3734a] font-mono font-bold">
-                  [${escapeHtml(pair.bottomName)} · Bottom]:
-                </strong>
-                <!-- 0-5 STERNE -->
-                <div class="flex items-center gap-1 text-sm cursor-pointer select-none">
-                  ${[1, 2, 3, 4, 5].map(star => `
-                    <span onclick="HubToys.setRating('${toyId}', 'sub', ${star})" class="transition-transform hover:scale-125 ${rData.subScore >= star ? 'text-[#b3734a]' : 'text-[#1e2638]'}">★</span>
-                  `).join('')}
-                  <span class="text-[10px] font-mono text-[#94a3b8] ml-1">(${rData.subScore}/5)</span>
-                </div>
-              </div>
-              <textarea id="input-appeal-sub-${toyId}" rows="2" placeholder="Was empfindest du, wenn dieses Tool an dir eingesetzt wird? (z. B. Hitzewelle, Hilflosigkeit...)" class="w-full p-2.5 rounded-xl bg-[#090d14] border border-[#1e2638] text-white text-[11px] focus:border-[#b3734a] focus:outline-none leading-relaxed">${escapeHtml(appeal.sub || '')}</textarea>
-            </div>
-
-            <div class="flex justify-end">
-              <button type="button" onclick="HubToys.saveCoupleAppeal('${toyId}')" class="px-4 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono text-xs touch-btn shadow-md">
-                Paar-Reiz &amp; Notizen speichern ✓
-              </button>
-            </div>
-          </div>
-        ` : ''}
-
-        <!-- FOOTER MIT LÖSCH-OPTION -->
-        <div class="pt-2 border-t border-[#1e2638] flex items-center justify-between font-mono text-[10px]">
-          <button type="button" onclick="HubToys.confirmDeleteToy('${toyId}')" class="text-[#991b1b] hover:underline">
-            Aus Schrank entfernen
-          </button>
-          <button type="button" onclick="HubToys.closeToyInspector()" class="px-4 py-1.5 rounded-xl bg-[#000000] border border-[#1e2638] text-white font-bold touch-btn">
-            Schließen
-          </button>
-        </div>
-
-      </div>
-    `;
-
-    if (activeTab === 'specs') {
-      loadInspectorPhoto(toyId);
-    }
-  }
-
-  async function loadInspectorPhoto(toyId) {
-    if (!window.HubPhotos || typeof window.HubPhotos.getPhoto !== 'function') return;
-    try {
-      const dataUrl = await window.HubPhotos.getPhoto(toyId);
-      const photoBox = document.getElementById('inspector-main-photo');
-      if (photoBox && dataUrl) {
-        photoBox.innerHTML = `<img src="${dataUrl}" alt="Ausrüstung" class="w-full h-full object-cover" />`;
-      }
-    } catch (e) {}
-  }
-
-  function triggerPhotoCapture(toyId) {
-    if (!window.HubPhotos || typeof window.HubPhotos.captureForToy !== 'function') {
-      showToast("Foto-Modul nicht verfügbar.");
-      return;
-    }
-
-    window.HubPhotos.captureForToy(toyId, (dataUrl, visionProfile) => {
-      loadClosetState();
-      const photoBox = document.getElementById('inspector-main-photo');
-      if (photoBox && dataUrl) {
-        photoBox.innerHTML = `<img src="${dataUrl}" alt="Ausrüstung" class="w-full h-full object-cover" />`;
-      }
-
-      if (visionProfile && visionProfile.name) {
-        showToast(`✓ KI-Vision erkannt: ${visionProfile.name}`);
-        const custom = closetState.customToys.find(c => c.id === toyId);
-        if (custom) {
-          custom.somaticZone = visionProfile.somaticZone || custom.somaticZone;
-          custom.materials = visionProfile.materials || custom.materials;
-          saveClosetState();
-        }
-      }
-      renderClosetView();
-    });
-  }
-
-  function setRating(toyId, roleKey, stars) {
-    loadClosetState();
-    if (!closetState.ratings[toyId]) closetState.ratings[toyId] = { top: 0, sub: 0 };
-    closetState.ratings[toyId][roleKey] = stars;
-    saveClosetState();
-    renderToyInspectorContent();
-    showToast(`✓ Bewertung: ${stars} Sterne gesetzt`);
-  }
-
-  function saveCoupleAppeal(toyId) {
-    loadClosetState();
-    const topInput = document.getElementById(`input-appeal-top-${toyId}`);
-    const subInput = document.getElementById(`input-appeal-sub-${toyId}`);
-
-    if (!closetState.appealNotes[toyId]) closetState.appealNotes[toyId] = { top: '', sub: '' };
-    if (topInput) closetState.appealNotes[toyId].top = topInput.value.trim();
-    if (subInput) closetState.appealNotes[toyId].sub = subInput.value.trim();
-
-    saveClosetState();
-    showToast("✓ Paar-Reiz & Notizen gesichert");
-  }
-
-  async function generateAiWisdom(toyId, silent = false) {
-    const toy = getToyById(toyId);
-    if (!toy) return null;
-
-    if (!silent) showToast("Recherchiere erotische Psychologie via KI...");
-
-    let result = null;
-    if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-      const prompt = `
-Erstelle für den BDSM- und Erotik-Ausrüstungsgegenstand „${toy.name}“ (Kategorie: ${toy.category}, Zone: ${toy.somaticZone || 'Körper'}, Material: ${(toy.materials || []).join(', ')}) eine prägnante Darstellung der erotischen Psychologie:
-1. Top-Perspektive: Warum macht das Führen/Handhaben dieses Werkzeugs an?
-2. Bottom-Perspektive: Warum macht das Empfangen/Spüren dieses Reizes an?
-
-Formuliere erwachsen, direkt, unkitschig und somatisch fundiert.
-Antworte ausschließlich im JSON-Format:
-{
-  "top": "1-2 Sätze zur Psychologie des Tops",
-  "sub": "1-2 Sätze zur Psychologie des Bottoms"
-}
-`;
-      try {
-        const aiRes = await window.AIAdapter.generateText({
-          systemPrompt: "Du bist der somatische BDSM- und Hardware-Psychologe für TACTUS.",
-          userPrompt: prompt,
-          temperature: 0.7,
-          returnJson: true
-        });
-        if (aiRes && aiRes.top && aiRes.sub) {
-          result = { top: aiRes.top, sub: aiRes.sub, generatedAt: Date.now() };
-        }
-      } catch (e) {}
-    }
-
-    if (!result) {
-      const fallback = PRESEEDED_WISDOM_FALLBACKS[toy.category] || PRESEEDED_WISDOM_FALLBACKS.bondage;
-      result = {
-        top: fallback.top,
-        sub: fallback.sub,
-        generatedAt: Date.now()
-      };
-    }
-
-    loadClosetState();
-    closetState.communityWisdom[toyId] = result;
-    saveClosetState();
-
-    if (!silent) {
-      renderToyInspectorContent();
-      showToast("✓ Community Wisdom aktualisiert");
-    }
-    return result;
-  }
-
-  function adjustQuantity(toyId, delta) {
-    loadClosetState();
-    const current = closetState.quantities[toyId] || 1;
-    const newQty = Math.max(1, Math.min(20, current + delta));
-    closetState.quantities[toyId] = newQty;
-    saveClosetState();
-    renderToyInspectorContent();
-  }
-
-  function setAssignment(toyId, value) {
-    loadClosetState();
-    closetState.assignments[toyId] = value;
-    saveClosetState();
-    showToast("✓ Passform-Zuordnung aktualisiert");
-  }
-
-  function confirmDeleteToy(toyId) {
-    const toy = getToyById(toyId);
-    if (!toy) return;
-
-    let confirmModal = document.getElementById('modal-confirm-delete-toy');
-    if (!confirmModal) {
-      confirmModal = document.createElement('div');
-      confirmModal.id = 'modal-confirm-delete-toy';
-      confirmModal.className = "fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 select-none";
-      document.body.appendChild(confirmModal);
-    }
-
-    confirmModal.innerHTML = `
-      <div class="bg-[#090d14] rounded-3xl max-w-sm w-full border border-[#991b1b] p-5 space-y-3 text-xs text-[#f8fafc] font-sans">
-        <h4 class="font-bold text-white text-sm font-serif">Gegenstand entfernen?</h4>
-        <p class="text-[11px] text-[#94a3b8] leading-snug">
-          Möchtest du „${escapeHtml(toy.name)}“ wirklich aus eurem Ausrüstungsschrank entfernen?
-        </p>
-        <div class="flex justify-end gap-2 pt-2 border-t border-[#1e2638] font-mono">
-          <button type="button" onclick="document.getElementById('modal-confirm-delete-toy').style.display='none'" class="px-3.5 py-1.5 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold touch-btn">Abbrechen</button>
-          <button type="button" onclick="HubToys.executeDeleteToy('${toyId}')" class="px-4 py-1.5 rounded-xl bg-[#991b1b] hover:bg-red-700 text-white font-bold touch-btn">Entfernen</button>
-        </div>
-      </div>
-    `;
-    confirmModal.style.display = 'flex';
-  }
-
-  function executeDeleteToy(toyId) {
-    loadClosetState();
-    closetState.ownedIds = closetState.ownedIds.filter(id => id !== toyId);
-    closetState.customToys = closetState.customToys.filter(t => t.id !== toyId);
-    delete closetState.quantities[toyId];
-    delete closetState.assignments[toyId];
-    delete closetState.ratings[toyId];
-    delete closetState.appealNotes[toyId];
-    saveClosetState();
-
-    const confirmModal = document.getElementById('modal-confirm-delete-toy');
-    if (confirmModal) confirmModal.style.display = 'none';
-
-    closeToyInspector();
-    showToast("Gegenstand aus dem Schrank entfernt.");
-  }
-
-  function openAddCustomModal() {
-    ensureModalsInDom();
-    const modal = document.getElementById('modal-add-custom-toy');
+    const modal = document.getElementById('hub-toys-inspector-modal');
     if (!modal) return;
 
+    const owned = getOwnedToyIds();
+    const isOwned = owned.includes(toy.id);
+    const customNotes = getToyCustomNotes();
+    const currentNote = customNotes[toy.id] || '';
+
     modal.innerHTML = `
-      <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans">
-        <div class="flex items-center justify-between border-b border-[#1e2638] pb-2">
-          <div>
-            <span class="text-[9.5px] font-mono uppercase text-[#c5a880] font-bold block">Hardware-Erfassung</span>
-            <h3 class="text-sm font-bold text-white font-serif">Neuen Gegenstand erfassen</h3>
+      <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[90dvh] overflow-y-auto pb-[max(env(safe-area-inset-bottom),16px)]">
+        
+        <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
+          <div class="space-y-0.5">
+            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">
+              ${escapeHtml(toy.category)} · Zone: ${escapeHtml(toy.somaticZone)}
+            </span>
+            <h3 class="text-sm sm:text-base font-serif text-white font-bold">${escapeHtml(toy.name)}</h3>
           </div>
-          <button type="button" onclick="document.getElementById('modal-add-custom-toy').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
+          <button type="button" onclick="document.getElementById('hub-toys-inspector-modal').style.display='none'" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
         </div>
 
-        <p class="text-[10.5px] text-[#94a3b8] leading-snug">
-          Die erotische Psychologie (Community Wisdom) wird beim Anlegen automatisch im Hintergrund für euch recherchiert.
+        <p class="text-[11px] text-[#f8fafc] leading-relaxed">
+          ${escapeHtml(toy.somaticEffect)}
         </p>
 
-        <div class="space-y-3 font-mono">
-          <div>
-            <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Bezeichnung des Gegenstands:</label>
-            <input type="text" id="custom-toy-name" placeholder="z. B. Glattleder-Korsett Noir mit Schnürung" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white font-sans focus:border-[#c5a880] focus:outline-none" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Kategorie:</label>
-              <select id="custom-toy-cat" class="w-full text-xs p-2 bg-[#000000] border border-[#1e2638] rounded-xl text-white">
-                <option value="bondage">Fesselung &amp; Seil</option>
-                <option value="impact">Zucht &amp; Schlag</option>
-                <option value="chastity">Keuschheit</option>
-                <option value="sensory">Sensorik</option>
-                <option value="care">Nachsorge &amp; Vagus</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Stückzahl:</label>
-              <input type="number" id="custom-toy-qty" value="1" min="1" max="20" class="w-full text-xs p-2 bg-[#000000] border border-[#1e2638] rounded-xl text-white" />
-            </div>
-          </div>
-
-          <div>
-            <label class="text-[10px] text-[#94a3b8] uppercase block mb-1">Anatomische Wirkzone:</label>
-            <input type="text" id="custom-toy-zone" placeholder="z. B. Becken / Taille / Gesäß" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white font-sans focus:border-[#c5a880] focus:outline-none" />
-          </div>
+        <!-- MATERIAL & RACK-SICHERHEIT -->
+        <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2 text-[10.5px]">
+          <strong class="text-white block font-bold font-mono">RACK-Hygiene- &amp; Pflegeprotokoll:</strong>
+          <p class="text-[#94a3b8] leading-snug">
+            ${escapeHtml(toy.safetyProtocol?.aftercareInstruction || 'Nach der Session gründlich desinfizieren und trocken lagern.')}
+          </p>
+          <span class="text-[9.5px] font-mono text-[#c5a880] block">
+            Materialien: ${(toy.materials || []).join(', ')}
+          </span>
         </div>
 
-        <div class="pt-2 border-t border-[#1e2638] flex justify-end gap-2 font-mono">
-          <button type="button" onclick="document.getElementById('modal-add-custom-toy').style.display='none'" class="px-4 py-2 bg-[#000000] border border-[#1e2638] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
-          <button type="button" onclick="HubToys.saveCustomToy()" class="px-5 py-2 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Im Schrank ablegen ✓</button>
+        <!-- EIGENE NOTIZ ZUM TOY -->
+        <div class="space-y-1.5 font-mono">
+          <label class="text-[10px] text-[#94a3b8] uppercase block font-bold">Eigene Notiz (z. B. Ringgröße, Schlossnummer):</label>
+          <input 
+            type="text" 
+            id="inspector-input-note" 
+            value="${escapeHtml(currentNote)}" 
+            placeholder="z. B. Ringgröße 45mm, im Schlafzimmerschrank oben..." 
+            class="w-full p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white text-xs font-sans focus:border-[#c5a880] focus:outline-none" 
+          />
+        </div>
+
+        <div class="pt-2 border-t border-[#2a364f] flex items-center justify-between font-mono">
+          <button type="button" onclick="HubToys.toggleOwned('${toy.id}'); HubToys.inspectToy('${toy.id}');" class="px-3.5 py-2 rounded-xl font-bold transition-all touch-btn ${isOwned ? 'bg-[#142b24] border border-[#2e5746] text-[#2e5746]' : 'bg-[#000000] border border-[#2a364f] text-[#94a3b8]'}">
+            ${isOwned ? 'Im Schrank-Inventar ✓' : '+ In Inventar aufnehmen'}
+          </button>
+
+          <button type="button" onclick="HubToys.saveInspectorNote('${toy.id}')" class="px-4 py-2 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">
+            Notiz sichern ✓
+          </button>
         </div>
       </div>
     `;
@@ -933,448 +838,158 @@ Antworte ausschließlich im JSON-Format:
     modal.style.display = 'flex';
   }
 
-  function saveCustomToy() {
-    const nameEl = document.getElementById('custom-toy-name');
-    const catEl = document.getElementById('custom-toy-cat');
-    const qtyEl = document.getElementById('custom-toy-qty');
-    const zoneEl = document.getElementById('custom-toy-zone');
-
-    const name = nameEl ? nameEl.value.trim() : '';
-    if (!name) {
-      showToast("Bitte gib dem Gegenstand einen Namen.");
+  function assignToyToSlot(slotIndex, toyId) {
+    const redundancyCheck = checkBundleRedundancy(wizardState.selectedToyIds.filter((_, i) => i !== slotIndex), toyId);
+    if (redundancyCheck.hasConflict) {
+      showToast(redundancyCheck.reason);
       return;
     }
 
-    const toyId = `custom_${Date.now()}`;
-    const newToy = {
-      id: toyId,
-      name: name,
-      category: catEl ? catEl.value : 'bondage',
-      somaticZone: zoneEl ? zoneEl.value.trim() || 'Körper' : 'Körper',
-      restraintLayer: 1,
-      materials: ['Leder'],
-      somaticEffect: 'Individuell erfasste Ausrüstung.'
-    };
+    wizardState.selectedToyIds[slotIndex] = toyId;
+    showToast("Werkzeug dem Slot zugewiesen ✓");
 
-    loadClosetState();
-    closetState.customToys.push(newToy);
-    closetState.ownedIds.push(toyId);
-    closetState.quantities[toyId] = qtyEl ? (parseInt(qtyEl.value, 10) || 1) : 1;
-    saveClosetState();
-
-    // Sofortige automatische Synthese der Community Wisdom im Hintergrund
-    generateAiWisdom(toyId, true);
-
-    const modal = document.getElementById('modal-add-custom-toy');
-    if (modal) modal.style.display = 'none';
+    // Wenn noch Slots offen sind, automatisch zum nächsten Slot weiterschalten
+    if (slotIndex < wizardState.targetSlotCount - 1 && !wizardState.selectedToyIds[slotIndex + 1]) {
+      wizardState.currentStepIndex = slotIndex + 1;
+    }
 
     renderClosetView();
-    showToast(`✓ „${name}“ zum Schrank hinzugefügt & Weisheit generiert`);
   }
 
-  function openBundleWizard() {
-    ensureModalsInDom();
-    loadClosetState();
+  function removeToyFromSlot(slotIndex) {
+    wizardState.selectedToyIds.splice(slotIndex, 1);
+    renderClosetView();
+  }
 
-    const ownedToys = getAllCatalogToys().filter(t => closetState.ownedIds.includes(t.id));
-    if (ownedToys.length === 0) {
-      showToast("Keine Gegenstände im Schrank vorhanden. Lege zuerst Ausrüstung an.");
+  function finalizeAndStageBundle() {
+    const validIds = wizardState.selectedToyIds.filter(Boolean);
+    if (validIds.length === 0) {
+      showToast("Bitte weise mindestens einem Slot ein Werkzeug zu.");
       return;
     }
 
-    wizardState = {
-      step: 1,
-      step1ToyId: null,
-      step2ToyId: null,
-      step3ToyId: null,
-      bundleTitle: '',
-      selectedCategory: 'all',
-      rationale: ''
-    };
+    const bundleName = prompt("Name für dieses Session-Set eingeben:", `Set ${new Date().toLocaleDateString('de-DE')}`);
+    if (!bundleName) return;
 
-    renderWizardStep();
-    const modal = document.getElementById('modal-bundle-wizard');
-    if (modal) modal.style.display = 'flex';
-  }
-
-  function closeBundleWizard() {
-    const modal = document.getElementById('modal-bundle-wizard');
-    if (modal) modal.style.display = 'none';
-  }
-
-  function setWizardCategory(catId) {
-    wizardState.selectedCategory = catId;
-    renderWizardStep();
-  }
-
-  function setWizardToy(stepNumber, toyId) {
-    if (stepNumber === 1) wizardState.step1ToyId = toyId;
-    else if (stepNumber === 2) wizardState.step2ToyId = toyId;
-    else if (stepNumber === 3) wizardState.step3ToyId = toyId;
-    renderWizardStep();
-  }
-
-  function nextWizardStep() {
-    if (wizardState.step === 1 && !wizardState.step1ToyId) {
-      showToast("Bitte wähle zuerst ein Basis-Werkzeug aus.");
-      return;
-    }
-    if (wizardState.step === 2 && !wizardState.step2ToyId) {
-      showToast("Bitte wähle ein Ergänzungs-Werkzeug aus (oder gehe zu Schritt 3).");
-      return;
-    }
-    wizardState.step = Math.min(3, wizardState.step + 1);
-    wizardState.selectedCategory = 'all';
-    renderWizardStep();
-  }
-
-  function prevWizardStep() {
-    wizardState.step = Math.max(1, wizardState.step - 1);
-    wizardState.selectedCategory = 'all';
-    renderWizardStep();
-  }
-
-  function renderWizardStep() {
-    const modal = document.getElementById('modal-bundle-wizard');
-    if (!modal) return;
-
-    const ownedToys = getAllCatalogToys().filter(t => closetState.ownedIds.includes(t.id));
-    const step = wizardState.step;
-
-    const categories = [
-      { id: 'all', label: 'Alle' },
-      { id: 'bondage', label: 'Fesselung' },
-      { id: 'impact', label: 'Zucht' },
-      { id: 'chastity', label: 'Keuschheit' },
-      { id: 'sensory', label: 'Sensorik' },
-      { id: 'care', label: 'Nachsorge' }
-    ];
-
-    const currentSelectedId = (step === 1) ? wizardState.step1ToyId : ((step === 2) ? wizardState.step2ToyId : wizardState.step3ToyId);
-
-    // Filter der Gegenstände nach gewählter Kategorie
-    let displayToys = (wizardState.selectedCategory === 'all')
-      ? ownedToys
-      : ownedToys.filter(t => t.category === wizardState.selectedCategory);
-
-    // Kinetische DoF-Empfehlung in Schritt 2 & 3
-    let recommendedIds = [];
-    if (step === 2 && wizardState.step1ToyId) {
-      const anchorToy = getToyById(wizardState.step1ToyId);
-      if (anchorToy) {
-        if (anchorToy.category === 'bondage') recommendedIds = ownedToys.filter(t => t.category === 'impact' || t.category === 'sensory').map(t => t.id);
-        else if (anchorToy.category === 'chastity') recommendedIds = ownedToys.filter(t => t.category === 'sensory' || t.category === 'bondage').map(t => t.id);
-        else if (anchorToy.category === 'impact') recommendedIds = ownedToys.filter(t => t.category === 'care' || t.category === 'bondage').map(t => t.id);
-      }
-    }
-
-    modal.innerHTML = `
-      <div class="bg-[#090d14] rounded-3xl max-w-xl w-full border border-[#c5a880]/60 p-5 sm:p-6 space-y-4 shadow-2xl text-xs text-[#f8fafc] font-sans max-h-[92vh] overflow-y-auto">
-        
-        <!-- HEADER MIT SCHRITT-INDIKATOR -->
-        <div class="flex items-center justify-between border-b border-[#1e2638] pb-3">
-          <div>
-            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">
-              Interaktiver Bundle-Konfigurator · Schritt ${step} von 3
-            </span>
-            <h3 class="text-sm sm:text-base font-serif text-white font-bold">
-              ${step === 1 ? '1. Basis-Werkzeug (Der Anker)' : (step === 2 ? '2. Ergänzung &amp; Kinetische Harmonie' : '3. Akzent, Name &amp; RACK-Abschluss')}
-            </h3>
-          </div>
-          <button type="button" onclick="HubToys.closeBundleWizard()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
-        </div>
-
-        <!-- SCHRITT-BALKEN -->
-        <div class="grid grid-cols-3 gap-1.5 font-mono text-[10px]">
-          <div class="p-1.5 rounded-xl border text-center ${step >= 1 ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold' : 'bg-[#090d14] border-[#1e2638] text-[#94a3b8]'}">1. Basis</div>
-          <div class="p-1.5 rounded-xl border text-center ${step >= 2 ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold' : 'bg-[#090d14] border-[#1e2638] text-[#94a3b8]'}">2. Ergänzung</div>
-          <div class="p-1.5 rounded-xl border text-center ${step === 3 ? 'bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold' : 'bg-[#090d14] border-[#1e2638] text-[#94a3b8]'}">3. Abschluss</div>
-        </div>
-
-        ${step <= 2 ? `
-          <!-- KATEGORIE-FILTER FÜR SCHRITT 1 & 2 -->
-          <div class="space-y-1.5">
-            <span class="text-[10px] font-mono text-[#94a3b8] block">Kategorie filtern:</span>
-            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 font-mono text-[10.5px]">
-              ${categories.map(c => `
-                <button type="button" onclick="HubToys.setWizardCategory('${c.id}')" class="px-2.5 py-1 rounded-xl whitespace-nowrap transition-all touch-btn ${wizardState.selectedCategory === c.id ? 'bg-[#c5a880] text-black font-bold' : 'bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white'}">
-                  ${escapeHtml(c.label)}
-                </button>
-              `).join('')}
-            </div>
-          </div>
-
-          <!-- KI-EMPFEHLUNGS-HINWEIS IN SCHRITT 2 -->
-          ${step === 2 && recommendedIds.length > 0 ? `
-            <div class="p-2.5 rounded-2xl bg-[#000000] border border-[#c5a880]/40 flex items-center justify-between text-[10px]">
-              <span class="text-[#c5a880] font-mono font-bold">✨ KI-Empfehlung: Harmonisiert kinetisch mit Schritt 1</span>
-              <span class="text-[#94a3b8] font-mono">${recommendedIds.length} Vorschläge</span>
-            </div>
-          ` : ''}
-
-          <!-- TOYS LISTE ZUR AUSWAHL -->
-          <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-            ${displayToys.map(t => {
-              const isSelected = currentSelectedId === t.id;
-              const isRecommended = recommendedIds.includes(t.id);
-              const rData = getToyRatingData(t.id);
-
-              return `
-                <div onclick="HubToys.setWizardToy(${step}, '${t.id}')" class="p-3 rounded-2xl border transition-all cursor-pointer touch-btn flex items-center justify-between gap-2 ${isSelected ? 'bg-[#000000] border-[#c5a880] shadow-md' : (isRecommended ? 'bg-[#000000] border-[#c5a880]/30 hover:border-[#c5a880]' : 'bg-[#000000] border-[#1e2638] hover:border-slate-700')}">
-                  <div class="space-y-0.5 min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <strong class="text-xs text-white block">${escapeHtml(t.name)}</strong>
-                      ${isRecommended ? '<span class="px-1.5 py-0.2 rounded text-[8.5px] font-mono bg-[#142b24] text-[#2e5746] border border-[#2e5746] font-bold">Empfohlen ✨</span>' : ''}
-                      ${rData.average ? `<span class="text-[9px] font-mono text-[#d4af37]">★ ${rData.average}</span>` : ''}
-                    </div>
-                    <span class="text-[10px] text-[#94a3b8] block">Zone: ${escapeHtml(t.somaticZone || 'Körper')} · Layer ${t.restraintLayer || 0}</span>
-                  </div>
-                  <span class="text-xs font-mono font-bold ${isSelected ? 'text-[#c5a880]' : 'text-[#1e2638]'}">${isSelected ? '✓' : '○'}</span>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        ` : `
-          <!-- SCHRITT 3: REZENSION, NAMEN & ABSCHLUSS -->
-          <div class="space-y-3 animate-fade-in">
-            <div class="space-y-1">
-              <label class="text-[10px] font-mono uppercase text-[#94a3b8] block">Name für dieses Bundle:</label>
-              <div class="flex items-center gap-2">
-                <input type="text" id="wizard-bundle-title" value="${escapeHtml(wizardState.bundleTitle || 'Unser Session-Set')}" placeholder="z. B. Das Ritual der stummen Disziplin" class="w-full text-xs p-2.5 bg-[#000000] border border-[#1e2638] rounded-xl text-white font-sans focus:border-[#c5a880] focus:outline-none" />
-                <button type="button" onclick="HubToys.suggestBundleTitle()" class="px-3 py-2 rounded-xl bg-[#000000] border border-[#c5a880]/50 text-[#c5a880] font-mono text-[10px] font-bold whitespace-nowrap touch-btn">
-                  ✨ KI-Name
-                </button>
-              </div>
-            </div>
-
-            <div class="p-3 rounded-2xl bg-[#000000] border border-[#1e2638] space-y-2">
-              <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold block">Ausgewählte Ausrüstung:</span>
-              <div class="space-y-1">
-                ${[wizardState.step1ToyId, wizardState.step2ToyId, wizardState.step3ToyId].filter(Boolean).map((id, idx) => {
-                  const t = getToyById(id);
-                  return t ? `
-                    <div class="flex items-center justify-between text-[11px] p-1.5 rounded-xl bg-[#090d14] border border-[#1e2638]">
-                      <span><strong class="text-[#c5a880] font-mono">${idx + 1}.</strong> ${escapeHtml(t.name)}</span>
-                      <span class="text-[9.5px] font-mono text-[#94a3b8]">Zone: ${escapeHtml(t.somaticZone || 'Körper')}</span>
-                    </div>
-                  ` : '';
-                }).join('')}
-              </div>
-            </div>
-
-            <div class="p-3 rounded-2xl bg-[#142b24]/30 border border-[#2e5746] text-[10px] text-[#f8fafc] space-y-1">
-              <strong class="text-[#2e5746] block font-bold font-mono">RACK-Sicherheitscheck:</strong>
-              <p>Stelle vor dem Betreten des Schlafzimmers die Safeword-Ampel und die Verbandschere in Reichweite des Nachttischs bereit.</p>
-            </div>
-          </div>
-        `}
-
-        <!-- NAVIGATION & VOLLAUTOMATIK-TRIGGER -->
-        <div class="pt-3 border-t border-[#1e2638] flex items-center justify-between font-mono text-xs">
-          ${step > 1 ? `
-            <button type="button" onclick="HubToys.prevWizardStep()" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#1e2638] text-[#94a3b8] hover:text-white touch-btn">
-              ← Zurück
-            </button>
-          ` : `
-            <button type="button" onclick="HubToys.synthesizeFullAiBundle()" class="text-[#c5a880] hover:underline text-[10px]">
-              ✨ Vollautomatisch zusammenstellen
-            </button>
-          `}
-
-          <div class="flex items-center gap-2">
-            ${step < 3 ? `
-              <button type="button" onclick="HubToys.nextWizardStep()" class="px-4 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md">
-                Weiter →
-              </button>
-            ` : `
-              <button type="button" onclick="HubToys.saveWizardBundle()" class="px-5 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md">
-                Bundle sichern &amp; ins Staging ↗
-              </button>
-            `}
-          </div>
-        </div>
-
-      </div>
-    `;
-  }
-
-  async function suggestBundleTitle() {
-    const toys = [wizardState.step1ToyId, wizardState.step2ToyId, wizardState.step3ToyId].filter(Boolean).map(getToyById).filter(Boolean);
-    if (toys.length === 0) return;
-
-    let title = "Das Ritual der stummen Disziplin";
-    if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-      try {
-        const prompt = `Erstelle einen anspruchsvollen, erotischen und erwachsenen Namen (3-5 Worte) für ein BDSM-Session-Bundle bestehend aus: ${toys.map(t => t.name).join(', ')}. Kein Kitsch, keine Anführungszeichen.`;
-        const res = await window.AIAdapter.generateText({
-          systemPrompt: "Du bist der somatische Benennungs-Experte für TACTUS.",
-          userPrompt: prompt,
-          temperature: 0.7
-        });
-        if (res && res.trim().length > 3) title = res.trim().replace(/^["„']|["“']$/g, '');
-      } catch (e) {}
-    }
-
-    wizardState.bundleTitle = title;
-    const titleInput = document.getElementById('wizard-bundle-title');
-    if (titleInput) titleInput.value = title;
-    showToast("✓ Titel vorgeschlagen");
-  }
-
-  function saveWizardBundle() {
-    const titleInput = document.getElementById('wizard-bundle-title');
-    const title = titleInput ? (titleInput.value.trim() || 'Unser Session-Set') : 'Unser Session-Set';
-    const toyIds = [wizardState.step1ToyId, wizardState.step2ToyId, wizardState.step3ToyId].filter(Boolean);
-
-    if (toyIds.length === 0) {
-      showToast("Mindestens ein Gegenstand muss gewählt sein.");
-      return;
-    }
-
-    loadClosetState();
-    const newBundle = {
+    const bundleObj = {
       id: `bundle_${Date.now()}`,
-      title: title,
-      toyIds: toyIds,
+      name: bundleName.trim(),
+      toyIds: validIds,
       createdAt: Date.now()
     };
 
-    closetState.savedBundles.unshift(newBundle);
-    saveClosetState();
+    saveBundleToStorage(bundleObj);
 
-    applyBundleToStaging(encodeURIComponent(JSON.stringify(toyIds)));
-    closeBundleWizard();
-    renderClosetView();
-    showToast(`✓ Bundle „${title}“ gesichert &amp; vorgemerkt!`);
-  }
-
-  function deleteBundle(index) {
-    loadClosetState();
-    if (closetState.savedBundles[index]) {
-      closetState.savedBundles.splice(index, 1);
-      saveClosetState();
-      renderClosetView();
-      showToast("Bundle entfernt.");
-    }
-  }
-
-  async function synthesizeFullAiBundle() {
-    const ownedToys = getAllCatalogToys().filter(t => closetState.ownedIds.includes(t.id));
-    if (ownedToys.length === 0) return;
-
-    showToast("Synthetisiere passgenaues Set via KI...");
-    let picks = ownedToys.slice(0, 3).map(t => t.id);
-    let title = "Das Ritual der Hingabe";
-
-    if (window.AIAdapter && typeof window.AIAdapter.generateText === 'function') {
-      try {
-        const inventoryList = ownedToys.map(t => `- ID: ${t.id} | Name: ${t.name} | Kat: ${t.category}`).join('\n');
-        const prompt = `
-Wähle aus diesem realen Schrank-Inventar 2 bis 3 harmonierende Gegenstände für ein stimmiges Session-Set:
-${inventoryList}
-
-Antworte ausschließlich im JSON-Format:
-{
-  "bundleTitle": "Anspruchsvoller Titel",
-  "selectedToyIds": ["id1", "id2"]
-}
-`;
-        const res = await window.AIAdapter.generateText({
-          systemPrompt: "Du bist der somatische Ausrüstungs-Stratege für TACTUS.",
-          userPrompt: prompt,
-          temperature: 0.65,
-          returnJson: true
-        });
-        if (res && Array.isArray(res.selectedToyIds) && res.selectedToyIds.length > 0) {
-          picks = res.selectedToyIds.filter(id => ownedToys.some(t => t.id === id));
-          if (res.bundleTitle) title = res.bundleTitle;
-        }
-      } catch (e) {}
-    }
-
-    wizardState.step1ToyId = picks[0] || null;
-    wizardState.step2ToyId = picks[1] || null;
-    wizardState.step3ToyId = picks[2] || null;
-    wizardState.bundleTitle = title;
-    wizardState.step = 3;
-    renderWizardStep();
-    showToast("✓ Set erfolgreich synthetisiert");
-  }
-
-  function applyBundleToStaging(encodedIds) {
+    // Staging-Übergabe an session.html
     try {
-      const toyIds = JSON.parse(decodeURIComponent(encodedIds));
-      localStorage.setItem(STORAGE_KEY_ACTIVE_BUNDLE, JSON.stringify(toyIds));
+      localStorage.setItem(STORAGE_KEY_STAGING_BUNDLE, JSON.stringify(validIds));
+    } catch (e) {}
 
-      if (window.SessionStaging && typeof window.SessionStaging.getConfig === 'function') {
-        const cfg = window.SessionStaging.getConfig();
-        cfg.selectedEquipmentIds = toyIds;
+    showToast(`✓ Set „${bundleObj.name}“ gesichert & für Session übernommen!`);
+
+    // Schrank-Modal schließen falls geöffnet
+    const modal = document.getElementById('hub-toys-modal');
+    if (modal) modal.style.display = 'none';
+
+    // Weiterleitung zu session.html
+    if (window.location.pathname.includes('session.html')) {
+      if (window.SessionStaging && typeof window.SessionStaging.renderEquipment === 'function') {
+        window.SessionStaging.renderEquipment();
       }
-
-      showToast("✓ Bundle als Session-Set für Schlafzimmer vorgemerkt!");
-    } catch (e) {
-      showToast("Fehler bei der Bundle-Übernahme.");
+    } else {
+      setTimeout(() => {
+        window.location.href = 'session.html#view=staging';
+      }, 350);
     }
+  }
+
+  function stageExistingBundle(index) {
+    const bundles = getSavedBundles();
+    const b = bundles[index];
+    if (!b || !Array.isArray(b.toyIds)) return;
+
+    try {
+      localStorage.setItem(STORAGE_KEY_STAGING_BUNDLE, JSON.stringify(b.toyIds));
+    } catch (e) {}
+
+    showToast(`✓ Set „${b.name}“ für Schlafzimmer-Session übernommen!`);
+
+    const modal = document.getElementById('hub-toys-modal');
+    if (modal) modal.style.display = 'none';
+
+    setTimeout(() => {
+      window.location.href = 'session.html#view=staging';
+    }, 300);
   }
 
   const api = {
-    init: function(containerId) {
-      loadClosetState();
-      renderClosetView(containerId);
-    },
-    render: function() {
-      loadClosetState();
+    init: initClosetView,
+    open: openClosetModal,
+    render: renderClosetView,
+    switchMainTab: function(tabKey) {
+      currentMainTab = tabKey;
       renderClosetView();
-    },
-    open: function() {
-      loadClosetState();
-      renderClosetView();
-      const modal = document.getElementById('hub-toys-modal');
-      if (modal) modal.style.display = 'flex';
     },
     setCategoryFilter: function(catId) {
-      closetState.activeCategoryFilter = catId;
+      activeCategoryFilter = catId;
       renderClosetView();
     },
-    openToyInspector: openToyInspector,
-    closeToyInspector: closeToyInspector,
-    setInspectorTab: setInspectorTab,
-    triggerPhotoCapture: triggerPhotoCapture,
-    setRating: setRating,
-    saveCoupleAppeal: saveCoupleAppeal,
-    generateAiWisdom: generateAiWisdom,
-    adjustQuantity: adjustQuantity,
-    setAssignment: setAssignment,
-    confirmDeleteToy: confirmDeleteToy,
-    executeDeleteToy: executeDeleteToy,
-    openAddCustomModal: openAddCustomModal,
-    saveCustomToy: saveCustomToy,
-    openBundleWizard: openBundleWizard,
-    closeBundleWizard: closeBundleWizard,
-    setWizardCategory: setWizardCategory,
-    setWizardToy: setWizardToy,
-    nextWizardStep: nextWizardStep,
-    prevWizardStep: prevWizardStep,
-    suggestBundleTitle: suggestBundleTitle,
-    saveWizardBundle: saveWizardBundle,
-    deleteBundle: deleteBundle,
-    synthesizeFullAiBundle: synthesizeFullAiBundle,
-    applyBundleToStaging: applyBundleToStaging,
-    getAllOwned: () => {
-      loadClosetState();
-      const all = getAllCatalogToys();
-      return all.filter(t => closetState.ownedIds.includes(t.id));
-    }
+    setSearchQuery: function(val) {
+      activeSearchQuery = val;
+      renderClosetView();
+    },
+    toggleOwned: toggleToyOwned,
+    getOwned: getOwnedToyIds,
+    inspectToy: openToyInspector,
+    saveInspectorNote: function(toyId) {
+      const input = document.getElementById('inspector-input-note');
+      if (input) saveToyCustomNote(toyId, input.value);
+      const modal = document.getElementById('hub-toys-inspector-modal');
+      if (modal) modal.style.display = 'none';
+      showToast("Notiz gesichert ✓");
+      renderClosetView();
+    },
+    // Wizard API (Punkt #9)
+    setWizardSlotCount: function(count) {
+      wizardState.targetSlotCount = Math.max(3, Math.min(6, parseInt(count, 10) || 4));
+      if (wizardState.currentStepIndex >= wizardState.targetSlotCount) {
+        wizardState.currentStepIndex = wizardState.targetSlotCount - 1;
+      }
+      renderClosetView();
+    },
+    goToWizardStep: function(stepIndex) {
+      wizardState.currentStepIndex = stepIndex;
+      renderClosetView();
+    },
+    nextWizardStep: function() {
+      if (wizardState.currentStepIndex < wizardState.targetSlotCount - 1) {
+        wizardState.currentStepIndex++;
+        renderClosetView();
+      }
+    },
+    prevWizardStep: function() {
+      if (wizardState.currentStepIndex > 0) {
+        wizardState.currentStepIndex--;
+        renderClosetView();
+      }
+    },
+    assignToyToSlot: assignToyToSlot,
+    removeToyFromSlot: removeToyFromSlot,
+    finalizeAndStageBundle: finalizeAndStageBundle,
+    stageExistingBundle: stageExistingBundle,
+    deleteBundle: deleteSavedBundle
   };
 
   window.HubToys = api;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      api.init();
+      const container = document.getElementById('hub-toys-closet-container');
+      if (container) api.init('hub-toys-closet-container');
     });
   } else {
-    api.init();
+    const container = document.getElementById('hub-toys-closet-container');
+    if (container) api.init('hub-toys-closet-container');
   }
 
-})(window);
+})(typeof window !== 'undefined' ? window : this);
