@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>TACTUS · Schlafzimmer-Staging &amp; Live-Regie</title>
+  <title>TACTUS · Schlafzimmer-Staging &amp; Live-Regie (V3.0 Haute-Horlogerie)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Apple Web-App Metatags & Touch-Icon -->
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
@@ -49,12 +49,6 @@
             cognac: '#8a5232',
             cognacLight: '#b3734a',
             cognacDark: '#4a2818',
-            rackGreen: '#15803d',
-            rackGreenLight: '#22c55e',
-            rackYellow: '#ca8a04',
-            rackYellowLight: '#eab308',
-            rackRed: '#dc2626',
-            rackRedLight: '#ef4444',
             platinum: '#f8fafc',
             silverMuted: '#94a3b8'
           },
@@ -86,33 +80,60 @@
       padding-right: var(--sar);
       min-height: 100dvh;
     }
-    .touch-pad {
+    .touch-btn {
       min-height: 44px;
       min-width: 44px;
       transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
       -webkit-user-select: none;
       user-select: none;
     }
-    .touch-pad:active {
-      transform: scale(0.985);
-    }
+    .touch-btn:active { transform: scale(0.985); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    #session-live-dimmer-overlay {
+    @keyframes countdownBeat {
+      0% { transform: scale(1.15); filter: drop-shadow(0 0 75px rgba(197, 168, 128, 0.95)); }
+      38% { transform: scale(0.95); filter: drop-shadow(0 0 25px rgba(197, 168, 128, 0.4)); }
+      100% { transform: scale(1.0); filter: drop-shadow(0 0 45px rgba(197, 168, 128, 0.6)); }
+    }
+    .countdown-beat-active {
+      animation: countdownBeat var(--beat-duration, 1.2s) cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+    }
+
+    @keyframes climaxPulse {
+      0%, 100% { transform: scale(1.0); filter: drop-shadow(0 0 60px rgba(223, 202, 169, 0.8)); }
+      50% { transform: scale(1.12); filter: drop-shadow(0 0 110px rgba(223, 202, 169, 1)); }
+    }
+    .climax-pulse-active {
+      animation: climaxPulse 1.2s ease-in-out infinite;
+    }
+
+    #nightstand-dimmer-layer {
       pointer-events: none;
-      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.4s ease;
+    }
+    body.nightstand-dimmed #nightstand-dimmer-layer {
+      pointer-events: auto;
+      opacity: 0.85;
     }
   </style>
 </head>
 <body class="min-h-[100dvh] flex flex-col justify-between selection:bg-champagne/30 selection:text-white">
 
+  <!-- 85% OLED-NACHTTISCH DIMMER OVERLAY -->
+  <div id="nightstand-dimmer-layer" onclick="SessionRuntime.toggleNightstandDimmer()" class="fixed inset-0 z-[120] bg-black opacity-0 transition-opacity flex items-center justify-center cursor-pointer select-none">
+    <div class="px-5 py-3 rounded-2xl bg-[#090d14] border border-[#c5a880]/50 text-[#c5a880] text-xs font-mono font-bold shadow-2xl flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-[#c5a880] animate-pulse"></span>
+      <span>Nachttisch-Dimmer aktiv · Tippen zum Aufhellen</span>
+    </div>
+  </div>
+
   <!-- ARRETIERTER 56px MASTER-HEADER (GESETZ 8 & 18 · ZERO PIXEL-JUMPING · COLLISION-FREE) -->
   <header class="sticky top-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#1e2638]/60 h-14 flex items-center">
     <div class="w-full max-w-5xl mx-auto px-4 flex items-center justify-between gap-2">
       
-      <!-- Brand-Einheit mit TACTUS Logo & Status (Collision-free mit min-w-0) -->
-      <a href="index.html#view=hub" class="flex items-center space-x-3 cursor-pointer group min-w-0 flex-1 mr-1 touch-pad" style="min-height: 44px;">
+      <!-- Brand-Einheit mit TACTUS Logo & Status -->
+      <a href="index.html#view=hub" class="flex items-center space-x-3 cursor-pointer group min-w-0 flex-1 mr-1 touch-btn" style="min-height: 44px;">
         <div class="w-9 h-9 rounded-xl bg-[#090d14] border border-[#c5a880]/40 flex items-center justify-center p-1 shadow-sm group-hover:border-[#c5a880] transition-colors flex-shrink-0 overflow-hidden">
           <img src="assets/logo.png" onerror="this.onerror=null; this.src='img/tactus_logo.png'; this.style.display='none'; this.nextElementSibling.style.display='block';" alt="TACTUS Logo" class="w-full h-full object-contain" />
           <svg class="w-5 h-5 text-[#c5a880] hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -123,42 +144,43 @@
         <div class="min-w-0 truncate">
           <div class="flex items-center gap-1.5">
             <span class="font-serif text-sm sm:text-base tracking-widest text-[#f8fafc] font-semibold leading-none truncate">TACTUS</span>
+            <span id="session-active-badge" class="hidden px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#450a0a] border border-[#991b1b] text-white uppercase font-bold flex-shrink-0 animate-pulse">LIVE</span>
             <span id="session-header-status-badge" class="px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0">REGIE</span>
           </div>
-          <span class="text-[9.5px] font-mono text-[#94a3b8] block leading-none mt-1 truncate" id="session-header-subline">Top-First Kalibrierung &amp; Live-Führung</span>
+          <span class="text-[9.5px] font-mono text-[#94a3b8] block leading-none mt-1 truncate" id="session-roles-subtitle">Top: Partner 2 · Bottom: Partner 1</span>
         </div>
       </a>
 
-      <!-- Desktop Quick Actions (Standardisierter 56px Master-Header Cluster) -->
+      <!-- Desktop Quick Actions (Standardisierter 5-Button Master Cluster nach Gesetz 8 & 18) -->
       <div class="hidden md:flex items-center space-x-2 flex-shrink-0">
-        <!-- In-App Cache-Buster & Reload Button -->
-        <button type="button" onclick="SessionRuntime.forceAppReload()" class="w-10 h-10 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-pad" style="min-height: 40px;" title="App frisch vom Server neu laden (Cache leeren)">
+        <!-- 1. In-App Cache-Buster & Reload Button -->
+        <button type="button" onclick="SessionRuntime.forceAppReload()" class="w-10 h-10 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-btn" style="min-height: 40px;" title="App frisch vom Server neu laden (Cache leeren)">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
           </svg>
         </button>
 
-        <!-- Switch-Rollenanzeige mit 1-Tap Umschaltung -->
-        <button type="button" onclick="SessionRuntime.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#2a364f] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-pad" style="min-height: 40px;" title="Rollenwechsel (Top / Bottom)">
+        <!-- 2. Switch-Rollenanzeige mit 1-Tap Umschaltung -->
+        <button type="button" onclick="SessionRuntime.toggleActiveRole()" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] border border-[#2a364f] text-[11px] font-mono text-[#94a3b8] hover:text-[#f8fafc] hover:border-[#c5a880]/40 transition flex items-center gap-1.5 touch-btn" style="min-height: 40px;" title="Rollenwechsel (Top / Bottom)">
           <span class="w-1.5 h-1.5 rounded-full bg-[#c5a880]" id="role-indicator-dot"></span>
           <span id="active-role-text" class="text-[#f8fafc] font-semibold">Top</span>
           <span class="text-[9px] text-[#94a3b8]/60" id="role-switch-subline">⇄ Switch</span>
         </button>
 
-        <!-- Ausrüstungsschrank Button -->
-        <button type="button" onclick="if(window.HubToys) window.HubToys.open();" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-pad" style="min-height: 40px;" title="Ausrüstungsschrank öffnen">
+        <!-- 3. Ausrüstungsschrank Button -->
+        <button type="button" onclick="if(window.HubToys && typeof window.HubToys.open==='function') window.HubToys.open();" class="px-2.5 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] text-xs font-mono font-medium flex items-center gap-1.5 touch-btn" style="min-height: 40px;" title="Ausrüstungsschrank öffnen">
           <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
           <span>Schrank</span>
         </button>
 
-        <!-- Konditionales RACK Break-Glass (Rollenspezifisch nur für den verschlossenen Bottom) -->
-        <button type="button" id="header-btn-break-glass" onclick="SessionRuntime.openBreakGlass()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-mono text-xs font-bold flex items-center gap-1 touch-pad shadow-sm animate-pulse" style="min-height: 40px;" title="RACK Notfall-Öffnung (Break-Glass)">
+        <!-- 4. Konditionales RACK Break-Glass (Rollenspezifisch nur für den verschlossenen Bottom) -->
+        <button type="button" id="header-btn-break-glass" onclick="SessionRuntime.openBreakGlass()" style="display: none;" class="px-2.5 py-1.5 rounded-xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-mono text-xs font-bold flex items-center gap-1 touch-btn shadow-sm animate-pulse" style="min-height: 40px;" title="RACK Notfall-Öffnung (Break-Glass)">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
           <span>Notfall</span>
         </button>
 
-        <!-- Universal-Settings Button (Master-Header Standard) -->
-        <button type="button" onclick="SessionRuntime.openAccountModal()" class="w-10 h-10 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-pad" style="min-height: 40px;" title="Einstellungen &amp; Account">
+        <!-- 5. Universal-Settings Button (Master-Header Standard) -->
+        <button type="button" onclick="SessionRuntime.openAccountModal()" class="w-10 h-10 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center transition touch-btn" style="min-height: 40px;" title="Einstellungen &amp; Account">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.004.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.241.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
       </div>
@@ -166,19 +188,19 @@
       <!-- Mobile Actions (iPhone 15 Pro optimiert mit Touch-Targets >= 44px) -->
       <div class="flex md:hidden items-center gap-1.5 flex-shrink-0">
         <!-- In-App Reload Mobile -->
-        <button type="button" onclick="SessionRuntime.forceAppReload()" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center touch-pad" title="Neu laden / Update prüfen">
+        <button type="button" onclick="SessionRuntime.forceAppReload()" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center justify-center touch-btn" title="Neu laden / Update prüfen">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
           </svg>
         </button>
 
         <!-- Konditionales Break-Glass Mobile -->
-        <button type="button" id="header-btn-break-glass-mobile" onclick="SessionRuntime.openBreakGlass()" style="display: none;" class="w-10 h-10 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white flex items-center justify-center touch-pad animate-pulse" title="Notfall">
+        <button type="button" id="header-btn-break-glass-mobile" onclick="SessionRuntime.openBreakGlass()" style="display: none;" class="w-10 h-10 rounded-xl bg-[#450a0a] border border-[#991b1b] text-white flex items-center justify-center touch-btn animate-pulse" title="Notfall">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z"/></svg>
         </button>
 
         <!-- Mobile Drawer Menü -->
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#f8fafc] flex items-center justify-center font-bold text-base touch-pad shadow-sm" title="Menü">
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='flex'" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#f8fafc] flex items-center justify-center font-bold text-base touch-btn shadow-sm" title="Menü">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
         </button>
       </div>
@@ -189,12 +211,12 @@
   <!-- SUB-NAVIGATION DER 6 HAUPT-COCKPITS (DESKTOP) -->
   <nav class="hidden md:block bg-black border-b border-[#1e2638]/40">
     <div class="max-w-5xl mx-auto px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-mono">
-      <a href="index.html#view=hub" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-pad flex items-center" style="min-height: 40px;">Start-Hub</a>
-      <a href="index.html#view=survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-pad flex items-center" style="min-height: 40px;">Fragebogen (500 Items)</a>
-      <a href="analyse.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-pad flex items-center" style="min-height: 40px;">Paar-Analyse</a>
-      <a href="chat.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-pad flex items-center" style="min-height: 40px;">Paar-Stream</a>
-      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-pad flex items-center" style="min-height: 40px;">Das Protokoll</a>
-      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-pad flex items-center" style="min-height: 40px;">Guide</a>
+      <a href="index.html#view=hub" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Start-Hub</a>
+      <a href="index.html#view=survey" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Fragebogen (505 Items)</a>
+      <a href="analyse.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Paar-Analyse</a>
+      <a href="chat.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Paar-Stream</a>
+      <a href="protocol.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Das Protokoll</a>
+      <a href="guide.html" class="px-3.5 py-2 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] transition whitespace-nowrap shrink-0 flex-shrink-0 touch-btn flex items-center" style="min-height: 40px;">Guide</a>
       <span class="px-3.5 py-2 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-bold shadow-xs whitespace-nowrap shrink-0 flex-shrink-0 cursor-default flex items-center" style="min-height: 40px;">Schlafzimmer-Regie ✓</span>
     </div>
   </nav>
@@ -212,31 +234,31 @@
             <span class="text-[10px] text-[#94a3b8]">Schlafzimmer-Regie</span>
           </div>
         </div>
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-pad">✕</button>
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-10 h-10 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <div class="space-y-2 pt-1">
-        <a href="index.html#view=hub" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+        <a href="index.html#view=hub" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#f8fafc]">Start-Hub</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="index.html#view=survey" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
-          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (500 Items)</span>
+        <a href="index.html#view=survey" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
+          <span class="text-xs font-bold text-[#f8fafc]">Fragebogen (505 Items)</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="analyse.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+        <a href="analyse.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#94a3b8]">Paar-Analyse &amp; Synergie</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="chat.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+        <a href="chat.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#94a3b8]">E2EE Paar-Stream</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="protocol.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+        <a href="protocol.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#94a3b8]">Das Protokoll &amp; Vertrag</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
-        <a href="guide.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad block">
+        <a href="guide.html" class="w-full p-3.5 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn block">
           <span class="text-xs font-bold text-[#94a3b8]">BDSM- &amp; Vertrauens-Guide</span>
           <span class="text-[#94a3b8]">→</span>
         </a>
@@ -247,149 +269,589 @@
       </div>
 
       <div class="pt-2 border-t border-[#2a364f] space-y-2">
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; SessionRuntime.openAccountModal();" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad">
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; SessionRuntime.openAccountModal();" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn">
           <span class="text-xs font-bold text-[#c5a880] flex items-center gap-2">
             <span>⚙ Einstellungen &amp; Account</span>
           </span>
           <span class="text-[10px] text-[#94a3b8]">Profil</span>
         </button>
 
-        <button type="button" onclick="SessionRuntime.forceAppReload()" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-pad">
+        <button type="button" onclick="SessionRuntime.forceAppReload()" class="w-full p-3 rounded-2xl bg-[#090d14] border border-[#2a364f] text-left flex items-center justify-between touch-btn">
           <span class="text-xs font-bold text-white flex items-center gap-2">
             <span>App frisch neu laden ↺</span>
           </span>
           <span class="text-[10px] text-[#c5a880] font-mono">Cache leeren</span>
         </button>
 
-        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; SessionRuntime.openBreakGlass();" class="w-full p-3 rounded-2xl bg-[#450a0a] border border-[#991b1b] text-white text-left space-y-0.5 touch-pad shadow-md">
+        <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'; SessionRuntime.openBreakGlass();" class="w-full p-3 rounded-2xl bg-[#450a0a] border border-[#991b1b] text-white text-left space-y-0.5 touch-btn shadow-md">
           <strong class="text-xs block font-bold text-white">Notfall-Öffnung (Break-Glass)</strong>
           <span class="text-[10px] text-white/80 block">RACK-Sicherheitsprotokoll bei Schwellung oder Taubheit</span>
         </button>
       </div>
     </div>
     <div class="pt-4 border-t border-[#2a364f] text-center pb-[max(env(safe-area-inset-bottom),16px)]">
-      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-3 bg-[#090d14] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-pad">Schließen ✕</button>
+      <button type="button" onclick="document.getElementById('mobile-menu-drawer').style.display='none'" class="w-full py-3 bg-[#090d14] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen ✕</button>
     </div>
   </div>
 
-  <!-- MAIN CONTAINER MIT DEN 4 BÜHNEN -->
   <main class="max-w-4xl mx-auto p-3.5 sm:p-6 flex-1 w-full space-y-4">
 
-    <!-- SUB-NAV TABS DER 4 SCHLAFZIMMER-BÜHNEN (STRENG SQUISH-FREI DURCH SHRINK-0) -->
-    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-[#2a364f] font-mono text-xs">
-      <button type="button" onclick="SessionRuntime.switchStage('staging')" id="tab-stage-staging" class="px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-pad shadow-sm whitespace-nowrap shrink-0 flex-shrink-0">
-        1. Staging
-      </button>
-      <button type="button" onclick="SessionRuntime.switchStage('live')" id="tab-stage-live" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-pad whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-[#991b1b]" id="live-stage-indicator"></span>
-        <span>2. Live-Regie</span>
-      </button>
-      <button type="button" onclick="SessionRuntime.switchStage('edging')" id="tab-stage-edging" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#b3734a] hover:text-[#f8fafc] touch-pad whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1">
-        <span>3. Schwellen (Edging)</span>
-      </button>
-      <button type="button" onclick="SessionRuntime.switchStage('logbook')" id="tab-stage-logbook" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#d4af37] hover:text-[#f8fafc] touch-pad whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1.5">
-        <svg class="w-3.5 h-3.5 text-[#d4af37]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-        <span>4. Logbuch</span>
-      </button>
+    <!-- SUB-BAR FÜR REGIE: TABU-GRENZEN & LOGBUCH-SCHNELLZUGRIFF -->
+    <div class="flex items-center justify-between border-b border-[#2a364f] pb-2 font-mono text-xs">
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="SessionLive.openTabus()" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#991b1b] text-white font-bold flex items-center gap-1.5 touch-btn shadow-sm" title="Heutige Tabu-Grenzen anzeigen">
+          <span class="w-2 h-2 rounded-full bg-[#ef4444] animate-pulse"></span>
+          <span>Tabu-Grenzen (<span id="session-tabu-counter">0</span>)</span>
+        </button>
+        <button type="button" onclick="SessionLive.openDiary()" class="px-3 py-1.5 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#c5a880] font-bold flex items-center gap-1.5 touch-btn shadow-sm" title="Logbuch &amp; Chronik">
+          <span>📜</span><span>Logbuch</span>
+        </button>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="text-[10px] text-[#94a3b8]" id="staging-top-indicator">Regie-Status: Bereit</span>
+      </div>
     </div>
 
-    <!-- INTERAKTIVES AUDIO- & SOUNDSCAPE-COCKPIT (FÜR LIVE-REGIE & SCHWELLENFÜHRUNG) -->
-    <div id="session-live-audio-bar" class="p-3 sm:p-4 rounded-3xl bg-[#090d14] border border-[#2a364f] space-y-2.5 shadow-xl text-xs font-mono">
-      <div class="flex items-center justify-between border-b border-[#2a364f]/60 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-[#c5a880] animate-pulse"></span>
-          <strong class="text-xs font-bold text-[#f8fafc]">Klang- &amp; Audio-Regie im Raum:</strong>
+    <!-- 1. PORTAL SETUP CONTAINER (3 SCHRITTE) -->
+    <div id="portal-setup-container" class="space-y-4">
+
+      <!-- STEP 1: ROLLENVERTEILUNG -->
+      <section id="portal-step-1" class="space-y-4 animate-fade-in font-sans">
+        <div class="rounded-3xl p-5 sm:p-7 border border-[#2a364f] shadow-2xl relative overflow-hidden bg-[#090d14]">
+          <div class="max-w-xl space-y-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
+              Schritt 1 von 3: Rollen für heute
+            </span>
+            <h2 class="text-base sm:text-2xl font-serif text-[#f8fafc] font-normal leading-tight">
+              Wer übernimmt heute Abend die Führung?
+            </h2>
+            <p class="text-xs text-[#94a3b8] leading-relaxed">
+              Legt fest, wer heute als aktiver Top die Verantwortung und Regie führt, und wer sich als Bottom vertrauensvoll fallenlassen darf.
+            </p>
+          </div>
         </div>
-        <div class="flex items-center gap-1.5">
-          <!-- 1-Tap 85% OLED Nachttisch-Dimmer Button -->
-          <button type="button" onclick="SessionRuntime.toggleDimmer()" class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-[#c5a880] flex items-center gap-1 touch-pad text-[10px]" title="Nachttisch-Dimmer">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
-            <span>Dimmer</span>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <button type="button" onclick="SessionStaging.selectRoleSetup('default')" id="btn-role-setup-default" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#000000] border-[#c5a880] shadow-md block w-full">
+            <div class="flex items-center justify-between font-mono">
+              <span class="text-xs font-bold uppercase text-[#c5a880] tracking-wide">Führung: <span id="portal-name-top-def">Partner 2</span></span>
+              <span id="badge-role-default" class="text-xs font-bold text-[#c5a880]">✓ Aktiv</span>
+            </div>
+            <strong class="text-sm text-white block font-serif">👑 <span id="portal-name-top-def-sub">Partner 2</span> führt als Top</strong>
+            <p class="text-[11px] text-[#94a3b8] leading-snug">🧎 <span id="portal-name-sub-def">Partner 1</span> empfängt als Bottom und gibt die Kontrolle ab.</p>
           </button>
 
-          <!-- AirPlay / Android Speaker Routing -->
-          <button type="button" onclick="if(window.SessionAudio && window.SessionAudio.triggerSpeakerPicker) window.SessionAudio.triggerSpeakerPicker();" class="px-2.5 py-1 rounded-xl bg-[#142b24] border border-[#2e5746] text-[#2e5746] hover:text-white flex items-center gap-1 touch-pad text-[10px] font-bold" title="Lautsprecher koppeln (AirPlay / Cast)">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
+          <button type="button" onclick="SessionStaging.selectRoleSetup('reversed')" id="btn-role-setup-reversed" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full">
+            <div class="flex items-center justify-between font-mono">
+              <span class="text-xs font-bold uppercase text-[#94a3b8] tracking-wide">Führung: <span id="portal-name-top-rev">Partner 1</span></span>
+              <span id="badge-role-reversed" class="text-xs font-bold text-[#94a3b8]">○</span>
+            </div>
+            <strong class="text-sm text-white block font-serif">👑 <span id="portal-name-top-rev-sub">Partner 1</span> führt als Top</strong>
+            <p class="text-[11px] text-[#94a3b8] leading-snug">🧎 <span id="portal-name-sub-rev">Partner 2</span> empfängt als Bottom und gibt die Kontrolle ab.</p>
+          </button>
+        </div>
+
+        <div class="flex justify-end pt-2 font-mono text-xs">
+          <button type="button" onclick="SessionStaging.goToStep(2)" class="px-6 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md flex items-center gap-1.5">
+            <span>Weiter zu Schritt 2: Staging &amp; Stimmung →</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 2: NACHTTISCH-STAGING & STIMMUNG -->
+      <section id="portal-step-2" class="hidden space-y-4 animate-fade-in font-sans">
+        <div class="rounded-3xl p-5 border border-[#2a364f] bg-[#090d14] space-y-1 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
+              Schritt 2 von 3: Vorbereitung
+            </span>
+            <button type="button" onclick="SessionStaging.goToStep(1)" class="text-xs text-[#94a3b8] hover:text-white font-mono">← Rollen ändern</button>
+          </div>
+          <h2 class="text-base sm:text-lg font-serif text-white font-bold">Nachttisch-Staging &amp; Tagesenergie</h2>
+          <p class="text-xs text-[#94a3b8]">Wählt aus eurem Schrank, was heute bereitliegt, und stimmt euer Energielevel ab.</p>
+        </div>
+
+        <!-- ENERGIE SLIDER -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-sans">
+          <div class="rounded-2xl p-4 border border-[#2a364f] bg-[#000000] space-y-2">
+            <div class="flex items-center justify-between">
+              <strong class="text-white text-xs block font-bold">👑 Top-Energie:</strong>
+              <span id="label-energy-top" class="text-[#c5a880] font-mono font-bold">4 / 5</span>
+            </div>
+            <p id="desc-energy-top" class="text-[11px] text-[#94a3b8]">Präsent &amp; fokussiert</p>
+            <input type="range" min="1" max="5" value="4" oninput="SessionStaging.updateEnergy('top', this.value)" class="w-full accent-[#c5a880] cursor-pointer">
+          </div>
+
+          <div class="rounded-2xl p-4 border border-[#2a364f] bg-[#000000] space-y-2">
+            <div class="flex items-center justify-between">
+              <strong class="text-white text-xs block font-bold">🧎 Bottom-Hingabe:</strong>
+              <span id="label-energy-sub" class="text-[#b3734a] font-mono font-bold">4 / 5</span>
+            </div>
+            <p id="desc-energy-sub" class="text-[11px] text-[#94a3b8]">Volle Hingabe &amp; Kraft</p>
+            <input type="range" min="1" max="5" value="4" oninput="SessionStaging.updateEnergy('sub', this.value)" class="w-full accent-[#b3734a] cursor-pointer">
+          </div>
+        </div>
+
+        <!-- INTENSITÄTS-STUFE (1-10) -->
+        <div class="rounded-2xl p-4 border border-[#2a364f] bg-[#000000] space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <strong class="text-white text-xs block font-bold">Gewünschte Intensität / Tiefe:</strong>
+            <span id="label-session-depth" class="text-[#c5a880] font-mono font-bold">Stufe 7 / 10: Intensive Führung mit Fesselung &amp; Disziplin</span>
+          </div>
+          <p id="desc-session-depth" class="text-[11px] text-[#94a3b8]">Abgestimmte Intensität für das Drehbuch und die Disziplinierung.</p>
+          <input type="range" min="1" max="10" value="7" oninput="SessionStaging.updateDepth(this.value)" class="w-full accent-[#c5a880] cursor-pointer">
+        </div>
+
+        <!-- AUSRÜSTUNG FÜR HEUTE ABEND -->
+        <div class="p-4 rounded-2xl bg-[#090d14] border border-[#2a364f] space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f] pb-2">
+            <div>
+              <strong class="text-white block text-xs font-serif font-bold">Ausrüstung für heute Abend (Nachttisch-Staging)</strong>
+              <p class="text-[10.5px] text-[#94a3b8]">Nur Gegenstände aus eurem Schrank. Wählt aus, was heute griffbereit liegt.</p>
+            </div>
+            <div class="flex items-center gap-1.5 flex-wrap font-mono text-[10px]">
+              <button type="button" onclick="SessionStaging.openNewToyQuickAdd()" class="px-2.5 py-1 rounded-xl bg-[#c5a880] text-black font-bold touch-btn shadow-sm">
+                + Neuanschaffung
+              </button>
+              <button type="button" onclick="SessionStaging.selectPreset('all')" class="px-2 py-1 rounded-lg bg-[#000000] border border-[#2a364f] text-[#c5a880] font-bold touch-btn">
+                ✨ Alle Toys
+              </button>
+              <button type="button" onclick="SessionStaging.selectPreset('random3')" class="px-2 py-1 rounded-lg bg-[#000000] border border-[#2a364f] text-[#dfcaa9] font-bold touch-btn">
+                🎲 Zufall (3)
+              </button>
+              <button type="button" onclick="SessionStaging.selectPreset('bare')" class="px-2 py-1 rounded-lg bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold touch-btn">
+                🛏️ Nur Hände
+              </button>
+            </div>
+          </div>
+
+          <!-- QUICK-ADD PANEL FÜR NEUANSCHAFFUNGEN -->
+          <div id="staging-quick-add-panel" class="hidden p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/70 space-y-2 animate-fade-in font-sans">
+            <div class="flex items-center justify-between border-b border-[#2a364f] pb-1">
+              <strong class="text-xs text-[#c5a880] flex items-center gap-1 font-bold">
+                <span>✨</span><span>Neuanschaffung fest im Schrank inventarisieren</span>
+              </strong>
+              <button type="button" onclick="SessionStaging.closeNewToyQuickAdd()" class="text-[#94a3b8] hover:text-white text-xs font-bold">✕</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs">
+              <div class="sm:col-span-2">
+                <input type="text" id="staging-quick-toy-name" placeholder="z. B. Lederflogger, Pfauenfeder, Holzklammern..." class="w-full text-xs p-2 bg-[#090d14] border border-[#2a364f] rounded-xl text-white placeholder-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none">
+              </div>
+              <div>
+                <select id="staging-quick-toy-cat" class="w-full text-xs p-2 bg-[#090d14] border border-[#2a364f] rounded-xl text-white font-medium focus:border-[#c5a880]">
+                  <option value="bondage">Fesselung &amp; Seile</option>
+                  <option value="impact">Impact &amp; Zucht</option>
+                  <option value="sensory">Sensorik &amp; Masken</option>
+                  <option value="chastity">Keuschheit &amp; Genital</option>
+                  <option value="furniture">Möbel &amp; Pranger</option>
+                  <option value="care">Pflege &amp; Aftercare</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-0.5 font-mono text-xs">
+              <button type="button" onclick="SessionStaging.closeNewToyQuickAdd()" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#2a364f] text-[#94a3b8]">Abbrechen</button>
+              <button type="button" onclick="SessionStaging.saveNewToyFromStaging()" class="px-3.5 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold shadow-md">Im Schrank anlegen &amp; bereitstellen ✓</button>
+            </div>
+          </div>
+
+          <!-- KATEGORIE TABS DES NACHTTISCHS -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 font-mono text-[10px]">
+            <button type="button" onclick="SessionStaging.switchTab('all')" id="btn-stag-tab-all" class="px-3 py-1.5 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn whitespace-nowrap shadow-sm">
+              ✨ Alle (<span id="stag-count-all">0</span>)
+            </button>
+            <button type="button" onclick="SessionStaging.switchTab('bondage')" id="btn-stag-tab-bondage" class="px-2.5 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] touch-btn whitespace-nowrap">
+              Fesselung (<span id="stag-count-bondage">0</span>)
+            </button>
+            <button type="button" onclick="SessionStaging.switchTab('impact')" id="btn-stag-tab-impact" class="px-2.5 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] touch-btn whitespace-nowrap">
+              Impact (<span id="stag-count-impact">0</span>)
+            </button>
+            <button type="button" onclick="SessionStaging.switchTab('sensory')" id="btn-stag-tab-sensory" class="px-2.5 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] touch-btn whitespace-nowrap">
+              Sensorik (<span id="stag-count-sensory">0</span>)
+            </button>
+            <button type="button" onclick="SessionStaging.switchTab('chastity')" id="btn-stag-tab-chastity" class="px-2.5 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] touch-btn whitespace-nowrap">
+              Keuschheit (<span id="stag-count-chastity">0</span>)
+            </button>
+            <button type="button" onclick="SessionStaging.switchTab('furniture')" id="btn-stag-tab-furniture" class="px-2.5 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] touch-btn whitespace-nowrap">
+              Möbel (<span id="stag-count-furniture">0</span>)
+            </button>
+            <button type="button" onclick="SessionStaging.switchTab('care')" id="btn-stag-tab-care" class="px-2.5 py-1.5 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] touch-btn whitespace-nowrap">
+              Care (<span id="stag-count-care">0</span>)
+            </button>
+          </div>
+
+          <div id="session-staging-equipment-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-56 overflow-y-auto pr-1"></div>
+
+          <div class="flex items-center justify-between pt-1 border-t border-[#2a364f] text-[10.5px] font-mono">
+            <span class="text-[#94a3b8]">Heute bereitgelegt: <strong id="staging-active-count" class="text-[#c5a880] font-bold">0</strong> von <span id="staging-closet-total-count" class="text-white font-bold">0</span> Schrank-Toys</span>
+            <button type="button" onclick="if(window.HubToys && typeof window.HubToys.open==='function') window.HubToys.open();" class="text-[#c5a880] hover:underline font-bold touch-btn">
+              Schrank-Inventar verwalten ↗
+            </button>
+          </div>
+        </div>
+
+        <!-- AKUSTISCHE FÜHRUNG & ECHTE GEMINI-STIMMEN MIT PROBEHÖREN -->
+        <div class="rounded-2xl p-4 border border-[#2a364f] bg-[#000000] space-y-3 text-xs font-sans">
+          <div class="flex items-center justify-between">
+            <div>
+              <strong class="text-white text-xs block font-bold">Akustische Führung &amp; Echte Gemini-Regiestimme:</strong>
+              <p class="text-[10.5px] text-[#94a3b8]">Gemini-Sprachausgabe via SessionVoice (Despina, Aoede, Enceladus, Fenrir).</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="session-voice-assist-toggle" checked onchange="SessionStaging.toggleVoiceAssist(this.checked)" class="sr-only peer">
+              <div class="w-9 h-5 bg-[#101622] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#c5a880]"></div>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono">
+            <div>
+              <label class="text-[10px] text-[#94a3b8] uppercase block mb-0.5 font-bold">Stimme wählen:</label>
+              <select id="session-voice-select" onchange="SessionStaging.changeVoice(this.value)" class="w-full text-xs p-2 bg-[#090d14] border border-[#2a364f] rounded-xl text-white font-medium focus:border-[#c5a880]">
+                <option value="Despina">Despina (Sinnlich-dunkle Frauenstimme)</option>
+                <option value="Aoede">Aoede (Fordernde Herrin)</option>
+                <option value="Enceladus">Enceladus (Tiefe, befehlende Männerstimme)</option>
+                <option value="Fenrir">Fenrir (Strenge, raue Autorität)</option>
+              </select>
+            </div>
+            <div class="flex items-end gap-1.5">
+              <button type="button" id="btn-preview-step2" onclick="SessionStaging.testVoiceSample()" class="flex-1 py-2 px-3 rounded-xl bg-[#090d14] hover:bg-[#101622] border border-[#c5a880] text-[#c5a880] font-bold text-xs touch-btn shadow-sm">
+                🔊 Probehören (5s)
+              </button>
+              <button type="button" onclick="SessionStaging.applyPunishmentVoicePreset()" class="py-2 px-2.5 rounded-xl bg-[#090d14] border border-[#991b1b] text-white font-bold text-xs touch-btn" title="Straf-Preset: Enceladus">
+                ⚡ Zucht-Preset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-2 font-mono text-xs">
+          <button type="button" onclick="SessionStaging.goToStep(1)" class="text-xs text-[#94a3b8] hover:text-white font-bold">← Zurück</button>
+          <button type="button" onclick="SessionStaging.goToStep(3)" class="px-6 py-2.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md flex items-center gap-1.5">
+            <span>Weiter zu Schritt 3: Modus &amp; Drehbuch →</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 3: MODUS & DREHBUCH -->
+      <section id="portal-step-3" class="hidden space-y-4 animate-fade-in font-sans">
+        <div class="rounded-3xl p-5 border border-[#2a364f] bg-[#090d14] space-y-1 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
+              Schritt 3 von 3: Modus &amp; Drehbuch
+            </span>
+            <button type="button" onclick="SessionStaging.goToStep(2)" class="text-xs text-[#94a3b8] hover:text-white font-mono">← Ausrüstung anpassen</button>
+          </div>
+          <h2 class="text-base sm:text-lg font-serif text-white font-bold">Wählt eure Spielvariante für heute</h2>
+          <p class="text-xs text-[#94a3b8]">Wählt zwischen dem geführten 4-Phasen-Drehbuch und freiem Flow.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <button type="button" id="btn-mode-guided" onclick="SessionStaging.selectMode('guided')" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#000000] border-[#c5a880] shadow-md block w-full">
+            <div class="flex items-center justify-between font-mono">
+              <strong class="text-white text-xs block font-bold">1. Geführtes Drehbuch</strong>
+              <span id="badge-mode-guided" class="text-[#c5a880] font-bold text-xs">✓ Gewählt</span>
+            </div>
+            <p class="text-[11px] text-[#f8fafc] leading-relaxed">
+              Schritt-für-Schritt durch 4 Phasen. Die App blendet passende Führungsanweisungen für Top und Bottom ein und führt euch durch den Abend.
+            </p>
+          </button>
+
+          <button type="button" id="btn-mode-free" onclick="SessionStaging.selectMode('free')" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full">
+            <div class="flex items-center justify-between font-mono">
+              <strong class="text-white text-xs block font-bold">2. Freier Flow</strong>
+              <span id="badge-mode-free" class="text-[#94a3b8] font-bold text-xs">○</span>
+            </div>
+            <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+              Keine starren Drehbuchschritte. Ihr bestimmt den Ablauf spontan selbst und nutzt frei das Edging-Cockpit, Safewords, Timer &amp; Soundscapes.
+            </p>
+          </button>
+        </div>
+
+        <!-- DREHBUCH VORSCHAU MIT KI-GENERIERUNG -->
+        <div id="playbook-preview-wrap" class="space-y-2 transition-opacity duration-300">
+          <div class="flex items-center justify-between px-1 font-mono text-xs">
+            <strong class="text-white">Geplante Schritte (4 Phasen · 8 Schritte):</strong>
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-ai-playbook-trigger" onclick="SessionStaging.generateAiPlaybook()" class="text-[#c5a880] font-bold hover:underline flex items-center gap-1">
+                <span>✨</span><span>Per KI auf Schrank-Toys zuschneiden</span>
+              </button>
+              <span class="text-[#2a364f]">·</span>
+              <button type="button" onclick="SessionStaging.rerollPlaybook()" class="text-[#b3734a] font-bold hover:underline">
+                Neu würfeln 🎲
+              </button>
+            </div>
+          </div>
+          <div id="playbook-preview-container" class="space-y-2"></div>
+        </div>
+
+        <div class="flex justify-between items-center pt-2 font-mono text-xs">
+          <button type="button" onclick="SessionStaging.goToStep(2)" class="text-xs text-[#94a3b8] hover:text-white font-bold">← Zurück</button>
+          <button type="button" onclick="SessionLive.startSession()" class="px-8 py-3 rounded-2xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-black text-sm touch-btn shadow-2xl flex items-center gap-2">
+            <span>🕯️ Regiepult jetzt starten →</span>
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 2. COCKPIT LIVE CONTAINER (WIRD NACH DEM START EINGEBLENDET) -->
+    <div id="cockpit-live-container" class="hidden space-y-4 animate-fade-in font-sans">
+
+      <!-- MASTER STATUS BAR -->
+      <div class="rounded-3xl p-4 border border-[#2a364f] bg-[#090d14] shadow-2xl flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <div class="text-2xl sm:text-3xl font-black font-mono tracking-wider text-white" id="session-timer-display">60:00</div>
+          <div class="space-y-0.5 font-mono">
+            <span id="session-phase-pill" class="px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider bg-[#450a0a] text-white border border-[#991b1b] inline-block">Phase 1</span>
+            <span class="text-[10px] text-[#c5a880] block font-bold" id="cockpit-voice-active-indicator">🔊 Stimme aktiv</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 font-mono text-xs">
+          <button type="button" onclick="SessionLive.addMinutes(10)" class="px-2.5 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white font-bold touch-btn">+10m</button>
+          <button type="button" onclick="SessionLive.togglePause()" id="btn-pause-timer" class="px-3 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#c5a880] font-bold touch-btn">Pause</button>
+          <button type="button" onclick="SessionLive.endToAftercare()" class="px-3.5 py-1.5 rounded-xl bg-[#142b24] hover:bg-[#2e5746] border border-[#2e5746] text-white font-bold touch-btn shadow-md">Aftercare 🛋️</button>
+        </div>
+      </div>
+
+      <!-- IN-SESSION AUDIO- & SOUNDSCAPE-REGIE -->
+      <div class="rounded-2xl p-3.5 bg-[#000000] border border-[#2a364f] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs font-mono shadow-md">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[10.5px] text-[#c5a880] font-bold flex items-center gap-1">
+            <span>🎵</span><span>Klangwelt:</span>
+          </span>
+          <div class="flex items-center gap-1 flex-wrap">
+            <button type="button" onclick="SessionRuntime.switchSoundscape('dark_drone')" id="btn-soundscape-dark_drone" class="px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn shadow-sm">
+              55Hz Subspace
+            </button>
+            <button type="button" onclick="SessionRuntime.switchSoundscape('vagus_432')" id="btn-soundscape-vagus_432" class="px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn">
+              432Hz Vagus
+            </button>
+            <button type="button" onclick="SessionRuntime.switchSoundscape('tantric_pulse')" id="btn-soundscape-tantric_pulse" class="px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn">
+              Tantrischer Puls
+            </button>
+            <button type="button" onclick="SessionRuntime.switchSoundscape('spotify')" id="btn-soundscape-spotify" class="px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-[#2e5746] touch-btn">
+              Spotify ↗
+            </button>
+            <button type="button" onclick="SessionRuntime.switchSoundscape('silence')" id="btn-soundscape-silence" class="px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-red-400 touch-btn">
+              Stille 🔇
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between sm:justify-end gap-2.5 pt-1 sm:pt-0 border-t sm:border-t-0 border-[#2a364f]/60">
+          <!-- Live-Lautstärkeregler -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-[9.5px] text-[#94a3b8]">Vol:</span>
+            <input type="range" min="0" max="1" step="0.05" value="0.75" oninput="if(window.SessionAudio) window.SessionAudio.setMasterVolume(this.value);" class="w-20 sm:w-24 accent-[#c5a880] cursor-pointer h-1.5 bg-[#090d14] rounded-lg">
+          </div>
+
+          <!-- AirPlay & Android Cast Routing Button -->
+          <button type="button" onclick="if(window.SessionAudio) window.SessionAudio.triggerSpeakerPicker();" class="px-2.5 py-1 rounded-lg bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#c5a880] text-[10px] font-bold touch-btn flex items-center gap-1" title="Lautsprecher / AirPlay / Bluetooth wählen">
+            <svg class="w-3.5 h-3.5 text-[#c5a880]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/></svg>
             <span>AirPlay</span>
           </button>
+
+          <!-- 85% OLED Nachttisch-Dimmer Taster -->
+          <button type="button" onclick="SessionRuntime.toggleNightstandDimmer()" class="px-2.5 py-1 rounded-lg bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#dfcaa9] text-[10px] font-bold touch-btn flex items-center gap-1" title="Bildschirm für Schlafzimmer dimmen">
+            <span>🌙</span><span>Dimmen</span>
+          </button>
         </div>
       </div>
 
-      <!-- SOUNDSCAPE AUSWAHL-SCHALTER -->
-      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-[10.5px]">
-        <span class="text-[#94a3b8] text-[9.5px] uppercase shrink-0">Preset:</span>
-        <button type="button" onclick="SessionRuntime.playLiveSoundscape('dark_drone')" id="btn-sound-dark_drone" class="px-3 py-1.5 rounded-xl border font-bold transition-all touch-pad shrink-0 bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-sm">
-          55Hz Subspace
+      <!-- SAFEWORD EMERGENCY BAR (GRÜN, GELB, ROT) -->
+      <div class="grid grid-cols-3 gap-2 font-mono text-xs">
+        <button type="button" onclick="SessionLive.triggerSafeword('green')" class="py-3 px-3 rounded-2xl bg-[#142b24] hover:bg-[#2e5746] border border-[#2e5746] text-white font-bold flex items-center justify-center gap-1.5 touch-btn shadow-md">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#2e5746]"></span>
+          <span>GRÜN</span>
         </button>
-        <button type="button" onclick="SessionRuntime.playLiveSoundscape('vagus_432')" id="btn-sound-vagus_432" class="px-3 py-1.5 rounded-xl border font-bold transition-all touch-pad shrink-0 bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white">
-          432Hz Vagus
+        <button type="button" onclick="SessionLive.triggerSafeword('yellow')" class="py-3 px-3 rounded-2xl bg-[#4a2818] hover:bg-[#8a5232] border border-[#8a5232] text-[#f8fafc] font-bold flex items-center justify-center gap-1.5 touch-btn shadow-md">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#b3734a]"></span>
+          <span>GELB</span>
         </button>
-        <button type="button" onclick="SessionRuntime.playLiveSoundscape('tantric_pulse')" id="btn-sound-tantric_pulse" class="px-3 py-1.5 rounded-xl border font-bold transition-all touch-pad shrink-0 bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white">
-          Tantrischer Puls
+        <button type="button" onclick="SessionLive.triggerSafeword('red')" id="safeword-red-indicator" class="py-3 px-3 rounded-2xl bg-[#450a0a] hover:bg-[#991b1b] border border-[#991b1b] text-white font-black flex items-center justify-center gap-1.5 touch-btn shadow-lg">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#ef4444] animate-pulse"></span>
+          <span>ROT (STOPP)</span>
         </button>
-        <button type="button" onclick="SessionRuntime.playLiveSoundscape('silence')" id="btn-sound-silence" class="px-3 py-1.5 rounded-xl border font-bold transition-all touch-pad shrink-0 bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white">
-          Stille
-        </button>
-        <a href="https://open.spotify.com/playlist/37i9dQZF1DXdLEN7aqioXM" id="btn-sound-spotify" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl border border-[#2e5746] bg-[#142b24] text-[#f8fafc] hover:bg-[#2e5746] font-bold touch-pad shrink-0 flex items-center gap-1">
-          <span>Spotify ↗</span>
-        </a>
       </div>
-    </div>
 
-    <!-- BÜHNE 1: STAGING COCKPIT (VORBEREITUNG & DREHBUCH) -->
-    <div id="view-session-staging" class="space-y-4 animate-fade-in">
-      <div id="staging-cockpit-container">
-        <div class="p-8 text-center text-[#94a3b8] text-xs font-mono">
-          Lade Schlafzimmer-Staging Cockpit...
+      <!-- FREE FLOW INFO BANNER -->
+      <div id="free-flow-info-banner" class="hidden p-4 rounded-2xl bg-[#000000] border border-[#c5a880]/60 space-y-1 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="text-base text-[#c5a880]">🌊</span>
+          <strong class="text-white font-bold text-xs font-serif">Freier Flow aktiv</strong>
         </div>
-      </div>
-    </div>
-
-    <!-- BÜHNE 2: LIVE-REGIE (STATE MACHINE, HALBDUNKEL & VAGUS) -->
-    <div id="view-session-live" class="hidden space-y-4 animate-fade-in">
-      <div id="live-session-container">
-        <div class="p-8 text-center text-[#94a3b8] text-xs font-mono">
-          Lade Live-Regie...
-        </div>
-      </div>
-    </div>
-
-    <!-- BÜHNE 3: SCHWELLEN- & PLATEAU-COCKPIT (EDGING & JOI) -->
-    <div id="view-session-edging" class="hidden space-y-4 animate-fade-in">
-      <div id="edging-cockpit-container">
-        <div class="p-8 text-center text-[#94a3b8] text-xs font-mono">
-          Lade Schwellen- &amp; Plateau-Cockpit...
-        </div>
-      </div>
-    </div>
-
-    <!-- BÜHNE 4: DAS TACTUS SESSION-LOGBUCH (PUNKT #7) -->
-    <div id="view-session-logbook" class="hidden space-y-4 animate-fade-in font-sans">
-      <div class="p-5 sm:p-6 rounded-3xl bg-[#090d14] border border-[#2a364f] shadow-2xl space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#2a364f]/70 pb-3">
-          <div class="space-y-0.5 min-w-0 flex-1">
-            <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#d4af37] border border-[#d4af37]/40 inline-block">
-              Intimitäts-Archiv &amp; Paar-Reflexion (§ 4)
-            </span>
-            <h2 class="text-base sm:text-xl font-serif text-white font-normal mt-1">
-              Das TACTUS Session-Logbuch
-            </h2>
-          </div>
-          <span class="text-xs font-mono text-[#c5a880] font-bold" id="logbook-count-badge">0 Einträge</span>
-        </div>
-        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-          Lückenlose Aufzeichnung aller vollzogenen Schlafzimmer-Sessions: Dauer, Edges, eingesetzte Reize, Tonalität und post-somatisches Feedback beider Partner zur kontinuierlichen Verfeinerung eurer Paar-Dynamik.
+        <p class="text-[11px] text-[#94a3b8] leading-snug">
+          Keine vorgegebenen Schritte. Top und Bottom gestalten das Spiel frei nach eigenem Gefühl. Alle Werkzeuge stehen euch nach Bedarf zur Verfügung.
         </p>
       </div>
 
-      <div id="session-logbook-entries-container" class="space-y-3">
-        <div class="p-8 rounded-3xl bg-[#090d14] border border-[#2a364f] text-center text-[#94a3b8] font-mono text-xs">
-          Noch keine dokumentierten Sessions im Logbuch verzeichnet. Schließe deine erste Live-Regie ab.
+      <!-- GUIDED STEP CONTAINER -->
+      <div id="guided-step-container" class="rounded-3xl p-5 border border-[#2a364f] bg-[#090d14] space-y-3 shadow-xl">
+        <div class="flex items-center justify-between border-b border-[#2a364f] pb-2 font-mono">
+          <div class="flex items-center gap-2">
+            <span id="live-step-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/50">Schritt 1 / 8</span>
+            <span id="live-step-phase" class="text-xs text-[#94a3b8]">Warm-up</span>
+          </div>
+          <button type="button" onclick="SessionLive.speakStep()" class="text-xs text-[#c5a880] font-bold hover:underline flex items-center gap-1">
+            <span>🔊</span><span>Vorlesen</span>
+          </button>
+        </div>
+
+        <div>
+          <h3 id="live-step-title" class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Lade Schritt...</h3>
+          <p id="live-step-desc" class="text-xs text-[#f8fafc] mt-1 leading-relaxed">Beschreibung des Schritts...</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 font-mono">
+          <div class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] space-y-0.5">
+            <strong class="text-[#c5a880] block text-[11px]">👑 Top-Führung:</strong>
+            <span id="live-step-top-role" class="text-slate-200 text-[10.5px] leading-snug block">Anweisung für den Top...</span>
+          </div>
+          <div class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] space-y-0.5">
+            <strong class="text-[#b3734a] block text-[11px]">🧎 Bottom-Hingabe:</strong>
+            <span id="live-step-sub-role" class="text-slate-200 text-[10.5px] leading-snug block">Haltung für den Bottom...</span>
+          </div>
+        </div>
+
+        <!-- GUIDED EDGING CALLOUT -->
+        <div id="guided-edging-callout" class="hidden p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880] flex items-center justify-between gap-2 shadow-lg animate-pulse font-sans">
+          <div class="flex items-center gap-2">
+            <span class="text-xl text-[#c5a880]">⚡</span>
+            <div>
+              <strong class="text-xs text-[#c5a880] block font-bold font-serif">Edging &amp; Erregungskontrolle aktiv!</strong>
+              <span class="text-[10px] text-[#94a3b8] block">Nutze jetzt die Edging-Fernbedienung weiter unten im Cockpit.</span>
+            </div>
+          </div>
+          <button type="button" onclick="SessionEdging.scrollToEdging()" class="px-3.5 py-1.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono rounded-xl text-xs flex-shrink-0 touch-btn shadow-md">
+            Zur Fernbedienung ↓
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-[#2a364f] font-mono text-xs">
+          <button type="button" onclick="SessionLive.prevStep()" class="px-3.5 py-1.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold touch-btn">← Vorheriger</button>
+          <button type="button" onclick="SessionLive.nextStep()" class="px-4 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-md">Nächster Schritt →</button>
         </div>
       </div>
+
+      <!-- EDGING & JOI REGIE PANEL (INJECTION CONTAINER) -->
+      <div id="edging-cockpit-container"></div>
+
+      <!-- 3 AKTIONSTASTER UNTEN: ZUCHT-WIZARD, VAGUS-ATMUNG, AFTERCARE -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs font-sans">
+        <button type="button" onclick="SessionDiscipline.open()" class="p-4 rounded-2xl bg-[#090d14] border border-[#2a364f] hover:border-[#c5a880] text-left space-y-1 touch-btn shadow-sm">
+          <strong class="text-white block text-xs font-serif font-bold">⚖️ Bestrafungs-Wizard</strong>
+          <p class="text-[10.5px] text-[#94a3b8] leading-snug">5-Stufen-Zucht mit Bogen-Abgleich, Körperhaltung &amp; Härtegraden.</p>
+        </button>
+
+        <button type="button" onclick="SessionLive.openZen()" class="p-4 rounded-2xl bg-[#090d14] border border-[#2a364f] hover:border-[#2e5746] text-left space-y-1 touch-btn shadow-sm">
+          <strong class="text-white block text-xs font-serif font-bold">🧘 Vagus-Atmung &amp; Trance</strong>
+          <p class="text-[10.5px] text-[#94a3b8] leading-snug">Organische 4-7-8 Atemführung und gesprochene Trance-Induktion.</p>
+        </button>
+
+        <button type="button" onclick="SessionLive.endToAftercare()" class="p-4 rounded-2xl bg-[#090d14] border border-[#2e5746] text-left space-y-1 touch-btn shadow-sm">
+          <strong class="text-[#2e5746] block text-xs font-serif font-bold">🛋️ Aftercare &amp; Tagebuch</strong>
+          <p class="text-[10.5px] text-[#94a3b8] leading-snug">Feedback festhalten &amp; Session im Paar-Logbuch sichern.</p>
+        </button>
+      </div>
+
     </div>
 
   </main>
+
+  <!-- MODAL: AFTERCARE & DECKEN-GEBORGENHEIT -->
+  <div id="modal-session-aftercare" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#2e5746] p-5 sm:p-6 space-y-4 shadow-2xl text-xs max-h-[90vh] overflow-y-auto font-sans pb-[max(env(safe-area-inset-bottom),16px)]">
+      <div class="flex items-center justify-between border-b border-[#2e5746]/50 pb-2">
+        <h3 class="text-sm font-bold text-white font-serif">Aftercare &amp; Decken-Geborgenheit</h3>
+        <button type="button" onclick="SessionLive.closeAftercare()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <p class="text-[11px] text-[#94a3b8] leading-relaxed">
+        Löst alle verbleibenden Fesseln. Hüllt euch in dicke Decken, reicht warmes Wasser oder Tee und haltet euch mindestens 15 Minuten fest im Arm.
+      </p>
+
+      <div class="space-y-3 font-mono">
+        <div>
+          <label class="text-[10.5px] font-bold text-[#c5a880] block mb-1">Top-Feedback (Wie war die Führung?):</label>
+          <input type="text" id="aftercare-top-feedback" placeholder="z. B. Sehr ruhiger Fokus, intensive Nähe..." class="w-full text-xs p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white font-sans focus:border-[#c5a880] focus:outline-none">
+        </div>
+        <div>
+          <label class="text-[10.5px] font-bold text-[#b3734a] block mb-1">Bottom-Feedback (Wie fühlte sich das Fallenlassen an?):</label>
+          <input type="text" id="aftercare-sub-feedback" placeholder="z. B. Tiefer Subspace, brauchte etwas Ruhe..." class="w-full text-xs p-2.5 bg-[#000000] border border-[#2a364f] rounded-xl text-white font-sans focus:border-[#b3734a] focus:outline-none">
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-[#2a364f] font-mono">
+        <button type="button" onclick="SessionLive.closeAftercare()" class="text-[#94a3b8] hover:text-white text-xs font-bold">Zurück zur Session</button>
+        <button type="button" onclick="SessionLive.completeExit()" class="px-5 py-2.5 bg-[#142b24] hover:bg-[#2e5746] text-white border border-[#2e5746] font-bold rounded-xl text-xs touch-btn shadow-md">
+          Im Tagebuch speichern &amp; Beenden ✓
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ZEN VAGUS-ATMUNG & TRANCE -->
+  <div id="modal-session-zen" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-[#090d14] rounded-3xl max-w-md w-full border border-[#c5a880]/60 p-5 space-y-4 shadow-2xl text-xs text-center font-sans">
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-2 font-serif">
+        <h3 class="text-sm font-bold text-white">Vagus-Atmung &amp; Zentrierung</h3>
+        <button type="button" onclick="SessionLive.closeZen()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+
+      <div class="flex justify-center gap-2 font-mono">
+        <button type="button" onclick="SessionLive.selectZenMode('breath')" id="btn-zen-mode-breath" class="p-2.5 rounded-xl border bg-[#000000] border-[#c5a880] text-[#c5a880] font-bold text-center touch-btn shadow-sm">4-7-8 Vagus-Atmung</button>
+        <button type="button" onclick="SessionLive.selectZenMode('trance')" id="btn-zen-mode-trance" class="p-2.5 rounded-xl border bg-[#090d14] border-[#2a364f] text-[#94a3b8] font-bold text-center touch-btn">Trance-Induktion</button>
+      </div>
+
+      <!-- 4-7-8 ATMUNGSKREIS MIT SCALE TRANSITION -->
+      <div id="zen-view-breath" class="space-y-4 py-4">
+        <div class="relative w-48 h-48 mx-auto flex items-center justify-center">
+          <div id="breath-circle" class="w-28 h-28 rounded-full bg-[#000000] border-2 border-[#c5a880]/40 flex items-center justify-center shadow-lg will-change-transform"></div>
+          <span id="breath-text" class="absolute text-xs sm:text-sm font-serif font-bold text-[#dfcaa9] pointer-events-none drop-shadow-md text-center px-2">Einatmen (4s)</span>
+        </div>
+        <p class="text-[10.5px] text-[#94a3b8] font-mono">Atmet synchron: 4s Einatmen, 7s Halten, 8s langsam Ausatmen.</p>
+      </div>
+
+      <div id="zen-view-trance" class="hidden space-y-3 py-4 text-left text-xs text-[#f8fafc] leading-relaxed">
+        <p class="p-3 rounded-xl bg-[#000000] border border-[#2a364f]">„Schließe die Augen. Atme tief in den Bauchraum aus. Lass die Schultern sinken und spüre das feste Gehaltensein.“</p>
+        <button type="button" onclick="SessionLive.playTrance()" class="w-full py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold font-mono rounded-xl text-xs touch-btn shadow-md">
+          🔊 Gesprochene Trance-Führung starten
+        </button>
+      </div>
+
+      <div class="pt-2 border-t border-[#2a364f] flex justify-end font-mono">
+        <button type="button" onclick="SessionLive.closeZen()" class="px-4 py-2 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SESSION TAGEBUCH & LOGBUCH -->
+  <div id="modal-session-diary" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#2a364f] p-5 space-y-3 shadow-2xl text-xs max-h-[85vh] flex flex-col justify-between font-sans pb-[max(env(safe-area-inset-bottom),16px)]">
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
+        <h3 class="text-sm font-bold text-white font-serif">Schlafzimmer-Logbuch &amp; Chronik</h3>
+        <button type="button" onclick="SessionLive.closeDiary()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+      <div id="session-diary-entries-container" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+      <div class="pt-2 border-t border-[#2a364f] flex justify-end font-mono">
+        <button type="button" onclick="SessionLive.closeDiary()" class="px-4 py-2 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TABUS & VETO GRENZEN -->
+  <div id="modal-session-tabus" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
+    <div class="bg-[#090d14] rounded-3xl max-w-lg w-full border border-[#991b1b] p-5 space-y-3 shadow-2xl text-xs max-h-[85vh] flex flex-col justify-between font-sans pb-[max(env(safe-area-inset-bottom),16px)]">
+      <div class="flex items-center justify-between border-b border-[#2a364f] pb-2">
+        <h3 class="text-sm font-bold text-white font-serif">Tabus &amp; Veto-Grenzen für heute</h3>
+        <button type="button" onclick="SessionLive.closeTabus()" class="w-8 h-8 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white font-bold flex items-center justify-center touch-btn">✕</button>
+      </div>
+      <div id="session-tabu-list-container" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+      <div class="pt-2 border-t border-[#2a364f] flex justify-end font-mono">
+        <button type="button" onclick="SessionLive.closeTabus()" class="px-4 py-2 bg-[#450a0a] border border-[#991b1b] text-white font-bold rounded-xl text-xs touch-btn">Schließen</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: ACCOUNT & EINSTELLUNGEN (MASTER-HEADER STANDARD) -->
   <div id="modal-account-settings" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none">
@@ -400,7 +862,7 @@
           <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">System-Zentrale</span>
           <h3 class="text-sm sm:text-base font-serif text-white font-bold">Profil, Einstellungen &amp; Beziehungsmodus</h3>
         </div>
-        <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'" class="w-9 h-9 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-pad">✕</button>
+        <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'" class="w-9 h-9 rounded-xl bg-[#000000] border border-[#2a364f] text-[#94a3b8] hover:text-white flex items-center justify-center touch-btn">✕</button>
       </div>
 
       <!-- 1. ERSCHEINUNGSBILD -->
@@ -485,15 +947,15 @@
       </div>
 
       <div class="pt-2 border-t border-[#2a364f] flex justify-end gap-2 font-mono">
-        <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-pad">Abbrechen</button>
-        <button type="button" onclick="SessionRuntime.saveAccountSettings()" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-pad shadow-md">Speichern ✓</button>
+        <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'" class="px-4 py-2.5 bg-[#000000] border border-[#2a364f] text-[#94a3b8] font-bold rounded-xl text-xs touch-btn">Abbrechen</button>
+        <button type="button" onclick="SessionRuntime.saveAccountSettings()" class="px-5 py-2.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold rounded-xl text-xs touch-btn shadow-md">Speichern ✓</button>
       </div>
 
     </div>
   </div>
 
-  <!-- 1-TAP 85% OLED NACHTTISCH-DIMMER OVERLAY -->
-  <div id="session-live-dimmer-overlay" class="fixed inset-0 bg-black/85 z-50 pointer-events-none opacity-0 transition-opacity duration-500"></div>
+  <!-- MASTER AUDIO ELEMENT FÜR ECHTE GEMINI-STIMME MIT 'PLAYING' EVENT SYNC -->
+  <audio id="master-voice-audio" preload="auto" style="display: none;"></audio>
 
   <!-- TOAST CONTAINER -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-[160] space-y-2 pointer-events-none"></div>
@@ -513,33 +975,18 @@
   <script src="js/cloud_sync.js"></script>
   <script src="js/protocol_core.js"></script>
   <script src="js/protocol_ratio.js"></script>
-  <script src="js/protocol_tasks.js"></script>
-  <script src="js/protocol_contract.js"></script>
-  <script src="js/protocol_coach.js"></script>
   <script src="js/session_voice.js"></script>
+  <script src="js/session_discipline.js"></script>
   <script src="js/session_audio.js"></script>
   <script src="js/session_staging.js"></script>
-  <script src="js/session_live.js"></script>
   <script src="js/session_edging.js"></script>
+  <script src="js/session_live.js"></script>
 
-  <!-- RUNTIME ORCHESTRATION -->
   <script>
     (function(window) {
       'use strict';
 
-      let currentStage = 'staging';
       let currentRoleState = 'top';
-      let activeSoundscapeId = 'dark_drone';
-
-      function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      }
 
       function showToast(message) {
         if (typeof window.showToastNotification === 'function') {
@@ -553,7 +1000,7 @@
         el.className = "bg-[#090d14] text-[#f8fafc] font-mono text-xs px-4 py-2.5 rounded-2xl shadow-2xl border border-[#c5a880]/40 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md z-50";
         el.innerHTML = `
           <span class="w-2 h-2 rounded-full bg-[#c5a880] flex-shrink-0 animate-pulse"></span>
-          <span>${escapeHtml(message)}</span>
+          <span>${String(message).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
         `;
         container.appendChild(el);
 
@@ -571,174 +1018,6 @@
         setTimeout(() => {
           window.location.href = window.location.pathname + '?v=' + Date.now() + window.location.hash;
         }, 300);
-      }
-
-      function playLiveSoundscape(presetId) {
-        activeSoundscapeId = presetId;
-        const presets = ['dark_drone', 'vagus_432', 'tantric_pulse', 'silence'];
-        
-        presets.forEach(id => {
-          const btn = document.getElementById(`btn-sound-${id}`);
-          if (btn) {
-            if (id === presetId) {
-              btn.className = "px-3 py-1.5 rounded-xl border font-bold transition-all touch-pad shrink-0 bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-sm";
-            } else {
-              btn.className = "px-3 py-1.5 rounded-xl border font-bold transition-all touch-pad shrink-0 bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white";
-            }
-          }
-        });
-
-        if (window.SessionAudio && typeof window.SessionAudio.playDrone === 'function') {
-          if (presetId === 'silence') {
-            window.SessionAudio.stopDrone();
-            showToast("Klanglandschaft stummgeschaltet");
-          } else {
-            window.SessionAudio.playDrone(presetId);
-            const labels = {
-              dark_drone: '55Hz Dark Subspace Drone aktiv',
-              vagus_432: '432Hz Vagus-Harmonie aktiv',
-              tantric_pulse: 'Tantrischer Puls aktiv'
-            };
-            showToast(labels[presetId] || "Soundscape gewechselt");
-          }
-        }
-      }
-
-      function switchStage(stageKey) {
-        currentStage = stageKey;
-
-        const stages = ['staging', 'live', 'edging', 'logbook'];
-        stages.forEach(st => {
-          const view = document.getElementById(`view-session-${st}`);
-          const btn = document.getElementById(`tab-stage-${st}`);
-          if (view) {
-            if (st === stageKey) view.classList.remove('hidden');
-            else view.classList.add('hidden');
-          }
-          if (btn) {
-            if (st === stageKey) {
-              btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-pad shadow-sm whitespace-nowrap shrink-0 flex-shrink-0";
-            } else {
-              let textCol = (st === 'edging') ? 'text-[#b3734a]' : ((st === 'logbook') ? 'text-[#d4af37]' : 'text-[#94a3b8]');
-              btn.className = `px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] ${textCol} hover:text-[#f8fafc] touch-pad whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1.5`;
-            }
-          }
-        });
-
-        const badge = document.getElementById('session-header-status-badge');
-        const subline = document.getElementById('session-header-subline');
-
-        if (stageKey === 'staging') {
-          if (badge) {
-            badge.innerText = "REGIE";
-            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#090d14] border border-[#c5a880]/40 text-[#c5a880] uppercase font-bold flex-shrink-0";
-          }
-          if (subline) subline.innerText = "Top-First Kalibrierung vor dem Eintreten";
-          if (window.SessionStaging && typeof window.SessionStaging.render === 'function') {
-            window.SessionStaging.render();
-          }
-        } else if (stageKey === 'live') {
-          if (badge) {
-            badge.innerText = "LIVE REGIE";
-            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#450a0a] border border-[#991b1b] text-[#f8fafc] uppercase font-bold flex-shrink-0 animate-pulse";
-          }
-          if (subline) subline.innerText = "Operative Führung im Halbdunkel";
-          if (window.SessionLive && typeof window.SessionLive.renderCockpit === 'function') {
-            window.SessionLive.renderCockpit();
-          }
-        } else if (stageKey === 'edging') {
-          if (badge) {
-            badge.innerText = "SCHWELLEN";
-            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#4a2818] border border-[#8a5232] text-[#b3734a] uppercase font-bold flex-shrink-0";
-          }
-          if (subline) subline.innerText = "Plateau-Halten & sprachgeführte JOI-Taktung";
-          if (window.SessionEdging && typeof window.SessionEdging.render === 'function') {
-            window.SessionEdging.render('edging-cockpit-container');
-          }
-        } else if (stageKey === 'logbook') {
-          if (badge) {
-            badge.innerText = "LOGBUCH";
-            badge.className = "px-1.5 py-0.5 rounded text-[8.5px] font-mono tracking-widest bg-[#000000] border border-[#d4af37]/60 text-[#d4af37] uppercase font-bold flex-shrink-0";
-          }
-          if (subline) subline.innerText = "Session-Historie & Feedback-Rapport";
-          renderLogbookView();
-        }
-
-        window.location.hash = `view=${stageKey}`;
-      }
-
-      function renderLogbookView() {
-        const container = document.getElementById('session-logbook-entries-container');
-        const badge = document.getElementById('logbook-count-badge');
-        if (!container) return;
-
-        let log = [];
-        try {
-          const raw = localStorage.getItem('tactus_session_logbook');
-          if (raw) log = JSON.parse(raw);
-        } catch (e) {}
-
-        if (badge) badge.innerText = `${log.length} Einträge`;
-
-        if (log.length === 0) {
-          container.innerHTML = `
-            <div class="p-8 rounded-3xl bg-[#090d14] border border-[#2a364f] text-center text-[#94a3b8] font-mono text-xs">
-              Noch keine Sessions im Logbuch verzeichnet. Nach Abschluss einer Session kannst du hier euren Rapport und Feedback einsehen.
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = log.map((item) => `
-          <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14] border border-[#2a364f] space-y-2.5">
-            <div class="flex items-center justify-between border-b border-[#2a364f]/70 pb-2">
-              <div>
-                <span class="text-[9.5px] font-mono text-[#c5a880] uppercase font-bold block">${new Date(item.timestamp).toLocaleDateString('de-DE')} · ${new Date(item.timestamp).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}</span>
-                <strong class="text-xs sm:text-sm text-white font-serif">${escapeHtml(item.title || 'Schlafzimmer-Session')}</strong>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[9.5px] font-mono bg-[#000000] border border-[#2e5746] text-[#2e5746] font-bold">Abgeschlossen ✓</span>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono text-[#94a3b8]">
-              <div>Dauer: <strong class="text-white">${item.durationMinutes || 0} Min.</strong></div>
-              <div>Edges: <strong class="text-[#c5a880]">${item.edgesCount || item.edgesCounted || 0}</strong></div>
-              <div>Tonalität: <strong class="text-white">${escapeHtml(item.tonality || 'Souverän')}</strong></div>
-              <div>Ausgang: <strong class="text-[#b3734a]">${escapeHtml(item.climaxType || 'Standard')}</strong></div>
-            </div>
-            ${item.feedbackNote ? `
-              <div class="p-2.5 rounded-xl bg-[#000000] border border-[#2a364f] text-[11px] text-[#f8fafc] italic">
-                „${escapeHtml(item.feedbackNote)}“
-              </div>
-            ` : ''}
-          </div>
-        `).join('');
-      }
-
-      function handleHashRouting() {
-        const hash = window.location.hash || '';
-        if (hash.includes('view=live')) {
-          switchStage('live');
-        } else if (hash.includes('view=edging')) {
-          switchStage('edging');
-        } else if (hash.includes('view=logbook')) {
-          switchStage('logbook');
-        } else {
-          let hasActiveSession = false;
-          try {
-            const rawMetrics = sessionStorage.getItem('tactus_live_session_metrics');
-            if (rawMetrics) {
-              const parsed = JSON.parse(rawMetrics);
-              if (parsed && parsed.startedAt && !parsed.finalizedAt) {
-                hasActiveSession = true;
-              }
-            }
-          } catch (e) {}
-
-          if (hasActiveSession) {
-            switchStage('live');
-          } else {
-            switchStage('staging');
-          }
-        }
       }
 
       function checkConditionalBreakGlass() {
@@ -767,24 +1046,6 @@
         window.location.href = 'protocol.html#tab=dashboard';
       }
 
-      let isDimmed = false;
-      function toggleNightstandDimmer() {
-        if (window.SessionLive && typeof window.SessionLive.toggleDimmer === 'function') {
-          window.SessionLive.toggleDimmer();
-        } else {
-          let overlay = document.getElementById('session-live-dimmer-overlay');
-          if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'session-live-dimmer-overlay';
-            overlay.className = 'fixed inset-0 bg-black/85 z-50 pointer-events-none transition-opacity duration-500 opacity-0';
-            document.body.appendChild(overlay);
-          }
-          isDimmed = !isDimmed;
-          overlay.style.opacity = isDimmed ? '1' : '0';
-          showToast(isDimmed ? "Nachttisch-Dimmer aktiv (OLED-Halbdunkel)" : "Dimmer deaktiviert");
-        }
-      }
-
       function initRoleDisplay() {
         const mode = localStorage.getItem('tactus_relationship_mode') || 'switch_flexible';
         const roleText = document.getElementById('active-role-text');
@@ -793,6 +1054,20 @@
         const assignedRole = localStorage.getItem('kompass_assigned_role') || 'A';
         const keyholder = localStorage.getItem('kompass_keyholder_role') || 'A';
         const isTop = (assignedRole === keyholder);
+
+        let names = { A: 'Partner 1', B: 'Partner 2' };
+        try {
+          const raw = localStorage.getItem('kompass_names');
+          if (raw) names = Object.assign({}, names, JSON.parse(raw));
+        } catch (e) {}
+
+        const topName = names[keyholder] || 'Top';
+        const subName = names[keyholder === 'A' ? 'B' : 'A'] || 'Bottom';
+
+        const subline = document.getElementById('session-roles-subtitle');
+        if (subline) {
+          subline.innerText = `Top: ${topName} · Bottom: ${subName}`;
+        }
 
         if (mode === 'flr_24_7') {
           currentRoleState = isTop ? 'top' : 'bottom';
@@ -831,11 +1106,6 @@
           if (roleText) roleText.innerText = "Bottom";
           if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#b3734a]";
           showToast("Perspektive gewechselt: Bottom (Hingabe)");
-        } else if (currentRoleState === 'bottom') {
-          currentRoleState = 'switch';
-          if (roleText) roleText.innerText = "Switch";
-          if (roleDot) roleDot.className = "w-1.5 h-1.5 rounded-full bg-[#d4af37]";
-          showToast("Perspektive gewechselt: Switch (Flexibel)");
         } else {
           currentRoleState = 'top';
           if (roleText) roleText.innerText = "Top";
@@ -923,21 +1193,55 @@
         if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
       }
 
+      function switchSoundscape(presetId) {
+        if (!window.SessionAudio) return;
+
+        ['dark_drone', 'vagus_432', 'tantric_pulse', 'spotify', 'silence'].forEach(id => {
+          const btn = document.getElementById(`btn-soundscape-${id}`);
+          if (btn) {
+            if (id === presetId) {
+              btn.className = "px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-[#000000] border-[#c5a880] text-[#c5a880] touch-btn shadow-sm";
+            } else {
+              btn.className = "px-2.5 py-1 rounded-lg border text-[10px] font-bold bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:text-white touch-btn";
+            }
+          }
+        });
+
+        if (presetId === 'silence') {
+          window.SessionAudio.stopDrone();
+          showToast("Klanglandschaft pausiert 🔇");
+        } else if (presetId === 'spotify') {
+          window.SessionAudio.playTonalityMusic('sovereign_warm');
+          showToast("Spotify-Stream & Klangwelt gestartet 🎵");
+        } else {
+          window.SessionAudio.playDrone(presetId);
+          showToast(`Klangwelt aktiv: ${presetId === 'vagus_432' ? '432Hz Vagus' : (presetId === 'tantric_pulse' ? 'Tantrischer Puls' : '55Hz Subspace')}`);
+        }
+      }
+
+      function toggleNightstandDimmer() {
+        document.body.classList.toggle('nightstand-dimmed');
+      }
+
       window.SessionRuntime = {
-        switchStage: switchStage,
-        toggleDimmer: toggleNightstandDimmer,
-        toggleActiveRole: toggleActiveRole,
         initRoleDisplay: initRoleDisplay,
+        toggleActiveRole: toggleActiveRole,
         openBreakGlass: openBreakGlass,
         checkConditionalBreakGlass: checkConditionalBreakGlass,
         forceAppReload: forceAppReload,
         openAccountModal: openAccountModal,
         saveAccountSettings: saveAccountSettings,
-        playLiveSoundscape: playLiveSoundscape,
+        switchSoundscape: switchSoundscape,
+        toggleNightstandDimmer: toggleNightstandDimmer,
         init: function() {
-          handleHashRouting();
           initRoleDisplay();
-          window.addEventListener('hashchange', handleHashRouting);
+          checkConditionalBreakGlass();
+          if (window.SessionStaging && typeof window.SessionStaging.renderEquipment === 'function') {
+            window.SessionStaging.renderEquipment();
+          }
+          if (window.SessionEdging && typeof window.SessionEdging.render === 'function') {
+            window.SessionEdging.render('edging-cockpit-container');
+          }
         }
       };
 
