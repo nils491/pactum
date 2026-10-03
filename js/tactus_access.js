@@ -407,11 +407,45 @@
     try { localStorage.removeItem(KEYS.aiConsent); } catch (e) {}
   }
 
+  // Eigener Gemini-Schlüssel des Paares (nur auf diesem Gerät). Ältere Versionen haben ihn unter
+  // mehreren Namen abgelegt; gelesen wird wie im AIAdapter, geschrieben und gelöscht werden alle.
+  const OWN_KEY_SLOTS = ['tactus_api_key_gemini', 'kompass_gemini_api_key', 'tactus_ai_custom_key'];
+  function getOwnGeminiKey() {
+    if (window.AIAdapter && typeof window.AIAdapter.getApiKey === 'function') return window.AIAdapter.getApiKey('gemini') || '';
+    for (const k of OWN_KEY_SLOTS) { const v = (localStorage.getItem(k) || '').trim(); if (v) return v; }
+    return '';
+  }
+  function setOwnGeminiKey(key) {
+    OWN_KEY_SLOTS.forEach(k => { try { if (key) localStorage.setItem(k, key); else localStorage.removeItem(k); } catch (e) {} });
+    if (key) { try { localStorage.setItem('tactus_ai_provider', 'gemini'); localStorage.setItem('kompass_ai_provider', 'gemini'); } catch (e) {} }
+  }
+  async function verifyGeminiKey(key) {
+    try {
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'OK' }] }], generationConfig: { maxOutputTokens: 16 } })
+      });
+      if (res.ok) return { ok: true, message: '✓ Eigener Gemini-Schlüssel gespeichert.' };
+      if (res.status === 429) return { ok: true, message: '✓ Schlüssel gespeichert (bei Google ist gerade das Kontingent erreicht).' };
+      const data = await res.json().catch(() => ({}));
+      const reason = data.error && (data.error.status || data.error.message) || '';
+      if (res.status === 400 || res.status === 401 || /API_KEY|PERMISSION/i.test(reason)) {
+        return { ok: false, message: 'Google lehnt diesen Schlüssel ab. Bitte prüfe, ob er vollständig kopiert und noch aktiv ist.' };
+      }
+      if (res.status === 403) return { ok: false, message: 'Der Schlüssel hat keinen Zugriff auf die Gemini-API (in Google AI Studio prüfen).' };
+      return { ok: false, message: `Prüfung fehlgeschlagen (HTTP ${res.status}). Bitte später erneut versuchen.` };
+    } catch (e) {
+      return { ok: false, message: 'Keine Verbindung zu Google. Bitte Internet prüfen.' };
+    }
+  }
+
   // --- 4. Konto-Fenster: Abo, Partner-Kopplung, KI, Rechtliches -----------------
   async function openAccount() {
     const lic = await checkLicense(false);
     const sync = window.CloudSync && window.CloudSync.getConfig ? window.CloudSync.getConfig() : { paired: false };
     const route = window.AIAdapter && window.AIAdapter.getGeminiRoute ? window.AIAdapter.getGeminiRoute().mode : 'none';
+    const ownKey = getOwnGeminiKey();
     const planName = { monthly: 'Monatsabo', yearly: 'Jahresabo', lifetime: 'Unbegrenzt', tester: 'Testzugang' }[lic.plan] || '–';
     const lastSync = sync.lastSyncTime ? new Date(parseInt(sync.lastSyncTime, 10)).toLocaleString('de-DE') : 'noch nie';
 
@@ -451,6 +485,15 @@
       <p class="tx-text">${route === 'own' ? 'Ihr nutzt euren eigenen Gemini-Schlüssel.' : route === 'fallback' ? 'Ihr nutzt die TACTUS-KI (im Abo enthalten, mit Tageskontingent).' : 'Nicht verfügbar – eigenen Schlüssel eintragen oder Abo aktivieren.'}
         Einwilligung: ${hasAiConsent() ? '<span class="tx-badge tx-on">erteilt</span>' : '<span class="tx-badge">nicht erteilt</span>'}</p>
       ${hasAiConsent() ? '<button type="button" class="tx-btn" id="tx-ai-revoke">Einwilligung widerrufen</button>' : ''}
+      <div style="height:12px"></div>
+      <div class="tx-sub">Eigener Gemini-Schlüssel (optional)</div>
+      ${ownKey ? `<p class="tx-small">Gespeichert: <span style="font-family:'JetBrains Mono',monospace">••••${escapeHtml(ownKey.slice(-4))}</span> · nur auf diesem Gerät</p>
+      <button type="button" class="tx-btn" id="tx-key-remove">Eigenen Schlüssel entfernen</button>`
+      : `<p class="tx-small">Ohne eigenen Schlüssel nutzt ihr die TACTUS-KI aus dem Abo. Einen Schlüssel erstellt ihr kostenlos bei <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:#c5a880">Google AI Studio</a>. Er bleibt nur auf diesem Gerät.</p>
+      <input type="password" id="tx-key-in" class="tx-input" placeholder="Gemini-API-Schlüssel einfügen" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div style="height:8px"></div>
+      <button type="button" class="tx-btn tx-btn-gold" id="tx-key-save">Prüfen &amp; speichern</button>`}
+      <p class="tx-msg" id="tx-key-msg"></p>
 
       <hr class="tx-sep">
       <button type="button" class="tx-btn tx-btn-quiet" id="tx-lic-change">Anderen Lizenzschlüssel oder Testercode eingeben</button>
@@ -485,6 +528,24 @@
     });
     const off = el.querySelector('#tx-pair-off');
     if (off) off.addEventListener('click', () => { window.CloudSync.disconnect(); el.remove(); });
+    const keyMsg = el.querySelector('#tx-key-msg');
+    const keySay = (text, ok) => { keyMsg.className = 'tx-msg ' + (ok ? 'tx-ok' : 'tx-err'); keyMsg.textContent = text; };
+    const keySave = el.querySelector('#tx-key-save');
+    if (keySave) keySave.addEventListener('click', async () => {
+      const key = el.querySelector('#tx-key-in').value.replace(/\s+/g, '');
+      if (key.length < 20) { keySay('Bitte den vollständigen Schlüssel einfügen.', false); return; }
+      keySave.disabled = true;
+      keySay('Prüfe den Schlüssel bei Google …', true);
+      const result = await verifyGeminiKey(key);
+      keySave.disabled = false;
+      if (!result.ok) { keySay(result.message, false); return; }
+      setOwnGeminiKey(key);
+      el.remove();
+      await openAccount();
+      if (typeof window.showToastNotification === 'function') window.showToastNotification(result.message);
+    });
+    const keyRemove = el.querySelector('#tx-key-remove');
+    if (keyRemove) keyRemove.addEventListener('click', () => { setOwnGeminiKey(''); el.remove(); openAccount(); });
     const revoke = el.querySelector('#tx-ai-revoke');
     if (revoke) revoke.addEventListener('click', () => { revokeAiConsent(); el.remove(); openAccount(); });
     el.querySelector('#tx-lic-change').addEventListener('click', () => { el.remove(); showPaywall('missing').then(() => {}); });

@@ -66,9 +66,9 @@
   };
 
   function getActiveProvider() {
-    return localStorage.getItem(STORAGE_KEYS.provider) || 
-           localStorage.getItem(STORAGE_KEYS.providerLegacy) || 
-           'gemini';
+    const stored = localStorage.getItem(STORAGE_KEYS.provider) || localStorage.getItem(STORAGE_KEYS.providerLegacy);
+    // Unbekannte Werte aus älteren Einstellungen (z. B. 'claude', 'webgpu') fallen auf Gemini zurück
+    return PROVIDERS[stored] ? stored : 'gemini';
   }
 
   function setActiveProvider(providerId) {

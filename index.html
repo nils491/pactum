@@ -790,24 +790,11 @@
         </div>
       </div>
 
-      <!-- 4. KI-SCHLÜSSEL & LIVE-TEST -->
+      <!-- 4. KI: eigener Schlüssel liegt im Konto-Fenster (auf jeder Seite erreichbar) -->
       <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold">4. KI-Verbindung &amp; API-Schlüssel:</span>
-          <button type="button" onclick="IndexRuntime.testAiConnection()" id="btn-test-ai" class="px-3 py-1.5 rounded-xl bg-[#090d14] border border-[#c5a880]/60 text-[#c5a880] font-mono text-[10px] font-bold touch-btn">
-            Testen
-          </button>
-        </div>
-        <div class="space-y-2 font-mono">
-          <select id="acc-select-ai-provider" class="w-full text-xs p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white">
-            <option value="gemini">Google Gemini (2.5 Flash / 2.0 Flash)</option>
-            <option value="claude">Anthropic Claude 3.5 Sonnet</option>
-            <option value="openai">OpenAI GPT-4o</option>
-            <option value="webgpu">Local Offline WebGPU</option>
-          </select>
-          <input type="password" id="acc-input-ai-key" placeholder="API-Key eintragen (oder leer für Universal Offline-Modus)..." class="w-full text-xs p-2.5 bg-[#090d14] border border-[#2a364f] rounded-xl text-white placeholder:text-[#94a3b8]/40 focus:border-[#c5a880] focus:outline-none" />
-        </div>
-        <span id="ai-test-result" class="text-[9.5px] font-mono text-[#94a3b8] block">Universal Default-Modus aktiv ab Werk.</span>
+        <span class="text-[10px] font-mono uppercase text-[#c5a880] font-bold">4. KI-Verbindung &amp; eigener API-Schlüssel:</span>
+        <p class="text-[10.5px] text-[#94a3b8] leading-relaxed">Einen eigenen Gemini-Schlüssel tragt ihr unter „Abo, Partner-Kopplung &amp; KI“ ein. Ohne eigenen Schlüssel nutzt ihr die TACTUS-KI aus dem Abo.</p>
+        <button type="button" onclick="document.getElementById('modal-account-settings').style.display='none'; if (window.TactusAccess) window.TactusAccess.openAccount();" class="px-3 py-2 rounded-xl bg-[#090d14] border border-[#c5a880]/60 text-[#c5a880] font-mono text-[10px] font-bold touch-btn">KI-Einstellungen öffnen →</button>
       </div>
 
       <!-- 5. RE-LAUNCH ONBOARDING & EXPORT -->
@@ -1494,10 +1481,6 @@
         const radio = document.querySelector(`input[name="acc-rel-mode"][value="${relMode}"]`);
         if (radio) radio.checked = true;
 
-        const aiProvider = document.getElementById('acc-select-ai-provider');
-        const aiKey = document.getElementById('acc-input-ai-key');
-        if (aiProvider) aiProvider.value = localStorage.getItem('tactus_ai_provider') || 'gemini';
-        if (aiKey) aiKey.value = localStorage.getItem('tactus_ai_custom_key') || '';
 
         modal.style.display = 'flex';
       }
@@ -1538,10 +1521,6 @@
           localStorage.setItem('tactus_relationship_mode', checkedRadio.value);
         }
 
-        const aiProvider = document.getElementById('acc-select-ai-provider');
-        const aiKey = document.getElementById('acc-input-ai-key');
-        if (aiProvider) localStorage.setItem('tactus_ai_provider', aiProvider.value);
-        if (aiKey) localStorage.setItem('tactus_ai_custom_key', aiKey.value.trim());
 
         const modal = document.getElementById('modal-account-settings');
         if (modal) modal.style.display = 'none';
@@ -1550,108 +1529,6 @@
         renderHubTelemetry();
         showToast("✓ Account-Einstellungen gesichert");
         if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
-      }
-
-      async function testAiConnection() {
-        const btn = document.getElementById('btn-test-ai');
-        const result = document.getElementById('ai-test-result');
-        const providerSelect = document.getElementById('acc-select-ai-provider');
-        const keyInput = document.getElementById('acc-input-ai-key');
-
-        const provider = providerSelect ? providerSelect.value : 'gemini';
-        const apiKey = keyInput ? keyInput.value.trim() : '';
-
-        if (btn) btn.innerText = "Prüfe...";
-
-        if (!apiKey) {
-          if (btn) btn.innerText = "Testen";
-          if (result) {
-            result.innerText = "✓ Universal Offline-Modus aktiv (autark ohne Key).";
-            result.className = "text-[9.5px] font-mono text-[#c5a880] font-bold block";
-          }
-          return;
-        }
-
-        if (provider === 'gemini') {
-          let verifiedModel = null;
-          let lastStatus = 0;
-          let lastErrorMsg = '';
-
-          try {
-            const listUrl = `https://generativelanguage.googleapis.com/v1beta/models`;
-            const listRes = await fetch(listUrl, {
-              method: 'GET',
-              headers: { 'x-goog-api-key': apiKey }
-            });
-
-            if (listRes.ok) {
-              const listData = await listRes.json();
-              const availableModels = (listData.models || []).filter(m => 
-                m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') &&
-                !/tts|image|audio|live|embedding/i.test(m.name)
-              );
-
-              if (availableModels.length > 0) {
-                const preferred = availableModels.find(m => m.name === 'models/gemini-flash-latest') ||
-                                  availableModels.find(m => m.name.includes('flash')) ||
-                                  availableModels[0];
-
-                const cleanModelName = preferred.name.replace(/^models\//, '');
-                const genUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModelName}:generateContent`;
-                const genRes = await fetch(genUrl, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': apiKey
-                  },
-                  body: JSON.stringify({
-                    contents: [{ parts: [{ text: "Antworte mit 'OK'." }] }],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 5 }
-                  })
-                });
-
-                if (genRes.ok) {
-                  verifiedModel = cleanModelName;
-                } else {
-                  lastStatus = genRes.status;
-                  const errJson = await genRes.json().catch(() => ({}));
-                  lastErrorMsg = errJson.error ? (errJson.error.message || errJson.error.status) : `HTTP ${genRes.status}`;
-                }
-              } else {
-                lastStatus = 404;
-                lastErrorMsg = 'Keine Modelle mit generateContent gefunden.';
-              }
-            } else {
-              lastStatus = listRes.status;
-              const errJson = await listRes.json().catch(() => ({}));
-              lastErrorMsg = errJson.error ? (errJson.error.message || errJson.error.status) : `HTTP ${listRes.status}`;
-            }
-          } catch (netErr) {
-            lastStatus = 0;
-            lastErrorMsg = netErr.message || 'Verbindung blockiert / CORS';
-          }
-
-          if (verifiedModel) {
-            localStorage.setItem('tactus_ai_provider', 'gemini');
-            localStorage.setItem('tactus_ai_custom_key', apiKey);
-            localStorage.setItem('tactus_api_key_gemini', apiKey);
-            localStorage.setItem('kompass_gemini_api_key', apiKey);
-            localStorage.setItem('tactus_gemini_active_model', verifiedModel);
-
-            if (result) {
-              result.innerText = `✓ Verbindung erfolgreich! Modell: ${verifiedModel} aktiv verifiziert.`;
-              result.className = "text-[9.5px] font-mono text-[#2e5746] font-bold block";
-            }
-            showToast(`✓ Gemini (${verifiedModel}) verifiziert & gespeichert`);
-          } else {
-            if (result) {
-              result.innerText = `⚠️ Verbindungsfehler (${lastStatus || 'Netzwerk'}): ${lastErrorMsg || 'Prüfe Key'}`;
-              result.className = "text-[9.5px] font-mono text-[#991b1b] font-bold block";
-            }
-          }
-        }
-
-        if (btn) btn.innerText = "Testen";
       }
 
       function openMedicalPassModal() {
@@ -1775,7 +1652,6 @@
         toggleActiveRole,
         openAccountModal,
         saveAccountSettings,
-        testAiConnection,
         openMedicalPassModal,
         saveMedicalPass,
         openSetupWizard,
