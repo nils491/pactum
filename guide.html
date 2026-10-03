@@ -285,85 +285,83 @@
         4. Subspace
       </button>
       <button type="button" onclick="GuideRuntime.switchStage('safety')" id="tab-stage-safety" class="px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0">
-        5. RACK
-      </button>
-      <button type="button" onclick="GuideRuntime.switchStage('sos')" id="tab-stage-sos" class="px-3.5 py-2 rounded-xl font-bold bg-[#450a0a]/30 border border-[#991b1b] text-[#f8fafc] hover:bg-[#991b1b] touch-btn whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1 shadow-sm">
-        <span>6. SOS / Akut</span>
+        5. RACK & Notfall
       </button>
     </div>
 
     <div id="view-guide-manifest" class="space-y-4 animate-fade-in font-sans">
-      
-      <!-- HERO CARD -->
-      <div class="rounded-3xl p-5 sm:p-6 border border-[#2a364f] shadow-2xl bg-[#090d14] space-y-4">
-        <div class="border-b border-[#2a364f]/70 pb-3">
+
+      <article class="rounded-3xl p-5 sm:p-7 border border-[#2a364f] shadow-2xl bg-[#090d14]">
+        <header class="space-y-2 pb-4">
           <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#000000] text-[#c5a880] border border-[#c5a880]/40 inline-block">
-            Psychiatrische &amp; Juristische Entpathologisierung
+            Das TACTUS-Manifest
           </span>
-          <h2 class="text-base sm:text-xl font-serif text-[#f8fafc] font-normal mt-1.5">
-            Das Manifest des Vertrauens: Freiheit jenseits des Stigmas
+          <h2 class="text-lg sm:text-2xl font-serif text-[#f8fafc] font-normal leading-snug">
+            Wofür wir stehen
           </h2>
-        </div>
+          <p class="text-[12.5px] text-[#94a3b8] leading-relaxed">
+            TACTUS ist für Paare gemacht, die Macht, Hingabe und Lust bewusst miteinander gestalten. Diese sieben Grundsätze stecken hinter jeder Funktion der App, und auf sie könnt ihr euch verlassen.
+          </p>
+        </header>
 
-        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-          Jahrzehntelang wurden einvernehmliche Macht-, Fesselungs- und Hingabe-Praktiken von unwissenden Außenstehenden fälschlich als Störung, Trauma oder seelische Schwäche stigmatisiert. Die moderne evidenzbasierte Sexualmedizin, Psychiatrie und Kriminalpsychologie zeichnen heute ein vollkommen gegenteiliges Bild.
+        <ol class="list-none m-0 p-0">
+          <li class="flex gap-3.5 py-4 border-t border-[#2a364f]/60">
+            <span class="font-serif text-2xl text-[#c5a880] w-6 shrink-0 leading-none text-right">1</span>
+            <div class="space-y-1.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Eure Lust ist normal.</h3>
+              <p class="text-[12.5px] text-[#cbd5e1] leading-relaxed">Einvernehmliches BDSM ist keine Störung. Die Weltgesundheitsorganisation hat es mit der ICD-11 aus dem Katalog psychischer Erkrankungen gestrichen, und große Studien zeigen: Wer es praktiziert, ist im Schnitt psychisch genauso gesund wie andere, teils sogar zufriedener. Fantasien von Dominanz und Hingabe gehören für sehr viele Menschen dazu.</p>
+              <button type="button" onclick="GuideRuntime.switchStage('studies'); window.scrollTo(0, 0);" class="text-[11px] font-mono font-bold text-[#c5a880] hover:underline touch-btn">→ Die Studien dazu</button>
+            </div>
+          </li>
+          <li class="flex gap-3.5 py-4 border-t border-[#2a364f]/60">
+            <span class="font-serif text-2xl text-[#c5a880] w-6 shrink-0 leading-none text-right">2</span>
+            <div class="space-y-1.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Ohne Ja kein Spiel.</h3>
+              <p class="text-[12.5px] text-[#cbd5e1] leading-relaxed">Konsens heißt: freiwillig, informiert und jederzeit widerrufbar. Ein „Rot“ beendet alles sofort, ohne Diskussion und ohne Schuld. Was gestern in Ordnung war, muss es heute nicht sein.</p>
+            </div>
+          </li>
+          <li class="flex gap-3.5 py-4 border-t border-[#2a364f]/60">
+            <span class="font-serif text-2xl text-[#c5a880] w-6 shrink-0 leading-none text-right">3</span>
+            <div class="space-y-1.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Erst reden, dann spielen.</h3>
+              <p class="text-[12.5px] text-[#cbd5e1] leading-relaxed">Wünsche und Grenzen klärt ihr vorher, in Ruhe und mit klarem Kopf, nicht mitten in der Erregung. Dafür gibt es den Fragebogen: Jede und jeder antwortet erst einmal für sich. Ein Nein muss niemand begründen.</p>
+            </div>
+          </li>
+          <li class="flex gap-3.5 py-4 border-t border-[#2a364f]/60">
+            <span class="font-serif text-2xl text-[#c5a880] w-6 shrink-0 leading-none text-right">4</span>
+            <div class="space-y-1.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Macht ist ein Geschenk.</h3>
+              <p class="text-[12.5px] text-[#cbd5e1] leading-relaxed">Wer sich hingibt, schenkt Vertrauen. Wer führt, trägt dafür die Verantwortung. Genau das trennt BDSM von Gewalt: Es geht um den gemeinsamen Genuss, nicht um echtes Leiden gegen den Willen des anderen. Die Kriminalpsychologin Lydia Benecke unterscheidet deshalb klar zwischen einvernehmlichem („inklinierendem“) und gefährlichem („periculärem“) Sadismus.</p>
+            </div>
+          </li>
+          <li class="flex gap-3.5 py-4 border-t border-[#2a364f]/60">
+            <span class="font-serif text-2xl text-[#c5a880] w-6 shrink-0 leading-none text-right">5</span>
+            <div class="space-y-1.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Sicherheit vor Intensität.</h3>
+              <p class="text-[12.5px] text-[#cbd5e1] leading-relaxed">Kein Spiel ist völlig risikofrei. Darum kennt ihr die Risiken, bevor ihr loslegt: Ampel und Handzeichen sind vereinbart, die Notfallschere liegt bereit, Fesselungen werden regelmäßig geprüft. Lieber eine Stufe weniger als eine zu viel.</p>
+              <button type="button" onclick="GuideRuntime.switchStage('safety'); window.scrollTo(0, 0);" class="text-[11px] font-mono font-bold text-[#c5a880] hover:underline touch-btn">→ RACK & Notfall</button>
+            </div>
+          </li>
+          <li class="flex gap-3.5 py-4 border-t border-[#2a364f]/60">
+            <span class="font-serif text-2xl text-[#c5a880] w-6 shrink-0 leading-none text-right">6</span>
+            <div class="space-y-1.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Nachsorge gehört dazu.</h3>
+              <p class="text-[12.5px] text-[#cbd5e1] leading-relaxed">Nach intensiven Momenten braucht der Körper Wärme, Wasser und Nähe, oft auch noch ein bis zwei Tage später, wenn das Hoch nachlässt (Subdrop). Aftercare ist kein Extra, sondern Teil der Session, für beide Rollen.</p>
+            </div>
+          </li>
+          <li class="flex gap-3.5 py-4 border-t border-[#2a364f]/60">
+            <span class="font-serif text-2xl text-[#c5a880] w-6 shrink-0 leading-none text-right">7</span>
+            <div class="space-y-1.5 min-w-0">
+              <h3 class="text-sm sm:text-base font-serif font-bold text-white leading-snug">Was ihr teilt, bleibt bei euch.</h3>
+              <p class="text-[12.5px] text-[#cbd5e1] leading-relaxed">Eure Antworten, Fotos und Nachrichten liegen auf euren Geräten. Zwischen euren Handys werden sie Ende-zu-Ende verschlüsselt übertragen; der Server sieht nur unlesbare Daten und löscht sie nach der Zustellung. Nur wenn ihr die KI nutzt, gehen die dafür nötigen Angaben mit eurer Einwilligung an Google.</p>
+            </div>
+          </li>
+        </ol>
+
+        <p class="pt-4 border-t border-[#2a364f]/60 text-center font-serif italic text-[#c5a880] text-sm sm:text-base">
+          Spielt neugierig, spielt ehrlich – und passt aufeinander auf.
         </p>
-
-        <!-- 3 MEILENSTEINE DER ENTKATALOGISIERUNG -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-1 malachite-glow">
-            <span class="text-[9.5px] text-[#2e5746] uppercase font-bold block">1. WHO ICD-11 (2019)</span>
-            <strong class="text-white block text-xs">Vollständige Streichung</strong>
-            <p class="text-[10px] text-[#94a3b8] font-sans">Einvernehmliche BDSM-Praktiken gelten nicht mehr als psychische Störung. Nur nicht-konsensuale Gewalt bleibt strafbar.</p>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#c5a880]/50 space-y-1 gold-glow">
-            <span class="text-[9.5px] text-[#c5a880] uppercase font-bold block">2. APA DSM-5 (2013)</span>
-            <strong class="text-white block text-xs">Paraphilie ≠ Störung</strong>
-            <p class="text-[10px] text-[#94a3b8] font-sans">Klarer Unterschied zwischen sexueller Vorliebe und klinischer Paraphilic Disorder (erfordert echtes Leiden oder Fremdschädigung).</p>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#8a5232] space-y-1">
-            <span class="text-[9.5px] text-[#b3734a] uppercase font-bold block">3. Joyal &amp; Richters</span>
-            <strong class="text-white block text-xs">40–55 % Normalität</strong>
-            <p class="text-[10px] text-[#94a3b8] font-sans">Über die Hälfte der Normalbevölkerung hegt BDSM-Wünsche. Praktizierende zeigen signifikant höhere Beziehungsstabilität.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="rounded-3xl p-5 sm:p-6 border border-[#2e5746] shadow-xl bg-[#090d14] space-y-3.5">
-        <div class="flex items-center justify-between border-b border-[#2e5746]/40 pb-2.5">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#2e5746] animate-pulse"></span>
-            <h3 class="text-sm sm:text-base font-serif font-bold text-white">Das forensische Differenzierungsmodell (Lydia Benecke)</h3>
-          </div>
-          <span class="text-[9.5px] font-mono text-[#2e5746] font-bold">Kriminalpsychologie</span>
-        </div>
-
-        <p class="text-[11px] text-[#94a3b8] leading-relaxed">
-          Dipl.-Psychologin und Kriminalpsychologin Lydia Benecke definierte das international anerkannte Modell zur strikten Trennung von konsensualem BDSM und echter Kriminalität:
-        </p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#2e5746] space-y-2">
-            <strong class="text-[#2e5746] font-mono text-xs block font-bold">A. Inklinierender Sadismus (Einvernehmliches BDSM):</strong>
-            <ul class="text-[10.5px] text-[#f8fafc] space-y-1.5 list-disc pl-4 leading-relaxed font-sans">
-              <li><strong>Prosozial &amp; Empathiegeleitet:</strong> Die sexuelle Erregung speist sich aus der gemeinsamen Hingabe und dem sichtbaren Genuss des Partners.</li>
-              <li><strong>Sicherheitsfokussiert:</strong> Reize werden achtsam dosiert; Safewords werden bedingungslos geachtet.</li>
-              <li><strong>Bindungsstiftend:</strong> Schenkt dem Bottom kognitive Entlastung (Ego-Abschaltung) und stärkt das Vertrauen.</li>
-            </ul>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-[#000000] border border-[#991b1b] space-y-2">
-            <strong class="text-[#991b1b] font-mono text-xs block font-bold">B. Periculärer Sadismus (Fremdschädigung &amp; Gewalt):</strong>
-            <ul class="text-[10.5px] text-[#94a3b8] space-y-1.5 list-disc pl-4 leading-relaxed font-sans">
-              <li><strong>Antisozial &amp; Egoistisch:</strong> Die Befriedigung speist sich aus dem realen Leiden, der echten Angst oder der Erniedrigung gegen den Willen des Opfers.</li>
-              <li><strong>Empathielos &amp; Grenzenlos:</strong> Grenzen werden bewusst missachtet; keine Reue oder Nachsorge.</li>
-              <li><strong>Kriminell:</strong> Hat rein gar nichts mit BDSM oder TACTUS zu tun und wird strafrechtlich verfolgt.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      </article>
 
     </div>
 
@@ -534,18 +532,16 @@
         </div>
       </div>
 
-    </div>
 
-    <div id="view-guide-sos" class="hidden space-y-4 animate-fade-in font-sans">
       
-      <div class="rounded-3xl p-5 sm:p-6 border-2 border-[#991b1b] shadow-2xl bg-[#090d14] space-y-4 bordeaux-glow">
+      <div id="guide-sos" style="scroll-margin-top: 84px" class="rounded-3xl p-5 sm:p-6 border-2 border-[#991b1b] shadow-2xl bg-[#090d14] space-y-4 bordeaux-glow">
         <div class="border-b border-[#991b1b]/60 pb-3 flex items-center justify-between">
           <div class="space-y-0.5">
             <span class="px-2.5 py-0.5 rounded-full text-[9.5px] font-mono font-bold uppercase tracking-wider bg-[#450a0a] text-white border border-[#991b1b] inline-block animate-pulse">
-              Soforthilfe-Cockpit
+              Wenn etwas schiefgeht
             </span>
             <h2 class="text-base sm:text-xl font-serif text-white mt-1">
-              Akut-Ratgeber: Was tun bei Zwischenfällen?
+              Akut-Hilfe bei Zwischenfällen
             </h2>
           </div>
           <span class="text-xs font-mono text-[#991b1b] font-bold">1-Tap Aktionen</span>
@@ -878,9 +874,11 @@
       }
 
       function switchStage(stageKey) {
+        const jumpToSos = stageKey === 'sos';
+        if (jumpToSos) stageKey = 'safety';
         currentStage = stageKey;
 
-        const stages = ['manifest', 'studies', 'lexicon', 'neurobiology', 'safety', 'sos'];
+        const stages = ['manifest', 'studies', 'lexicon', 'neurobiology', 'safety'];
         stages.forEach(st => {
           const view = document.getElementById(`view-guide-${st}`);
           const btn = document.getElementById(`tab-stage-${st}`);
@@ -889,21 +887,15 @@
             else view.classList.add('hidden');
           }
           if (btn) {
-            if (st === stageKey) {
-              if (st === 'sos') {
-                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#991b1b] border border-red-700 text-white touch-btn shadow-md whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1";
-              } else {
-                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0";
-              }
-            } else {
-              if (st === 'sos') {
-                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#450a0a]/30 border border-[#991b1b] text-[#f8fafc] hover:bg-[#991b1b] touch-btn whitespace-nowrap shrink-0 flex-shrink-0 flex items-center gap-1";
-              } else {
-                btn.className = "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
-              }
-            }
+            btn.className = st === stageKey
+              ? "px-3.5 py-2 rounded-xl font-bold bg-[#000000] border border-[#c5a880] text-[#c5a880] touch-btn shadow-sm whitespace-nowrap shrink-0 flex-shrink-0"
+              : "px-3.5 py-2 rounded-xl font-bold bg-[#090d14] border border-[#2a364f] text-[#94a3b8] hover:text-[#f8fafc] touch-btn whitespace-nowrap shrink-0 flex-shrink-0";
           }
         });
+        if (jumpToSos) {
+          const sosCard = document.getElementById('guide-sos');
+          if (sosCard) setTimeout(() => sosCard.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        }
 
         window.location.hash = `tab=${stageKey}`;
 
