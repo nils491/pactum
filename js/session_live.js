@@ -159,6 +159,7 @@
     }
 
     sessionRemainingSeconds = sessionTotalSeconds = 3600;
+    if (window.TactusLearning) window.TactusLearning.start({ mode: currentSessionMode });
     isSessionPaused = false;
     startSessionTimer();
 
@@ -176,7 +177,7 @@
         ? `Freier Flow begonnen. ${topName} führt nach eigenem Ermessen.`
         : `Session begonnen. ${topName} übernimmt ab jetzt die Führung.`;
 
-      window.SessionVoice.play(introSpeech);
+      window.SessionVoice.play(currentSessionMode === 'free' ? introSpeech : (window.TactusDirector ? window.TactusDirector.line('intro', introSpeech) : introSpeech));
     }
 
     if (window.SessionEdging && typeof window.SessionEdging.resetState === 'function') {
@@ -269,6 +270,12 @@
     if (liveStepIndex < playbook.length - 1) {
       liveStepIndex++;
       renderLiveStep();
+      // Persönliches Drehbuch: die Regiestimme spricht den neuen Schritt an (Audio liegt vorab bereit)
+      const next = playbook[liveStepIndex];
+      const voiceOn = localStorage.getItem('kompass_voice_assist_active') !== 'false';
+      if (next && next.spoken && voiceOn && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+        window.SessionVoice.play(next.spoken);
+      }
     } else {
       endSessionToAftercare();
     }
@@ -286,11 +293,12 @@
     const step = playbook[liveStepIndex];
     if (!step) return;
     if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-      window.SessionVoice.play(`${step.title}. ${step.desc}`);
+      window.SessionVoice.play(step.spoken || `${step.title}. ${step.desc}`);
     }
   }
 
   function triggerSafeword(color) {
+    if (window.TactusLearning) window.TactusLearning.recordSafeword(color);
     const ind = document.getElementById('safeword-red-indicator');
     const time = getFormattedTimeNow();
     const isVoiceAssistActive = localStorage.getItem('kompass_voice_assist_active') !== 'false';
@@ -313,7 +321,7 @@
         }, 3500);
       }
       if (isVoiceAssistActive && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-        window.SessionVoice.play("Gelb registriert. Tempo drosseln und durchatmen.");
+        window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('yellow', "Gelb registriert. Tempo drosseln und durchatmen.") : "Gelb registriert. Tempo drosseln und durchatmen."));
       }
     } else {
       currentSessionLog.push({ type: "safeword", time: time, label: "Safeword ROT: Sofort-Abbruch" });
@@ -463,6 +471,12 @@
       m.classList.remove('hidden');
       m.style.display = 'flex';
     }
+    // Persönliche Aftercare-Zeile aus dem Drehbuch (nur wenn eines erstellt wurde)
+    const aftercareLine = window.TactusDirector ? window.TactusDirector.line('aftercare', null) : null;
+    const voiceOn = localStorage.getItem('kompass_voice_assist_active') !== 'false';
+    if (aftercareLine && voiceOn && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
+      window.SessionVoice.play(aftercareLine);
+    }
   }
 
   function closeAftercareModal() {
@@ -508,6 +522,13 @@
       timestamp: Date.now()
     };
 
+    // Lernende Kurve: Zeitverlauf der Session (Edges, Erholung, Countdown, Ziel)
+    if (window.TactusLearning) sessionEntry.telemetry = window.TactusLearning.finish();
+    // Was gespielt wurde – Grundlage für die Rückmeldung beider Partner
+    const playedSteps = (window.currentSelectedPlaybook || []).map(st => st && st.title).filter(Boolean).slice(0, 12);
+    const script = window.TactusDirector ? window.TactusDirector.getScript() : null;
+    sessionEntry.plan = { title: script ? script.title : null, steps: currentSessionMode === 'free' ? [] : playedSteps };
+
     diary.unshift(sessionEntry);
     try {
       localStorage.setItem('tactus_session_logbook', JSON.stringify(diary));
@@ -526,6 +547,8 @@
     }
 
     releaseScreenWakeLock();
+    // Rückmeldung direkt nach dem Wechsel zur Analyse anbieten
+    try { localStorage.setItem('tactus_feedback_prompt_now', sessionEntry.id); } catch (e) {}
     window.location.href = "analyse.html";
   }
 

@@ -530,11 +530,28 @@
     else if (wizardCurrentStage === 5) renderStage5(subName, topName);
   }
 
+  // Sicherheits-Regie: Optionen, die Tabus, Gesundheitspass oder Trigger berühren, werden nie angezeigt
+  function safePool(list) {
+    if (!window.TactusDirector || typeof window.TactusDirector.filterSafe !== 'function') return list;
+    const safe = window.TactusDirector.filterSafe(list);
+    if (safe.length) return safe;
+    return [{
+      id: 'safe_skip',
+      cat: ['mouth', 'orgasm', 'duty', 'posture', 'self_discipline'],
+      title: 'Heute entfällt diese Stufe',
+      rationale: 'Alle Optionen dieser Stufe würden eure Grenzen berühren. Grenzen gehen immer vor.',
+      desc: 'Diese Stufe wird aus Rücksicht auf eure Tabus und euren Gesundheitspass übersprungen.',
+      execution: 'Einfach zur nächsten Stufe weitergehen.',
+      badge: 'Grenze respektiert',
+      ratingBadge: 'Grenze respektiert'
+    }];
+  }
+
   function renderStage1(subName, topName) {
     const c = document.getElementById('stage-1-cards-container');
     if (!c) return;
 
-    const pool = getMasterActionPool(subName, topName);
+    const pool = safePool(getMasterActionPool(subName, topName));
     let filtered = pool.filter(a => a.cat.includes(wizardSelectedCategory) && !discardedActionIds.includes(a.id));
 
     if (filtered.length === 0) {
@@ -569,7 +586,7 @@
     const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
     const topName = names[topRole] || 'Top';
     const subName = names[subRole] || 'Bottom';
-    const pool = getMasterActionPool(subName, topName);
+    const pool = safePool(getMasterActionPool(subName, topName));
     const found = pool.find(a => a.id === id);
     if (found) wizardSelections.action = found;
     renderStage1(subName, topName);
@@ -579,7 +596,7 @@
     const c = document.getElementById('stage-2-cards-container');
     if (!c) return;
 
-    const pool = getMasterPostures(subName);
+    const pool = safePool(getMasterPostures(subName));
     let filtered = pool.filter(p => !discardedPostureIds.includes(p.id));
     if (filtered.length === 0) {
       discardedPostureIds = [];
@@ -610,7 +627,7 @@
     ensureNamesAndAnatomyLoaded();
     const subRole = (localStorage.getItem('kompass_keyholder_role') === 'A') ? 'B' : 'A';
     const subName = (window.names && window.names[subRole]) || 'Bottom';
-    const pool = getMasterPostures(subName);
+    const pool = safePool(getMasterPostures(subName));
     const found = pool.find(p => p.id === id);
     if (found) wizardSelections.posture = found;
     renderStage2(subName);
@@ -620,7 +637,7 @@
     const c = document.getElementById('stage-3-cards-container');
     if (!c) return;
 
-    const pool = getMasterBondages(subName);
+    const pool = safePool(getMasterBondages(subName));
     let filtered = pool.filter(b => !discardedBondageIds.includes(b.id));
     if (filtered.length === 0) {
       discardedBondageIds = [];
@@ -651,7 +668,7 @@
     ensureNamesAndAnatomyLoaded();
     const subRole = (localStorage.getItem('kompass_keyholder_role') === 'A') ? 'B' : 'A';
     const subName = (window.names && window.names[subRole]) || 'Bottom';
-    const pool = getMasterBondages(subName);
+    const pool = safePool(getMasterBondages(subName));
     const found = pool.find(b => b.id === id);
     if (found) wizardSelections.bondage = found;
     renderStage3(subName);
@@ -661,7 +678,7 @@
     const c = document.getElementById('stage-4-cards-container');
     if (!c) return;
 
-    const pool = getMasterSensory(subName);
+    const pool = safePool(getMasterSensory(subName));
     let filtered = pool.filter(s => !discardedSensoryIds.includes(s.id));
     if (filtered.length === 0) {
       discardedSensoryIds = [];
@@ -692,7 +709,7 @@
     ensureNamesAndAnatomyLoaded();
     const subRole = (localStorage.getItem('kompass_keyholder_role') === 'A') ? 'B' : 'A';
     const subName = (window.names && window.names[subRole]) || 'Bottom';
-    const pool = getMasterSensory(subName);
+    const pool = safePool(getMasterSensory(subName));
     const found = pool.find(s => s.id === id);
     if (found) wizardSelections.sensory = found;
     renderStage4(subName);
@@ -844,9 +861,10 @@
     const subName = names[subRole] || 'Bottom';
     const subAnat = (window.anatomy && window.anatomy[subRole]) ? window.anatomy[subRole] : 'vulva';
 
-    const apiKey = getGeminiApiKey();
-    if (!apiKey) {
-      showToast("⚠️ Kein Gemini API-Key hinterlegt. Bitte trage deinen Key in den Einstellungen ein.");
+    const aiReady = window.AIAdapter && typeof window.AIAdapter.isGeminiAvailable === 'function'
+      ? window.AIAdapter.isGeminiAvailable() : Boolean(getGeminiApiKey());
+    if (!aiReady) {
+      showToast("Kein KI-Zugang: Eigenen Gemini-Key in den Einstellungen eintragen oder TACTUS-Abo aktivieren.");
       return;
     }
 
@@ -904,42 +922,22 @@ Antworte AUSSCHLIESSLICH als valides JSON:
   "spokenCommand": "Ein einziger strenger, souveräner Satz, den ${topName} wörtlich zu ${subName} spricht"
 }`;
 
-    const candidateModels = [
-      localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-2.0-flash',
-      'gemini-2.0-flash',
-      'gemini-2.5-flash',
-      'gemini-1.5-flash'
-    ];
     let resultObj = null;
 
-    for (const model of candidateModels) {
-      try {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.35, responseMimeType: "application/json" }
-          })
-        });
-
-        if (resp.ok) {
-          const resData = await resp.json();
-          const rawJson = resData?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-          let parsed = null;
-          try {
-            parsed = JSON.parse(rawJson);
-          } catch (pe) {
-            const match = rawJson.match(/\{[\s\S]*\}/);
-            parsed = match ? JSON.parse(match[0]) : null;
-          }
-
-          if (parsed && parsed.actionTitle && parsed.actionExecution) {
-            resultObj = parsed;
-            break;
-          }
-        }
-      } catch (e) {}
+    if (window.TactusDirector && typeof window.TactusDirector.generateJson === 'function') {
+      const res = await window.TactusDirector.generateJson({
+        prompt,
+        temperature: 0.6,
+        check: (d) => d && d.actionTitle && d.actionExecution
+      });
+      if (res.ok) {
+        resultObj = res.data;
+      } else if (res.reason === 'unsafe') {
+        showToast("Die KI hat zweimal etwas vorgeschlagen, das eure Grenzen berührt. Bitte den Standard-Katalog nutzen.");
+        return;
+      } else if (res.reason === 'no_consent') {
+        return;
+      }
     }
 
     if (resultObj) {

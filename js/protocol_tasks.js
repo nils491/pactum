@@ -827,6 +827,7 @@ ANFORDERUNGEN:
 - Antworte in exakt 2 prägnanten Sätzen, direkt formuliert als klare Handlungsanweisung ohne Floskeln.
 `;
           const aiResponse = await window.AIAdapter.generateText({
+            safety: true,
             systemPrompt: "Du bist der somatische Kinetik- und Haltungsexperte für TACTUS.",
             userPrompt: aiPrompt,
             temperature: 0.7

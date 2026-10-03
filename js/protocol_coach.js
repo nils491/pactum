@@ -437,6 +437,7 @@ WICHTIGE LEITPLANKEN (ECHTE HYPERDYNAMIK):
 `;
 
         const aiResponse = await window.AIAdapter.generateText({
+          safety: true,
           systemPrompt: systemPrompt,
           userPrompt: userPrompt,
           temperature: 0.7

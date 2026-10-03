@@ -40,8 +40,8 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     keyholderRole: 'kompass_keyholder_role',
     cagedRole: 'kompass_caged_role',
     medicalPass: 'tactus_medical_pass',
-    sessionLogs: 'tactus_session_logs',
-    sessionLogsLegacy: 'kompass_session_logs',
+    sessionLogs: 'tactus_session_logbook',      // geschrieben von js/session_live.js
+    sessionLogsLegacy: 'kompass_session_diary',
     workplace: 'tactus_bottom_workplace',
     workplaceLegacy: 'kompass_bottom_workplace',
     topMentalLoad: 'tactus_top_mental_load',
@@ -102,7 +102,9 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     const bottomShameItems = [];
     const partnerNotes = [];
 
-    const chapters = (window.surveyChaptersPart1 || []).concat(window.surveyChaptersPart2 || window.surveyChapters || []);
+    const chapters = (window.surveyChaptersPart1 || [])
+      .concat(window.surveyChaptersPart2 || window.surveyChapters || [])
+      .concat(window.surveyChaptersPart3 || []);
     const itemMap = new Map();
 
     for (let c = 0; c < chapters.length; c++) {
@@ -258,10 +260,13 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
     const rawLogs = safeJsonParse(STORAGE_KEYS.sessionLogs, null) || safeJsonParse(STORAGE_KEYS.sessionLogsLegacy, []);
     const validLogs = Array.isArray(rawLogs) ? rawLogs : [];
 
-    // Letzte 3 Sessions analysieren
-    const recentSessions = validLogs.slice(-3).reverse().map(session => {
-      const subFeedback = session.feedbackSub || session.subFeedback || {};
-      const topFeedback = session.feedbackTop || session.topFeedback || {};
+    // Letzte 3 Sessions analysieren (das Logbuch speichert neueste zuerst, daher nach Zeit sortieren)
+    const asFeedback = (f) => (typeof f === 'string' ? { note: f } : (f || {}));
+    const recentSessions = validLogs.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 3).map(session => {
+      const subFeedback = asFeedback(session.bottomFeedback || session.feedbackSub || session.subFeedback);
+      const topFeedback = asFeedback(session.feedbackTop || session.topFeedback);
+      const events = Array.isArray(session.events) ? session.events : [];
+      const redSafeword = events.some(e => e && e.type === 'safeword' && /ROT/.test(e.label || ''));
 
       return {
         timestamp: session.timestamp || Date.now(),
@@ -271,7 +276,10 @@ SPRACH- UND TONFALL-LEITPLANKEN (STRIKT EINHALTEN):
         topExperienceTags: topFeedback.tags || [],
         subReflectionNote: subFeedback.note || subFeedback.text || '',
         topReflectionNote: topFeedback.note || topFeedback.text || '',
-        requiredEmergencyPause: session.safewordTriggered === true || session.brokenGlass === true
+        edgeCount: session.edgeCount || 0,
+        durationMinutes: session.durationMinutes || null,
+        yellowSafewords: events.filter(e => e && e.type === 'safeword' && /GELB/.test(e.label || '')).length,
+        requiredEmergencyPause: session.safewordTriggered === true || session.brokenGlass === true || redSafeword
       };
     });
 

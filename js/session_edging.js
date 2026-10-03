@@ -173,6 +173,7 @@
 
   function handleArousalSliderTouch(val) {
     activeArousalLevel = parseInt(val, 10);
+    if (window.TactusLearning) window.TactusLearning.recordArousal(activeArousalLevel);
     const badge = document.getElementById('arousal-level-badge');
     const labels = ["", "Ruhig", "Leicht erregt", "Wärme", "Fokus", "Plateau", "Gesteigert", "Intensiv", "Gefahrenzone", "Vor der Edge", "Edge erreicht"];
     if (badge) badge.innerText = `Stufe ${activeArousalLevel} / 10 (${labels[activeArousalLevel] || ''})`;
@@ -192,6 +193,10 @@
       else if (activeArousalLevel <= 9) phrase = (edgingStimulationBy === 'bottom_self') ? "Langsamer werden! Hände kurz anhalten, wenn es zu nah wird." : `Gefahrenzone, ${subName}. Kein Zucken. Du kommst erst auf mein Zeichen.`;
       else phrase = "Stillhalten! Edge erreicht!";
 
+      // Persönliches Drehbuch hat Vorrang vor den festen Sätzen
+      const kind = activeArousalLevel <= 3 ? 'arousal_low' : activeArousalLevel <= 6 ? 'arousal_mid' : activeArousalLevel <= 9 ? 'arousal_high' : 'edge_reached';
+      if (window.TactusDirector) phrase = window.TactusDirector.line(kind, phrase);
+
       window.SessionVoice.play(phrase);
     }
   }
@@ -203,6 +208,7 @@
 
     edgeCount++;
     lastEdgeTimestamp = Date.now();
+    if (window.TactusLearning) window.TactusLearning.recordEdge();
     const hitsEl = document.getElementById('edging-total-hits');
     if (hitsEl) hitsEl.innerText = edgeCount;
 
@@ -217,7 +223,7 @@
     startCooldownBreathingTimer();
 
     if (countdownVoiceMode === 'gemini' && window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-      window.SessionVoice.play("Edge erreicht! Hände sofort weg und stillhalten!");
+      window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('edge_reached', "Edge erreicht! Hände sofort weg und stillhalten!") : "Edge erreicht! Hände sofort weg und stillhalten!"));
     }
   }
 
@@ -233,9 +239,15 @@
     }, 1000);
   }
 
+  // Gelernte Werte (js/tactus_learning.js); ohne genug Daten bleibt es bei 45 s bzw. 20 s
+  let durationChosenByUser = false;
+  function getLearnedCooldown() {
+    return window.TactusLearning ? window.TactusLearning.getRecommendations().cooldownSec : 45;
+  }
+
   function startCooldownBreathingTimer() {
     if (cooldownTimerInterval) clearInterval(cooldownTimerInterval);
-    cooldownSecondsRemaining = 45;
+    cooldownSecondsRemaining = getLearnedCooldown();
     const btn = document.getElementById('btn-cooldown-timer');
 
     cooldownTimerInterval = setInterval(() => {
@@ -245,7 +257,7 @@
       } else {
         clearInterval(cooldownTimerInterval);
         if (btn) btn.innerText = "Abgekühlt ✓";
-        setTimeout(() => { if (btn) btn.innerText = "45s Abkühlen"; }, 2500);
+        setTimeout(() => { if (btn) btn.innerText = `${getLearnedCooldown()}s Abkühlen`; }, 2500);
       }
     }, 1000);
   }
@@ -269,6 +281,7 @@
   }
 
   function setCountdownDuration(seconds) {
+    durationChosenByUser = true;
     targetEdgingDuration = Math.max(5, Math.min(60, parseInt(seconds, 10) || 20));
     updateDurationStepperUI();
   }
@@ -295,7 +308,12 @@
     const name = subName || 'Bottom';
 
     let zeroStep = null;
-    if (goal === 'denial') {
+    const script = window.TactusDirector && window.TactusDirector.getScript ? window.TactusDirector.getScript() : null;
+    const scriptGoalLine = script && script.lines && Array.isArray(script.lines['goal_' + goal]) ? script.lines['goal_' + goal][0] : null;
+    if (scriptGoalLine) {
+      const cues = { denial: "STOPP · DENIAL!", ruined: "RUINED ORGASM!", release: "KOMMEN · RELEASE!" };
+      zeroStep = { num: 0, text: `Null! ${scriptGoalLine}`, cue: cues[goal] || cues.release, durMs: 4000 };
+    } else if (goal === 'denial') {
       zeroStep = { num: 0, text: `Null! Stopp! Hände sofort weg, ${name}! Du bleibst heute ungelöst!`, cue: "STOPP · DENIAL!", durMs: 4000 };
     } else if (goal === 'ruined') {
       zeroStep = { num: 0, text: `Null! Ruined! Hände weg und stillhalten beim Auskrampfen!`, cue: "RUINED ORGASM!", durMs: 4000 };
@@ -405,6 +423,7 @@
     if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
       window.SessionVoice.unlock();
     }
+    if (window.TactusLearning) window.TactusLearning.recordGoal('release');
 
     logSessionAction("Orgasmus-Freigabe (Sofort)");
     const panel = document.getElementById('release-choice-subpanel');
@@ -414,7 +433,7 @@
     if (countdownVoiceMode === 'self') {
       showToast("🗣️ Sprich jetzt: 'Jetzt! Lass alles los und komm für mich!'");
     } else if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-      window.SessionVoice.play("Jetzt! Lass alles los und komm für mich!");
+      window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('goal_release', "Jetzt! Lass alles los und komm für mich!") : "Jetzt! Lass alles los und komm für mich!"));
     }
 
     if (window.ProtocolRatio && typeof window.ProtocolRatio.record === 'function') {
@@ -431,6 +450,7 @@
     if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
       window.SessionVoice.unlock();
     }
+    if (window.TactusLearning) window.TactusLearning.recordCountdown(targetEdgingDuration, targetSessionGoal);
 
     const panel = document.getElementById('release-choice-subpanel');
     const wrap = document.getElementById('countdown-wrapper');
@@ -569,6 +589,7 @@
   }
 
   function handleCountdownResolutionAtZero(goal) {
+    if (window.TactusLearning) window.TactusLearning.recordGoal(goal);
     const endDisp = document.getElementById('countdown-display');
     const endCue = document.getElementById('countdown-cue-text');
     const wrap = document.getElementById('countdown-wrapper');
@@ -680,6 +701,7 @@
   }
 
   function finalizeEdgingDecision(decision) {
+    if (window.TactusLearning) window.TactusLearning.recordGoal(decision);
     if (window.SessionVoice && typeof window.SessionVoice.unlock === 'function') {
       window.SessionVoice.unlock();
     }
@@ -690,7 +712,7 @@
       if (countdownVoiceMode === 'self') {
         showToast("🗣️ Sprich jetzt: 'Hände weg! Stillhalten und auskrampfen!'");
       } else if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-        window.SessionVoice.play("Hände weg! Stillhalten und auskrampfen... Vielleicht beim nächsten Mal.");
+        window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('goal_ruined', "Hände weg! Stillhalten und auskrampfen... Vielleicht beim nächsten Mal.") : "Hände weg! Stillhalten und auskrampfen... Vielleicht beim nächsten Mal."));
       }
     } else if (decision === 'denial') {
       logSessionAction("Lustverweigerung (Denial)");
@@ -701,7 +723,7 @@
       if (countdownVoiceMode === 'self') {
         showToast("🗣️ Sprich jetzt: 'Schluss für heute. Du bleibst ungelöst.'");
       } else if (window.SessionVoice && typeof window.SessionVoice.play === 'function') {
-        window.SessionVoice.play("Schluss für heute. Du bleibst ungelöst.");
+        window.SessionVoice.play((window.TactusDirector ? window.TactusDirector.line('goal_denial', "Schluss für heute. Du bleibst ungelöst.") : "Schluss für heute. Du bleibst ungelöst."));
       }
     }
 
@@ -725,6 +747,11 @@
   function renderEdgingCockpit(containerId = 'edging-cockpit-container') {
     const container = document.getElementById(containerId);
     if (!container) return;
+
+    if (!durationChosenByUser && window.TactusLearning) {
+      const rec = window.TactusLearning.getRecommendations();
+      if (rec.ready) targetEdgingDuration = rec.countdownSec;
+    }
 
     container.innerHTML = `
       <div id="edging-cockpit-panel" class="theme-card rounded-3xl p-5 border border-[#c5a880]/60 shadow-2xl space-y-4 bg-[#090d14] font-sans">
@@ -922,9 +949,25 @@
 
       </div>
     `;
+
+    const cooldownBtn = document.getElementById('btn-cooldown-timer');
+    if (cooldownBtn && /Abkühlen/.test(cooldownBtn.innerText)) cooldownBtn.innerText = `${getLearnedCooldown()}s Abkühlen`;
+    if (window.TactusLearning) {
+      window.TactusLearning.renderCurveCard();
+      window.TactusLearning.startCardTicker();
+    }
+  }
+
+  function getCountdownSpeeches() {
+    const subRole = localStorage.getItem('kompass_caged_role') || 'A';
+    const names = window.names || { A: 'Partner 1', B: 'Partner 2' };
+    const subName = names[subRole] || 'Bottom';
+    return ['release', 'ruined', 'denial'].map(goal =>
+      buildJoiCountdownTimeline(targetEdgingDuration, subName, goal).map(t => t.text).join(' '));
   }
 
   const api = {
+    getCountdownSpeeches: getCountdownSpeeches,
     render: renderEdgingCockpit,
     setVoiceMode: setCountdownVoiceMode,
     setStimulator: setEdgingStimulator,

@@ -6,7 +6,7 @@
  * Standards & Garantien:
  * - BYOK-Architektur (Bring-Your-Own-Key): Volle Wahlfreiheit des Paares
  * - Provider-Portfolio:
- *   • Google Gemini (gemini-2.5-flash) - Multimodal Vision & hohe Geschwindigkeit
+ *   • Google Gemini (gemini-flash-latest) - Multimodal Vision & hohe Geschwindigkeit
  *   • Anthropic Claude (claude-3-5-sonnet-20241022) - Tiefe Beziehungspsychologie
  *   • OpenAI (gpt-4o) - Universelle Verbreitung
  *   • WebGPU Local Engine - 100 % privater Offline-Betrieb
@@ -34,7 +34,7 @@
     gemini: {
       id: 'gemini',
       label: 'Google Gemini',
-      defaultModel: 'gemini-2.5-flash',
+      defaultModel: 'gemini-flash-latest',
       supportsVision: true,
       requiresKey: true,
       endpoint: 'https://generativelanguage.googleapis.com/v1beta/models'
@@ -82,7 +82,8 @@
     const prov = providerId || getActiveProvider();
     if (prov === 'gemini') {
       return (localStorage.getItem(STORAGE_KEYS.geminiKey) || 
-              localStorage.getItem(STORAGE_KEYS.geminiKeyLegacy) || '').trim();
+              localStorage.getItem(STORAGE_KEYS.geminiKeyLegacy) ||
+              localStorage.getItem('tactus_ai_custom_key') || '').trim();
     }
     if (prov === 'anthropic') {
       return (localStorage.getItem(STORAGE_KEYS.anthropicKey) || '').trim();
@@ -108,7 +109,7 @@
   function getModelForProvider(providerId = null) {
     const prov = providerId || getActiveProvider();
     const custom = localStorage.getItem(`${STORAGE_KEYS.customModel}_${prov}`);
-    return custom || (PROVIDERS[prov] ? PROVIDERS[prov].defaultModel : 'gemini-2.5-flash');
+    return custom || (PROVIDERS[prov] ? PROVIDERS[prov].defaultModel : 'gemini-flash-latest');
   }
 
   function extractJsonFromText(rawText) {
@@ -142,12 +143,64 @@
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Zentraler Gemini-Zugang: eigener Key des Paares oder TACTUS-Fallback
+  // -------------------------------------------------------------------------
+
+  function getGeminiRoute() {
+    const ownKey = getApiKeyForProvider('gemini');
+    if (ownKey) return { mode: 'own', key: ownKey };
+    const license = (localStorage.getItem('tactus_license_key') || '').trim();
+    if (license && window.location.protocol !== 'file:') return { mode: 'fallback', license };
+    return { mode: 'none' };
+  }
+
+  function isGeminiAvailable() {
+    return getGeminiRoute().mode !== 'none';
+  }
+
+  async function ensureAiConsent(route) {
+    if (window.TactusAccess && typeof window.TactusAccess.ensureAiConsent === 'function') {
+      return window.TactusAccess.ensureAiConsent(route.mode);
+    }
+    return true;
+  }
+
+  /**
+   * Führt einen generateContent-Aufruf aus und liefert das fetch-Response-Objekt.
+   * body: das Gemini-Request-Objekt (contents, generationConfig, ...)
+   */
+  async function geminiFetch(model, body) {
+    const route = getGeminiRoute();
+    if (route.mode === 'none') {
+      return new Response(JSON.stringify({ error: { message: 'Kein Gemini-Zugang: eigener API-Key oder TACTUS-Abo nötig.' } }), { status: 401 });
+    }
+    if (!(await ensureAiConsent(route))) {
+      return new Response(JSON.stringify({ error: { message: 'KI-Übermittlung nicht freigegeben.' } }), { status: 403 });
+    }
+    const cleanModel = String(model || getModelForProvider('gemini')).replace(/^models\//, '');
+    const payload = typeof body === 'string' ? body : JSON.stringify(body);
+
+    if (route.mode === 'own') {
+      return fetch(`${PROVIDERS.gemini.endpoint}/${encodeURIComponent(cleanModel)}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': route.key },
+        body: payload
+      });
+    }
+
+    const base = (localStorage.getItem('tactus_api_base') || '').trim().replace(/\/$/, '');
+    return fetch(`${base}/api/ai/${encodeURIComponent(cleanModel)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Tactus-License': route.license },
+      body: payload
+    });
+  }
+
   async function callGeminiText({ systemPrompt, userPrompt, temperature, maxTokens, model }) {
-    const key = getApiKeyForProvider('gemini');
-    if (!key) throw new Error("Kein Google Gemini API-Key hinterlegt.");
+    if (!isGeminiAvailable()) throw new Error("Kein Gemini-Zugang: eigener API-Key oder TACTUS-Abo nötig.");
 
     const targetModel = model || getModelForProvider('gemini');
-    const endpoint = `${PROVIDERS.gemini.endpoint}/${encodeURIComponent(targetModel)}:generateContent?key=${encodeURIComponent(key)}`;
 
     const bodyPayload = {
       contents: [
@@ -168,11 +221,7 @@
       };
     }
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyPayload)
-    });
+    const res = await geminiFetch(targetModel, bodyPayload);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -189,11 +238,9 @@
   }
 
   async function callGeminiVision({ base64Image, mimeType, prompt, model }) {
-    const key = getApiKeyForProvider('gemini');
-    if (!key) throw new Error("Kein Google Gemini API-Key hinterlegt.");
+    if (!isGeminiAvailable()) throw new Error("Kein Gemini-Zugang: eigener API-Key oder TACTUS-Abo nötig.");
 
     const targetModel = model || getModelForProvider('gemini');
-    const endpoint = `${PROVIDERS.gemini.endpoint}/${encodeURIComponent(targetModel)}:generateContent?key=${encodeURIComponent(key)}`;
 
     // Reinen Base64-Payload ohne Data-URL-Header sicherstellen
     const cleanBase64 = base64Image.replace(/^data:[^;]+;base64,/, '');
@@ -219,11 +266,7 @@
       }
     };
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyPayload)
-    });
+    const res = await geminiFetch(targetModel, bodyPayload);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -435,6 +478,9 @@
   }
 
   const api = {
+    geminiFetch,
+    isGeminiAvailable,
+    getGeminiRoute,
     getProvider: getActiveProvider,
     setProvider: setActiveProvider,
     getApiKey: getApiKeyForProvider,
@@ -450,9 +496,27 @@
       maxTokens = 2048, 
       provider = null, 
       model = null, 
-      returnJson = false 
+      returnJson = false,
+      safety = false
     }) {
       const activeProv = provider || getActiveProvider();
+      const director = safety ? window.TactusDirector : null;
+
+      // Sicherheits-Regie: Grenzen in den Prompt, Namen pseudonymisieren, Ergebnis prüfen (1 Neuversuch)
+      if (director) {
+        const profile = director.getSafetyProfile();
+        const baseSystem = (systemPrompt || '') + '\n\nNenne die Personen ausschließlich {TOP} und {BOTTOM}.\n' + director.buildConstraintBlock(profile);
+        let prompt = director.pseudonymize(userPrompt);
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const raw = await this.generateText({ systemPrompt: director.pseudonymize(baseSystem), userPrompt: prompt, temperature, maxTokens, provider, model, returnJson });
+          const check = director.validate(raw, profile);
+          if (check.ok) return director.restoreNames(raw);
+          prompt = director.pseudonymize(userPrompt) + '\n\nWICHTIG: Dein letzter Entwurf verletzte diese Grenzen: ' +
+            check.violations.map(v => `${v.label} ("${v.term}")`).join('; ') + '. Erstelle einen neuen Entwurf ohne diese Inhalte.';
+        }
+        throw new Error('Der KI-Vorschlag berührte eure Grenzen und wurde verworfen.');
+      }
+
       let rawResult = '';
 
       if (activeProv === 'gemini') {
