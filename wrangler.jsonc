@@ -1,0 +1,32 @@
+{
+  // TACTUS · Cloudflare Worker mit statischen Assets (kostenloser Plan)
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tactus",
+  "main": "worker/src/index.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "ROOMS", "class_name": "Room" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tactus",
+      // Nach "npx wrangler d1 create tactus" die ausgegebene ID hier eintragen
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "worker/migrations"
+    }
+  ],
+  "vars": {
+    "AI_DAILY_TEXT": "150",
+    "AI_DAILY_TTS": "60"
+  },
+  "observability": { "enabled": true }
+  // Secrets (nicht hier eintragen!): npx wrangler secret put GEMINI_API_KEY / ADMIN_TOKEN
+}
