@@ -346,7 +346,7 @@
             <p class="text-[11px] text-[#94a3b8] leading-snug">🧎 <span id="portal-name-sub-def">Partner 1</span> empfängt als Bottom und gibt die Kontrolle ab.</p>
           </button>
 
-          <button type="button" onclick="SessionStaging.selectRoleSetup('reversed')" id="btn-role-setup-reversed" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full">
+          <button type="button" onclick="SessionStaging.selectRoleSetup('reversed')" id="btn-role-setup-reversed" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-[#2a364f] block w-full">
             <div class="flex items-center justify-between font-mono">
               <span class="text-xs font-bold uppercase text-[#94a3b8] tracking-wide">Führung: <span id="portal-name-top-rev">Partner 1</span></span>
               <span id="badge-role-reversed" class="text-xs font-bold text-[#94a3b8]">○</span>
@@ -560,7 +560,7 @@
             </p>
           </button>
 
-          <button type="button" id="btn-mode-free" onclick="SessionStaging.selectMode('free')" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full">
+          <button type="button" id="btn-mode-free" onclick="SessionStaging.selectMode('free')" class="p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-[#2a364f] block w-full">
             <div class="flex items-center justify-between font-mono">
               <strong class="text-white text-xs block font-bold">2. Freier Flow</strong>
               <span id="badge-mode-free" class="text-[#94a3b8] font-bold text-xs">○</span>
@@ -726,11 +726,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 font-mono">
           <div class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] space-y-0.5">
             <strong class="text-[#c5a880] block text-[11px]">👑 Top-Führung:</strong>
-            <span id="live-step-top-role" class="text-slate-200 text-[10.5px] leading-snug block">Anweisung für den Top...</span>
+            <span id="live-step-top-role" class="text-[#f8fafc] text-[10.5px] leading-snug block">Anweisung für den Top...</span>
           </div>
           <div class="p-3 rounded-xl bg-[#000000] border border-[#2a364f] space-y-0.5">
             <strong class="text-[#b3734a] block text-[11px]">🧎 Bottom-Hingabe:</strong>
-            <span id="live-step-sub-role" class="text-slate-200 text-[10.5px] leading-snug block">Haltung für den Bottom...</span>
+            <span id="live-step-sub-role" class="text-[#f8fafc] text-[10.5px] leading-snug block">Haltung für den Bottom...</span>
           </div>
         </div>
 
@@ -1068,7 +1068,7 @@
       }
 
       function openBreakGlass() {
-        window.location.href = 'protocol.html#tab=dashboard';
+        window.location.href = 'protocol.html#notfall';
       }
 
       function initRoleDisplay() {

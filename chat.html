@@ -321,7 +321,7 @@
           <span class="w-2 h-2 rounded-full bg-[#c5a880] animate-pulse"></span>
           <span id="pending-task-text" class="text-xs font-mono text-[#f8fafc]">1 offene Pflicht wartet auf Erfüllung</span>
         </div>
-        <button type="button" onclick="ChatApp.nudgeTask()" class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-mono text-[10px] font-bold touch-btn">
+        <button type="button" id="pending-task-btn" onclick="ChatApp.nudgeTask()" class="px-2.5 py-1 rounded-xl bg-[#000000] border border-[#c5a880] text-[#c5a880] font-mono text-[10px] font-bold touch-btn">
           Anmahnen ↗
         </button>
       </div>
@@ -661,7 +661,7 @@
       }
 
       function openBreakGlass() {
-        window.location.href = 'protocol.html#tab=dashboard';
+        window.location.href = 'protocol.html#notfall';
       }
 
       function initRoleDisplay() {
@@ -902,7 +902,45 @@
         if (window.CloudSync && typeof window.CloudSync.trigger === 'function') window.CloudSync.trigger();
       }
 
+      // Leiste über dem Chat: offene Pflichten. Der Top kann anmahnen, der Bottom springt ins Protokoll.
+      function getOpenTasks() {
+        let st = null;
+        try { st = JSON.parse(localStorage.getItem('tactus_tasks_state') || localStorage.getItem('pactum_tasks_state') || 'null'); } catch (e) {}
+        return (st && Array.isArray(st.tasks) ? st.tasks : []).filter(t => t && t.status === 'pending');
+      }
+
+      function iAmTop() {
+        return (localStorage.getItem('kompass_assigned_role') || 'A') === (localStorage.getItem('kompass_keyholder_role') || 'A');
+      }
+
+      function renderPendingTaskBar() {
+        const bar = document.getElementById('stream-pending-task-bar');
+        const label = document.getElementById('pending-task-text');
+        const btn = document.getElementById('pending-task-btn');
+        if (!bar) return;
+        const open = getOpenTasks();
+        if (!open.length) { bar.style.display = 'none'; return; }
+        const n = open.length;
+        const word = n === 1 ? 'Pflicht' : 'Pflichten';
+        bar.style.display = 'flex';
+        if (label) label.innerText = iAmTop() ? `${n} offene ${word} ${n === 1 ? 'wartet' : 'warten'} auf Erfüllung` : `Du hast ${n} offene ${word}`;
+        if (btn) btn.innerText = iAmTop() ? 'Anmahnen ↗' : 'Zum Protokoll ↗';
+      }
+
+      let lastNudgeAt = 0;
+      function nudgeTask() {
+        if (!iAmTop()) { window.location.href = 'protocol.html#tab=chores'; return; }
+        if (Date.now() - lastNudgeAt < 60000) { showToast('Die Erinnerung wurde gerade erst gesendet.'); return; }
+        const open = getOpenTasks();
+        if (!open.length || !window.TactusChat) return;
+        const list = open.slice(0, 3).map(t => `„${t.title}“${t.dueTime ? ` (bis ${t.dueTime} Uhr)` : ''}`).join(', ');
+        window.TactusChat.post(`⏰ Erinnerung: Offene ${open.length === 1 ? 'Pflicht' : 'Pflichten'}: ${list}${open.length > 3 ? ` und ${open.length - 3} weitere` : ''}.`);
+        lastNudgeAt = Date.now();
+        showToast('Erinnerung gesendet.');
+      }
+
       async function renderMessages() {
+        renderPendingTaskBar();
         const list = document.getElementById('chat-messages-list');
         if (!list) return;
 
@@ -1081,7 +1119,7 @@
         const badge = document.getElementById('capsules-count-badge');
         if (!container) return;
 
-        const caps = getStoredCapsules();
+        const caps = getStoredCapsules().filter(c => !c.deleted);
         if (badge) {
           badge.innerText = caps.length.toString();
           badge.style.display = caps.length > 0 ? 'inline-block' : 'none';
@@ -1153,8 +1191,8 @@
       }
 
       function deleteCapsule(id) {
-        let caps = getStoredCapsules();
-        caps = caps.filter(c => c.id !== id);
+        // Als gelöscht markieren statt entfernen, damit der Abgleich sie nicht vom Partnergerät zurückholt
+        const caps = getStoredCapsules().map(c => c.id === id ? { id: c.id, deleted: true } : c);
         saveCapsules(caps);
         renderCapsules();
       }
@@ -1191,7 +1229,10 @@
         openAccountModal: openAccountModal,
         saveAccountSettings: saveAccountSettings,
         forceAppReload: forceAppReload,
-        openBreakGlass: openBreakGlass
+        openBreakGlass: openBreakGlass,
+        renderMessages: renderMessages,
+        postSystemEvent: (text) => window.TactusChat && window.TactusChat.post(text),
+        nudgeTask: nudgeTask
       };
 
       document.addEventListener('DOMContentLoaded', () => {

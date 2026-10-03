@@ -324,12 +324,12 @@
 
     if (topPartner === 'B') {
       if (btnDef) btnDef.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#000000] border-[#c5a880] shadow-md block w-full";
-      if (btnRev) btnRev.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full";
+      if (btnRev) btnRev.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-[#2a364f] block w-full";
       if (badgeDef) { badgeDef.innerText = "✓ Aktiv"; badgeDef.className = "text-xs font-mono font-bold text-[#c5a880]"; }
       if (badgeRev) { badgeRev.innerText = "○"; badgeRev.className = "text-xs font-mono font-bold text-[#94a3b8]"; }
     } else {
       if (btnRev) btnRev.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#000000] border-[#c5a880] shadow-md block w-full";
-      if (btnDef) btnDef.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full";
+      if (btnDef) btnDef.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-[#2a364f] block w-full";
       if (badgeRev) { badgeRev.innerText = "✓ Aktiv"; badgeRev.className = "text-xs font-mono font-bold text-[#c5a880]"; }
       if (badgeDef) { badgeDef.innerText = "○"; badgeDef.className = "text-xs font-mono font-bold text-[#94a3b8]"; }
     }
@@ -470,7 +470,7 @@
     container.innerHTML = filtered.map(item => {
       const isStaged = stagedTonightIds.includes(item.id);
       return `
-        <div onclick="SessionStaging.toggleToy('${item.id}')" class="p-2.5 rounded-xl border text-left cursor-pointer transition touch-btn flex items-center justify-between gap-2 ${isStaged ? 'bg-[#000000] border-[#c5a880] text-white shadow-sm' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700'}">
+        <div onclick="SessionStaging.toggleToy('${item.id}')" class="p-2.5 rounded-xl border text-left cursor-pointer transition touch-btn flex items-center justify-between gap-2 ${isStaged ? 'bg-[#000000] border-[#c5a880] text-white shadow-sm' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]'}">
           <div class="truncate min-w-0">
             <strong class="text-xs text-white block truncate font-sans">${escapeHtml(item.name)}</strong>
             <span class="text-[9.5px] text-[#94a3b8] block truncate font-mono">${escapeHtml(item.somaticEffect || item.desc || '')}</span>
@@ -593,13 +593,13 @@
 
     if (mode === 'guided') {
       if (btnGuided) btnGuided.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#000000] border-[#c5a880] shadow-md block w-full";
-      if (btnFree) btnFree.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full";
+      if (btnFree) btnFree.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-[#2a364f] block w-full";
       if (badgeGuided) { badgeGuided.innerText = "✓ Gewählt"; badgeGuided.className = "text-[#c5a880] font-mono font-bold text-xs"; }
       if (badgeFree) { badgeFree.innerText = "○"; badgeFree.className = "text-[#94a3b8] font-mono font-bold text-xs"; }
       if (previewWrap) previewWrap.classList.remove('opacity-40', 'pointer-events-none');
     } else {
       if (btnFree) btnFree.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#000000] border-[#c5a880] shadow-md block w-full";
-      if (btnGuided) btnGuided.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-slate-700 block w-full";
+      if (btnGuided) btnGuided.className = "p-4 rounded-2xl border text-left space-y-2 transition-all touch-btn bg-[#090d14] border-[#2a364f] hover:border-[#2a364f] block w-full";
       if (badgeFree) { badgeFree.innerText = "✓ Gewählt"; badgeFree.className = "text-[#c5a880] font-mono font-bold text-xs"; }
       if (badgeGuided) { badgeGuided.innerText = "○"; badgeGuided.className = "text-[#94a3b8] font-mono font-bold text-xs"; }
       if (previewWrap) previewWrap.classList.add('opacity-40', 'pointer-events-none');

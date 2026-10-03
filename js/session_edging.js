@@ -139,7 +139,7 @@
 
     if (mode === 'self') {
       if (bSelf) bSelf.className = "p-3 rounded-xl border text-left touch-btn transition bg-[#000000] border-[#c5a880] text-white shadow-md";
-      if (bGemini) bGemini.className = "p-3 rounded-xl border text-left touch-btn transition bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700";
+      if (bGemini) bGemini.className = "p-3 rounded-xl border text-left touch-btn transition bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]";
       if (lbl) {
         lbl.innerText = "Top spricht selbst";
         lbl.className = "text-[10px] font-mono text-[#c5a880] font-bold";
@@ -147,7 +147,7 @@
       showToast("Modus: Top gibt die Edge-Befehle selbst 🗣");
     } else {
       if (bGemini) bGemini.className = "p-3 rounded-xl border text-left touch-btn transition bg-[#000000] border-[#c5a880] text-[#c5a880] shadow-md";
-      if (bSelf) bSelf.className = "p-3 rounded-xl border text-left touch-btn transition bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700";
+      if (bSelf) bSelf.className = "p-3 rounded-xl border text-left touch-btn transition bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]";
       if (lbl) {
         lbl.innerText = "Gemini spricht laut";
         lbl.className = "text-[10px] font-mono text-[#c5a880] font-bold";
@@ -668,7 +668,7 @@
       if (isEdgingCountdownPaused) {
         btn.className = "flex-1 py-4 px-6 rounded-2xl bg-[#142b24] hover:bg-[#2e5746] border-2 border-[#2e5746] text-white font-black text-sm tracking-wide shadow-2xl touch-btn flex items-center justify-center gap-2";
       } else {
-        btn.className = "flex-1 py-4 px-6 rounded-2xl bg-[#000000] hover:bg-[#101622] border-2 border-[#2a364f] text-slate-100 font-black text-sm tracking-wide shadow-2xl touch-btn flex items-center justify-center gap-2";
+        btn.className = "flex-1 py-4 px-6 rounded-2xl bg-[#000000] hover:bg-[#101622] border-2 border-[#2a364f] text-[#f8fafc] font-black text-sm tracking-wide shadow-2xl touch-btn flex items-center justify-center gap-2";
       }
     }
     if (pill) {
@@ -809,7 +809,7 @@
             <span id="label-current-voice-mode" class="text-[10px] font-mono text-[#c5a880] font-bold">Gemini spricht laut</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button type="button" onclick="SessionEdging.setVoiceMode('self')" id="btn-voice-mode-self" class="p-3 rounded-xl border text-left touch-btn transition bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700">
+            <button type="button" onclick="SessionEdging.setVoiceMode('self')" id="btn-voice-mode-self" class="p-3 rounded-xl border text-left touch-btn transition bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]">
               <div class="flex items-center justify-between">
                 <strong class="text-xs text-white block">🗣️ Top spricht selbst</strong>
                 <span class="text-[10px] text-[#b3734a] font-bold">Präsent</span>

@@ -28,28 +28,28 @@
       label: 'Vollwertige Freigabe',
       shortLabel: 'Vollwertig',
       desc: 'Erlaubter, vollständiger Orgasmus mit freier Ejakulation bzw. Entladung.',
-      badgeClass: 'bg-emerald-950 text-emerald-300 border-emerald-800'
+      badgeClass: 'bg-[#142b24] text-[#4ade80] border-[#2e5746]'
     },
     ruined: {
       id: 'ruined',
       label: 'Ruined Orgasm',
       shortLabel: 'Ruined',
       desc: 'Am Point of no Return schlagartig abgebrochene Reizung (Muskelkontraktion ohne Entlastungsgenuss).',
-      badgeClass: 'bg-rose-950 text-rose-300 border-rose-800'
+      badgeClass: 'bg-[#450a0a] text-[#f87171] border-[#991b1b]'
     },
     prostate: {
       id: 'prostate',
       label: 'Anal / Prostata',
       shortLabel: 'Prostata',
       desc: 'Orgasmus rein über Beckenboden und Prostata ohne direkte Berührung der penilen Vorderseite.',
-      badgeClass: 'bg-purple-950 text-purple-300 border-purple-800'
+      badgeClass: 'bg-[#000000] text-[#c5a880] border-[#c5a880]'
     },
     denial: {
       id: 'denial',
       label: 'Lustverweigerung (Denial)',
       shortLabel: 'Denial',
       desc: 'Heranführen an das Erregungsplateau mit anschließendem Kaltstopp und sofortigem Wegsperren.',
-      badgeClass: 'bg-slate-900 text-slate-300 border-slate-700'
+      badgeClass: 'bg-[#090d14] text-[#cbd5e1] border-[#2a364f]'
     }
   };
 
@@ -132,9 +132,9 @@
     if (!container) return;
 
     const el = document.createElement('div');
-    el.className = "bg-noir-900 text-slate-200 font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-slate-800 transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
+    el.className = "bg-noir-900 text-[#f8fafc] font-medium text-xs px-4 py-2.5 rounded-xl shadow-2xl border border-[#2a364f] transition-all pointer-events-auto transform translate-y-2 opacity-0 flex items-center gap-2.5 backdrop-blur-md";
     el.innerHTML = `
-      <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 text-[#c5a880] flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
       <span>${escapeHtml(message)}</span>
@@ -236,8 +236,8 @@
 
     showToast(`✓ Höhepunkt für ${roleName} verbucht: ${typeLabel}`);
 
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Orgasmus-Ökonomie: Höhepunkt für ${roleName} (${typeLabel}) verbucht. Neuer Stand: ${ratioState.topClimaxCount} Top : ${ratioState.subClimaxCount} Bottom.`);
+    if (window.TactusChat) {
+      window.TactusChat.post(`Orgasmus-Ökonomie: Höhepunkt für ${roleName} (${typeLabel}) verbucht. Neuer Stand: ${ratioState.topClimaxCount} Top : ${ratioState.subClimaxCount} Bottom.`);
     }
 
     return entry;
@@ -252,27 +252,27 @@
     const calc = calculateRatioProgress();
 
     container.innerHTML = `
-      <div class="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="p-4 sm:p-5 rounded-3xl bg-[#090d14]/90 border border-[#2a364f] space-y-4 shadow-xl">
+        <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
           <div class="space-y-0.5">
-            <span class="text-[9.5px] font-mono uppercase tracking-wider text-purple-400 font-bold block">Orgasmus-Ökonomie</span>
+            <span class="text-[9.5px] font-mono uppercase tracking-wider text-[#c5a880] font-bold block">Orgasmus-Ökonomie</span>
             <h3 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
               <span>Top-Verhältnis:</span>
-              <span class="font-mono text-purple-300 text-sm sm:text-base">${calc.topCount} : ${calc.subCount}</span>
-              <span class="text-[10px] text-slate-500 font-mono font-normal">(Ziel: ${calc.target} : 1)</span>
+              <span class="font-mono text-[#c5a880] text-sm sm:text-base">${calc.topCount} : ${calc.subCount}</span>
+              <span class="text-[10px] text-[#94a3b8] font-mono font-normal">(Ziel: ${calc.target} : 1)</span>
             </h3>
           </div>
           <div class="flex items-center gap-1.5">
             ${isTop ? `
-              <button type="button" onclick="ProtocolRatio.openConfigModal()" title="Ziel-Verhältnis anpassen" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white touch-btn shadow-xs">
+              <button type="button" onclick="ProtocolRatio.openConfigModal()" title="Ziel-Verhältnis anpassen" class="p-2 rounded-xl bg-[#101622] hover:bg-[#1e2638] border border-[#2a364f] text-[#cbd5e1] hover:text-white touch-btn shadow-xs">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/></svg>
               </button>
-              <button type="button" onclick="ProtocolRatio.openLogClimaxModal('top')" class="px-3 py-1.5 rounded-xl bg-purple-900/90 hover:bg-purple-800 border border-purple-700 text-white font-bold text-xs flex items-center gap-1.5 touch-btn shadow-sm">
+              <button type="button" onclick="ProtocolRatio.openLogClimaxModal('top')" class="px-3 py-1.5 rounded-xl bg-[#090d14]/90 hover:bg-[#4a2818] border border-[#c5a880] text-white font-bold text-xs flex items-center gap-1.5 touch-btn shadow-sm">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 <span>Top +1</span>
               </button>
             ` : `
-              <span class="px-2 py-1 rounded-xl bg-slate-950 border border-slate-800 text-[10px] font-mono text-slate-500 font-bold">Top-geführt</span>
+              <span class="px-2 py-1 rounded-xl bg-[#000000] border border-[#2a364f] text-[10px] font-mono text-[#94a3b8] font-bold">Top-geführt</span>
             `}
           </div>
         </div>
@@ -280,17 +280,17 @@
         <!-- Fortschrittsbalken zum aktuellen Zyklus -->
         <div class="space-y-1.5">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-400 font-medium text-[11px]">Zyklus-Quote: ${calc.currentInCycle} von ${calc.target} Top-Höhepunkten</span>
-            <span class="font-mono text-xs font-bold ${calc.isTargetMet ? 'text-emerald-400' : 'text-purple-300'}">${calc.percentage}%</span>
+            <span class="text-[#94a3b8] font-medium text-[11px]">Zyklus-Quote: ${calc.currentInCycle} von ${calc.target} Top-Höhepunkten</span>
+            <span class="font-mono text-xs font-bold ${calc.isTargetMet ? 'text-[#4ade80]' : 'text-[#c5a880]'}">${calc.percentage}%</span>
           </div>
-          <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800 p-0.5">
-            <div class="h-full rounded-full transition-all duration-500 ${calc.isTargetMet ? 'bg-gradient-to-r from-emerald-600 to-teal-400' : 'bg-gradient-to-r from-purple-700 to-brand-500'}" style="width: ${Math.max(4, calc.percentage)}%;"></div>
+          <div class="w-full h-2.5 bg-[#000000] rounded-full overflow-hidden border border-[#2a364f] p-0.5">
+            <div class="h-full rounded-full transition-all duration-500 ${calc.isTargetMet ? 'bg-gradient-to-r from-[#2e5746] to-[#4ade80]' : 'bg-gradient-to-r from-[#8a5232] to-[#c5a880]'}" style="width: ${Math.max(4, calc.percentage)}%;"></div>
           </div>
         </div>
 
         <!-- Status-Hinweis mit Anti-TftB Schutzklausel -->
-        <div class="p-3 rounded-2xl border text-[11px] leading-relaxed flex items-start gap-2.5 ${calc.isTargetMet ? 'bg-emerald-950/30 border-emerald-800/60 text-emerald-200' : 'bg-slate-950/60 border-slate-800/80 text-slate-400'}">
-          <div class="mt-0.5 flex-shrink-0 text-purple-400">
+        <div class="p-3 rounded-2xl border text-[11px] leading-relaxed flex items-start gap-2.5 ${calc.isTargetMet ? 'bg-[#142b24]/30 border-[#2e5746]/60 text-[#86efac]' : 'bg-[#000000]/60 border-[#2a364f]/80 text-[#94a3b8]'}">
+          <div class="mt-0.5 flex-shrink-0 text-[#c5a880]">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
           </div>
           <div class="space-y-0.5">
@@ -302,14 +302,14 @@
 
         <!-- Schnellerfassung für Bottom-Höhepunkt -->
         <div class="flex items-center justify-between pt-1 text-xs">
-          <span class="text-[10.5px] text-slate-500 font-mono">Bottom-Freigabe erfassen:</span>
+          <span class="text-[10.5px] text-[#94a3b8] font-mono">Bottom-Freigabe erfassen:</span>
           ${isTop ? `
-            <button type="button" onclick="ProtocolRatio.openLogClimaxModal('sub')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-medium text-[11px] flex items-center gap-1 touch-btn">
+            <button type="button" onclick="ProtocolRatio.openLogClimaxModal('sub')" class="px-2.5 py-1 rounded-xl bg-[#101622] hover:bg-[#1e2638] border border-[#2a364f] text-[#cbd5e1] hover:text-white font-medium text-[11px] flex items-center gap-1 touch-btn">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
               <span>Bottom-Freigabe buchen</span>
             </button>
           ` : `
-            <span class="text-[10px] text-slate-600 font-mono italic">Freigabe-Erfassung obliegt dem Top</span>
+            <span class="text-[10px] text-[#64748b] font-mono italic">Freigabe-Erfassung obliegt dem Top</span>
           `}
         </div>
       </div>
@@ -328,33 +328,33 @@
     }
 
     modal.innerHTML = `
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl text-xs">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="w-full max-w-md bg-[#090d14] border border-[#2a364f] rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl text-xs">
+        <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
           <div class="space-y-0.5">
             <h3 class="text-sm font-bold text-white">Ziel-Ratio konfigurieren</h3>
-            <span class="text-[10px] text-slate-400">Verhältnis der Höhepunkte: N_Top zu 1 Bottom-Freigabe</span>
+            <span class="text-[10px] text-[#94a3b8]">Verhältnis der Höhepunkte: N_Top zu 1 Bottom-Freigabe</span>
           </div>
-          <button type="button" onclick="document.getElementById('modal-ratio-config').style.display='none'" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+          <button type="button" onclick="document.getElementById('modal-ratio-config').style.display='none'" class="p-1.5 rounded-lg text-[#94a3b8] hover:text-white">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
         <div class="space-y-2">
           ${DEFAULT_RATIO_PRESETS.map(preset => `
-            <button type="button" onclick="ProtocolRatio.selectPreset(${preset.target})" class="w-full p-3 rounded-2xl border text-left transition-all touch-btn flex items-center justify-between ${ratioState.targetRatio === preset.target ? 'bg-purple-950/60 border-purple-600 text-white shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
+            <button type="button" onclick="ProtocolRatio.selectPreset(${preset.target})" class="w-full p-3 rounded-2xl border text-left transition-all touch-btn flex items-center justify-between ${ratioState.targetRatio === preset.target ? 'bg-[#000000]/60 border-[#c5a880] text-white shadow-sm' : 'bg-[#000000] border-[#2a364f] text-[#cbd5e1] hover:border-[#2a364f]'}">
               <div class="space-y-0.5">
                 <strong class="text-xs text-white block">${escapeHtml(preset.label)}</strong>
-                <span class="text-[10px] text-slate-400">${escapeHtml(preset.desc)}</span>
+                <span class="text-[10px] text-[#94a3b8]">${escapeHtml(preset.desc)}</span>
               </div>
-              <span class="text-xs font-mono font-bold ${ratioState.targetRatio === preset.target ? 'text-purple-300' : 'text-slate-600'}">
+              <span class="text-xs font-mono font-bold ${ratioState.targetRatio === preset.target ? 'text-[#c5a880]' : 'text-[#64748b]'}">
                 ${ratioState.targetRatio === preset.target ? '✓' : '○'}
               </span>
             </button>
           `).join('')}
         </div>
 
-        <div class="pt-2 border-t border-slate-800 flex justify-end">
-          <button type="button" onclick="document.getElementById('modal-ratio-config').style.display='none'" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs touch-btn">
+        <div class="pt-2 border-t border-[#2a364f] flex justify-end">
+          <button type="button" onclick="document.getElementById('modal-ratio-config').style.display='none'" class="px-4 py-2 rounded-xl bg-[#101622] hover:bg-[#1e2638] text-white font-bold text-xs touch-btn">
             Schließen
           </button>
         </div>
@@ -376,42 +376,42 @@
     const isTop = (role === 'top');
 
     modal.innerHTML = `
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl text-xs">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="w-full max-w-md bg-[#090d14] border border-[#2a364f] rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl text-xs">
+        <div class="flex items-center justify-between border-b border-[#2a364f] pb-3">
           <div class="space-y-0.5">
             <h3 class="text-sm font-bold text-white">Höhepunkt erfassen (${isTop ? 'Top' : 'Bottom'})</h3>
-            <span class="text-[10px] text-slate-400">Wähle Typisierung und Kontext</span>
+            <span class="text-[10px] text-[#94a3b8]">Wähle Typisierung und Kontext</span>
           </div>
-          <button type="button" onclick="document.getElementById('modal-log-climax').style.display='none'" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+          <button type="button" onclick="document.getElementById('modal-log-climax').style.display='none'" class="p-1.5 rounded-lg text-[#94a3b8] hover:text-white">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
         <div class="space-y-2">
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase tracking-wider block">Typ des Höhepunkts:</label>
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase tracking-wider block">Typ des Höhepunkts:</label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             ${Object.values(CLIMAX_TYPES).map(t => `
-              <button type="button" id="btn-clx-type-${t.id}" onclick="ProtocolRatio.selectModalType('${t.id}')" class="p-2.5 rounded-xl border text-left transition-all ${t.id === 'full' ? 'bg-purple-950/60 border-purple-600 text-white shadow-sm' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'}">
+              <button type="button" id="btn-clx-type-${t.id}" onclick="ProtocolRatio.selectModalType('${t.id}')" class="p-2.5 rounded-xl border text-left transition-all ${t.id === 'full' ? 'bg-[#000000]/60 border-[#c5a880] text-white shadow-sm' : 'bg-[#000000] border-[#2a364f] text-[#cbd5e1] hover:border-[#2a364f]'}">
                 <strong class="text-xs block text-white">${escapeHtml(t.shortLabel)}</strong>
-                <span class="text-[9.5px] text-slate-400 leading-tight block mt-0.5">${escapeHtml(t.desc)}</span>
+                <span class="text-[9.5px] text-[#94a3b8] leading-tight block mt-0.5">${escapeHtml(t.desc)}</span>
               </button>
             `).join('')}
           </div>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[10.5px] font-mono text-slate-400 uppercase tracking-wider block">Notiz (optional):</label>
-          <input type="text" id="input-clx-note" placeholder="z. B. Nach Cunnilingus-Dienst / Schwellen-Quälerei..." class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:border-purple-600 focus:outline-none" />
+          <label class="text-[10.5px] font-mono text-[#94a3b8] uppercase tracking-wider block">Notiz (optional):</label>
+          <input type="text" id="input-clx-note" placeholder="z. B. Nach Cunnilingus-Dienst / Schwellen-Quälerei..." class="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[#2a364f] text-[#f8fafc] text-xs focus:border-[#c5a880] focus:outline-none" />
         </div>
 
         <input type="hidden" id="input-clx-selected-type" value="full" />
         <input type="hidden" id="input-clx-selected-role" value="${isTop ? 'top' : 'sub'}" />
 
-        <div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
-          <button type="button" onclick="document.getElementById('modal-log-climax').style.display='none'" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs touch-btn">
+        <div class="pt-2 border-t border-[#2a364f] flex justify-end gap-2">
+          <button type="button" onclick="document.getElementById('modal-log-climax').style.display='none'" class="px-3.5 py-2 rounded-xl bg-[#101622] text-[#cbd5e1] font-bold text-xs touch-btn">
             Abbrechen
           </button>
-          <button type="button" onclick="ProtocolRatio.submitModalClimax()" class="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs touch-btn shadow-md">
+          <button type="button" onclick="ProtocolRatio.submitModalClimax()" class="px-4 py-2 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold text-xs touch-btn shadow-md">
             Höhepunkt buchen ✓
           </button>
         </div>
@@ -429,9 +429,9 @@
       const btn = document.getElementById(`btn-clx-type-${id}`);
       if (btn) {
         if (id === typeId) {
-          btn.className = "p-2.5 rounded-xl border text-left transition-all bg-purple-950/60 border-purple-600 text-white shadow-sm";
+          btn.className = "p-2.5 rounded-xl border text-left transition-all bg-[#000000]/60 border-[#c5a880] text-white shadow-sm";
         } else {
-          btn.className = "p-2.5 rounded-xl border text-left transition-all bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700";
+          btn.className = "p-2.5 rounded-xl border text-left transition-all bg-[#000000] border-[#2a364f] text-[#cbd5e1] hover:border-[#2a364f]";
         }
       }
     });

@@ -1040,8 +1040,8 @@ ANFORDERUNGEN:
       window.ProtocolCore.addTransaction(-penalty, `Zucht vollzogen: ${title} (${hits} Einheiten)`, 'top');
     }
 
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Zucht angeordnet: ${title} (${hits} Einheiten, -${penalty} P). Haltung: „${directive}“.`);
+    if (window.TactusChat) {
+      window.TactusChat.post(`Zucht angeordnet: ${title} (${hits} Einheiten, -${penalty} P). Haltung: „${directive}“.`);
     }
 
     const modal = document.getElementById('modal-execute-discipline');
@@ -1084,8 +1084,8 @@ ANFORDERUNGEN:
     const formattedReason = reason ? ` Grund: ${reason}` : ' Bitte gründlich nachbessern.';
     showToast(`Pflicht abgewiesen.${formattedReason}`);
 
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Pflicht abgewiesen: „${task.title}“ wurde vom Top nicht anerkannt.${formattedReason}`);
+    if (window.TactusChat) {
+      window.TactusChat.post(`Pflicht abgewiesen: „${task.title}“ wurde vom Top nicht anerkannt.${formattedReason}`);
     }
 
     const modal = document.getElementById('modal-reject-task');
@@ -1111,9 +1111,9 @@ ANFORDERUNGEN:
 
     showToast(`✓ „${task.title}“ eingereicht. Freigabe durch den Top ausstehend.`);
 
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
+    if (window.TactusChat) {
       const noteSuffix = task.submissionNote ? ` („${task.submissionNote}“)` : '';
-      window.ChatApp.postSystemEvent(`Pflicht zur Prüfung eingereicht: ${task.title}${noteSuffix}. Freigabe durch den Top ausstehend.`, task.id);
+      window.TactusChat.post(`Pflicht zur Prüfung eingereicht: ${task.title}${noteSuffix}. Freigabe durch den Top ausstehend.`, task.id);
     }
   }
 
@@ -1140,8 +1140,8 @@ ANFORDERUNGEN:
 
     showToast(`✓ Pflicht bestätigt: +${task.points} Tribut-Punkte verbucht`);
 
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Pflicht quittiert: „${task.title}“ vom Top anerkannt (+${task.points} P).`);
+    if (window.TactusChat) {
+      window.TactusChat.post(`Pflicht quittiert: „${task.title}“ vom Top anerkannt (+${task.points} P).`);
     }
   }
 
@@ -1182,8 +1182,8 @@ ANFORDERUNGEN:
 
     showToast(`✓ Zustand: ${labelMap[loadState] || loadState}`);
 
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Führungszustand des Tops aktualisiert: ${labelMap[loadState] || loadState}. Pflichtenplan angepasst.`);
+    if (window.TactusChat) {
+      window.TactusChat.post(`Führungszustand des Tops aktualisiert: ${labelMap[loadState] || loadState}. Pflichtenplan angepasst.`);
     }
   }
 

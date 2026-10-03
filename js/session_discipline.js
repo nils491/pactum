@@ -567,7 +567,7 @@
     c.innerHTML = displayItems.map(item => {
       const isSel = wizardSelections.action && wizardSelections.action.id === item.id;
       return `
-        <div onclick="SessionDiscipline.selectActionItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700'}">
+        <div onclick="SessionDiscipline.selectActionItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]'}">
           <div class="flex items-center justify-between">
             <strong class="text-xs text-white block font-bold">${escapeHtml(item.title)}</strong>
             <span class="text-[9.5px] px-2 py-0.5 rounded-lg bg-[#000000] border border-[#2a364f] font-mono text-[#c5a880] font-bold">${escapeHtml(item.ratingBadge)}</span>
@@ -611,7 +611,7 @@
     c.innerHTML = displayItems.map(item => {
       const isSel = wizardSelections.posture && wizardSelections.posture.id === item.id;
       return `
-        <div onclick="SessionDiscipline.selectPostureItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700'}">
+        <div onclick="SessionDiscipline.selectPostureItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]'}">
           <div class="flex items-center justify-between">
             <strong class="text-xs text-white block font-bold">${escapeHtml(item.title)}</strong>
             <span class="text-[9.5px] px-2 py-0.5 rounded-lg bg-[#000000] border border-[#2a364f] font-mono text-[#c5a880] font-bold">${escapeHtml(item.badge)}</span>
@@ -652,7 +652,7 @@
     c.innerHTML = displayItems.map(item => {
       const isSel = wizardSelections.bondage && wizardSelections.bondage.id === item.id;
       return `
-        <div onclick="SessionDiscipline.selectBondageItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700'}">
+        <div onclick="SessionDiscipline.selectBondageItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]'}">
           <div class="flex items-center justify-between">
             <strong class="text-xs text-white block font-bold">${escapeHtml(item.title)}</strong>
             <span class="text-[9.5px] px-2 py-0.5 rounded-lg bg-[#000000] border border-[#2a364f] font-mono text-[#c5a880] font-bold">${escapeHtml(item.badge)}</span>
@@ -693,7 +693,7 @@
     c.innerHTML = displayItems.map(item => {
       const isSel = wizardSelections.sensory && wizardSelections.sensory.id === item.id;
       return `
-        <div onclick="SessionDiscipline.selectSensoryItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-slate-700'}">
+        <div onclick="SessionDiscipline.selectSensoryItem('${item.id}')" class="p-3.5 rounded-2xl border text-left cursor-pointer transition touch-btn space-y-1.5 ${isSel ? 'bg-[#000000] border-[#c5a880] shadow-md' : 'bg-[#090d14] border-[#2a364f] text-[#94a3b8] hover:border-[#2a364f]'}">
           <div class="flex items-center justify-between">
             <strong class="text-xs text-white block font-bold">${escapeHtml(item.title)}</strong>
             <span class="text-[9.5px] px-2 py-0.5 rounded-lg bg-[#000000] border border-[#2a364f] font-mono text-[#c5a880] font-bold">${escapeHtml(item.badge)}</span>

@@ -457,8 +457,8 @@
     renderContractDashboard();
     showToast(`✓ Vertrag aus 505 Fragen synthetisiert (Version ${contractState.version})`);
 
-    if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-      window.ChatApp.postSystemEvent(`Beziehungsvertrag neu synthetisiert (Version ${contractState.version}). Ratifizierung durch beide Partner erbeten.`);
+    if (window.TactusChat) {
+      window.TactusChat.post(`Beziehungsvertrag neu synthetisiert (Version ${contractState.version}). Ratifizierung durch beide Partner erbeten.`);
     }
   }
 
@@ -770,8 +770,8 @@
       contractState.status = 'active';
       contractState.signedAt = Date.now();
       showToast("✓ Beide Signaturen besiegelt: Der Beziehungsvertrag ist ratifiziert!");
-      if (window.ChatApp && typeof window.ChatApp.postSystemEvent === 'function') {
-        window.ChatApp.postSystemEvent(`Beziehungsvertrag vollständig ratifiziert und gültig besiegelt (Version ${contractState.version}).`);
+      if (window.TactusChat) {
+        window.TactusChat.post(`Beziehungsvertrag vollständig ratifiziert und gültig besiegelt (Version ${contractState.version}).`);
       }
     } else {
       showToast(`Signatur für ${activeSignModalRole.toUpperCase()} besiegelt. Partner-Signatur noch ausstehend.`);

@@ -846,7 +846,7 @@
               const photoUrl = getPhotoForToy(toy.id);
 
               return `
-                <div class="p-3 rounded-2xl border transition-all flex flex-col justify-between ${isSelectedForThisSlot ? 'bg-[#000000] border-[#c5a880] shadow-md' : (isBlocked ? 'opacity-40 border-[#450a0a] bg-[#000000]' : 'bg-[#000000] border-[#2a364f] hover:border-slate-600')}">
+                <div class="p-3 rounded-2xl border transition-all flex flex-col justify-between ${isSelectedForThisSlot ? 'bg-[#000000] border-[#c5a880] shadow-md' : (isBlocked ? 'opacity-40 border-[#450a0a] bg-[#000000]' : 'bg-[#000000] border-[#2a364f] hover:border-[#475569]')}">
                   <div class="space-y-1">
                     <div class="flex items-start justify-between gap-1.5">
                       <strong class="text-xs text-white block font-bold leading-tight break-words">

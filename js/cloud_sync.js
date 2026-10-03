@@ -227,7 +227,8 @@
       ownedEquipment: safeJsonParse('tactus_owned_equipment', null) || safeJsonParse('kompass_owned_equipment', []),
       toyQuantities: safeJsonParse('tactus_toy_quantities', null) || safeJsonParse('kompass_toy_quantities', {}),
       customEquipment: safeJsonParse('tactus_custom_equipment', null) || safeJsonParse('kompass_custom_equipment', []),
-      chatMessages: safeJsonParse('kompass_chat_messages', []),
+      chatMessages: safeJsonParse('tactus_stream_messages', null) || safeJsonParse('kompass_chat_messages', []),
+      chatCapsules: safeJsonParse('tactus_stream_capsules', []),
       sessionLogbook: safeJsonParse('tactus_session_logbook', null) || safeJsonParse('kompass_session_diary', []),
       feedbackShared: safeJsonParse('tactus_feedback_shared', []),
       feedbackSignals: safeJsonParse('tactus_feedback_signals', null),
@@ -331,8 +332,21 @@
 
         const mergedTxs = Array.from(txMap.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 400);
 
-        const mergedProtocol = Object.assign({}, localProtocol, remote.protocolState, {
-          transactions: mergedTxs
+        // Neuerer Stand gewinnt (ein Teilpaket nur mit Buchungen überschreibt nichts)
+        const remoteNewer = (remote.protocolState.updatedAt || 0) >= (localProtocol.updatedAt || 0);
+        const base = remoteNewer
+          ? Object.assign({}, localProtocol, remote.protocolState)
+          : Object.assign({}, remote.protocolState, localProtocol);
+        // Verstöße zusammenführen: eine Entscheidung des Tops schlägt "offen"
+        const vioMap = new Map();
+        [].concat(localProtocol.violations || [], remote.protocolState.violations || []).forEach(v => {
+          if (!v || !v.id) return;
+          const cur = vioMap.get(v.id);
+          if (!cur || (cur.status === 'open' && v.status !== 'open')) vioMap.set(v.id, v);
+        });
+        const mergedProtocol = Object.assign(base, {
+          transactions: mergedTxs,
+          violations: Array.from(vioMap.values()).sort((a, b) => (a.at || 0) - (b.at || 0)).slice(-50)
         });
 
         // Berechne Saldo strikt aus den gemergten Transaktionen
@@ -438,12 +452,22 @@
 
       // 10. Chat-Stream Nachrichten
       if (Array.isArray(remote.chatMessages)) {
-        const localMessages = safeJsonParse('kompass_chat_messages', []);
+        const localMessages = safeJsonParse('tactus_stream_messages', null) || safeJsonParse('kompass_chat_messages', []);
         const msgMap = new Map();
         localMessages.forEach(m => { if (m && m.id) msgMap.set(m.id, m); });
         remote.chatMessages.forEach(m => { if (m && m.id) msgMap.set(m.id, m); });
         const mergedMsgs = Array.from(msgMap.values()).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)).slice(-250);
-        localStorage.setItem('kompass_chat_messages', JSON.stringify(mergedMsgs));
+        localStorage.setItem('tactus_stream_messages', JSON.stringify(mergedMsgs));
+        changesMade = true;
+      }
+
+      // 10a. Zeitkapseln im Paar-Stream
+      if (Array.isArray(remote.chatCapsules)) {
+        const capMap = new Map();
+        safeJsonParse('tactus_stream_capsules', []).forEach(c => { if (c && c.id) capMap.set(c.id, c); });
+        // Gelöscht schlägt vorhanden, damit gelöschte Kapseln nicht zurückkommen
+        remote.chatCapsules.forEach(c => { if (c && c.id && !(capMap.get(c.id) || {}).deleted) capMap.set(c.id, c); });
+        localStorage.setItem('tactus_stream_capsules', JSON.stringify(Array.from(capMap.values())));
         changesMade = true;
       }
 
@@ -536,7 +560,7 @@
     tasksState: 'tasks',
     climaxRatio: 'history'
   };
-  const ITEMIZED_ARRAYS = ['chatMessages', 'customEquipment', 'sessionLogbook', 'feedbackShared'];
+  const ITEMIZED_ARRAYS = ['chatMessages', 'chatCapsules', 'customEquipment', 'sessionLogbook', 'feedbackShared'];
   const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals', 'aiOwnKey'];
   const AI_KEY_SLOTS = ['tactus_api_key_gemini', 'kompass_gemini_api_key', 'tactus_ai_custom_key'];
   const AI_KEY_UPDATED_AT = 'tactus_ai_key_updated_at';

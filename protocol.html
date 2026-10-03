@@ -362,10 +362,13 @@
               🔒 Verriegeln
             </button>
             <button type="button" onclick="ProtocolCore.startHygieneTimer()" id="btn-hygiene-timer" class="px-3.5 py-2 bg-[#090d14] hover:bg-[#101622] border border-[#2a364f] text-[#c5a880] font-bold rounded-xl touch-btn">
-              💧 15m Hygiene-Spülung
+              💧 15 Min. Hygiene-Pause
             </button>
           </div>
         </div>
+
+        <div id="hygiene-status" style="display: none;"></div>
+        <div id="violations-panel" style="display: none;" class="space-y-2"></div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
           <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1.5">
@@ -384,7 +387,7 @@
           <div class="p-3.5 rounded-2xl bg-[#000000] border border-[#2a364f] space-y-1.5">
             <span class="text-[10px] text-[#94a3b8] uppercase block">Urologischer Balanitis-Schutz:</span>
             <p class="text-[10.5px] text-[#94a3b8] leading-snug font-sans">
-              Tägliche 50ml-Kochsalzspülung durch die Öffnungen verhindert bakterielle Mazeration. Timer stoppt das Strafmaß automatisch für 15 Minuten.
+              Tägliche 50-ml-Kochsalzspülung durch die Öffnungen verhindert bakterielle Mazeration. Für Reinigung und Rasur gibt es die 15-minütige Hygiene-Pause; wird sie überzogen, entscheidet der Top über die Strafe.
             </p>
           </div>
         </div>
@@ -402,7 +405,7 @@
           Überlasse das Urteil dem Zufall: Der Würfel entscheidet unparteiisch über Gunst-Öffnung, Zuchtmaßnahme, Aufgabenverschärfung oder strikten Triebaufschub für die nächsten 24 Stunden.
         </p>
         <div class="flex justify-end">
-          <button type="button" onclick="ProtocolCore.rollFateDice()" id="btn-roll-dice" class="px-5 py-2.5 bg-[#4a2818] hover:bg-[#8a5232] border border-[#8a5232] text-white font-mono text-xs font-bold rounded-xl touch-btn shadow-md">
+          <button type="button" onclick="ProtocolCore.rollDiceOfFate()" id="btn-roll-dice" class="px-5 py-2.5 bg-[#4a2818] hover:bg-[#8a5232] border border-[#8a5232] text-white font-mono text-xs font-bold rounded-xl touch-btn shadow-md">
             Schicksal würfeln 🎲
           </button>
         </div>
@@ -420,7 +423,7 @@
             <h3 class="text-sm sm:text-base font-serif font-bold text-white">Aufgaben, Dienste &amp; Disziplinarmaßnahmen</h3>
           </div>
           <div class="flex items-center gap-1.5 font-mono text-xs">
-            <button type="button" onclick="ProtocolTasks.openNewTaskModal()" class="px-3.5 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-sm">
+            <button type="button" onclick="ProtocolTasks.openCreateModal()" class="px-3.5 py-1.5 rounded-xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-bold touch-btn shadow-sm">
               + Neue Pflicht
             </button>
           </div>
@@ -499,7 +502,7 @@
             <span class="text-[9.5px] font-mono uppercase text-[#c5a880] font-bold block">Tages-Führung &amp; Teleprompter</span>
             <h3 class="text-sm sm:text-base font-serif font-bold text-white">Der TACTUS Führungs-Coach</h3>
           </div>
-          <button type="button" onclick="ProtocolCoach.generateDailyDirectives()" class="px-3.5 py-1.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono text-xs font-bold rounded-xl touch-btn shadow-md">
+          <button type="button" onclick="ProtocolCoach.generateDailyDirective()" class="px-3.5 py-1.5 bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono text-xs font-bold rounded-xl touch-btn shadow-md">
             Neu berechnen ↺
           </button>
         </div>
@@ -866,6 +869,13 @@
         init: function() {
           initRoleDisplay();
           setInterval(checkConditionalBreakGlass, 2000);
+          // Sprungziele von anderen Seiten: #notfall öffnet die Notfall-Öffnung, #tab=… den Reiter
+          setTimeout(() => {
+            const hash = window.location.hash;
+            const tab = (hash.match(/tab=([a-z_]+)/) || [])[1];
+            if (tab && window.ProtocolCore) window.ProtocolCore.switchTab(tab);
+            if (hash.includes('notfall') && window.ProtocolCore) window.ProtocolCore.openBreakGlass();
+          }, 300);
         }
       };
 
