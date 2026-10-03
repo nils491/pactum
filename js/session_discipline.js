@@ -224,7 +224,7 @@
           cat: ["orgasm", "duty"],
           title: `Keuschheits-Verwahrung im ${sem.male_chastity[0]}`,
           rationale: "Vollkommene Abgabe der Kontrolle: Der Mann übergibt die Verantwortung über seine Lust vollständig in die Hände der Partnerin. Befreit vom Zwang zur eigenen Befriedigung.",
-          desc: `${topName} schließt den Penis im ${sem.male_chastity[0]} ein. Der Schlüssel verbleibt sichtbar beim Top.",
+          desc: `${topName} schließt den Penis im ${sem.male_chastity[0]} ein. Der Schlüssel verbleibt sichtbar beim Top.`,
           execution: "Sitz des Käfigs im schlaffen Zustand prüfen, Schloss verriegeln und den Schlüssel demonstrativ an einer Halskette tragen.",
           ratingBadge: "Volles Vertrauen"
         });
