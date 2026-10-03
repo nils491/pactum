@@ -7,15 +7,16 @@
  * - 100 % UTF-8 Integrität: Echte deutsche Umlaute (ä, ö, ü, ß) im gesamten Modul
  * - Haute-Horlogerie Palette: Reines OLED-Schwarz, Graphit, Champagner-Gold, Malachit, Cognac & Bordeaux
  * - Zwei-Wege-Strukturwahlschalter: 4-Phasen-Drehbuch vs. Freies Spiel & Somatischer Flow
+ * - Robuste KI-Drehbuch-Synthese mit Markdown-Fence-Bereinigung, JSON-Extraktion & Modell-Kopplung
+ * - Visueller Lade-Zustand mit Spinner auf dem Ausführungs-Button während des API-Calls
  * - Sprachbegleitungs-Schalter: Voice-Assistance laut im Raum vs. stumm (rein optische Display-Regie)
  * - Soundscape- & Musik-Regie: WebAudio Drones (Subspace 55Hz, 432Hz Vagus, Puls) & Spotify-Kopplung
- * - Dynamische Motiv-Extraktion aus allen 36 Kapiteln des Fragebogens
+ * - Dynamische Motiv-Extraktion aus allen 36 Kapiteln des Fragebogens (505 Items)
  * - Strikter Tabu-Ausschluss (Note 1) & Priorisierung von 5/5 Doppel-Spitzen
  * - Transparenz über persönliche Sub-Notizen mit klickbaren Fragebogen-Deeplinks (#view=survey&item=X)
  * - 4 Top-Führungsdimensionen: Tonalität, Top-Agenda, Leitmotiv & Keuschheits-Triage
  * - DoF-Konfliktprüfung & Substitutions-Intelligenz via ToyCombinatorics
  * - RACK-Gesundheitspass: Aufklärende Schutz- & Notfall-Hinweise zur autonomen Kontrolle
- * - Multi-KI Drehbuch-Synthese via AIAdapter mit autarkem Heuristik-Fallback
  * - 100 % frei von infantilen System-Emojis, keine window.alert() / confirm() Aufrufe
  */
 
@@ -28,6 +29,7 @@
   const STORAGE_KEY_MEDICAL_PASS = 'tactus_medical_pass';
   const STORAGE_KEY_OWNED = 'tactus_owned_equipment';
   const STORAGE_KEY_OWNED_LEGACY = 'kompass_owned_equipment';
+  const STORAGE_KEY_GEMINI_MODEL = 'tactus_gemini_active_model';
 
   // Kuratierte Spotify-Schlafzimmer-Playlists
   const SPOTIFY_DEFAULT_PLAYLIST = 'https://open.spotify.com/playlist/37i9dQZF1DXdLEN7aqioXM';
@@ -150,6 +152,8 @@
     spotifyPlaylistUrl: SPOTIFY_DEFAULT_PLAYLIST
   };
 
+  let isSynthesizing = false;
+
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -263,7 +267,7 @@
         const topNote = (ansTop[`note_${it.id}`] || '').trim();
         const isShame = ansBottom[`shame_${it.id}`] === true;
 
-        if (sBottom === 1) return; // Tabus strikt ausschließen
+        if (sBottom === 1) return; // Tabus des Bottoms strikt ausschließen
 
         const topWants = typeof sTop === 'number' && sTop >= 4;
         const isDoubleFive = sTop === 5 && sBottom === 5;
@@ -434,8 +438,40 @@
     return notices;
   }
 
+  function extractAndParseJsonScript(rawAiOutput) {
+    if (!rawAiOutput) return null;
+
+    if (typeof rawAiOutput === 'object' && Array.isArray(rawAiOutput.phases)) {
+      return rawAiOutput;
+    }
+
+    if (typeof rawAiOutput === 'string') {
+      try {
+        let clean = rawAiOutput.trim();
+        clean = clean.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+        const firstBrace = clean.indexOf('{');
+        const lastBrace = clean.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          clean = clean.substring(firstBrace, lastBrace + 1);
+        }
+
+        const parsed = JSON.parse(clean);
+        if (parsed && Array.isArray(parsed.phases) && parsed.phases.length >= 3) {
+          return parsed;
+        }
+      } catch (errJson) {
+        console.warn("[TACTUS Staging] JSON-Parsing der KI-Antwort fehlgeschlagen:", errJson);
+      }
+    }
+
+    return null;
+  }
+
   async function generateBedroomScript() {
+    if (isSynthesizing) return;
     loadStagingState();
+
     const candidateMotifs = extractDynamicMotifCandidates();
     const activeMotif = candidateMotifs.find(m => m.id === stagingConfig.motifId) || candidateMotifs[0];
 
@@ -456,6 +492,22 @@
     const intensity = stagingConfig.intensity || 6;
     const agenda = stagingConfig.topAgenda || 'focus_top';
     const isFlowMode = stagingConfig.sessionMode === 'flow';
+
+    const launchBtn = document.getElementById('btn-staging-launch-script');
+    const launchBtnText = document.getElementById('staging-launch-btn-text');
+    const launchBtnSub = document.getElementById('staging-launch-btn-sub');
+
+    isSynthesizing = true;
+    if (launchBtn) launchBtn.disabled = true;
+    if (launchBtnText) {
+      launchBtnText.innerHTML = `
+        <span class="inline-flex items-center gap-2">
+          <svg class="w-4 h-4 animate-spin text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Synthetisiere Schlafzimmer-Drehbuch...</span>
+        </span>
+      `;
+    }
+    if (launchBtnSub) launchBtnSub.innerText = "Koppelt KI-Modell, Tonalität & somatische DoF-Achsen";
 
     showToast(isFlowMode ? "Initialisiere Somatischen Flow (Freies Spiel)..." : "Synthetisiere 4-Phasen Schlafzimmer-Drehbuch...");
 
@@ -500,7 +552,7 @@
 Erstelle für ${topName} (Top) eine präzise, 4-phasige Live-Regie zur Führung von ${subName} (Bottom).
 
 KONTEXT DER SESSION:
-- Tonalität: ${tonality}
+- Tonalität: ${tonality} (${TONALITY_DEFINITIONS[tonality]?.label || 'Souverän'})
 - Ziel-Intensität: ${intensity} von 10
 - Hauptmotiv: ${activeMotif.title} (Zone: ${activeMotif.somaticZone})
 - Ausrichtung der Top-Lust: ${TOP_AGENDA_DEFINITIONS[agenda]?.label || agenda}
@@ -513,7 +565,7 @@ Phase 2: Machtaufbau & Reizvektoren (Ausarbeitung des Motivs '${activeMotif.titl
 Phase 3: Katharsis & Lust des Tops (Fokus auf Erregung von ${topName}; Bottom dient)
 Phase 4: Reverse Aftercare & Rüst-Pflege (Bottom versorgt Top; Vagus-Atmung & Toy-Desinfektion)
 
-Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöcke:
+Antworte ausschließlich als wohlgeformtes, valides JSON ohne umschließenden Markdown-Text:
 {
   "sessionTitle": "${activeMotif.title} (${TONALITY_DEFINITIONS[tonality]?.label || 'Souverän'})",
   "tonality": "${tonality}",
@@ -561,22 +613,22 @@ Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöc
 }
 `;
 
+          const activeGeminiModel = localStorage.getItem(STORAGE_KEY_GEMINI_MODEL) || 'gemini-2.0-flash';
           const aiResponse = await window.AIAdapter.generateText({
             systemPrompt: systemPrompt,
             userPrompt: userPrompt,
+            model: activeGeminiModel,
             temperature: 0.65,
             returnJson: true
           });
 
-          if (aiResponse && Array.isArray(aiResponse.phases) && aiResponse.phases.length >= 3) {
-            generatedScript = aiResponse;
-          }
+          generatedScript = extractAndParseJsonScript(aiResponse);
         } catch (errAi) {
           console.debug("[TACTUS Staging] KI-Drehbuch fehlgeschlagen, nutze Heuristik:", errAi);
         }
       }
 
-      if (!generatedScript) {
+      if (!generatedScript || !Array.isArray(generatedScript.phases) || generatedScript.phases.length < 3) {
         generatedScript = synthesizeProceduralScript(activeMotif, tonality, intensity, agenda, topName, subName);
       }
 
@@ -603,6 +655,15 @@ Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöc
           window.SessionAudio.playDrone(stagingConfig.audioSoundscape);
         } catch (eAudio) {}
       }
+    }
+
+    isSynthesizing = false;
+    if (launchBtn) launchBtn.disabled = false;
+    if (launchBtnText) {
+      launchBtnText.innerHTML = `
+        <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5 8c3.5-3 10.5-3 14 0M7 16c2.5 2.5 7.5 2.5 10 0"/></svg>
+        <span>${isFlowMode ? 'Freies Spiel starten (Somatischer Flow) ↗' : 'Drehbuch generieren &amp; Live-Regie starten ↗'}</span>
+      `;
     }
 
     // Übergabe an SessionLive
@@ -1045,11 +1106,18 @@ Antworte ausschließlich als wohlgeformtes, valides JSON ohne Markdown-Codeblöc
 
         <!-- START-BUTTON: DREHBUCH GENERIEREN & INS SCHLAFZIMMER EINTRETEN -->
         <div class="pt-2">
-          <button type="button" onclick="SessionStaging.generateScript()" class="w-full py-4 px-6 rounded-3xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono font-bold text-sm tracking-widest uppercase touch-pad shadow-2xl flex items-center justify-center gap-2 transition">
-            <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5 8c3.5-3 10.5-3 14 0M7 16c2.5 2.5 7.5 2.5 10 0"/></svg>
-            <span>${isScripted ? 'Drehbuch generieren &amp; Live-Regie starten ↗' : 'Freies Spiel starten (Somatischer Flow) ↗'}</span>
+          <button 
+            type="button" 
+            id="btn-staging-launch-script"
+            onclick="SessionStaging.generateScript()" 
+            class="w-full py-4 px-6 rounded-3xl bg-[#c5a880] hover:bg-[#dfcaa9] text-black font-mono font-bold text-sm tracking-widest uppercase touch-pad shadow-2xl flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span id="staging-launch-btn-text" class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M5 8c3.5-3 10.5-3 14 0M7 16c2.5 2.5 7.5 2.5 10 0"/></svg>
+              <span>${isScripted ? 'Drehbuch generieren &amp; Live-Regie starten ↗' : 'Freies Spiel starten (Somatischer Flow) ↗'}</span>
+            </span>
           </button>
-          <span class="text-[9.5px] font-mono text-[#94a3b8] text-center block mt-1.5">
+          <span id="staging-launch-btn-sub" class="text-[9.5px] font-mono text-[#94a3b8] text-center block mt-1.5">
             ${isScripted ? 'Koppelt 4 Phasen, Tonalität, Audio-Drone und DoF-Hardware' : 'Startet aufwärts zählende Stoppuhr mit freier Schwellen- &amp; Zucht-Wahl'}
           </span>
         </div>
