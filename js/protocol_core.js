@@ -882,6 +882,9 @@
   }
 
   function switchTab(tabId) {
+    // Ausgeblendetes Modul (Funktionen & Module)? Dann die Übersicht zeigen
+    const target = document.getElementById(`tab-btn-${tabId}`);
+    if (target && target.classList.contains('tx-module-off')) tabId = 'dashboard';
     ['dashboard', 'chores', 'contract', 'ai_coach'].forEach(t => {
       const view = document.getElementById(`view-ledger-${t}`);
       const btn = document.getElementById(`tab-btn-${t}`);

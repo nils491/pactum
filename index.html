@@ -902,6 +902,7 @@
   <script src="js/cloud_sync.js"></script>
   <script src="js/protocol_core.js"></script>
   <script src="js/tactus_roles.js"></script>
+  <script src="js/tactus_modules.js"></script>
   <script src="js/protocol_ratio.js"></script>
   <script src="js/protocol_tasks.js"></script>
   <script src="js/protocol_contract.js"></script>
@@ -1261,6 +1262,8 @@
         const descEl = document.getElementById('progressive-stage-desc');
 
         const starterOpen = STARTER_ITEM_IDS.length - (starterDone || 0);
+        // Starter komplett: passende Zusatzmodule vorschlagen (einmalig, js/tactus_modules.js)
+        if (window.TactusModules) window.TactusModules.maybeSuggest(starterDone || 0, STARTER_ITEM_IDS.length);
         if (starterOpen > 0 && answeredCount < 100) {
           if (titleEl) titleEl.innerText = "Stufe 1: Schlafzimmer & 25-Fragen-Starter";
           if (badgeEl) {

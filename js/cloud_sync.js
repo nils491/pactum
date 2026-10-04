@@ -238,6 +238,10 @@
       }
     };
 
+    // Eingeblendete Funktionsmodule gelten für das Paar
+    const modules = safeJsonParse('tactus_modules', null);
+    if (modules && modules.updatedAt) state.modules = modules;
+
     // Antrag auf Rollentausch (Zustimmung des Partners nötig, siehe tactus_roles.js)
     const roleHandover = safeJsonParse('tactus_role_handover', null);
     if (roleHandover) state.roleHandover = roleHandover;
@@ -288,6 +292,16 @@
         const localHo = safeJsonParse('tactus_role_handover', null);
         if (!localHo || (remote.roleHandover.updatedAt || 0) > (localHo.updatedAt || 0)) {
           localStorage.setItem('tactus_role_handover', JSON.stringify(remote.roleHandover));
+          changesMade = true;
+        }
+      }
+
+      // 2a'. Funktionsmodule: die zuletzt gespeicherte Auswahl gilt
+      if (remote.modules && typeof remote.modules === 'object' && remote.modules.enabled) {
+        const localMod = safeJsonParse('tactus_modules', null);
+        if (!localMod || (remote.modules.updatedAt || 0) > (localMod.updatedAt || 0)) {
+          localStorage.setItem('tactus_modules', JSON.stringify(remote.modules));
+          window.dispatchEvent(new CustomEvent('tactus:modules-changed'));
           changesMade = true;
         }
       }
@@ -576,7 +590,7 @@
     climaxRatio: 'history'
   };
   const ITEMIZED_ARRAYS = ['chatMessages', 'chatCapsules', 'customEquipment', 'sessionLogbook', 'feedbackShared'];
-  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals', 'aiOwnKey', 'roleHandover'];
+  const WHOLE_SECTIONS = ['names', 'roles', 'topMentalLoad', 'contractState', 'medicalPass', 'ownedEquipment', 'toyQuantities', 'sharing', 'feedbackSignals', 'aiOwnKey', 'roleHandover', 'modules'];
   const AI_KEY_SLOTS = ['tactus_api_key_gemini', 'kompass_gemini_api_key', 'tactus_ai_custom_key'];
   const AI_KEY_UPDATED_AT = 'tactus_ai_key_updated_at';
 
